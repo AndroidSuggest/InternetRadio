@@ -13,6 +13,9 @@ sealed class AppDestination(val route: String) {
     data object TagSelect : AppDestination("tag_select?selectedTags={selectedTags}") {
         fun createRoute(selectedTags: Set<String>) = "tag_select?selectedTags=${selectedTags.joinToString(",")}"
     }
+    data object EditSchedule : AppDestination("edit_schedule?scheduleId={scheduleId}") {
+        fun createRoute(scheduleId: Int? = null) = if (scheduleId != null) "edit_schedule?scheduleId=$scheduleId" else "edit_schedule"
+    }
     data object EditStation : AppDestination("edit_station?stationUuid={stationUuid}") {
         fun createRoute(stationUuid: String?) = if (stationUuid != null) "edit_station?stationUuid=$stationUuid" else "edit_station"
     }

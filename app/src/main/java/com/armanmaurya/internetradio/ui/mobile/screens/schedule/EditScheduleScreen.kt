@@ -1,0 +1,583 @@
+package com.armanmaurya.internetradio.ui.mobile.screens.schedule
+
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import coil3.compose.AsyncImage
+import com.armanmaurya.internetradio.R
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
+import com.armanmaurya.internetradio.data.local.entity.ScheduleType
+import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
+import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.SchedulesViewModel
+import java.util.Calendar
+
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+fun EditScheduleScreen(
+    scheduleId: Int? = null,
+    viewModel: SchedulesViewModel,
+    onNavigateBack: () -> Unit
+) {
+    val libraryStations by viewModel.libraryStations.collectAsState()
+    val schedules by viewModel.schedules.collectAsState()
+    
+    val scheduleToEdit = remember(scheduleId, schedules) {
+        schedules.find { it.id == scheduleId }
+    }
+    
+    var selectedStation by remember(scheduleToEdit, libraryStations) { 
+        mutableStateOf(scheduleToEdit?.let { s -> libraryStations.find { it.stationUuid == s.stationUuid } }) 
+    }
+    var isSheetOpen by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var searchQuery by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    val filteredStations = remember(searchQuery, libraryStations) {
+        if (searchQuery.isBlank()) {
+            libraryStations
+        } else {
+            libraryStations.filter { it.name.contains(searchQuery, ignoreCase = true) }
+        }
+    }
+
+    if (isSheetOpen) {
+        ModalBottomSheet(
+            onDismissRequest = { isSheetOpen = false },
+            sheetState = sheetState
+        ) {
+            Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                Text("Select Station", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(16.dp))
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search Library") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(50),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                if (filteredStations.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(if (libraryStations.isEmpty()) "No stations in library." else "No matches found.")
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(150.dp),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filteredStations) { station ->
+                            StationCard(
+                                station = station,
+                                onClick = {
+                                    selectedStation = station
+                                    isSheetOpen = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(if (scheduleId != null) "Edit Schedule" else "Create Schedule") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (scheduleToEdit != null) {
+                        IconButton(onClick = {
+                            viewModel.deleteSchedule(scheduleToEdit)
+                            Toast.makeText(context, "Schedule deleted", Toast.LENGTH_SHORT).show()
+                            onNavigateBack()
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        ScheduleConfigurationForm(
+            modifier = Modifier.padding(paddingValues),
+            station = selectedStation,
+            initialSchedule = scheduleToEdit,
+            onStationClick = { isSheetOpen = true },
+            onSave = { entity ->
+                viewModel.saveSchedule(entity)
+                Toast.makeText(context, "Schedule saved", Toast.LENGTH_SHORT).show()
+                onNavigateBack()
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ScheduleConfigurationForm(
+    modifier: Modifier = Modifier,
+    station: RadioStation?,
+    initialSchedule: ScheduleEntity?,
+    onStationClick: () -> Unit,
+    onSave: (ScheduleEntity) -> Unit
+) {
+    val context = LocalContext.current
+    val alarmManager = remember { context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager }
+
+    val calendar = Calendar.getInstance()
+    var scheduleName by remember(initialSchedule) { mutableStateOf(initialSchedule?.scheduleName ?: "") }
+    var startHour by remember(initialSchedule) { mutableStateOf(initialSchedule?.timeHour ?: calendar.get(Calendar.HOUR_OF_DAY)) }
+    var startMinute by remember(initialSchedule) { mutableStateOf(initialSchedule?.timeMinute ?: calendar.get(Calendar.MINUTE)) }
+    var endHour by remember(initialSchedule) { 
+        mutableStateOf(
+            initialSchedule?.let { ((it.timeHour * 60 + it.timeMinute + it.durationMinutes) / 60) % 24 } ?: ((calendar.get(Calendar.HOUR_OF_DAY) + 1) % 24)
+        ) 
+    }
+    var endMinute by remember(initialSchedule) { 
+        mutableStateOf(
+            initialSchedule?.let { (it.timeHour * 60 + it.timeMinute + it.durationMinutes) % 60 } ?: calendar.get(Calendar.MINUTE)
+        ) 
+    }
+    
+    var hasEndTime by remember(initialSchedule) { 
+        mutableStateOf(initialSchedule == null || initialSchedule.durationMinutes > 0) 
+    }
+
+    var scheduleType by remember(initialSchedule) { mutableStateOf(initialSchedule?.type ?: ScheduleType.PLAYBACK) }
+    var keepPlayback by remember(initialSchedule) { mutableStateOf(initialSchedule?.keepPlayback ?: false) }
+    val selectedDays = remember(initialSchedule) { 
+        val days = mutableStateListOf<Int>()
+        initialSchedule?.daysOfWeek?.split(",")?.mapNotNull { it.toIntOrNull() }?.let { days.addAll(it) }
+        days 
+    }
+    var volumeLevel by remember(initialSchedule) { mutableFloatStateOf(initialSchedule?.volumeLevel ?: 1.0f) }
+
+    var showStartTimePicker by remember { mutableStateOf(false) }
+    var showEndTimePicker by remember { mutableStateOf(false) }
+    
+    val startTimePickerState = rememberTimePickerState(initialHour = startHour, initialMinute = startMinute, is24Hour = false)
+    val endTimePickerState = rememberTimePickerState(initialHour = endHour, initialMinute = endMinute, is24Hour = false)
+
+    if (showStartTimePicker) {
+        TimePickerDialog(
+            onDismissRequest = { showStartTimePicker = false },
+            onConfirm = {
+                startHour = startTimePickerState.hour
+                startMinute = startTimePickerState.minute
+                showStartTimePicker = false
+            }
+        ) {
+            TimePicker(state = startTimePickerState)
+        }
+    }
+
+    if (showEndTimePicker) {
+        TimePickerDialog(
+            onDismissRequest = { showEndTimePicker = false },
+            onConfirm = {
+                endHour = endTimePickerState.hour
+                endMinute = endTimePickerState.minute
+                hasEndTime = true
+                showEndTimePicker = false
+            }
+        ) {
+            TimePicker(state = endTimePickerState)
+        }
+    }
+
+    fun formatTime(hour: Int, minute: Int): String {
+        val amPm = if (hour >= 12) "PM" else "AM"
+        val displayHour = if (hour % 12 == 0) 12 else hour % 12
+        return String.format(java.util.Locale.getDefault(), "%02d:%02d %s", displayHour, minute, amPm)
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        OutlinedTextField(
+            value = scheduleName,
+            onValueChange = { scheduleName = it },
+            label = { Text("Schedule Name (Optional)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .clickable { onStationClick() },
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            if (station != null) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AsyncImage(
+                        model = station.favicon.ifBlank { null },
+                        contentDescription = "Station Logo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF1E1E1E)),
+                        error = painterResource(id = R.drawable.ic_launcher_foreground),
+                        fallback = painterResource(id = R.drawable.ic_launcher_foreground)
+                    )
+
+                    val gradientBrush = remember {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.8f)
+                            )
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(gradientBrush)
+                    )
+                    
+                    val subtitleText = remember(station.country, station.language, station.codec, station.bitrate) {
+                        buildString {
+                            if (station.country.isNotBlank()) append(station.country)
+                            if (station.country.isNotBlank() && station.language.isNotBlank()) append(" • ")
+                            if (station.language.isNotBlank()) append(station.language)
+                            
+                            val hasPrevious = station.country.isNotBlank() || station.language.isNotBlank()
+                            if (hasPrevious && (station.codec.isNotBlank() || station.bitrate > 0)) {
+                                append(" | ")
+                            }
+                            if (station.codec.isNotBlank()) append(station.codec)
+                            if (station.codec.isNotBlank() && station.bitrate > 0) append(" ")
+                            if (station.bitrate > 0) append("${station.bitrate} kbps")
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            text = station.name,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color.White,
+                            maxLines = 1,
+                            modifier = Modifier.basicMarquee()
+                        )
+                        Text(
+                            text = subtitleText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.8f),
+                            maxLines = 1,
+                            modifier = Modifier.basicMarquee()
+                        )
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.Radio, contentDescription = null, modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Select a station", style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+            }
+        }
+
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Card(
+                modifier = Modifier.weight(1f).clickable { showStartTimePicker = true }
+            ) {
+                Column(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Start Time", style = MaterialTheme.typography.labelMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = formatTime(startHour, startMinute),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
+
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .combinedClickable(
+                        onClick = { showEndTimePicker = true },
+                        onLongClick = { hasEndTime = false }
+                    )
+            ) {
+                Column(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("End Time", style = MaterialTheme.typography.labelMedium)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text("(Hold to clear)", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (hasEndTime) formatTime(endHour, endMinute) else "None",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            val dayNames = listOf("S", "M", "T", "W", "T", "F", "S")
+            for (i in 1..7) {
+                val isSelected = selectedDays.contains(i)
+                Surface(
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable {
+                            if (isSelected) selectedDays.remove(i)
+                            else selectedDays.add(i)
+                        }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = dayNames[i - 1],
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Volume: ${(volumeLevel * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                Slider(
+                    value = volumeLevel,
+                    onValueChange = { volumeLevel = it },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    track = { sliderState ->
+                        SliderDefaults.Track(
+                            sliderState = sliderState,
+                            modifier = Modifier.height(24.dp),
+                            colors = SliderDefaults.colors()
+                        )
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            val isPlayback = scheduleType == ScheduleType.PLAYBACK
+            val colors = SegmentedButtonDefaults.colors(
+                activeContainerColor = MaterialTheme.colorScheme.primary,
+                activeContentColor = MaterialTheme.colorScheme.onPrimary,
+                inactiveContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                activeBorderColor = Color.Transparent,
+                inactiveBorderColor = Color.Transparent
+            )
+            SegmentedButton(
+                selected = isPlayback,
+                onClick = { scheduleType = ScheduleType.PLAYBACK },
+                shape = if (isPlayback) androidx.compose.foundation.shape.CircleShape else SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                colors = colors
+            ) {
+                Text("Playback")
+            }
+            SegmentedButton(
+                selected = !isPlayback,
+                onClick = { scheduleType = ScheduleType.RECORD },
+                shape = if (!isPlayback) androidx.compose.foundation.shape.CircleShape else SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                colors = colors
+            ) {
+                Text("Record")
+            }
+        }
+
+        AnimatedVisibility(
+            visible = scheduleType == ScheduleType.RECORD,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column {
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text("Keep Playback After Recording", style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                "If off, playback stops when recording ends",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = keepPlayback,
+                            onCheckedChange = { keepPlayback = it }
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = {
+                if (station == null) return@Button
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                    context.startActivity(intent)
+                    Toast.makeText(context, "Please grant Exact Alarm permission to schedule", Toast.LENGTH_LONG).show()
+                    return@Button
+                }
+                
+                var duration = 0
+                if (hasEndTime) {
+                    duration = (endHour * 60 + endMinute) - (startHour * 60 + startMinute)
+                    if (duration <= 0) duration += 24 * 60 // crosses midnight
+                }
+                
+                val entity = ScheduleEntity(
+                    id = initialSchedule?.id ?: 0,
+                    stationUuid = station.stationUuid,
+                    stationName = station.name,
+                    type = scheduleType,
+                    triggerTimeInMillis = 0L,
+                    durationMinutes = duration,
+                    isRecurring = selectedDays.isNotEmpty(),
+                    daysOfWeek = selectedDays.joinToString(","),
+                    timeHour = startHour,
+                    timeMinute = startMinute,
+                    isEnabled = true,
+                    volumeLevel = volumeLevel,
+                    keepPlayback = keepPlayback,
+                    scheduleName = scheduleName.trim()
+                )
+                onSave(entity)
+            },
+            enabled = station != null,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Save Schedule")
+        }
+    }
+}
+
+@Composable
+fun TimePickerDialog(
+    title: String = "Select Time",
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(title) },
+        text = { content() },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        }
+    )
+}

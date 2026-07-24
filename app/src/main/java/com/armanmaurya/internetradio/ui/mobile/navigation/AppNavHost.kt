@@ -82,6 +82,7 @@ fun AppNavHost(
                     val currentTags = discoverViewModel.uiState.value.selectedTags
                     navController.navigate(AppDestination.TagSelect.createRoute(currentTags))
                 },
+                onEditSchedule = { scheduleId -> navController.navigate(AppDestination.EditSchedule.createRoute(scheduleId)) },
                 onEditStation = { stationUuid -> navController.navigate(AppDestination.EditStation.createRoute(stationUuid)) },
                 contentPadding = contentPadding
             )
@@ -176,6 +177,24 @@ fun AppNavHost(
             val stationUuid = backStackEntry.arguments?.getString("stationUuid")
             EditStationScreen(
                 stationUuid = stationUuid,
+                viewModel = hiltViewModel(),
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        composable(
+            route = AppDestination.EditSchedule.route,
+            arguments = listOf(
+                navArgument("scheduleId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+            val scheduleIdStr = backStackEntry.arguments?.getString("scheduleId")
+            val scheduleId = scheduleIdStr?.toIntOrNull()
+            com.armanmaurya.internetradio.ui.mobile.screens.schedule.EditScheduleScreen(
+                scheduleId = scheduleId,
                 viewModel = hiltViewModel(),
                 onNavigateBack = { navController.navigateUp() }
             )

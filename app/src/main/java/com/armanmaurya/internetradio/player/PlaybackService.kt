@@ -49,6 +49,9 @@ class PlaybackService : MediaLibraryService() {
     @Inject
     lateinit var settingsRepository: com.armanmaurya.internetradio.data.repository.SettingsRepository
 
+    @Inject
+    lateinit var libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository
+
     private var player: Player? = null
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var loadErrorHandlingPolicy: ExponentialBackoffLoadErrorHandlingPolicy
@@ -252,5 +255,56 @@ class PlaybackService : MediaLibraryService() {
                 stopSelf()
             }
         }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val action = intent?.action
+        if (action == "com.armanmaurya.internetradio.ACTION_PLAY_STATION") {
+            val stationUuid = intent.getStringExtra("STATION_UUID")
+            val startRecording = intent.getBooleanExtra("START_RECORDING", false)
+            val durationMinutes = intent.getIntExtra("RECORDING_DURATION", 0)
+            val keepPlayback = intent.getBooleanExtra("KEEP_PLAYBACK", false)
+
+            if (stationUuid != null) {
+                serviceScope.launch {
+                    val station = libraryRepository.getStationById(stationUuid) ?: return@launch
+                    val mediaItem = station.toMediaItem(this@PlaybackService)
+                    player?.setMediaItem(mediaItem)
+                    player?.prepare()
+                    player?.play()
+
+                    // Schedule stop at end time
+                    if (durationMinutes > 0) {
+                        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+                        val stopIntent = Intent(this@PlaybackService, ScheduleReceiver::class.java).apply {
+                            this.action = ScheduleReceiver.ACTION_STOP_RECORDING
+                            putExtra("KEEP_PLAYBACK", keepPlayback)
+                        }
+                        val pendingIntent = PendingIntent.getBroadcast(
+                            this@PlaybackService,
+                            stationUuid.hashCode(),
+                            stopIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                        val stopAt = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                            alarmManager.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, stopAt, pendingIntent)
+                        } else {
+                            alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, stopAt, pendingIntent)
+                        }
+                    }
+
+                    if (startRecording) {
+                        kotlinx.coroutines.delay(2000)
+                        recordingManager.startRecording(station)
+                    }
+                }
+            }
+        } else if (action == "com.armanmaurya.internetradio.ACTION_STOP_PLAYBACK") {
+            player?.volume = 1f
+            player?.stop()
+            recordingManager.stopRecording()
+        }
+        return super.onStartCommand(intent, flags, startId)
     }
 }

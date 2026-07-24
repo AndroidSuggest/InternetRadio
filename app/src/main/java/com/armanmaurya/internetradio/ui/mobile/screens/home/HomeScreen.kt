@@ -92,6 +92,8 @@ import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.Schedule
+import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.SchedulesTabContent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,6 +103,7 @@ fun HomeScreen(
     onCountryClick: () -> Unit,
     onLanguageClick: () -> Unit,
     onTagClick: () -> Unit,
+    onEditSchedule: (Int?) -> Unit,
     onEditStation: (String?) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -122,7 +125,8 @@ fun HomeScreen(
         stringResource(R.string.home_tab_browse),
         stringResource(R.string.home_tab_recent),
         stringResource(R.string.home_tab_library),
-        stringResource(R.string.home_tab_recordings)
+        stringResource(R.string.home_tab_recordings),
+        stringResource(R.string.home_tab_schedules)
     )
     val pagerState = rememberPagerState(
         initialPage = uiState.selectedTab,
@@ -259,6 +263,10 @@ fun HomeScreen(
                         3 -> com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.RecordingsContent(
                             contentPadding = contentPadding
                         )
+                        4 -> SchedulesTabContent(
+                            onEditSchedule = onEditSchedule,
+                            contentPadding = contentPadding
+                        )
                     }
                 }
             }
@@ -382,7 +390,8 @@ fun HomeScreen(
                             androidx.compose.material.icons.Icons.Rounded.Explore,
                             androidx.compose.material.icons.Icons.Rounded.History,
                             androidx.compose.material.icons.Icons.Rounded.LibraryMusic,
-                            androidx.compose.material.icons.Icons.Rounded.Mic
+                            androidx.compose.material.icons.Icons.Rounded.Mic,
+                            androidx.compose.material.icons.Icons.Rounded.Schedule
                         )
                         tabs.forEachIndexed { index, title ->
                             androidx.compose.material3.NavigationDrawerItem(

@@ -14,19 +14,23 @@ import com.armanmaurya.internetradio.data.local.dao.TrackHistoryDao
 import com.armanmaurya.internetradio.data.local.entity.LibraryStationEntity
 import com.armanmaurya.internetradio.data.local.entity.RecentStationEntity
 import com.armanmaurya.internetradio.data.local.entity.TrackHistoryEntity
+import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
+import com.armanmaurya.internetradio.data.local.dao.ScheduleDao
 
 @Database(
     entities = [
         LibraryStationEntity::class,
         RecentStationEntity::class,
-        TrackHistoryEntity::class
+        TrackHistoryEntity::class,
+        ScheduleEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2, spec = RadioDatabase.Migration1To2Spec::class),
         AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 4, to = 5, spec = RadioDatabase.Migration4To5Spec::class)
+        AutoMigration(from = 4, to = 5, spec = RadioDatabase.Migration4To5Spec::class),
+        AutoMigration(from = 5, to = 6)
     ]
 )
 @TypeConverters(Converters::class)
@@ -53,6 +57,7 @@ abstract class RadioDatabase : RoomDatabase() {
     abstract val libraryStationDao: LibraryStationDao
     abstract val recentStationDao: RecentStationDao
     abstract val trackHistoryDao: TrackHistoryDao
+    abstract val scheduleDao: ScheduleDao
 
     companion object {
         val MIGRATION_3_4 = object : Migration(3, 4) {

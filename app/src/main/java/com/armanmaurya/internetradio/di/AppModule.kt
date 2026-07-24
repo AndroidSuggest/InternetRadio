@@ -122,4 +122,9 @@ object AppModule {
     @Singleton
     fun provideTrackHistoryDao(database: RadioDatabase): com.armanmaurya.internetradio.data.local.dao.TrackHistoryDao =
         database.trackHistoryDao
+
+    @Provides
+    @Singleton
+    fun provideScheduleDao(database: RadioDatabase): com.armanmaurya.internetradio.data.local.dao.ScheduleDao =
+        database.scheduleDao
 }
