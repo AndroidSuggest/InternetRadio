@@ -24,6 +24,7 @@ import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
 import com.armanmaurya.internetradio.data.local.entity.ScheduleType
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,16 +48,16 @@ fun ScheduleItem(
     val timeRangeString = if (schedule.durationMinutes > 0) {
         "$startTimeString - $endTimeString"
     } else {
-        "$startTimeString - Indefinite"
+        "$startTimeString - ${stringResource(R.string.schedule_indefinite)}"
     }
 
     val repeatText = if (schedule.isRecurring) {
         null
     } else {
-        "Once"
+        stringResource(R.string.schedule_once)
     }
 
-    val typeText = if (schedule.type == ScheduleType.PLAYBACK) "Playback" else "Record"
+    val typeText = if (schedule.type == ScheduleType.PLAYBACK) stringResource(R.string.schedule_playback) else stringResource(R.string.schedule_record)
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -74,7 +75,7 @@ fun ScheduleItem(
             ) {
                 AsyncImage(
                     model = stationFavicon?.ifBlank { null },
-                    contentDescription = "Station Logo",
+                    contentDescription = stringResource(R.string.schedule_station_logo_cd),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(56.dp)

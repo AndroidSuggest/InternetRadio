@@ -22,7 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.components.ScheduleItem
 
 @Composable
@@ -46,7 +48,7 @@ fun SchedulesTabContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No schedules yet. Create one!")
+                Text(stringResource(R.string.schedule_no_schedules_yet))
             }
         } else {
             LazyColumn(
@@ -73,7 +75,7 @@ fun SchedulesTabContent(
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Add Schedule"
+                contentDescription = stringResource(R.string.schedule_add_schedule_cd)
             )
         }
     }

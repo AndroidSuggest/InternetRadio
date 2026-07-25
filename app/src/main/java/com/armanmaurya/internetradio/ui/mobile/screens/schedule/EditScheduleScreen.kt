@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import coil3.compose.AsyncImage
+import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -83,12 +84,12 @@ fun EditScheduleScreen(
             sheetState = sheetState
         ) {
             Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                Text("Select Station", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.schedule_select_station_title), style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
                 TextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search Library") },
+                    placeholder = { Text(stringResource(R.string.schedule_search_library)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -101,7 +102,7 @@ fun EditScheduleScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 if (filteredStations.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(if (libraryStations.isEmpty()) "No stations in library." else "No matches found.")
+                        Text(if (libraryStations.isEmpty()) stringResource(R.string.schedule_no_stations_library) else stringResource(R.string.schedule_no_matches_found))
                     }
                 } else {
                     LazyVerticalGrid(
@@ -129,7 +130,7 @@ fun EditScheduleScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (scheduleId != null) "Edit Schedule" else "Create Schedule") },
+                title = { Text(if (scheduleId != null) stringResource(R.string.schedule_edit) else stringResource(R.string.schedule_create)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -139,7 +140,7 @@ fun EditScheduleScreen(
                     if (scheduleToEdit != null) {
                         IconButton(onClick = {
                             viewModel.deleteSchedule(scheduleToEdit)
-                            Toast.makeText(context, "Schedule deleted", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.schedule_deleted), Toast.LENGTH_SHORT).show()
                             onNavigateBack()
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
@@ -156,7 +157,7 @@ fun EditScheduleScreen(
             onStationClick = { isSheetOpen = true },
             onSave = { entity ->
                 viewModel.saveSchedule(entity)
-                Toast.makeText(context, "Schedule saved", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.schedule_saved), Toast.LENGTH_SHORT).show()
                 onNavigateBack()
             }
         )
@@ -249,12 +250,17 @@ private fun ScheduleConfigurationForm(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OutlinedTextField(
+        TextField(
             value = scheduleName,
             onValueChange = { scheduleName = it },
-            label = { Text("Schedule Name (Optional)") },
+            label = { Text(stringResource(R.string.schedule_name_optional)) },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -340,7 +346,7 @@ private fun ScheduleConfigurationForm(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Radio, contentDescription = null, modifier = Modifier.size(48.dp))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Select a station", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.schedule_select_a_station), style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
@@ -354,7 +360,7 @@ private fun ScheduleConfigurationForm(
                 modifier = Modifier.weight(1f).clickable { showStartTimePicker = true }
             ) {
                 Column(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Start Time", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.schedule_start_time), style = MaterialTheme.typography.labelMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -376,9 +382,8 @@ private fun ScheduleConfigurationForm(
                     )
             ) {
                 Column(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("End Time", style = MaterialTheme.typography.labelMedium)
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text("(Hold to clear)", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.schedule_end_time), style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.schedule_hold_to_clear), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -468,7 +473,7 @@ private fun ScheduleConfigurationForm(
                 shape = if (isPlayback) androidx.compose.foundation.shape.CircleShape else SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                 colors = colors
             ) {
-                Text("Playback")
+                Text(stringResource(R.string.schedule_playback))
             }
             SegmentedButton(
                 selected = !isPlayback,
@@ -476,7 +481,7 @@ private fun ScheduleConfigurationForm(
                 shape = if (!isPlayback) androidx.compose.foundation.shape.CircleShape else SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                 colors = colors
             ) {
-                Text("Record")
+                Text(stringResource(R.string.schedule_record))
             }
         }
 
@@ -496,7 +501,7 @@ private fun ScheduleConfigurationForm(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("Keep Playback After Recording", style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(R.string.schedule_keep_playback_after_recording), style = MaterialTheme.typography.bodyLarge)
                             Text(
                                 "If off, playback stops when recording ends",
                                 style = MaterialTheme.typography.bodySmall,
@@ -522,7 +527,7 @@ private fun ScheduleConfigurationForm(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
                     val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                     context.startActivity(intent)
-                    Toast.makeText(context, "Please grant Exact Alarm permission to schedule", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.schedule_grant_exact_alarm_permission), Toast.LENGTH_LONG).show()
                     return@Button
                 }
                 
@@ -553,7 +558,7 @@ private fun ScheduleConfigurationForm(
             enabled = station != null,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Save Schedule")
+            Text(stringResource(R.string.schedule_save_button))
         }
     }
 }

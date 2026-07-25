@@ -246,4 +246,31 @@
     <string name="cast_close">Close</string>
 
     <string name="action_retry">Retry</string>
+
+    <!-- ========================================== -->
+    <!-- 14. SCHEDULE                               -->
+    <!-- ========================================== -->
+    <string name="schedule_create">Create Schedule</string>
+    <string name="schedule_edit">Edit Schedule</string>
+    <string name="schedule_name_optional">Schedule Name (Optional)</string>
+    <string name="schedule_select_station_title">Select Station</string>
+    <string name="schedule_search_library">Search Library</string>
+    <string name="schedule_no_stations_library">No stations in library.</string>
+    <string name="schedule_no_matches_found">No matches found.</string>
+    <string name="schedule_select_a_station">Select a station</string>
+    <string name="schedule_start_time">Start Time</string>
+    <string name="schedule_end_time">End Time</string>
+    <string name="schedule_hold_to_clear">(Hold to clear)</string>
+    <string name="schedule_playback">Playback</string>
+    <string name="schedule_record">Record</string>
+    <string name="schedule_keep_playback_after_recording">Keep Playback After Recording</string>
+    <string name="schedule_deleted">Schedule deleted</string>
+    <string name="schedule_saved">Schedule saved</string>
+    <string name="schedule_save_button">Save Schedule</string>
+    <string name="schedule_grant_exact_alarm_permission">Please grant Exact Alarm permission to schedule</string>
+    <string name="schedule_indefinite">Indefinite</string>
+    <string name="schedule_once">Once</string>
+    <string name="schedule_station_logo_cd">Station Logo</string>
+    <string name="schedule_no_schedules_yet">No schedules yet. Create one!</string>
+    <string name="schedule_add_schedule_cd">Add Schedule</string>
 </resources>
