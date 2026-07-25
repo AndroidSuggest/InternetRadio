@@ -20,6 +20,7 @@ InternetRadio is an Android app for discovering and listening to radio stations 
 - **Android TV Support**: Enjoy a fully optimized and tailored experience on Android TV devices.
 - **Android Auto Support**: Support for car screen via android auto.
 - **FCast Support**: Cast and control radio stations on FCast-compatible devices.
+- **Recording & Scheduling**: Record live streams to your device or set schedules for automated playback and recording.
 - **Recent History**: Keep track of your recently played streams.
 - **Backup & Restore**: Easily backup and restore your library and app settings.
 - **Modern UI**: Built with Jetpack Compose for a smooth, intuitive, and responsive experience across phones, tablets, and widescreen devices.
