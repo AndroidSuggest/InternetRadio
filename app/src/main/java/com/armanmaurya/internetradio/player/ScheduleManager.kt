@@ -37,19 +37,8 @@ class ScheduleManager @Inject constructor(
         val triggerTime = getNextTriggerTime(entity)
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
-            } else {
-                alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
-            }
+            val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerTime, pendingIntent)
+            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
         } catch (e: SecurityException) {
             // Permission SCHEDULE_EXACT_ALARM is required on Android 12+
             // We should request it in UI before allowing to schedule.

@@ -57,11 +57,14 @@ class PlayerViewModel @Inject constructor(
     init {
         playbackState
             .onEach { state ->
-                recordingManager.setPlaying(state.isPlaying)
+                // Ignore the initial null state during UI load so we don't kill background recordings
+                if (state.currentStation == null && isRecording.value) {
+                    return@onEach
+                }
                 
-                // Auto-stop and save recording if station changes or player is completely stopped
+                // Auto-stop and save recording if station changes
                 val isDifferentStation = recordingManager.currentStation?.stationUuid != state.currentStation?.stationUuid
-                if (isRecording.value && (state.currentStation == null || isDifferentStation)) {
+                if (isRecording.value && isDifferentStation) {
                     recordingManager.stopRecording()
                 }
 

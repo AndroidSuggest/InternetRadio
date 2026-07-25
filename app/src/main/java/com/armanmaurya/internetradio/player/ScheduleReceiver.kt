@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.AlarmManager
 import android.os.Build
 import com.armanmaurya.internetradio.data.local.entity.ScheduleType
+import com.armanmaurya.internetradio.data.repository.LibraryRepository
 import com.armanmaurya.internetradio.data.repository.ScheduleRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +21,9 @@ class ScheduleReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var scheduleRepository: ScheduleRepository
+
+    @Inject
+    lateinit var libraryRepository: LibraryRepository
 
     @Inject
     lateinit var scheduleManager: ScheduleManager
@@ -47,30 +51,41 @@ class ScheduleReceiver : BroadcastReceiver() {
         val scheduleId = intent.getIntExtra(EXTRA_SCHEDULE_ID, -1)
         if (scheduleId == -1) return
 
+        val pendingResult = goAsync()
         scope.launch {
-            val schedule = scheduleRepository.getScheduleById(scheduleId) ?: return@launch
+            try {
+                val schedule = scheduleRepository.getScheduleById(scheduleId) ?: return@launch
+    
+                if (!schedule.isEnabled) return@launch
 
-            if (!schedule.isEnabled) return@launch
-
-            val playIntent = Intent(context, PlaybackService::class.java).apply {
-                this.action = "com.armanmaurya.internetradio.ACTION_PLAY_STATION"
-                putExtra("STATION_UUID", schedule.stationUuid)
-                putExtra("STATION_NAME", schedule.stationName)
-                putExtra("START_RECORDING", schedule.type == ScheduleType.RECORD)
-                putExtra("RECORDING_DURATION", schedule.durationMinutes)
-                putExtra("KEEP_PLAYBACK", schedule.keepPlayback)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(playIntent)
-            } else {
-                context.startService(playIntent)
-            }
-
-            // Reschedule if recurring, else disable
-            if (schedule.isRecurring) {
-                scheduleManager.schedule(schedule)
-            } else {
-                scheduleRepository.updateScheduleStatus(schedule.id, false)
+                // Resolve the station from the library so PlaybackService can
+                // build the MediaItem synchronously without any DB lookup.
+                val libraryStation = libraryRepository.getStationById(schedule.stationUuid)
+    
+                val playIntent = Intent(context, PlaybackService::class.java).apply {
+                    this.action = "com.armanmaurya.internetradio.ACTION_PLAY_STATION"
+                    putExtra("STATION_UUID", schedule.stationUuid)
+                    putExtra("STATION_NAME", schedule.stationName)
+                    putExtra("STATION_URL", libraryStation?.urlResolved ?: libraryStation?.url ?: "")
+                    putExtra("STATION_FAVICON", libraryStation?.favicon ?: "")
+                    putExtra("START_RECORDING", schedule.type == ScheduleType.RECORD)
+                    putExtra("RECORDING_DURATION", schedule.durationMinutes)
+                    putExtra("KEEP_PLAYBACK", schedule.keepPlayback)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(playIntent)
+                } else {
+                    context.startService(playIntent)
+                }
+    
+                // Reschedule if recurring, else disable
+                if (schedule.isRecurring) {
+                    scheduleManager.schedule(schedule)
+                } else {
+                    scheduleRepository.updateScheduleStatus(schedule.id, false)
+                }
+            } finally {
+                pendingResult.finish()
             }
         }
     }

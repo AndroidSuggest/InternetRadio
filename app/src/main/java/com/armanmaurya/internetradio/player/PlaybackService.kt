@@ -206,6 +206,11 @@ class PlaybackService : MediaLibraryService() {
 
         player?.let {
             it.addListener(stationChangeListener)
+            it.addListener(object : androidx.media3.common.Player.Listener {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    recordingManager.setPlaying(isPlaying)
+                }
+            })
 
             val intent = Intent(this, MainActivity::class.java)
             val pendingIntent = PendingIntent.getActivity(
@@ -260,42 +265,85 @@ class PlaybackService : MediaLibraryService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         if (action == "com.armanmaurya.internetradio.ACTION_PLAY_STATION") {
+            // Instantly elevate to foreground to bypass Android 12+ background network restrictions
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                val channelId = "schedule_channel"
+                val nm = getSystemService(android.app.NotificationManager::class.java)
+                if (nm.getNotificationChannel(channelId) == null) {
+                    val channel = android.app.NotificationChannel(
+                        channelId, "Scheduled Playback",
+                        android.app.NotificationManager.IMPORTANCE_LOW
+                    ).apply { setShowBadge(false) }
+                    nm.createNotificationChannel(channel)
+                }
+                val notification = android.app.Notification.Builder(this, channelId)
+                    .setSmallIcon(com.armanmaurya.internetradio.R.drawable.ic_launcher_foreground)
+                    .setContentTitle("Connecting to station...")
+                    .setOngoing(true)
+                    .build()
+                startForeground(2001, notification)
+            }
+
             val stationUuid = intent.getStringExtra("STATION_UUID")
             val startRecording = intent.getBooleanExtra("START_RECORDING", false)
             val durationMinutes = intent.getIntExtra("RECORDING_DURATION", 0)
             val keepPlayback = intent.getBooleanExtra("KEEP_PLAYBACK", false)
+            val stationUrl = intent.getStringExtra("STATION_URL")
+            val stationName = intent.getStringExtra("STATION_NAME") ?: ""
+            val stationFavicon = intent.getStringExtra("STATION_FAVICON") ?: ""
 
-            if (stationUuid != null) {
-                serviceScope.launch {
-                    val station = libraryRepository.getStationById(stationUuid) ?: return@launch
-                    val mediaItem = station.toMediaItem(this@PlaybackService)
-                    player?.setMediaItem(mediaItem)
-                    player?.prepare()
-                    player?.play()
+            if (stationUuid != null && !stationUrl.isNullOrBlank()) {
+                // --- SYNCHRONOUS playback setup (no coroutine, no race) ---
+                // Build MediaItem directly from intent extras so playback is set up
+                // before PlayerController's MediaController can connect and interfere.
+                val artworkUri = when {
+                    stationFavicon.endsWith(".svg", ignoreCase = true) ->
+                        android.net.Uri.parse(SvgProxyProvider.createProxyUri(this, stationFavicon))
+                    stationFavicon.isNotBlank() -> android.net.Uri.parse(stationFavicon)
+                    else -> android.net.Uri.EMPTY
+                }
+                val mediaItem = androidx.media3.common.MediaItem.Builder()
+                    .setMediaId(stationUuid)
+                    .setUri(stationUrl)
+                    .setMediaMetadata(
+                        androidx.media3.common.MediaMetadata.Builder()
+                            .setTitle(stationName)
+                            .setArtworkUri(artworkUri)
+                            .setExtras(android.os.Bundle().apply {
+                                putString("stationName", stationName)
+                            })
+                            .build()
+                    )
+                    .build()
 
-                    // Schedule stop at end time
-                    if (durationMinutes > 0) {
-                        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-                        val stopIntent = Intent(this@PlaybackService, ScheduleReceiver::class.java).apply {
-                            this.action = ScheduleReceiver.ACTION_STOP_RECORDING
-                            putExtra("KEEP_PLAYBACK", keepPlayback)
-                        }
-                        val pendingIntent = PendingIntent.getBroadcast(
-                            this@PlaybackService,
-                            stationUuid.hashCode(),
-                            stopIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                        )
-                        val stopAt = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                            alarmManager.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, stopAt, pendingIntent)
-                        } else {
-                            alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, stopAt, pendingIntent)
-                        }
+                // Set playWhenReady=true BEFORE setMediaItem so ExoPlayer auto-starts
+                // on STATE_READY. This runs synchronously before any coroutine can run.
+                player?.playWhenReady = true
+                player?.setMediaItem(mediaItem)
+                player?.prepare()
+
+                // Schedule stop alarm synchronously (AlarmManager is not async)
+                if (durationMinutes > 0) {
+                    val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+                    val stopIntent = Intent(this, ScheduleReceiver::class.java).apply {
+                        this.action = ScheduleReceiver.ACTION_STOP_RECORDING
+                        putExtra("KEEP_PLAYBACK", keepPlayback)
                     }
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        this,
+                        stationUuid.hashCode(),
+                        stopIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    val stopAt = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
+                    val alarmClockInfo = android.app.AlarmManager.AlarmClockInfo(stopAt, pendingIntent)
+                    alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                }
 
-                    if (startRecording) {
-                        kotlinx.coroutines.delay(2000)
+                // Recording still needs the full station object — keep async
+                if (startRecording) {
+                    serviceScope.launch {
+                        val station = libraryRepository.getStationById(stationUuid) ?: return@launch
                         recordingManager.startRecording(station)
                     }
                 }

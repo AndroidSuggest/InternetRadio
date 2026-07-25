@@ -33,6 +33,7 @@ class PlayerController @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val stationRepository: StationRepository,
     private val recentRepository: RecentRepository,
+    private val libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository,
     private val recordingManager: RecordingManager
 ) {
     private var controllerFuture: ListenableFuture<MediaController>? = null
@@ -111,6 +112,16 @@ class PlayerController @Inject constructor(
                 activeStation = tagStation
                 _playbackState.update { it.copy(currentStation = activeStation, currentTrack = null) }
                 scope.launch { recentRepository.addRecentStation(tagStation) }
+            } else {
+                // Fallback for scheduled cold start: get FULL RadioStation from library DB
+                scope.launch {
+                    val dbStation = libraryRepository.getStationById(originalId)
+                    if (dbStation != null) {
+                        activeStation = dbStation
+                        _playbackState.update { it.copy(currentStation = activeStation, currentTrack = null) }
+                        recentRepository.addRecentStation(dbStation)
+                    }
+                }
             }
             
             // Check if we need to load more
@@ -169,8 +180,10 @@ class PlayerController @Inject constructor(
                 it.addListener(playerListener)
                 val currentItem = it.currentMediaItem
                 if (currentItem != null) {
-                    val station = currentPlaylist.find { s -> s.stationUuid == currentItem.mediaId } 
+                    val originalId = currentItem.mediaId.substringAfter("|")
+                    val station = currentPlaylist.find { s -> s.stationUuid == originalId } 
                         ?: currentItem.localConfiguration?.tag as? RadioStation
+                    
                     if (station != null) {
                         activeStation = station
                         _playbackState.update { state ->
@@ -178,6 +191,20 @@ class PlayerController @Inject constructor(
                                 isPlaying = it.isPlaying,
                                 currentStation = station
                             )
+                        }
+                    } else {
+                        // Fallback for scheduled cold start: get FULL RadioStation from library DB
+                        scope.launch {
+                            val dbStation = libraryRepository.getStationById(originalId)
+                            if (dbStation != null) {
+                                activeStation = dbStation
+                                _playbackState.update { state ->
+                                    state.copy(
+                                        isPlaying = controller?.isPlaying == true,
+                                        currentStation = dbStation
+                                    )
+                                }
+                            }
                         }
                     }
                 } else {
