@@ -260,7 +260,8 @@
     <string name="schedule_keep_playback_after_recording">रिकॉर्डिंग के बाद प्लेबैक जारी रखें</string>
     <string name="schedule_deleted">शेड्यूल हटा दिया गया</string>
     <string name="schedule_saved">शेड्यूल सहेजा गया</string>
-    <string name="schedule_save_button">शेड्यूल सहेजें</string>
+    <string name="schedule_action_save">सहेजें</string>
+    <string name="schedule_action_create">बनाएं</string>
     <string name="schedule_grant_exact_alarm_permission">कृपया शेड्यूल करने के लिए Exact Alarm की अनुमति दें</string>
     <string name="schedule_indefinite">अनिश्चित काल</string>
     <string name="schedule_once">एक बार</string>

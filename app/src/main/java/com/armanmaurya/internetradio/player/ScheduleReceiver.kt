@@ -71,6 +71,7 @@ class ScheduleReceiver : BroadcastReceiver() {
                     putExtra("START_RECORDING", schedule.type == ScheduleType.RECORD)
                     putExtra("RECORDING_DURATION", schedule.durationMinutes)
                     putExtra("KEEP_PLAYBACK", schedule.keepPlayback)
+                    putExtra("VOLUME_LEVEL", schedule.volumeLevel)
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(playIntent)

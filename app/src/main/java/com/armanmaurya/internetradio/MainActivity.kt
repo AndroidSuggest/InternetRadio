@@ -249,8 +249,8 @@ class MainActivity : AppCompatActivity() {
                                 amplitude = amplitude,
                                 onToggleRecording = playerViewModel::toggleRecording,
                                 discoveredCastDevices = discoveredCastDevices,
-                                castVolume = castVolume.toFloat(),
-                                onCastVolumeChange = playerViewModel::setCastVolume,
+                                volume = castVolume.toFloat(),
+                                onVolumeChange = playerViewModel::setVolume,
                                 connectedCastDevice = connectedCastDevice,
                                 onConnectCastDevice = playerViewModel::connectToCastDevice,
                                 onDisconnectCastDevice = playerViewModel::disconnectCastDevice

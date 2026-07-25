@@ -5,6 +5,7 @@ import com.armanmaurya.internetradio.ui.mobile.screens.player.components.SleepTi
 
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.history.HistoryTab
 import com.armanmaurya.internetradio.ui.mobile.screens.player.components.TrackPill
+import com.armanmaurya.internetradio.ui.mobile.screens.player.components.VolumeDialog
 import com.armanmaurya.internetradio.ui.mobile.screens.player.components.TrackDialog
 import com.armanmaurya.internetradio.ui.mobile.screens.player.components.Controls
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.recordings.RecordingsTab
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -101,8 +103,8 @@ fun PlayerSheetContent(
     onToggleRecording: () -> Unit,
     discoveredCastDevices: List<org.fcast.sender_sdk.DeviceInfo> = emptyList(),
     connectedCastDevice: org.fcast.sender_sdk.CastingDevice? = null,
-    castVolume: Float = 1f,
-    onCastVolumeChange: (Float) -> Unit = {},
+    volume: Float = 1f,
+    onVolumeChange: (Float) -> Unit = {},
     onConnectCastDevice: (org.fcast.sender_sdk.DeviceInfo) -> Unit = {},
     onDisconnectCastDevice: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -125,8 +127,8 @@ fun PlayerSheetContent(
         com.armanmaurya.internetradio.ui.shared.components.CastDeviceDialog(
             devices = discoveredCastDevices,
             connectedDevice = connectedCastDevice,
-            volume = castVolume,
-            onVolumeChange = onCastVolumeChange,
+            volume = volume,
+            onVolumeChange = onVolumeChange,
             onConnect = {
                 onConnectCastDevice(it)
                 showCastDialog = false
@@ -166,6 +168,9 @@ fun PlayerSheetContent(
             }
         }
     }
+
+    var showVolumeDialog by remember { mutableStateOf(false) }
+    val volumeLevel = if (connectedCastDevice != null) volume else playbackState.volume
 
     val remainingTime = playbackState.sleepTimerEndTime?.let { it - currentTime } ?: 0L
     val sleepTimerProgress = if (playbackState.sleepTimerTotalDuration > 0) {
@@ -660,52 +665,118 @@ fun PlayerSheetContent(
                         onOpenSearch = { track -> searchDialogTrack = track }
                     )
 
-                    // Waveform UI Pill
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                    // Waveform and Volume UI
+                    BoxWithConstraints(
+                        modifier = Modifier
+                            .widthIn(max = 480.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        val totalWidth = maxWidth
+                        val gaps = 8.dp * 4
+                        val fixedWidths = 64.dp * 2
+                        val remainingWidth = totalWidth - fixedWidths - gaps
+                        val recordButtonWidth = remainingWidth * (0.7f / 3.4f)
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(
-                                    color = if (isRecording) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) 
-                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .padding(
-                                    start = 0.dp,
-                                    end = if (isRecording) 16.dp else 0.dp,
-                                    top = 8.dp,
-                                    bottom = 8.dp
-                                ),
+                                .padding(top = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Waveform
-                            ScrollingWaveform(
-                                amplitude = if (playbackState.isPlaying) amplitude else 0f,
-                                modifier = Modifier.weight(1f),
-                                barColor = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                emptyColor = if (isRecording) MaterialTheme.colorScheme.error.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                            )
-                            AnimatedVisibility(
-                                visible = isRecording,
-                                enter = androidx.compose.animation.expandHorizontally(expandFrom = Alignment.Start) + androidx.compose.animation.fadeIn(),
-                                exit = androidx.compose.animation.shrinkHorizontally(shrinkTowards = Alignment.Start) + androidx.compose.animation.fadeOut()
+                            // Waveform Pill
+                            Row(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(64.dp)
+                                    .background(
+                                        color = if (isRecording) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) 
+                                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                                    .padding(
+                                        start = 0.dp,
+                                        end = if (isRecording) 16.dp else 0.dp,
+                                        top = 8.dp,
+                                        bottom = 8.dp
+                                    ),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    // Timer text
-                                    val formattedDuration = String.format(
-                                        Locale.getDefault(),
-                                        "%02d:%02d",
-                                        recordingDuration / 60,
-                                        recordingDuration % 60
-                                    )
-                                    Text(
-                                        text = formattedDuration,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
+                                // Waveform
+                                ScrollingWaveform(
+                                    amplitude = if (playbackState.isPlaying) amplitude else 0f,
+                                    modifier = Modifier.weight(1f),
+                                    barColor = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                    emptyColor = if (isRecording) MaterialTheme.colorScheme.error.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                )
+                                AnimatedVisibility(
+                                    visible = isRecording,
+                                    enter = androidx.compose.animation.expandHorizontally(expandFrom = Alignment.Start) + androidx.compose.animation.fadeIn(),
+                                    exit = androidx.compose.animation.shrinkHorizontally(shrinkTowards = Alignment.Start) + androidx.compose.animation.fadeOut()
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        // Timer text
+                                        val formattedDuration = String.format(
+                                            Locale.getDefault(),
+                                            "%02d:%02d",
+                                            recordingDuration / 60,
+                                            recordingDuration % 60
+                                        )
+                                        Text(
+                                            text = formattedDuration,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Volume Button
+                            Box(
+                                modifier = Modifier
+                                    .width(recordButtonWidth)
+                                    .height(64.dp)
+                            ) {
+                                androidx.compose.animation.AnimatedVisibility(
+                                    visible = !showVolumeDialog,
+                                    enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(300)),
+                                    exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(300))
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .sharedBounds(
+                                                sharedContentState = rememberSharedContentState(key = "volume_container"),
+                                                animatedVisibilityScope = this@AnimatedVisibility,
+                                                enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(300)),
+                                                exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(300)),
+                                                boundsTransform = { _, _ -> androidx.compose.animation.core.tween(durationMillis = 350) },
+                                                clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(20.dp))
+                                            )
+                                            .fillMaxSize()
+                                            .background(
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                shape = RoundedCornerShape(20.dp)
+                                            )
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .clickable { showVolumeDialog = true },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                            contentDescription = "Volume",
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier
+                                                .sharedElement(
+                                                    sharedContentState = rememberSharedContentState(key = "volume_icon"),
+                                                    animatedVisibilityScope = this@AnimatedVisibility,
+                                                    boundsTransform = { _, _ -> androidx.compose.animation.core.tween(durationMillis = 350) }
+                                                )
+                                                .size(28.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -974,6 +1045,13 @@ fun PlayerSheetContent(
         TrackDialog(
             searchDialogTrack = searchDialogTrack,
             onDismissRequest = { searchDialogTrack = null }
+        )
+
+        VolumeDialog(
+            showDialog = showVolumeDialog,
+            onDismissRequest = { showVolumeDialog = false },
+            volume = volumeLevel,
+            onVolumeChange = onVolumeChange
         )
     }
 }

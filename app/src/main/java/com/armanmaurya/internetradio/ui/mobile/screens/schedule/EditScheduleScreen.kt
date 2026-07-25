@@ -127,41 +127,22 @@ fun EditScheduleScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(if (scheduleId != null) stringResource(R.string.schedule_edit) else stringResource(R.string.schedule_create)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    if (scheduleToEdit != null) {
-                        IconButton(onClick = {
-                            viewModel.deleteSchedule(scheduleToEdit)
-                            Toast.makeText(context, context.getString(R.string.schedule_deleted), Toast.LENGTH_SHORT).show()
-                            onNavigateBack()
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        ScheduleConfigurationForm(
-            modifier = Modifier.padding(paddingValues),
-            station = selectedStation,
-            initialSchedule = scheduleToEdit,
-            onStationClick = { isSheetOpen = true },
-            onSave = { entity ->
-                viewModel.saveSchedule(entity)
-                Toast.makeText(context, context.getString(R.string.schedule_saved), Toast.LENGTH_SHORT).show()
-                onNavigateBack()
-            }
-        )
-    }
+    ScheduleConfigurationForm(
+        station = selectedStation,
+        initialSchedule = scheduleToEdit,
+        onStationClick = { isSheetOpen = true },
+        onSave = { entity ->
+            viewModel.saveSchedule(entity)
+            Toast.makeText(context, context.getString(R.string.schedule_saved), Toast.LENGTH_SHORT).show()
+            onNavigateBack()
+        },
+        onNavigateBack = onNavigateBack,
+        onDelete = if (scheduleToEdit != null) { {
+            viewModel.deleteSchedule(scheduleToEdit)
+            Toast.makeText(context, context.getString(R.string.schedule_deleted), Toast.LENGTH_SHORT).show()
+            onNavigateBack()
+        } } else null
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -171,7 +152,9 @@ private fun ScheduleConfigurationForm(
     station: RadioStation?,
     initialSchedule: ScheduleEntity?,
     onStationClick: () -> Unit,
-    onSave: (ScheduleEntity) -> Unit
+    onSave: (ScheduleEntity) -> Unit,
+    onNavigateBack: () -> Unit,
+    onDelete: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val alarmManager = remember { context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager }
@@ -243,11 +226,71 @@ private fun ScheduleConfigurationForm(
         return String.format(java.util.Locale.getDefault(), "%02d:%02d %s", displayHour, minute, amPm)
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text(if (initialSchedule != null) stringResource(R.string.schedule_edit) else stringResource(R.string.schedule_create)) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (onDelete != null) {
+                        IconButton(onClick = onDelete) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                    TextButton(
+                        onClick = {
+                            if (station == null) return@TextButton
+            
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                context.startActivity(intent)
+                                Toast.makeText(context, context.getString(R.string.schedule_grant_exact_alarm_permission), Toast.LENGTH_LONG).show()
+                                return@TextButton
+                            }
+                            
+                            var duration = 0
+                            if (hasEndTime) {
+                                duration = (endHour * 60 + endMinute) - (startHour * 60 + startMinute)
+                                if (duration <= 0) duration += 24 * 60 // crosses midnight
+                            }
+                            
+                            val entity = ScheduleEntity(
+                                id = initialSchedule?.id ?: 0,
+                                stationUuid = station.stationUuid,
+                                stationName = station.name,
+                                type = scheduleType,
+                                triggerTimeInMillis = 0L,
+                                durationMinutes = duration,
+                                isRecurring = selectedDays.isNotEmpty(),
+                                daysOfWeek = selectedDays.joinToString(","),
+                                timeHour = startHour,
+                                timeMinute = startMinute,
+                                isEnabled = true,
+                                volumeLevel = volumeLevel,
+                                keepPlayback = keepPlayback,
+                                scheduleName = scheduleName.trim()
+                            )
+                            onSave(entity)
+                        },
+                        enabled = station != null
+                    ) {
+                        Text(if (initialSchedule != null) stringResource(R.string.schedule_action_save) else stringResource(R.string.schedule_action_create))
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TextField(
@@ -517,48 +560,6 @@ private fun ScheduleConfigurationForm(
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = {
-                if (station == null) return@Button
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                    context.startActivity(intent)
-                    Toast.makeText(context, context.getString(R.string.schedule_grant_exact_alarm_permission), Toast.LENGTH_LONG).show()
-                    return@Button
-                }
-                
-                var duration = 0
-                if (hasEndTime) {
-                    duration = (endHour * 60 + endMinute) - (startHour * 60 + startMinute)
-                    if (duration <= 0) duration += 24 * 60 // crosses midnight
-                }
-                
-                val entity = ScheduleEntity(
-                    id = initialSchedule?.id ?: 0,
-                    stationUuid = station.stationUuid,
-                    stationName = station.name,
-                    type = scheduleType,
-                    triggerTimeInMillis = 0L,
-                    durationMinutes = duration,
-                    isRecurring = selectedDays.isNotEmpty(),
-                    daysOfWeek = selectedDays.joinToString(","),
-                    timeHour = startHour,
-                    timeMinute = startMinute,
-                    isEnabled = true,
-                    volumeLevel = volumeLevel,
-                    keepPlayback = keepPlayback,
-                    scheduleName = scheduleName.trim()
-                )
-                onSave(entity)
-            },
-            enabled = station != null,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.schedule_save_button))
         }
     }
 }

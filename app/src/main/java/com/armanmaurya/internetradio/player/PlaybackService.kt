@@ -291,6 +291,7 @@ class PlaybackService : MediaLibraryService() {
             val stationUrl = intent.getStringExtra("STATION_URL")
             val stationName = intent.getStringExtra("STATION_NAME") ?: ""
             val stationFavicon = intent.getStringExtra("STATION_FAVICON") ?: ""
+            val volumeLevel = intent.getFloatExtra("VOLUME_LEVEL", -1f)
 
             if (stationUuid != null && !stationUrl.isNullOrBlank()) {
                 // --- SYNCHRONOUS playback setup (no coroutine, no race) ---
@@ -318,6 +319,9 @@ class PlaybackService : MediaLibraryService() {
 
                 // Set playWhenReady=true BEFORE setMediaItem so ExoPlayer auto-starts
                 // on STATE_READY. This runs synchronously before any coroutine can run.
+                if (volumeLevel >= 0f) {
+                    player?.volume = volumeLevel
+                }
                 player?.playWhenReady = true
                 player?.setMediaItem(mediaItem)
                 player?.prepare()

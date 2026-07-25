@@ -165,8 +165,8 @@ fun HomeScreen(
     }
 
     // Keep HomeViewModel's selectedTab in sync when user swipes pager
-    LaunchedEffect(pagerState.currentPage) {
-        viewModel.onTabSelected(pagerState.currentPage)
+    LaunchedEffect(pagerState.settledPage) {
+        viewModel.onTabSelected(pagerState.settledPage)
     }
 
     Scaffold(

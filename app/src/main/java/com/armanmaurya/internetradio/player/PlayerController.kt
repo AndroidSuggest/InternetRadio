@@ -89,6 +89,10 @@ class PlayerController @Inject constructor(
             }
         }
 
+        override fun onVolumeChanged(volume: Float) {
+            _playbackState.update { it.copy(volume = volume) }
+        }
+
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             if (mediaItem == null) {
                 activeStation = null
@@ -419,5 +423,6 @@ data class PlaybackState(
     val sleepTimerEndTime: Long? = null,
     val sleepTimerTotalDuration: Long = 0L,
     val hasNext: Boolean = false,
-    val hasPrevious: Boolean = false
+    val hasPrevious: Boolean = false,
+    val volume: Float = 1f
 )
