@@ -182,6 +182,24 @@ class PlayerController @Inject constructor(
         controllerFuture?.addListener({
             controller?.let { 
                 it.addListener(playerListener)
+                
+                val currentVolume = it.volume
+                val isCurrentlyPlaying = it.isPlaying
+                val isCurrentlyLoading = it.playbackState == Player.STATE_BUFFERING
+                val isCurrentlyError = it.playbackState == Player.STATE_IDLE && it.playerError != null
+                val hasNext = it.hasNextMediaItem()
+                val hasPrevious = it.hasPreviousMediaItem()
+
+                _playbackState.update { state ->
+                    state.copy(
+                        volume = currentVolume,
+                        isLoading = isCurrentlyLoading,
+                        isError = isCurrentlyError,
+                        hasNext = hasNext,
+                        hasPrevious = hasPrevious
+                    )
+                }
+
                 val currentItem = it.currentMediaItem
                 if (currentItem != null) {
                     val originalId = currentItem.mediaId.substringAfter("|")
@@ -192,7 +210,7 @@ class PlayerController @Inject constructor(
                         activeStation = station
                         _playbackState.update { state ->
                             state.copy(
-                                isPlaying = it.isPlaying,
+                                isPlaying = isCurrentlyPlaying,
                                 currentStation = station
                             )
                         }

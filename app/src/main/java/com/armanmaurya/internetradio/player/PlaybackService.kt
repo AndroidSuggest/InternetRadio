@@ -52,6 +52,9 @@ class PlaybackService : MediaLibraryService() {
     @Inject
     lateinit var libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository
 
+    @Inject
+    lateinit var recentRepository: com.armanmaurya.internetradio.data.repository.RecentRepository
+
     private var player: Player? = null
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var loadErrorHandlingPolicy: ExponentialBackoffLoadErrorHandlingPolicy
@@ -78,6 +81,22 @@ class PlaybackService : MediaLibraryService() {
     private val stationChangeListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             autoCallback.updateLibraryButton(mediaItem?.mediaId)
+            
+            val stationUuid = mediaItem?.mediaId ?: return
+            
+            val tagStation = mediaItem.localConfiguration?.tag as? RadioStation
+            if (tagStation != null) {
+                serviceScope.launch {
+                    recentRepository.addRecentStation(tagStation)
+                }
+            } else {
+                serviceScope.launch {
+                    val dbStation = libraryRepository.getStationById(stationUuid)
+                    if (dbStation != null) {
+                        recentRepository.addRecentStation(dbStation)
+                    }
+                }
+            }
         }
 
         override fun onMetadata(metadata: androidx.media3.common.Metadata) {
@@ -243,6 +262,9 @@ class PlaybackService : MediaLibraryService() {
         } catch (e: Exception) {
             // Ignored
         }
+        
+        recordingManager.stopRecording()
+        
         mediaLibrarySession?.run {
             player.removeListener(stationChangeListener)
             player.release()
