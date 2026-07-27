@@ -170,7 +170,7 @@ class PlayerViewModel @Inject constructor(
     ) { stationName, recording -> 
         stationName to recording
     }.flatMapLatest { (stationName, recording) ->
-        if (stationName == null || recording) flowOf(emptyList()) // Wait until recording finishes to refresh
+        if (stationName == null) flowOf(emptyList()) // Fetch recordings immediately
         else flowOf(recordingRepository.getRecordingsForStation(stationName))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

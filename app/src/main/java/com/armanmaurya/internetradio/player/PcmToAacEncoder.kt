@@ -17,9 +17,7 @@ class PcmToAacEncoder(
     private val filePath: String?
 ) {
     private var mediaCodec: MediaCodec? = null
-    private var mediaMuxer: MediaMuxer? = null
-    private var trackIndex = -1
-    private var muxerStarted = false
+    private var outputStream: java.io.OutputStream? = null
     private val bufferInfo = MediaCodec.BufferInfo()
     private var isRecording = false
     private var totalFramesEncoded: Long = 0
@@ -36,12 +34,12 @@ class PcmToAacEncoder(
             mediaCodec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             mediaCodec?.start()
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && fileDescriptor != null) {
-                mediaMuxer = MediaMuxer(fileDescriptor, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+            if (fileDescriptor != null) {
+                outputStream = java.io.FileOutputStream(fileDescriptor)
             } else if (filePath != null) {
-                mediaMuxer = MediaMuxer(filePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+                outputStream = java.io.FileOutputStream(filePath)
             } else {
-                throw IllegalArgumentException("Either fileDescriptor (API 26+) or filePath must be provided")
+                throw IllegalArgumentException("Either fileDescriptor or filePath must be provided")
             }
 
             isRecording = true
@@ -77,7 +75,6 @@ class PcmToAacEncoder(
 
     private fun drain(endOfStream: Boolean) {
         val codec = mediaCodec ?: return
-        val muxer = mediaMuxer ?: return
         var tryAgainCount = 0
 
         while (true) {
@@ -93,21 +90,24 @@ class PcmToAacEncoder(
                     break
                 }
             } else if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                if (muxerStarted) {
-                    throw RuntimeException("Format changed twice")
-                }
-                val newFormat = codec.outputFormat
-                trackIndex = muxer.addTrack(newFormat)
-                muxer.start()
-                muxerStarted = true
+                // Not needed for ADTS
             } else if (outputBufferIndex < 0) {
                 // Ignore other statuses
             } else {
                 val outputBuffer = codec.getOutputBuffer(outputBufferIndex)
-                if (outputBuffer != null && bufferInfo.size != 0 && muxerStarted) {
+                if (outputBuffer != null && bufferInfo.size != 0) {
                     outputBuffer.position(bufferInfo.offset)
                     outputBuffer.limit(bufferInfo.offset + bufferInfo.size)
-                    muxer.writeSampleData(trackIndex, outputBuffer, bufferInfo)
+                    
+                    val outData = ByteArray(bufferInfo.size + 7)
+                    addADTStoPacket(outData, outData.size)
+                    outputBuffer.get(outData, 7, bufferInfo.size)
+                    
+                    try {
+                        outputStream?.write(outData)
+                    } catch (e: Exception) {
+                        Log.e("PcmToAacEncoder", "Error writing to file", e)
+                    }
                 }
 
                 codec.releaseOutputBuffer(outputBufferIndex, false)
@@ -118,6 +118,35 @@ class PcmToAacEncoder(
                 }
             }
         }
+    }
+
+    private fun addADTStoPacket(packet: ByteArray, packetLen: Int) {
+        val profile = 2 // AAC LC
+        val freqIdx = when (sampleRate) {
+            96000 -> 0
+            88200 -> 1
+            64000 -> 2
+            48000 -> 3
+            44100 -> 4
+            32000 -> 5
+            24000 -> 6
+            22050 -> 7
+            16000 -> 8
+            12000 -> 9
+            11025 -> 10
+            8000 -> 11
+            7350 -> 12
+            else -> 4 // default to 44100
+        }
+        val chanCfg = channelCount
+
+        packet[0] = 0xFF.toByte()
+        packet[1] = 0xF9.toByte()
+        packet[2] = (((profile - 1) shl 6) + (freqIdx shl 2) + (chanCfg shr 2)).toByte()
+        packet[3] = (((chanCfg and 3) shl 6) + (packetLen shr 11)).toByte()
+        packet[4] = ((packetLen and 0x7FF) shr 3).toByte()
+        packet[5] = (((packetLen and 7) shl 5) + 0x1F).toByte()
+        packet[6] = 0xFC.toByte()
     }
 
     @Synchronized
@@ -155,19 +184,12 @@ class PcmToAacEncoder(
         }
         mediaCodec = null
 
-        if (muxerStarted) {
-            try {
-                mediaMuxer?.stop()
-            } catch (e: Exception) {
-                Log.e("PcmToAacEncoder", "Error stopping MediaMuxer", e)
-            }
-        }
         try {
-            mediaMuxer?.release()
+            outputStream?.flush()
+            outputStream?.close()
         } catch (e: Exception) {
-            Log.e("PcmToAacEncoder", "Error releasing MediaMuxer", e)
+            Log.e("PcmToAacEncoder", "Error closing output stream", e)
         }
-        mediaMuxer = null
-        muxerStarted = false
+        outputStream = null
     }
 }

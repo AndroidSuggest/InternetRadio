@@ -83,7 +83,7 @@ class RecordingManager @Inject constructor(
         
         currentStation = station
         val timestamp = SimpleDateFormat("d MMMM yyyy hh-mm a", Locale.getDefault()).format(Date())
-        val extension = "m4a"
+        val extension = "aac"
         val safeStationName = station.name.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
         val fileName = "$safeStationName $timestamp.$extension"
         val folderName = "InternetRadio/$safeStationName"
@@ -98,7 +98,7 @@ class RecordingManager @Inject constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val contentValues = ContentValues().apply {
                     put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
-                    put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp4")
+                    put(MediaStore.Audio.Media.MIME_TYPE, "audio/aac")
                     put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MUSIC}/$folderName")
                 }
                 val uri = context.contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)

@@ -8,6 +8,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeDown
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -90,8 +92,14 @@ fun SharedTransitionScope.VolumeDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                val volumeIcon = when {
+                    volume == 0f -> Icons.AutoMirrored.Filled.VolumeOff
+                    volume < 0.5f -> Icons.AutoMirrored.Filled.VolumeDown
+                    else -> Icons.AutoMirrored.Filled.VolumeUp
+                }
+
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                    imageVector = volumeIcon,
                     contentDescription = "Volume",
                     tint = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier
