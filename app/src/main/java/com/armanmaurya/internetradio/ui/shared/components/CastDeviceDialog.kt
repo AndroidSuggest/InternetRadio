@@ -16,12 +16,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cast
 import androidx.compose.material.icons.filled.CastConnected
-import androidx.compose.material.icons.automirrored.filled.VolumeMute
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,8 +37,7 @@ import org.fcast.sender_sdk.DeviceInfo
 fun CastDeviceDialog(
     devices: List<DeviceInfo>,
     connectedDevice: CastingDevice?,
-    volume: Float = 1f,
-    onVolumeChange: (Float) -> Unit = {},
+
     onConnect: (DeviceInfo) -> Unit,
     onDisconnect: () -> Unit,
     onDismiss: () -> Unit
@@ -87,23 +83,7 @@ fun CastDeviceDialog(
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.VolumeMute, contentDescription = null)
-                            Slider(
-                                value = volume,
-                                onValueChange = onVolumeChange,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(horizontal = 8.dp)
-                            )
-                            Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
-                        }
+
                     }
                 } else {
                     // Scanning / device list view

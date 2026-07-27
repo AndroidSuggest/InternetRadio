@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
@@ -60,6 +61,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.data.local.entity.TrackHistoryEntity
@@ -129,8 +131,6 @@ fun PlayerSheetContent(
         com.armanmaurya.internetradio.ui.shared.components.CastDeviceDialog(
             devices = discoveredCastDevices,
             connectedDevice = connectedCastDevice,
-            volume = volume,
-            onVolumeChange = onVolumeChange,
             onConnect = {
                 onConnectCastDevice(it)
                 showCastDialog = false
@@ -304,7 +304,7 @@ fun PlayerSheetContent(
         val currentY = lerp(miniY, actualExpandedY, progress)
 
         // --- The Moving Thumbnail ---
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = station.favicon.ifBlank { null },
             contentDescription = null,
             contentScale = ContentScale.Crop,
@@ -316,10 +316,39 @@ fun PlayerSheetContent(
                     )
                 }
                 .size(currentSize)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF1E1E1E)),
-            error = painterResource(id = R.drawable.ic_launcher_foreground),
-            fallback = painterResource(id = R.drawable.ic_launcher_foreground)
+                .clip(RoundedCornerShape(12.dp)),
+            error = {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                    )
+                }
+            },
+            loading = {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                    )
+                }
+            }
         )
 
         // --- Mini Content (Fades out as we expand) ---
