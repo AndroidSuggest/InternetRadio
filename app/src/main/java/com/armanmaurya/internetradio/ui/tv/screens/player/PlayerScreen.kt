@@ -23,6 +23,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.blur
 import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.res.painterResource
 import com.armanmaurya.internetradio.R
 import androidx.compose.ui.graphics.Brush
@@ -112,8 +113,12 @@ fun PlayerScreen(
                 val fallbackPainter = painterResource(id = R.drawable.ic_launcher_foreground)
 
                 AsyncImage(
-                    model = station.favicon.ifEmpty { null },
+                    model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                        .data(station.favicon.ifEmpty { null })
+                        .size(coil3.size.Size.ORIGINAL)
+                        .build(),
                     contentDescription = null,
+                    filterQuality = FilterQuality.High,
                     placeholder = fallbackPainter,
                     error = fallbackPainter,
                     fallback = fallbackPainter,
@@ -145,8 +150,12 @@ fun PlayerScreen(
                 ) {
                     Box(modifier = Modifier.size(192.dp)) {
                         AsyncImage(
-                            model = station.favicon.ifEmpty { null },
+                            model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                .data(station.favicon.ifEmpty { null })
+                                .size(coil3.size.Size.ORIGINAL)
+                                .build(),
                             contentDescription = "Station Thumbnail",
+                            filterQuality = FilterQuality.High,
                             placeholder = fallbackPainter,
                             error = fallbackPainter,
                             fallback = fallbackPainter,

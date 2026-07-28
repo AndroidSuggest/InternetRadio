@@ -33,6 +33,7 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import coil3.compose.AsyncImage
@@ -317,9 +318,13 @@ private fun ScheduleConfigurationForm(
             if (station != null) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     AsyncImage(
-                        model = station.favicon.ifBlank { null },
+                        model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data(station.favicon.ifBlank { null })
+                            .size(coil3.size.Size.ORIGINAL)
+                            .build(),
                         contentDescription = "Station Logo",
                         contentScale = ContentScale.Crop,
+                        filterQuality = FilterQuality.High,
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color(0xFF1E1E1E)),

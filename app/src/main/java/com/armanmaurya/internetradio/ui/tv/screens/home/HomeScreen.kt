@@ -30,6 +30,7 @@ import androidx.tv.material3.IconButtonDefaults
 import coil3.compose.AsyncImage
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.basicMarquee
@@ -183,8 +184,12 @@ fun HomeScreen(
                                     val fallbackPainter = painterResource(id = R.drawable.ic_launcher_foreground)
                                     Box {
                                         AsyncImage(
-                                            model = playbackState.currentStation!!.favicon.ifEmpty { null },
+                                            model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                                .data(playbackState.currentStation!!.favicon.ifEmpty { null })
+                                                .size(coil3.size.Size.ORIGINAL)
+                                                .build(),
                                             contentDescription = "Station Thumbnail",
+                                            filterQuality = FilterQuality.High,
                                             placeholder = fallbackPainter,
                                             error = fallbackPainter,
                                             fallback = fallbackPainter,

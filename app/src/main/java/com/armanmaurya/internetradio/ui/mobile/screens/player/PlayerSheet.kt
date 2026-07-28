@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.graphics.FilterQuality
 import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.armanmaurya.internetradio.R
@@ -305,9 +306,13 @@ fun PlayerSheetContent(
 
         // --- The Moving Thumbnail ---
         SubcomposeAsyncImage(
-            model = station.favicon.ifBlank { null },
+            model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                .data(station.favicon.ifBlank { null })
+                .size(coil3.size.Size.ORIGINAL)
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
+            filterQuality = FilterQuality.High,
             modifier = Modifier
                 .offset {
                     IntOffset(

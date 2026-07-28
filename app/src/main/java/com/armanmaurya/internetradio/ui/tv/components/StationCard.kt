@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,9 +50,13 @@ fun StationCard(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
-                model = station.favicon.ifBlank { null },
+                model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                    .data(station.favicon.ifBlank { null })
+                    .size(coil3.size.Size.ORIGINAL)
+                    .build(),
                 contentDescription = "${station.name} logo",
                 contentScale = ContentScale.Crop,
+                filterQuality = FilterQuality.High,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color(0xFF1E1E1E)),

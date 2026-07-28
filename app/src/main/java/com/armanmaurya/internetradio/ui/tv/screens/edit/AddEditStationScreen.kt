@@ -15,6 +15,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,8 +58,12 @@ fun AddEditStationScreen(
         // Blurred background from favicon
         if (favicon.isNotBlank()) {
             AsyncImage(
-                model = favicon,
+                model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                    .data(favicon)
+                    .size(coil3.size.Size.ORIGINAL)
+                    .build(),
                 contentDescription = null,
+                filterQuality = FilterQuality.High,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -122,8 +127,12 @@ fun AddEditStationScreen(
                     val fallbackPainter = painterResource(id = R.drawable.ic_launcher_foreground)
                     if (favicon.isNotBlank()) {
                         AsyncImage(
-                            model = favicon,
+                            model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                .data(favicon)
+                                .size(coil3.size.Size.ORIGINAL)
+                                .build(),
                             contentDescription = "Preview",
+                            filterQuality = FilterQuality.High,
                             placeholder = fallbackPainter,
                             error = fallbackPainter,
                             fallback = fallbackPainter,
