@@ -1,10 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ========================================== -->
     <!-- 1. APP DEFINITION                          -->
     <!-- ========================================== -->
     <string name="app_name">Internet Radio</string>
     <string name="version_format">Version %1$s</string>
-
     <!-- ========================================== -->
     <!-- 2. GENERAL ACTIONS                         -->
     <!-- ========================================== -->
@@ -22,7 +22,6 @@
     <string name="cd_close_search">Aramayı kapat</string>
     <string name="cd_search">Ara</string>
     <string name="cd_clear_search">Aramayı temizle</string>
-
     <!-- ========================================== -->
     <!-- 3. GENERAL LABELS                          -->
     <!-- ========================================== -->
@@ -32,7 +31,6 @@
     <string name="general_unknown">Bilinmeyen</string>
     <string name="general_station_count_msg">%1$d istasyon</string>
     <string name="general_no_recordings">Henüz kayıt yok</string>
-
     <!-- ========================================== -->
     <!-- 4. ERRORS                                  -->
     <!-- ========================================== -->
@@ -42,7 +40,6 @@
     <string name="error_invalid_url">Geçersiz URL</string>
     <string name="error_cannot_open_website">Web sitesi açılamıyor</string>
     <string name="error_cannot_open_url">URL açılamıyor</string>
-
     <!-- ========================================== -->
     <!-- 5. SETTINGS                                -->
     <!-- ========================================== -->
@@ -68,7 +65,6 @@
     <string name="settings_checking_for_updates">Güncellemeler kontrol ediliyor...</string>
     <string name="settings_no_update_available">Güncelleme yok</string>
     <string name="settings_theme_system">Sistem Varsayılanı</string>
-
     <!-- ========================================== -->
     <!-- 6b. BACKUP & RESTORE                       -->
     <!-- ========================================== -->
@@ -84,7 +80,6 @@
     <string name="settings_export_subtitle">İstasyonlarını bir dosyaya kaydet</string>
     <string name="settings_import_title">Kütüphaneyi İçe Aktar</string>
     <string name="settings_import_subtitle">Yedek dosyasından istasyonları geri yükle</string>
-
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
     <!-- ========================================== -->
@@ -101,7 +96,6 @@
     <string name="about_cd_linkedin">LinkedIn</string>
     <string name="about_cd_github">GitHub</string>
     <string name="about_cd_instagram">Instagram</string>
-
     <!-- ========================================== -->
     <!-- 7. HOME                                    -->
     <!-- ========================================== -->
@@ -135,21 +129,18 @@
     <string name="home_no_stations_found_for">\"%1$s\" için istasyon bulunamadı</string>
     <string name="home_no_library_stations_filter">Filtre ile kütüphane istasyonu bulunamadı</string>
     <string name="home_no_library_stations_yet">Henüz kütüphane istasyonu yok</string>
-
     <!-- ========================================== -->
     <!-- 8. SELECT COUNTRY                          -->
     <!-- ========================================== -->
     <string name="select_country_search">Ülke ara...</string>
     <string name="select_country_title">Ülke Seç</string>
     <string name="select_country_all">Tüm Ülkeler</string>
-
     <!-- ========================================== -->
     <!-- 9. SELECT LANGUAGE                         -->
     <!-- ========================================== -->
     <string name="select_language_search">Dil ara...</string>
     <string name="select_language_title">Dil Seç</string>
     <string name="select_language_all">Tüm Diller</string>
-
     <!-- ========================================== -->
     <!-- 10. SELECT TAGS                            -->
     <!-- ========================================== -->
@@ -160,7 +151,6 @@
     <string name="select_tags_cd_remove_tag">Etiketi kaldır</string>
     <string name="select_tags_discard_changes">Değişiklikler iptal edilsin mi?</string>
     <string name="select_tags_discard_changes_message">Kaydedilmemiş etiket seçimleriniz var. Geri dönüp bunları iptal etmek istediğinizden emin misiniz?</string>
-
     <!-- ========================================== -->
     <!-- 11. EDIT STATION                           -->
     <!-- ========================================== -->
@@ -181,7 +171,6 @@
     <string name="edit_station_fields_reset_message">Alanlar orijinal verilerine sıfırlandı</string>
     <string name="edit_station_saved_message">Kaydedildi</string>
     <string name="edit_station_cd_reset_to_original">Orijinale Sıfırla</string>
-
     <!-- ========================================== -->
     <!-- 12. PLAYER                                 -->
     <!-- ========================================== -->
