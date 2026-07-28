@@ -1,10 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ========================================== -->
     <!-- 1. APP DEFINITION                          -->
     <!-- ========================================== -->
     <string name="app_name">Internet Radio</string>
     <string name="version_format">Verzió %1$s</string>
-
     <!-- ========================================== -->
     <!-- 2. GENERAL ACTIONS                         -->
     <!-- ========================================== -->
@@ -22,7 +22,6 @@
     <string name="cd_close_search">Keresés bezárása</string>
     <string name="cd_search">Keresés</string>
     <string name="cd_clear_search">Keresés törlése</string>
-
     <!-- ========================================== -->
     <!-- 3. GENERAL LABELS                          -->
     <!-- ========================================== -->
@@ -32,7 +31,6 @@
     <string name="general_unknown">Ismeretlen</string>
     <string name="general_station_count_msg">%1$d állomás</string>
     <string name="general_no_recordings">Nincsenek felvételek</string>
-
     <!-- ========================================== -->
     <!-- 4. ERRORS                                  -->
     <!-- ========================================== -->
@@ -42,7 +40,6 @@
     <string name="error_invalid_url">Érvénytelen URL</string>
     <string name="error_cannot_open_website">Nem lehet megnyitni a weboldalt</string>
     <string name="error_cannot_open_url">Nem lehet megnyitni az URL-t</string>
-
     <!-- ========================================== -->
     <!-- 5. SETTINGS                                -->
     <!-- ========================================== -->
@@ -77,7 +74,6 @@
     <string name="settings_checking_for_updates">Frissítések keresése...</string>
     <string name="settings_no_update_available">Nincs elérhető frissítés</string>
     <string name="settings_theme_system">Rendszer alapértelmezett</string>
-
     <!-- ========================================== -->
     <!-- 6b. BACKUP & RESTORE                       -->
     <!-- ========================================== -->
@@ -93,7 +89,6 @@
     <string name="settings_export_subtitle">Állomások mentése fájlba</string>
     <string name="settings_import_title">Könyvtár importálása</string>
     <string name="settings_import_subtitle">Állomások visszaállítása biztonsági mentésből</string>
-
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
     <!-- ========================================== -->
@@ -110,7 +105,6 @@
     <string name="about_cd_linkedin">LinkedIn</string>
     <string name="about_cd_github">GitHub</string>
     <string name="about_cd_instagram">Instagram</string>
-
     <!-- ========================================== -->
     <!-- 7. HOME                                    -->
     <!-- ========================================== -->
@@ -144,21 +138,18 @@
     <string name="home_no_stations_found_for">Nem találhatók állomások erre \"%1$s\"</string>
     <string name="home_no_library_stations_filter">Nincs a szűrőnek megfelelő könyvtári állomás</string>
     <string name="home_no_library_stations_yet">Még nincsenek a könyvtárban állomások</string>
-
     <!-- ========================================== -->
     <!-- 8. SELECT COUNTRY                          -->
     <!-- ========================================== -->
     <string name="select_country_search">Ország keresése</string>
     <string name="select_country_title">Ország kiválasztása</string>
     <string name="select_country_all">Összes ország</string>
-
     <!-- ========================================== -->
     <!-- 9. SELECT LANGUAGE                         -->
     <!-- ========================================== -->
     <string name="select_language_search">Nyelv keresése</string>
     <string name="select_language_title">Nyelv kiválasztása</string>
     <string name="select_language_all">Összes nyelv</string>
-
     <!-- ========================================== -->
     <!-- 10. SELECT TAGS                            -->
     <!-- ========================================== -->
@@ -169,7 +160,6 @@
     <string name="select_tags_cd_remove_tag">Címke törlése</string>
     <string name="select_tags_discard_changes">Változtatások elvetése?</string>
     <string name="select_tags_discard_changes_message">Nem mentett címkekiválasztásaid vannak. Biztosan visszalépsz és elveted őket?</string>
-
     <!-- ========================================== -->
     <!-- 11. EDIT STATION                           -->
     <!-- ========================================== -->
@@ -190,7 +180,6 @@
     <string name="edit_station_fields_reset_message">Mezők visszaállítva az eredeti adatokra</string>
     <string name="edit_station_saved_message">Mentve</string>
     <string name="edit_station_cd_reset_to_original">Eredeti állapot visszaállítása</string>
-
     <!-- ========================================== -->
     <!-- 12. PLAYER                                 -->
     <!-- ========================================== -->
@@ -229,7 +218,6 @@
     <string name="player_tab_tracks">Számok</string>
     <string name="player_retrying_in">Újrapróbálkozás %1$ds mp múlva</string>
     <string name="player_retrying_connection">Kapcsolódás újra...</string>
-    
     <!-- ========================================== -->
     <!-- 13. CAST DIALOG                            -->
     <!-- ========================================== -->
