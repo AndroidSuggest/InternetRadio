@@ -86,6 +86,11 @@ import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recent.RecentCo
 import com.armanmaurya.internetradio.ui.shared.viewmodels.RecentViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import com.armanmaurya.internetradio.data.model.RadioStation
 
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material.icons.rounded.Explore
@@ -140,6 +145,23 @@ fun HomeScreen(
         beyondBounds = 1
     }
     
+    val context = LocalContext.current
+    var stationToExport by remember { mutableStateOf<RadioStation?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null && stationToExport != null) {
+            val result = com.armanmaurya.internetradio.utils.ExportUtils.exportStation(context, uri, stationToExport!!)
+            val message = if (result.isSuccess) "Exported '${stationToExport!!.name}' successfully" else "Export failed: ${result.exceptionOrNull()?.localizedMessage}"
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            stationToExport = null
+        }
+    }
+    val onExportStation: (RadioStation) -> Unit = { station ->
+        stationToExport = station
+        exportLauncher.launch("${station.name}.json")
+    }
+
     val coroutineScope = rememberCoroutineScope()
 
     val density = LocalDensity.current
@@ -240,6 +262,7 @@ fun HomeScreen(
                     when (page) {
                         0 -> BrowseContent(
                             onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                            onExportStation = onExportStation,
                             contentPadding = contentPadding,
                             viewModel = browseViewModel,
                             playingStationUuid = playingStationUuid,
@@ -247,6 +270,7 @@ fun HomeScreen(
                         )
                         1 -> RecentContent(
                             onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                            onExportStation = onExportStation,
                             contentPadding = contentPadding,
                             playingStationUuid = playingStationUuid,
                             isPlaybackActive = isPlaybackActive,
@@ -255,6 +279,7 @@ fun HomeScreen(
                         2 -> LibraryContent(
                             onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
                             onEditStation = { stationUuid -> onEditStation(stationUuid) },
+                            onExportStation = onExportStation,
                             contentPadding = contentPadding,
                             playingStationUuid = playingStationUuid,
                             isPlaybackActive = isPlaybackActive,

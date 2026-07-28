@@ -41,6 +41,7 @@ import com.armanmaurya.internetradio.ui.shared.viewmodels.RecentViewModel
 @Composable
 fun RecentContent(
     onStationClick: (List<RadioStation>, Int, PlaybackSource) -> Unit,
+    onExportStation: ((RadioStation) -> Unit)? = null,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: RecentViewModel = hiltViewModel(),
@@ -189,7 +190,8 @@ fun RecentContent(
                         isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                         isPlaybackActive = isPlaybackActive,
                         isFavorite = libraryStationUuids.contains(station.stationUuid),
-                        onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) }
+                        onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
+                        onExportClick = { onExportStation?.invoke(station) }
                     )
                 } else {
                     StationListCard(
@@ -201,7 +203,8 @@ fun RecentContent(
                         isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                         isPlaybackActive = isPlaybackActive,
                         isFavorite = libraryStationUuids.contains(station.stationUuid),
-                        onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) }
+                        onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
+                        onExportClick = { onExportStation?.invoke(station) }
                     )
                 }
             }

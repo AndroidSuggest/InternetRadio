@@ -101,9 +101,11 @@ fun SettingsScreen(
         uri?.let { viewModel.exportLibrary(context, it) }
     }
     val importLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let { viewModel.importLibrary(context, it) }
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            viewModel.importLibraries(context, uris)
+        }
     }
 
     Scaffold(

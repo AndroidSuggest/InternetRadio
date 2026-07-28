@@ -91,9 +91,9 @@
     <string name="settings_conflict_overwrite_desc">Always use the backup version</string>
     <string name="settings_conflict_keep_newer">Keep newer</string>
     <string name="settings_conflict_keep_newer_desc">Keep whichever was added more recently</string>
-    <string name="settings_export_title">Export Library</string>
+    <string name="settings_export_title">Export Stations</string>
     <string name="settings_export_subtitle">Save your stations to a file</string>
-    <string name="settings_import_title">Import Library</string>
+    <string name="settings_import_title">Import Stations</string>
     <string name="settings_import_subtitle">Restore stations from a backup file</string>
 
     <!-- ========================================== -->
@@ -142,6 +142,7 @@
     <string name="home_cd_station_logo">%1$s logo</string>
     <string name="home_cd_favorite">Favorite</string>
     <string name="home_cd_more_options">More Options</string>
+    <string name="home_export_station">Export Station</string>
     <string name="home_no_recent_stations_filtered">No recently played stations matching your filters.</string>
     <string name="home_no_recent_stations">No recently played stations</string>
     <string name="home_no_stations_found_for">No stations found for \"%1$s\"</string>

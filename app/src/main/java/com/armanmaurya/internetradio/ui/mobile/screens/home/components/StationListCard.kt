@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -48,6 +49,7 @@ fun StationListCard(
     onDeleteClick: (() -> Unit)? = null,
     onEditClick: (() -> Unit)? = null,
     onRemoveFromRecentClick: (() -> Unit)? = null,
+    onExportClick: (() -> Unit)? = null,
     isCurrentlyPlaying: Boolean = false,
     isPlaybackActive: Boolean = false,
     isFavorite: Boolean = false,
@@ -152,7 +154,7 @@ fun StationListCard(
                 )
             }
 
-            if (onDeleteClick != null || onEditClick != null || onRemoveFromRecentClick != null) {
+            if (onDeleteClick != null || onEditClick != null || onRemoveFromRecentClick != null || onExportClick != null) {
                 var showMenu by remember { mutableStateOf(false) }
                 Box {
                     IconButton(onClick = { showMenu = true }) {
@@ -166,6 +168,18 @@ fun StationListCard(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        if (onExportClick != null) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.home_export_station)) },
+                                onClick = {
+                                    showMenu = false
+                                    onExportClick()
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.FileUpload, contentDescription = null)
+                                }
+                            )
+                        }
                         if (onEditClick != null) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.edit_station_title)) },

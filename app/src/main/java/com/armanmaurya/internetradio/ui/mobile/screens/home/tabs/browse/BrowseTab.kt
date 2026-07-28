@@ -76,6 +76,7 @@ import com.armanmaurya.internetradio.ui.shared.viewmodels.BrowseViewModel
 @Composable
 fun BrowseContent(
     onStationClick: (List<RadioStation>, Int, PlaybackSource) -> Unit,
+    onExportStation: ((RadioStation) -> Unit)? = null,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: BrowseViewModel = hiltViewModel(),
@@ -197,6 +198,7 @@ fun BrowseContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .animateItem(),
+                            onExportClick = { onExportStation?.invoke(station) },
                             isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                             isPlaybackActive = isPlaybackActive,
                             isFavorite = libraryStationUuids.contains(station.stationUuid)
@@ -208,6 +210,7 @@ fun BrowseContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .animateItem(),
+                            onExportClick = { onExportStation?.invoke(station) },
                             isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                             isPlaybackActive = isPlaybackActive,
                             isFavorite = libraryStationUuids.contains(station.stationUuid)

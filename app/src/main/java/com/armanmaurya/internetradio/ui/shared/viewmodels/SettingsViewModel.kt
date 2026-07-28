@@ -159,98 +159,86 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun importLibrary(context: Context, uri: Uri) {
+    fun importLibraries(context: Context, uris: List<Uri>) {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                Log.d(TAG, "Starting import from $uri")
+            var totalImported = 0
+            var totalUpdated = 0
+            var totalSkipped = 0
+            var failedFiles = 0
 
-                val json = context.contentResolver.openInputStream(uri)
-                    ?.bufferedReader()?.readText()
-                    ?: run {
-                        Log.e(TAG, "Import failed: could not open input stream for uri=$uri")
-                        _backupResult.send("Import failed: could not read file")
-                        return@launch
+            val strategy = uiState.value.conflictStrategy
+            Log.d(TAG, "Using conflict strategy: $strategy")
+
+            for (uri in uris) {
+                try {
+                    Log.d(TAG, "Starting import from $uri")
+
+                    val json = context.contentResolver.openInputStream(uri)
+                        ?.bufferedReader()?.readText()
+                        ?: run {
+                            Log.e(TAG, "Import failed: could not open input stream for uri=$uri")
+                            failedFiles++
+                            continue
+                        }
+
+                    val backup: LibraryBackup? = try {
+                        Gson().fromJson(json, LibraryBackup::class.java)
+                    } catch (e: JsonSyntaxException) {
+                        Log.e(TAG, "Import failed: invalid JSON format", e)
+                        failedFiles++
+                        continue
                     }
 
-                Log.d(TAG, "Read ${json.length} chars from file")
+                    if (backup == null || backup.stations == null) {
+                        Log.e(TAG, "Import failed: File empty or stations missing")
+                        failedFiles++
+                        continue
+                    }
 
-                val backup: LibraryBackup? = try {
-                    Gson().fromJson(json, LibraryBackup::class.java)
-                } catch (e: JsonSyntaxException) {
-                    Log.e(TAG, "Import failed: invalid JSON format", e)
-                    _backupResult.send("Import failed: invalid file format (not valid JSON)")
-                    return@launch
-                }
-
-                if (backup == null) {
-                    Log.e(TAG, "Import failed: Gson returned null — JSON was null or empty")
-                    _backupResult.send("Import failed: file is empty or unreadable")
-                    return@launch
-                }
-
-                if (backup.stations == null) {
-                    Log.e(TAG, "Import failed: 'stations' field is missing from JSON. Schema version: ${backup.schemaVersion}")
-                    _backupResult.send("Import failed: backup file has no stations field")
-                    return@launch
-                }
-
-                Log.d(TAG, "Parsed backup: schemaVersion=${backup.schemaVersion}, stations=${backup.stations.size}")
-
-                val strategy = uiState.value.conflictStrategy
-                Log.d(TAG, "Using conflict strategy: $strategy")
-
-                var imported = 0
-                var updated = 0
-                var skipped = 0
-
-                backup.stations.forEach { entity ->
-                    try {
-                        val existing = libraryRepository.getEntityById(entity.stationUuid)
-                        when {
-                            existing == null -> {
-                                libraryRepository.insertEntity(entity)
-                                imported++
-                                Log.d(TAG, "Inserted: ${entity.name}")
-                            }
-                            strategy == ConflictStrategy.OVERWRITE -> {
-                                libraryRepository.insertEntity(entity)
-                                updated++
-                                Log.d(TAG, "Overwritten: ${entity.name}")
-                            }
-                            strategy == ConflictStrategy.KEEP_NEWER -> {
-                                if (entity.addedAt > existing.addedAt) {
+                    backup.stations.forEach { entity ->
+                        try {
+                            val existing = libraryRepository.getEntityById(entity.stationUuid)
+                            when {
+                                existing == null -> {
                                     libraryRepository.insertEntity(entity)
-                                    updated++
-                                    Log.d(TAG, "Kept newer (backup): ${entity.name}")
-                                } else {
-                                    skipped++
-                                    Log.d(TAG, "Kept newer (local): ${entity.name}")
+                                    totalImported++
+                                }
+                                strategy == ConflictStrategy.OVERWRITE -> {
+                                    libraryRepository.insertEntity(entity)
+                                    totalUpdated++
+                                }
+                                strategy == ConflictStrategy.KEEP_NEWER -> {
+                                    if (entity.addedAt > existing.addedAt) {
+                                        libraryRepository.insertEntity(entity)
+                                        totalUpdated++
+                                    } else {
+                                        totalSkipped++
+                                    }
+                                }
+                                else -> {
+                                    totalSkipped++
                                 }
                             }
-                            else -> {
-                                skipped++
-                                Log.d(TAG, "Skipped existing: ${entity.name}")
-                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to process station '${entity.name}' (${entity.stationUuid})", e)
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to process station '${entity.name}' (${entity.stationUuid})", e)
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Import failed with unexpected exception for uri=$uri", e)
+                    failedFiles++
                 }
-
-                val parts = buildList {
-                    if (imported > 0) add("Imported $imported")
-                    if (updated > 0) add("Updated $updated")
-                    if (skipped > 0) add("Skipped $skipped already existing")
-                    if (isEmpty()) add("No changes — all stations already exist")
-                }
-                val resultMessage = parts.joinToString(", ")
-                Log.d(TAG, "Import complete: $resultMessage")
-                _backupResult.send(resultMessage)
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Import failed with unexpected exception", e)
-                _backupResult.send("Import failed: ${e.localizedMessage}")
             }
+
+            val parts = buildList {
+                if (totalImported > 0) add("Imported $totalImported")
+                if (totalUpdated > 0) add("Updated $totalUpdated")
+                if (totalSkipped > 0) add("Skipped $totalSkipped already existing")
+                if (failedFiles > 0) add("Failed to read $failedFiles file(s)")
+                if (isEmpty()) add("No changes — all stations already exist")
+            }
+            val resultMessage = parts.joinToString(", ")
+            Log.d(TAG, "Import complete: $resultMessage")
+            _backupResult.send(resultMessage)
         }
     }
 }

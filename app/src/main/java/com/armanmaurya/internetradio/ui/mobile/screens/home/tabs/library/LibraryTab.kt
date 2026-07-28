@@ -66,6 +66,7 @@ import androidx.compose.material.icons.filled.DragIndicator
 fun LibraryContent(
     onStationClick: (List<RadioStation>, Int, PlaybackSource) -> Unit,
     onEditStation: (String?) -> Unit,
+    onExportStation: ((RadioStation) -> Unit)? = null,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: LibraryViewModel = hiltViewModel(),
@@ -359,6 +360,7 @@ fun LibraryContent(
                                 onClick = { onStationClick(currentStations, index, PlaybackSource.Library) },
                                 onDeleteClick = { viewModel.removeStation(station.stationUuid) },
                                 onEditClick = { onEditStation(station.stationUuid) },
+                                onExportClick = { onExportStation?.invoke(station) },
                                 modifier = Modifier.fillMaxWidth().then(dragModifier),
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                                 isPlaybackActive = isPlaybackActive
@@ -369,6 +371,7 @@ fun LibraryContent(
                                 onClick = { onStationClick(currentStations, index, PlaybackSource.Library) },
                                 onDeleteClick = { viewModel.removeStation(station.stationUuid) },
                                 onEditClick = { onEditStation(station.stationUuid) },
+                                onExportClick = { onExportStation?.invoke(station) },
                                 modifier = Modifier.fillMaxWidth().then(dragModifier),
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                                 isPlaybackActive = isPlaybackActive

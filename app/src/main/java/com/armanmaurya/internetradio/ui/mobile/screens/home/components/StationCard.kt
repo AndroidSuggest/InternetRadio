@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -56,6 +57,7 @@ fun StationCard(
     onDeleteClick: (() -> Unit)? = null,
     onEditClick: (() -> Unit)? = null,
     onRemoveFromRecentClick: (() -> Unit)? = null,
+    onExportClick: (() -> Unit)? = null,
     isCurrentlyPlaying: Boolean = false,
     isPlaybackActive: Boolean = false,
     isFavorite: Boolean = false,
@@ -119,22 +121,20 @@ fun StationCard(
             )
 
             // Top-Right Corner Gradient for Icon Visibility
-            if (onDeleteClick != null || onEditClick != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .drawWithCache {
-                            val radialGradient = Brush.radialGradient(
-                                colors = listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent),
-                                center = Offset(size.width, 0f),
-                                radius = size.width * 0.4f
-                            )
-                            onDrawBehind {
-                                drawRect(radialGradient)
-                            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .drawWithCache {
+                        val radialGradient = Brush.radialGradient(
+                            colors = listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent),
+                            center = Offset(size.width, 0f),
+                            radius = size.width * 0.4f
+                        )
+                        onDrawBehind {
+                            drawRect(radialGradient)
                         }
-                )
-            }
+                    }
+            )
 
             if (isCurrentlyPlaying) {
                 Box(
@@ -158,7 +158,7 @@ fun StationCard(
                 )
             }
 
-            if (onDeleteClick != null || onEditClick != null || onRemoveFromRecentClick != null) {
+            if (onDeleteClick != null || onEditClick != null || onRemoveFromRecentClick != null || onExportClick != null) {
                 Box(modifier = Modifier.align(Alignment.TopEnd)) {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(
@@ -171,6 +171,18 @@ fun StationCard(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        if (onExportClick != null) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.home_export_station)) },
+                                onClick = {
+                                    showMenu = false
+                                    onExportClick()
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.FileUpload, contentDescription = null)
+                                }
+                            )
+                        }
                         if (onEditClick != null) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.edit_station_title)) },
