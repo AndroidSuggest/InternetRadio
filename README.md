@@ -12,6 +12,14 @@ InternetRadio is an Android app for discovering and listening to radio stations 
 
 ---
 
+## Community
+
+Join the Telegram community for discussions, feedback, and announcements, sharing stations:
+
+[![Telegram](https://img.shields.io/badge/Telegram-Join%20Community-2CA5E0?logo=telegram&logoColor=white)](https://t.me/internetradiocommunity)
+
+---
+
 ## Features
 
 - **Global Radio Access**: Browse and stream thousands of radio stations globally.
