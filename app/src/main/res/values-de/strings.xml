@@ -40,7 +40,7 @@
     <string name="settings_general_section">Allgemein</string>
     <string name="settings_language_title">Sprache</string>
     <string name="settings_auto_route_search_title">Umschalten beim Suchen</string>
-    <string name="settings_auto_route_search_subtitle">Beim Suchen automatisch zum Tab „Durchsuchen“ wechseln</string>
+    <string name="settings_auto_route_search_subtitle">Beim Suchen automatisch zum Tab „Entdecken“ wechseln</string>
     <string name="settings_auto_play">Automatisches Abspielen beim Start</string>
     <string name="settings_auto_play_desc">Beim Start der App den zuletzt gehörten Sender abspielen</string>
     <string name="settings_default_tab">Standard Tab beim Start</string>
@@ -86,7 +86,7 @@
     <string name="about_cd_linkedin">LinkedIn</string>
     <string name="about_cd_github">GitHub</string>
     <string name="about_cd_instagram">Instagram</string>
-    <string name="home_tab_browse">Durchsuchen</string>
+    <string name="home_tab_browse">Entdecken</string>
     <string name="home_tab_recent">Zuletzt</string>
     <string name="home_tab_library">Bibliothek</string>
     <string name="home_tab_recordings">Aufnahmen</string>
