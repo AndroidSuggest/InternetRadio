@@ -1,10 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ========================================== -->
     <!-- 1. APP DEFINITION                          -->
     <!-- ========================================== -->
     <string name="app_name">Internet Radio</string>
     <string name="version_format">संस्करण %1$s</string>
-
     <!-- ========================================== -->
     <!-- 2. GENERAL ACTIONS                         -->
     <!-- ========================================== -->
@@ -22,7 +22,6 @@
     <string name="cd_close_search">खोज बंद करें</string>
     <string name="cd_search">खोजें</string>
     <string name="cd_clear_search">खोज साफ़ करें</string>
-
     <!-- ========================================== -->
     <!-- 3. GENERAL LABELS                          -->
     <!-- ========================================== -->
@@ -32,7 +31,6 @@
     <string name="general_unknown">अज्ञात</string>
     <string name="general_station_count_msg">%1$d स्टेशन</string>
     <string name="general_no_recordings">अभी कोई रिकॉर्डिंग नहीं</string>
-
     <!-- ========================================== -->
     <!-- 4. ERRORS                                  -->
     <!-- ========================================== -->
@@ -42,7 +40,6 @@
     <string name="error_invalid_url">अमान्य URL</string>
     <string name="error_cannot_open_website">वेबसाइट नहीं खोली जा सकती</string>
     <string name="error_cannot_open_url">URL नहीं खोला जा सकता</string>
-
     <!-- ========================================== -->
     <!-- 5. SETTINGS                                -->
     <!-- ========================================== -->
@@ -77,7 +74,6 @@
     <string name="settings_checking_for_updates">अपडेट की जाँच हो रही है...</string>
     <string name="settings_no_update_available">कोई अपडेट उपलब्ध नहीं है</string>
     <string name="settings_theme_system">सिस्टम डिफ़ॉल्ट</string>
-
     <!-- ========================================== -->
     <!-- 6b. BACKUP & RESTORE                       -->
     <!-- ========================================== -->
@@ -93,7 +89,6 @@
     <string name="settings_export_subtitle">अपने स्टेशन फ़ाइल में सहेजें</string>
     <string name="settings_import_title">लाइब्रेरी आयात करें</string>
     <string name="settings_import_subtitle">बैकअप फ़ाइल से स्टेशन पुनर्स्थापित करें</string>
-
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
     <!-- ========================================== -->
@@ -110,7 +105,6 @@
     <string name="about_cd_linkedin">लिंक्डइन</string>
     <string name="about_cd_github">गिटहब</string>
     <string name="about_cd_instagram">इंस्टाग्राम</string>
-
     <!-- ========================================== -->
     <!-- 7. HOME                                    -->
     <!-- ========================================== -->
@@ -145,21 +139,18 @@
     <string name="home_no_stations_found_for">\"%1$s\" के लिए कोई स्टेशन नहीं मिला</string>
     <string name="home_no_library_stations_filter">फ़िल्टर के साथ कोई लाइब्रेरी स्टेशन नहीं मिला</string>
     <string name="home_no_library_stations_yet">अभी तक कोई लाइब्रेरी स्टेशन नहीं</string>
-
     <!-- ========================================== -->
     <!-- 8. SELECT COUNTRY                          -->
     <!-- ========================================== -->
     <string name="select_country_search">देश खोजें...</string>
     <string name="select_country_title">देश चुनें</string>
     <string name="select_country_all">सभी देश</string>
-
     <!-- ========================================== -->
     <!-- 9. SELECT LANGUAGE                         -->
     <!-- ========================================== -->
     <string name="select_language_search">भाषाएँ खोजें...</string>
     <string name="select_language_title">भाषा चुनें</string>
     <string name="select_language_all">सभी भाषाएँ</string>
-
     <!-- ========================================== -->
     <!-- 10. SELECT TAGS                            -->
     <!-- ========================================== -->
@@ -170,7 +161,6 @@
     <string name="select_tags_cd_remove_tag">टैग हटाएँ</string>
     <string name="select_tags_discard_changes">परिवर्तन रद्द करें?</string>
     <string name="select_tags_discard_changes_message">आपके पास सहेजे न गए टैग चयन हैं। क्या आप वाकई वापस जाना चाहते हैं और उन्हें रद्द करना चाहते हैं?</string>
-
     <!-- ========================================== -->
     <!-- 11. EDIT STATION                           -->
     <!-- ========================================== -->
@@ -191,7 +181,6 @@
     <string name="edit_station_fields_reset_message">फ़ील्ड्स को मूल डेटा पर रीसेट कर दिया गया है</string>
     <string name="edit_station_saved_message">सहेजा गया</string>
     <string name="edit_station_cd_reset_to_original">मूल पर रीसेट करें</string>
-
     <!-- ========================================== -->
     <!-- 12. PLAYER                                 -->
     <!-- ========================================== -->
@@ -230,7 +219,6 @@
     <string name="player_tab_tracks">ट्रैक</string>
     <string name="player_retrying_in">%1$ds में पुनः प्रयास...</string>
     <string name="player_retrying_connection">कनेक्शन पुनः प्रयास कर रहा है...</string>
-
     <!-- ========================================== -->
     <!-- 13. CAST DIALOG                            -->
     <!-- ========================================== -->
@@ -240,7 +228,6 @@
     <string name="cast_no_devices_found">नेटवर्क पर कोई डिवाइस नहीं मिला।</string>
     <string name="cast_disconnect">डिस्कनेक्ट करें</string>
     <string name="cast_close">बंद करें</string>
-
     <!-- ========================================== -->
     <!-- 14. SCHEDULE                               -->
     <!-- ========================================== -->
