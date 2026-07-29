@@ -77,6 +77,7 @@ class AutoMediaLibraryCallback @Inject constructor(
                 activeSession?.let { session ->
                     session.connectedControllers.forEach { controller ->
                         session.notifyChildrenChanged(controller, AutoBrowseTree.BROWSE, 30, null)
+                        session.notifyChildrenChanged(controller, AutoBrowseTree.LIBRARY, 100, null)
                     }
                 }
             }
@@ -341,7 +342,7 @@ class AutoMediaLibraryCallback @Inject constructor(
                 searchScope.launch {
                     try {
                         val stations = when (parentId) {
-                            AutoBrowseTree.LIBRARY -> libraryRepository.getAllStations().first()
+                            AutoBrowseTree.LIBRARY -> getLibraryStationsList()
                             AutoBrowseTree.RECENT -> recentRepository.getAllRecent().first()
                             AutoBrowseTree.BROWSE -> getBrowseStationsList()
                             else -> searchResultsCache[parentId] ?: emptyList()
@@ -447,8 +448,45 @@ class AutoMediaLibraryCallback @Inject constructor(
         recentRepository.getAllRecent().first().map { it.toMediaItem(context, AutoBrowseTree.RECENT) }
     }
 
+    private suspend fun getLibraryStationsList(): List<RadioStation> {
+        val prefs = settingsRepository.appPreferencesFlow.first()
+        
+        val stations = when (prefs.librarySortOption) {
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded().first()
+        }
+
+        return if (prefs.useFilterOnFavorites) {
+            val hasCountryFilter = !prefs.selectedCountryCode.isNullOrBlank()
+            val hasLanguageFilter = !prefs.selectedLanguage.isNullOrBlank()
+            val hasTagFilter = prefs.selectedTags.isNotEmpty()
+
+            if (!hasCountryFilter && !hasLanguageFilter && !hasTagFilter) {
+                stations
+            } else {
+                stations.filter { station ->
+                    val countryMatch = !hasCountryFilter ||
+                            station.countryCode == prefs.selectedCountryCode
+                    val languageMatch = !hasLanguageFilter ||
+                            station.language == prefs.selectedLanguage
+                    val tagsMatch = !hasTagFilter ||
+                            prefs.selectedTags.any { it in station.tags }
+
+                    countryMatch && languageMatch && tagsMatch
+                }
+            }
+        } else {
+            stations
+        }
+    }
+
     private fun libraryChildren(): List<MediaItem> = runBlocking {
-        libraryRepository.getAllStations().first().map { it.toMediaItem(context, AutoBrowseTree.LIBRARY) }
+        getLibraryStationsList().map { it.toMediaItem(context, AutoBrowseTree.LIBRARY) }
     }
 
     private fun buildTabItem(id: String, title: String, subtitle: String): MediaItem =
