@@ -55,7 +55,6 @@ fun Controls(
 ) {
     Row(
         modifier = Modifier
-            .widthIn(max = 480.dp)
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .padding(bottom = 16.dp)

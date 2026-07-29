@@ -22,6 +22,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.automirrored.filled.VolumeDown
@@ -271,7 +273,7 @@ fun PlayerSheetContent(
         val baseExpandedSize = if (isWidescreen) {
             (screenHeight * 0.6f).coerceAtMost(screenWidth * 0.45f)
         } else {
-            screenWidth - 32.dp
+            (screenWidth - 32.dp).coerceAtMost((screenHeight - 440.dp).coerceAtLeast(120.dp))
         }
         val historySize = if (isWidescreen) baseExpandedSize else 48.dp // Match exact collapsed size
         val actualExpandedSize = lerp(baseExpandedSize, historySize, historyProgress)
@@ -637,7 +639,8 @@ fun PlayerSheetContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight((1f - historyProgress).coerceAtLeast(0.001f))
-                        .alpha(1f - historyProgress),
+                        .alpha(1f - historyProgress)
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
@@ -704,15 +707,14 @@ fun PlayerSheetContent(
                     // Waveform and Volume UI
                     BoxWithConstraints(
                         modifier = Modifier
-                            .widthIn(max = 480.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     ) {
-                        val totalWidth = maxWidth
-                        val gaps = 8.dp * 4
-                        val fixedWidths = 64.dp * 2
-                        val remainingWidth = totalWidth - fixedWidths - gaps
-                        val recordButtonWidth = remainingWidth * (0.7f / 3.4f)
+                        val controlsInnerWidth = maxWidth
+                        val controlsGaps = 8.dp * 4
+                        val controlsFixedWidths = 64.dp * 2
+                        val controlsRemainingWidth = controlsInnerWidth - controlsFixedWidths - controlsGaps
+                        val recordButtonWidth = controlsRemainingWidth * (0.7f / 3.4f)
 
                         Row(
                             modifier = Modifier
@@ -825,8 +827,7 @@ fun PlayerSheetContent(
                     }
                 } // End of Main controls column
 
-                // Spacer above controls to push them down
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Controls Row
                 Controls(
@@ -845,16 +846,13 @@ fun PlayerSheetContent(
                     onNext = onNext,
                     onToggleRecording = onToggleRecording
                 )
-
-                // Spacer below controls to center them
-                Spacer(modifier = Modifier.weight(1f))
                 } // End of Player UI wrapper
 
                 // Bottom Tabs (sits naturally below everything else, moves up as above content collapses)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .padding(bottom = 8.dp)
                         .draggable(
                             orientation = Orientation.Vertical,
                             state = rememberDraggableState { delta ->
