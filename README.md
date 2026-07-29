@@ -6,8 +6,6 @@
 
 InternetRadio is an Android app for discovering and listening to radio stations from around the world, with features like favorites, recent history, and advanced search by country,language and tags.
 
-> **Looking for a logo designer!** If you are a designer and would like to contribute a new logo or icon for the app, please open an issue
-
 </div>
 
 ## Download
@@ -117,6 +115,10 @@ InternetRadio uses the following open-source libraries:
 - [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - A dependency injection library for Android.
 - [Radio Browser API](https://www.radio-browser.info/) - A community-driven effort to collect radio stations.
 - [FCast](https://fcast.org/) - An open-source protocol for wireless streaming.
+
+## Acknowledgments
+
+- [Maintendo](https://github.com/Maintendo) - app logo.
 
 ## License
 
