@@ -98,7 +98,7 @@ fun StationCard(
         border = if (isCurrentlyPlaying) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
+            coil3.compose.SubcomposeAsyncImage(
                 model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                     .data(station.favicon.ifBlank { null })
                     .size(coil3.size.Size.ORIGINAL)
@@ -108,9 +108,23 @@ fun StationCard(
                 filterQuality = FilterQuality.High,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF1E1E1E)),
-                error = painterResource(id = R.drawable.ic_launcher_foreground),
-                fallback = painterResource(id = R.drawable.ic_launcher_foreground)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                error = {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.fillMaxSize()
+                    )
+                },
+                loading = {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             )
 
             // Gradient Overlay

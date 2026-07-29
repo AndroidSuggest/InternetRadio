@@ -334,6 +334,7 @@ fun PlayerSheetContent(
                     androidx.compose.foundation.Image(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = null,
+                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
                         modifier = Modifier
                             .fillMaxSize()
                             .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
@@ -350,6 +351,7 @@ fun PlayerSheetContent(
                     androidx.compose.foundation.Image(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = null,
+                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
                         modifier = Modifier
                             .fillMaxSize()
                             .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
