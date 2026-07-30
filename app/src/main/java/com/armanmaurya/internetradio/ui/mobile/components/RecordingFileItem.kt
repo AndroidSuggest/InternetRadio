@@ -3,19 +3,23 @@ package com.armanmaurya.internetradio.ui.mobile.components
 import android.media.MediaPlayer
 import android.text.format.DateUtils
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
@@ -30,6 +34,7 @@ fun RecordingFileItem(
     recording: RecordingFile,
     isExpanded: Boolean,
     onClick: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sizeMb = recording.sizeBytes / (1024 * 1024f)
@@ -40,9 +45,18 @@ fun RecordingFileItem(
         DateUtils.FORMAT_ABBREV_RELATIVE
     ).toString()
 
+    var showMenu by remember { mutableStateOf(false) }
+    var isDeleting by remember { mutableStateOf(false) }
     val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
+
+    val alpha by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (isDeleting) 0.5f else 1f,
+        label = "deletingAlpha"
+    )
+
     Column(
         modifier = modifier
+            .alpha(alpha)
             .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(
@@ -58,7 +72,7 @@ fun RecordingFileItem(
                 ) else Modifier
             )
             .animateContentSize()
-            .clickable(onClick = onClick)
+            .clickable(enabled = !isDeleting, onClick = onClick)
     ) {
         ListItem(
             headlineContent = {
@@ -71,16 +85,35 @@ fun RecordingFileItem(
             },
             supportingContent = {
                 Text(
-                    text = String.format(Locale.getDefault(), "%.1f MB", sizeMb),
+                    text = String.format(Locale.getDefault(), "%.1f MB • %s", sizeMb, timeStr),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             trailingContent = {
-                Text(
-                    text = timeStr,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(R.string.more_options)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.delete_recording)) },
+                            onClick = {
+                                showMenu = false
+                                isDeleting = true
+                                onDelete()
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.Delete, contentDescription = null)
+                            }
+                        )
+                    }
+                }
             },
             leadingContent = {
                 Icon(

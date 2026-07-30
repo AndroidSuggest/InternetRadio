@@ -253,7 +253,8 @@ class MainActivity : AppCompatActivity() {
                                 onVolumeChange = playerViewModel::setVolume,
                                 connectedCastDevice = connectedCastDevice,
                                 onConnectCastDevice = playerViewModel::connectToCastDevice,
-                                onDisconnectCastDevice = playerViewModel::disconnectCastDevice
+                                onDisconnectCastDevice = playerViewModel::disconnectCastDevice,
+                                onDeleteRecording = playerViewModel::deleteRecording
                             )
                         }
                     }

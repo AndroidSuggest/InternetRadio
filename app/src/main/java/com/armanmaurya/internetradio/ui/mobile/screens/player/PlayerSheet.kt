@@ -114,6 +114,7 @@ fun PlayerSheetContent(
     onVolumeChange: (Float) -> Unit = {},
     onConnectCastDevice: (org.fcast.sender_sdk.DeviceInfo) -> Unit = {},
     onDisconnectCastDevice: () -> Unit = {},
+    onDeleteRecording: (com.armanmaurya.internetradio.data.repository.RecordingFile) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val station = playbackState.currentStation ?: return
@@ -193,18 +194,27 @@ fun PlayerSheetContent(
         }
     }
 
-    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val historyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val recordingsListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val aboutListState = androidx.compose.foundation.lazy.rememberLazyListState()
+
+    val currentListState = when (bottomPagerState.currentPage) {
+        0 -> historyListState
+        1 -> recordingsListState
+        else -> aboutListState
+    }
+
     var wasAtTopWhenScrollStarted by remember { mutableStateOf(true) }
 
-    LaunchedEffect(listState.isScrollInProgress) {
-        if (listState.isScrollInProgress) {
-            wasAtTopWhenScrollStarted = listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
+    LaunchedEffect(currentListState.isScrollInProgress) {
+        if (currentListState.isScrollInProgress) {
+            wasAtTopWhenScrollStarted = currentListState.firstVisibleItemIndex == 0 && currentListState.firstVisibleItemScrollOffset == 0
         }
     }
 
     val maxDragDistance = with(density) { 600.dp.toPx() }
 
-    val nestedScrollConnection = remember {
+    val nestedScrollConnection = remember(currentListState) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 if (available.y < 0 && historyProgressAnim.value < 1f) {
@@ -1061,19 +1071,20 @@ fun PlayerSheetContent(
                         if (page == 0) {
                             HistoryTab(
                                 trackHistory = trackHistory,
-                                listState = listState,
+                                listState = historyListState,
                                 nestedScrollConnection = nestedScrollConnection
                             )
                         } else if (page == 1) {
                             RecordingsTab(
                                 stationRecordings = stationRecordings,
-                                listState = listState,
-                                nestedScrollConnection = nestedScrollConnection
+                                listState = recordingsListState,
+                                nestedScrollConnection = nestedScrollConnection,
+                                onDeleteRecording = onDeleteRecording
                             )
                         } else if (page == 2) {
                             AboutTab(
                                 station = station,
-                                listState = listState,
+                                listState = aboutListState,
                                 nestedScrollConnection = nestedScrollConnection
                             )
                         }

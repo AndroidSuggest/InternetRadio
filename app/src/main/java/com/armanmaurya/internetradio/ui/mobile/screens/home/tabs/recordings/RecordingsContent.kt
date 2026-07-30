@@ -42,12 +42,18 @@ fun RecordingsContent(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val folders by viewModel.folders.collectAsStateWithLifecycle()
-    var selectedFolder by remember { mutableStateOf<RecordingFolder?>(null) }
+    var selectedStationName by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
 
     LaunchedEffect(Unit) {
         viewModel.loadFolders()
+    }
+
+    LaunchedEffect(folders, selectedStationName) {
+        if (selectedStationName != null && folders.none { it.stationName == selectedStationName }) {
+            selectedStationName = null
+        }
     }
 
     if (folders.isEmpty()) {
@@ -63,7 +69,7 @@ fun RecordingsContent(
         }
     } else {
         AnimatedContent(
-            targetState = selectedFolder,
+            targetState = selectedStationName,
             transitionSpec = {
                 if (targetState != null) {
                     // Entering folder (slide left)
@@ -78,19 +84,25 @@ fun RecordingsContent(
                 }
             },
             label = "FolderTransition"
-        ) { currentFolder ->
-            if (currentFolder == null) {
+        ) { stationName ->
+            val currentFolder = folders.find { it.stationName == stationName }
+            
+            if (stationName == null || currentFolder == null) {
                 // Show Folders
                 LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(contentPadding),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                items(folders) { folder ->
+                items(
+                    items = folders,
+                    key = { it.stationName }
+                ) { folder ->
                     ListItem(
                         modifier = Modifier
+                            .animateItem()
                             .padding(vertical = 4.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .clickable { selectedFolder = folder },
+                            .clickable { selectedStationName = folder.stationName },
                         headlineContent = {
                             Text(
                                 text = folder.stationName,
@@ -133,7 +145,7 @@ fun RecordingsContent(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { selectedFolder = null }) {
+                    IconButton(onClick = { selectedStationName = null }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = stringResource(R.string.home_cd_back_to_folders),
@@ -154,14 +166,21 @@ fun RecordingsContent(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 0.dp)
                 ) {
-                    items(currentFolder.recordings) { recording ->
+                    items(
+                        items = currentFolder.recordings,
+                        key = { it.uri.toString() }
+                    ) { recording ->
                         val isExpanded = expandedRecording?.uri == recording.uri
                         RecordingFileItem(
                             recording = recording,
                             isExpanded = isExpanded,
                             onClick = {
                                 expandedRecording = if (isExpanded) null else recording
-                            }
+                            },
+                            onDelete = {
+                                viewModel.deleteRecording(recording)
+                            },
+                            modifier = Modifier.animateItem()
                         )
                     }
                 }

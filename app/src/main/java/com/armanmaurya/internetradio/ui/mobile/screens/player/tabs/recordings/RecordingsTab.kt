@@ -3,6 +3,7 @@ package com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.recordings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,7 +21,8 @@ import com.armanmaurya.internetradio.ui.mobile.components.RecordingFileItem
 fun RecordingsTab(
     stationRecordings: List<RecordingFile>,
     listState: LazyListState,
-    nestedScrollConnection: NestedScrollConnection
+    nestedScrollConnection: NestedScrollConnection,
+    onDeleteRecording: (RecordingFile) -> Unit
 ) {
     var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
     
@@ -45,8 +47,10 @@ fun RecordingsTab(
                 }
             }
         } else {
-            items(stationRecordings.size) { index ->
-                val recording = stationRecordings[index]
+            items(
+                items = stationRecordings,
+                key = { it.uri.toString() }
+            ) { recording ->
                 val isExpanded = expandedRecording?.uri == recording.uri
 
                 RecordingFileItem(
@@ -54,7 +58,9 @@ fun RecordingsTab(
                     isExpanded = isExpanded,
                     onClick = {
                         expandedRecording = if (isExpanded) null else recording
-                    }
+                    },
+                    onDelete = { onDeleteRecording(recording) },
+                    modifier = Modifier.animateItem()
                 )
             }
         }

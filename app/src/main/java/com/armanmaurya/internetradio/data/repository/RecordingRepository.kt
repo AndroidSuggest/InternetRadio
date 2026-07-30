@@ -6,6 +6,7 @@ import android.os.Environment
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.asSharedFlow
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -69,5 +70,27 @@ class RecordingRepository @Inject constructor(
                 sizeBytes = it.length()
             )
         }.sortedByDescending { it.lastModified }
+    }
+
+    private val _recordingsChangedEvent = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val recordingsChangedEvent: kotlinx.coroutines.flow.SharedFlow<Unit> = _recordingsChangedEvent.asSharedFlow()
+
+    fun notifyRecordingsChanged() {
+        _recordingsChangedEvent.tryEmit(Unit)
+    }
+
+    suspend fun deleteRecording(recording: RecordingFile): Boolean = withContext(Dispatchers.IO) {
+        val deleted = recording.file.delete()
+        if (deleted) {
+            val parent = recording.file.parentFile
+            if (parent != null && parent.isDirectory) {
+                val files = parent.listFiles()
+                if (files != null && files.isEmpty()) {
+                    parent.delete()
+                }
+            }
+            notifyRecordingsChanged()
+        }
+        deleted
     }
 }

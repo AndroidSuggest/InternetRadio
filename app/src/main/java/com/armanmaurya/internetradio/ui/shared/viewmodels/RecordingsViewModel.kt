@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armanmaurya.internetradio.data.repository.RecordingFolder
 import com.armanmaurya.internetradio.data.repository.RecordingRepository
-import com.armanmaurya.internetradio.player.RecordingManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,8 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RecordingsViewModel @Inject constructor(
-    private val recordingRepository: RecordingRepository,
-    private val recordingManager: RecordingManager
+    private val recordingRepository: RecordingRepository
 ) : ViewModel() {
 
     private val _folders = MutableStateFlow<List<RecordingFolder>>(emptyList())
@@ -23,7 +21,7 @@ class RecordingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            recordingManager.isRecording.collect {
+            recordingRepository.recordingsChangedEvent.collect {
                 loadFolders()
             }
         }
@@ -32,6 +30,12 @@ class RecordingsViewModel @Inject constructor(
     fun loadFolders() {
         viewModelScope.launch {
             _folders.value = recordingRepository.getRecordingFolders()
+        }
+    }
+
+    fun deleteRecording(recording: com.armanmaurya.internetradio.data.repository.RecordingFile) {
+        viewModelScope.launch {
+            recordingRepository.deleteRecording(recording)
         }
     }
 }

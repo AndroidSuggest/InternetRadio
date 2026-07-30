@@ -275,4 +275,6 @@
     <string name="schedule_station_logo_cd">Station Logo</string>
     <string name="schedule_no_schedules_yet">No schedules yet. Create one!</string>
     <string name="schedule_add_schedule_cd">Add Schedule</string>
+    <string name="delete_recording">Delete</string>
+    <string name="more_options">More options</string>
 </resources>

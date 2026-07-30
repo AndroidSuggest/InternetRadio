@@ -33,7 +33,8 @@ import javax.inject.Singleton
 
 @Singleton
 class RecordingManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val recordingRepository: com.armanmaurya.internetradio.data.repository.RecordingRepository
 ) {
     private val _isRecording = MutableStateFlow(false)
     val isRecording: StateFlow<Boolean> = _isRecording.asStateFlow()
@@ -168,6 +169,7 @@ class RecordingManager @Inject constructor(
             currentFile = null
             currentStation = null
             bytesWritten = 0L
+            recordingRepository.notifyRecordingsChanged()
         }
     }
 

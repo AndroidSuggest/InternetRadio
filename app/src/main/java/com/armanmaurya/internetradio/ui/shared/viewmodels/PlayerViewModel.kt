@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -166,13 +167,19 @@ class PlayerViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val stationRecordings = kotlinx.coroutines.flow.combine(
         playbackState.map { it.currentStation?.name }.distinctUntilChanged(),
-        isRecording // Re-fetch when recording stops
-    ) { stationName, recording -> 
-        stationName to recording
-    }.flatMapLatest { (stationName, recording) ->
+        recordingRepository.recordingsChangedEvent.onStart { emit(Unit) }
+    ) { stationName, _ -> 
+        stationName
+    }.flatMapLatest { stationName ->
         if (stationName == null) flowOf(emptyList()) // Fetch recordings immediately
         else flowOf(recordingRepository.getRecordingsForStation(stationName))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun deleteRecording(recording: com.armanmaurya.internetradio.data.repository.RecordingFile) {
+        viewModelScope.launch {
+            recordingRepository.deleteRecording(recording)
+        }
+    }
 
     fun toggleFavorite() {
         val station = playbackState.value.currentStation ?: return
