@@ -94,8 +94,23 @@ object AppModule {
 
     @Provides
     @Singleton
+    @Named("LrcLibRetrofit")
+    fun provideLrcLibRetrofit(okHttpClient: OkHttpClient): Retrofit =
+        Retrofit.Builder()
+            .baseUrl("https://lrclib.net/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+    @Provides
+    @Singleton
     fun provideRadioBrowserApi(@Named("RadioBrowserRetrofit") retrofit: Retrofit): RadioBrowserApi =
         retrofit.create(RadioBrowserApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideLrcLibApi(@Named("LrcLibRetrofit") retrofit: Retrofit): com.armanmaurya.internetradio.data.remote.LrcLibApi =
+        retrofit.create(com.armanmaurya.internetradio.data.remote.LrcLibApi::class.java)
 
     @Provides
     @Singleton

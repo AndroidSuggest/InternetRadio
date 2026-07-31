@@ -10,6 +10,9 @@ import com.armanmaurya.internetradio.ui.mobile.screens.player.components.TrackDi
 import com.armanmaurya.internetradio.ui.mobile.screens.player.components.Controls
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.recordings.RecordingsTab
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.about.AboutTab
+import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.lyrics.LyricsTab
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.ui.zIndex
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.gestures.Orientation
@@ -23,6 +26,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -94,6 +98,7 @@ fun PlayerSheetContent(
     trackHistory: List<TrackHistoryEntity> = emptyList(),
     stationRecordings: List<com.armanmaurya.internetradio.data.repository.RecordingFile> = emptyList(),
     retryCountdown: Int? = null,
+    lyricsState: com.armanmaurya.internetradio.data.model.LyricsState = com.armanmaurya.internetradio.data.model.LyricsState.Loading,
     progress: Float, // 0.0 (collapsed) to 1.0 (expanded)
     onTogglePlayPause: () -> Unit,
     onToggleFavorite: () -> Unit,
@@ -163,7 +168,7 @@ fun PlayerSheetContent(
     }
 
     @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
-    val bottomPagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { 3 })
+    val bottomPagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { 4 })
 
     var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(playbackState.sleepTimerEndTime) {
@@ -196,11 +201,13 @@ fun PlayerSheetContent(
 
     val historyListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val recordingsListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val lyricsListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val aboutListState = androidx.compose.foundation.lazy.rememberLazyListState()
 
     val currentListState = when (bottomPagerState.currentPage) {
         0 -> historyListState
         1 -> recordingsListState
+        2 -> lyricsListState
         else -> aboutListState
     }
 
@@ -861,7 +868,7 @@ fun PlayerSheetContent(
                 } // End of Player UI wrapper
 
                 // Bottom Tabs (sits naturally below everything else, moves up as above content collapses)
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp)
@@ -884,20 +891,9 @@ fun PlayerSheetContent(
                                 }
                             }
                         ),
-                    horizontalArrangement = Arrangement.Center
+                    contentAlignment = Alignment.Center
                 ) {
                     val isHistoryExpanded = historyProgress > 0.5f
-                    
-                    val tabWidth = 110.dp
-                    val indicatorOffset by androidx.compose.animation.core.animateDpAsState(
-                        targetValue = when (bottomPagerState.currentPage) {
-                            0 -> 0.dp
-                            1 -> tabWidth
-                            else -> tabWidth * 2
-                        },
-                        animationSpec = androidx.compose.animation.core.spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow),
-                        label = "indicatorOffset"
-                    )
 
                     val tab1TextColor by androidx.compose.animation.animateColorAsState(
                         targetValue = if (isHistoryExpanded && bottomPagerState.currentPage == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -914,32 +910,27 @@ fun PlayerSheetContent(
                         label = "tab3Text"
                     )
 
+                    val tab4TextColor by androidx.compose.animation.animateColorAsState(
+                        targetValue = if (isHistoryExpanded && bottomPagerState.currentPage == 3) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        label = "tab4Text"
+                    )
+
                     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerLow == androidx.compose.ui.graphics.Color.Black
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = if (isHistoryExpanded) {
-                                    if (isPureBlack) androidx.compose.ui.graphics.Color.Black else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                } else androidx.compose.ui.graphics.Color.Transparent,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .then(
-                                if (isHistoryExpanded && isPureBlack) Modifier.border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                                    RoundedCornerShape(12.dp)
-                                ) else Modifier
-                            )
-                            .padding(4.dp)
-                    ) {
-                        // The sliding indicator
-                        if (isHistoryExpanded) {
-                            Box(modifier = Modifier.matchParentSize()) {
+                    
+                    androidx.compose.material3.ScrollableTabRow(
+                        selectedTabIndex = bottomPagerState.currentPage,
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        divider = {},
+                        edgePadding = 16.dp,
+                        indicator = { tabPositions ->
+                            if (isHistoryExpanded && bottomPagerState.currentPage < tabPositions.size) {
+                                val currentTabPosition = tabPositions[bottomPagerState.currentPage]
                                 Box(
                                     modifier = Modifier
-                                        .offset(x = indicatorOffset)
-                                        .width(tabWidth)
+                                        .tabIndicatorOffset(currentTabPosition)
                                         .fillMaxHeight()
+                                        .padding(vertical = 4.dp, horizontal = 4.dp)
+                                        .zIndex(-1f)
                                         .background(
                                             if (isPureBlack) androidx.compose.ui.graphics.Color.Black else MaterialTheme.colorScheme.surface,
                                             RoundedCornerShape(10.dp)
@@ -954,22 +945,24 @@ fun PlayerSheetContent(
                                 )
                             }
                         }
-
-                        // The texts
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Recent Tracks Tab
+                    ) {
+                        val tabs = listOf(
+                            stringResource(R.string.player_tab_tracks) to tab1TextColor,
+                            stringResource(R.string.home_tab_recordings) to tab2TextColor,
+                            "Lyrics" to tab3TextColor,
+                            stringResource(R.string.player_tab_about) to tab4TextColor
+                        )
+                        
+                        tabs.forEachIndexed { index, (title, color) ->
                             Box(
                                 modifier = Modifier
-                                    .width(tabWidth)
                                     .clickable(
                                         indication = null,
                                         interactionSource = remember { MutableInteractionSource() },
                                         onClick = {
-                                            if (bottomPagerState.currentPage != 0) {
+                                            if (bottomPagerState.currentPage != index) {
                                                 coroutineScope.launch {
-                                                    launch { bottomPagerState.animateScrollToPage(0) }
+                                                    launch { bottomPagerState.animateScrollToPage(index) }
                                                     if (!isHistoryExpanded) {
                                                         launch { historyProgressAnim.animateTo(1f) }
                                                     }
@@ -981,77 +974,13 @@ fun PlayerSheetContent(
                                             }
                                         }
                                     )
-                                    .padding(vertical = 10.dp),
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = stringResource(R.string.player_tab_tracks),
+                                    text = title,
                                     fontWeight = FontWeight.Bold,
-                                    color = tab1TextColor
-                                )
-                            }
-
-                            // Recordings Tab
-                            Box(
-                                modifier = Modifier
-                                    .width(tabWidth)
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            if (bottomPagerState.currentPage != 1) {
-                                                coroutineScope.launch {
-                                                    launch { bottomPagerState.animateScrollToPage(1) }
-                                                    if (!isHistoryExpanded) {
-                                                        launch { historyProgressAnim.animateTo(1f) }
-                                                    }
-                                                }
-                                            } else {
-                                                coroutineScope.launch {
-                                                    historyProgressAnim.animateTo(if (isHistoryExpanded) 0f else 1f)
-                                                }
-                                            }
-                                        }
-                                    )
-                                    .padding(vertical = 10.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.home_tab_recordings),
-                                    fontWeight = FontWeight.Bold,
-                                    color = tab2TextColor
-                                )
-                            }
-
-                            // About Tab
-                            Box(
-                                modifier = Modifier
-                                    .width(tabWidth)
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            if (bottomPagerState.currentPage != 2) {
-                                                coroutineScope.launch {
-                                                    launch { bottomPagerState.animateScrollToPage(2) }
-                                                    if (!isHistoryExpanded) {
-                                                        launch { historyProgressAnim.animateTo(1f) }
-                                                    }
-                                                }
-                                            } else {
-                                                coroutineScope.launch {
-                                                    historyProgressAnim.animateTo(if (isHistoryExpanded) 0f else 1f)
-                                                }
-                                            }
-                                        }
-                                    )
-                                    .padding(vertical = 10.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.player_tab_about),
-                                    fontWeight = FontWeight.Bold,
-                                    color = tab3TextColor
+                                    color = color
                                 )
                             }
                         }
@@ -1082,6 +1011,18 @@ fun PlayerSheetContent(
                                 onDeleteRecording = onDeleteRecording
                             )
                         } else if (page == 2) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            ) {
+                                LyricsTab(
+                                    listState = lyricsListState,
+                                    nestedScrollConnection = nestedScrollConnection,
+                                    lyricsState = lyricsState,
+                                    trackStartTime = playbackState.trackStartTime
+                                )
+                            }
+                        } else if (page == 3) {
                             AboutTab(
                                 station = station,
                                 listState = aboutListState,

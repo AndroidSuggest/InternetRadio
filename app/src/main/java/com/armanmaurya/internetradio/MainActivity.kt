@@ -207,6 +207,7 @@ class MainActivity : AppCompatActivity() {
                             val connectedCastDevice by playerViewModel.connectedCastDevice.collectAsStateWithLifecycle()
                             val castPlaybackState by playerViewModel.castPlaybackState.collectAsStateWithLifecycle()
                             val castVolume by playerViewModel.castVolume.collectAsStateWithLifecycle()
+                            val lyricsState by playerViewModel.lyricsState.collectAsStateWithLifecycle()
 
                             val effectivePlaybackState = if (connectedCastDevice != null) {
                                 val stateName = castPlaybackState?.toString()?.uppercase() ?: ""
@@ -227,6 +228,7 @@ class MainActivity : AppCompatActivity() {
                                 trackHistory = trackHistory,
                                 stationRecordings = stationRecordings,
                                 retryCountdown = retryCountdown,
+                                lyricsState = lyricsState,
                                 progress = progress,
                                 onTogglePlayPause = playerViewModel::togglePlayPause,
                                 onToggleFavorite = playerViewModel::toggleFavorite,

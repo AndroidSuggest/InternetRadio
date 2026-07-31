@@ -38,6 +38,7 @@ class PlayerViewModel @Inject constructor(
     private val trackHistoryRepository: TrackHistoryRepository,
     private val recordingManager: RecordingManager,
     private val recordingRepository: com.armanmaurya.internetradio.data.repository.RecordingRepository,
+    private val lyricsRepository: com.armanmaurya.internetradio.data.repository.LyricsRepository,
     retryStateTracker: com.armanmaurya.internetradio.player.RetryStateTracker
 ) : ViewModel() {
 
@@ -45,6 +46,23 @@ class PlayerViewModel @Inject constructor(
     val retryToastEvent = retryStateTracker.retryToastEvent
 
     val playbackState = playerController.playbackState
+    
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val lyricsState = playbackState
+        .map { it.currentTrack }
+        .distinctUntilChanged()
+        .flatMapLatest { track ->
+            if (track.isNullOrBlank()) {
+                flowOf(com.armanmaurya.internetradio.data.model.LyricsState.NotAvailable)
+            } else {
+                lyricsRepository.getLyricsForTrack(track)
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = com.armanmaurya.internetradio.data.model.LyricsState.Loading
+        )
 
     val isRecording = recordingManager.isRecording
     val recordingDuration = recordingManager.recordingDuration
