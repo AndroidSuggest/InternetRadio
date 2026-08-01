@@ -339,8 +339,29 @@ fun SyncedLyricsView(
                             val layoutResult = textLayoutResult ?: return@drawWithContent
                             val lineCount = layoutResult.lineCount
                             
-                            val currentLine = (progress * lineCount).toInt().coerceIn(0, lineCount - 1)
-                            val lineProgress = (progress * lineCount) - currentLine
+                            var totalWidth = 0f
+                            val lineWidths = FloatArray(lineCount)
+                            for (i in 0 until lineCount) {
+                                val w = java.lang.Math.abs(layoutResult.getLineRight(i) - layoutResult.getLineLeft(i))
+                                lineWidths[i] = w
+                                totalWidth += w
+                            }
+                            
+                            val targetWidth = progress * totalWidth
+                            var accumulatedWidth = 0f
+                            var currentLine = lineCount - 1
+                            var lineProgress = 1f
+                            
+                            for (i in 0 until lineCount) {
+                                val w = lineWidths[i]
+                                if (accumulatedWidth + w >= targetWidth || i == lineCount - 1) {
+                                    currentLine = i
+                                    lineProgress = if (w > 0f) (targetWidth - accumulatedWidth) / w else 1f
+                                    lineProgress = lineProgress.coerceIn(0f, 1f)
+                                    break
+                                }
+                                accumulatedWidth += w
+                            }
                             
                             // Path for the FILLED portion (Primary Color)
                             val filledPath = androidx.compose.ui.graphics.Path().apply {
