@@ -20,10 +20,25 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.graphics.drawscope.clipPath
 import com.armanmaurya.internetradio.data.model.LyricsState
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
+import androidx.compose.animation.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import kotlinx.coroutines.launch
 
 @Composable
 fun LyricsTab(
@@ -33,6 +48,7 @@ fun LyricsTab(
     trackStartTime: Long?
 ) {
     var isSyncEnabled by rememberSaveable { mutableStateOf(true) }
+    var syncOffsetMs by remember(trackStartTime) { mutableLongStateOf(0L) }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -95,7 +111,8 @@ fun LyricsTab(
                         SyncedLyricsView(
                             lines = lyricsState.syncedLyrics,
                             listState = listState,
-                            trackStartTime = trackStartTime
+                            trackStartTime = trackStartTime,
+                            syncOffsetMs = syncOffsetMs
                         )
                     } else if (!lyricsState.plainLyrics.isNullOrEmpty()) {
                         PlainLyricsView(
@@ -129,18 +146,74 @@ fun LyricsTab(
             
             // Only show button if we have SOME lyrics
             if (!lyricsState.syncedLyrics.isNullOrEmpty() || !lyricsState.plainLyrics.isNullOrEmpty()) {
-                FilledTonalButton(
-                    onClick = { 
-                        if (canSync) {
-                            isSyncEnabled = !isSyncEnabled
-                        }
-                    },
-                    enabled = canSync,
+                val cornerRadius by androidx.compose.animation.core.animateDpAsState(
+                    targetValue = if (isCurrentlySynced) 12.dp else 50.dp,
+                    animationSpec = androidx.compose.animation.core.tween(300)
+                )
+                val sideRotation by androidx.compose.animation.core.animateFloatAsState(
+                    targetValue = if (isCurrentlySynced) 0f else 90f,
+                    animationSpec = androidx.compose.animation.core.tween(300)
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
+                        .align(Alignment.BottomCenter)
                         .padding(16.dp)
                 ) {
-                    Text(text = if (isCurrentlySynced) "Synced" else "Plain")
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = isCurrentlySynced,
+                        enter = androidx.compose.animation.slideInHorizontally(initialOffsetX = { it * 2 }),
+                        exit = androidx.compose.animation.slideOutHorizontally(targetOffsetX = { it * 2 })
+                    ) {
+                        IconButton(
+                            onClick = { syncOffsetMs -= 500L },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        ) {
+                            Icon(
+                                Icons.Default.Remove, 
+                                contentDescription = "Delay Lyrics",
+                                modifier = Modifier.graphicsLayer { rotationZ = -sideRotation }
+                            )
+                        }
+                    }
+
+                    FilledTonalButton(
+                        onClick = {
+                            if (canSync) {
+                                isSyncEnabled = !isSyncEnabled
+                            }
+                        },
+                        enabled = canSync,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(cornerRadius),
+                        modifier = Modifier.height(48.dp).zIndex(1f)
+                    ) {
+                        val offsetText = if (syncOffsetMs != 0L) " (${if (syncOffsetMs > 0) "+" else ""}${syncOffsetMs / 1000f}s)" else ""
+                        Text(
+                            text = if (isCurrentlySynced) "Synced$offsetText" else "Plain",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            modifier = Modifier.animateContentSize()
+                        )
+                    }
+
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = isCurrentlySynced,
+                        enter = androidx.compose.animation.slideInHorizontally(initialOffsetX = { -it * 2 }),
+                        exit = androidx.compose.animation.slideOutHorizontally(targetOffsetX = { -it * 2 })
+                    ) {
+                        IconButton(
+                            onClick = { syncOffsetMs += 500L },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        ) {
+                            Icon(
+                                Icons.Default.Add, 
+                                contentDescription = "Fast Forward Lyrics",
+                                modifier = Modifier.graphicsLayer { rotationZ = sideRotation }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -174,7 +247,8 @@ fun PlainLyricsView(
 fun SyncedLyricsView(
     lines: List<com.armanmaurya.internetradio.data.model.LrcLine>,
     listState: LazyListState,
-    trackStartTime: Long
+    trackStartTime: Long,
+    syncOffsetMs: Long
 ) {
     var currentTimeMs by remember { mutableLongStateOf(0L) }
     var activeIndex by remember(trackStartTime) { mutableIntStateOf(0) }
@@ -188,8 +262,9 @@ fun SyncedLyricsView(
     }
 
     // Calculate new index smoothly without launching effects every 100ms
-    val derivedIndex = remember(currentTimeMs) {
-        val idx = lines.indexOfLast { currentTimeMs >= it.timestampMs }
+    val derivedIndex = remember(currentTimeMs, syncOffsetMs) {
+        val adjustedTime = currentTimeMs + syncOffsetMs
+        val idx = lines.indexOfLast { adjustedTime >= it.timestampMs }
         if (idx >= 0) idx else 0
     }
 
@@ -200,7 +275,7 @@ fun SyncedLyricsView(
             val targetItem = listState.layoutInfo.visibleItemsInfo.find { it.index == targetIndex }
             
             if (targetItem != null) {
-                val scrollDistance = targetItem.offset - listState.layoutInfo.viewportStartOffset
+                val scrollDistance = targetItem.offset
                 listState.animateScrollBy(
                     value = scrollDistance.toFloat(),
                     animationSpec = androidx.compose.animation.core.tween(
@@ -223,20 +298,101 @@ fun SyncedLyricsView(
             val isActive = index == activeIndex
             val line = lines[index]
             
-            val textColor by androidx.compose.animation.animateColorAsState(
-                targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                animationSpec = androidx.compose.animation.core.tween(durationMillis = 800)
-            )
+            val primaryColor = MaterialTheme.colorScheme.primary
+            val dimColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            
+            var textLayoutResult by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
+
+            val progress = if (isActive) {
+                val adjustedTime = currentTimeMs + syncOffsetMs
+                val lineDuration = if (index + 1 < lines.size) {
+                    lines[index + 1].timestampMs - line.timestampMs
+                } else {
+                    5000L // Fallback duration for the last line
+                }
+                
+                ((adjustedTime - line.timestampMs).toFloat() / java.lang.Math.max(1L, lineDuration).toFloat()).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
             
             Text(
                 text = line.text,
-                style = MaterialTheme.typography.headlineMedium, // constant style
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, // constant bold
-                color = textColor,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = Color.Black, // Fully opaque mask so SrcIn preserves the primary color's alpha!
                 textAlign = TextAlign.Start,
+                onTextLayout = { textLayoutResult = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 12.dp)
+                    .graphicsLayer {
+                        compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen
+                    }
+                    .drawWithContent {
+                        drawContent() // Draw the opaque black text mask
+                        
+                        if (!isActive || progress <= 0f) {
+                            // If not active, the whole line is dim
+                            drawRect(color = dimColor, blendMode = BlendMode.SrcIn)
+                        } else {
+                            val layoutResult = textLayoutResult ?: return@drawWithContent
+                            val lineCount = layoutResult.lineCount
+                            
+                            val currentLine = (progress * lineCount).toInt().coerceIn(0, lineCount - 1)
+                            val lineProgress = (progress * lineCount) - currentLine
+                            
+                            // Path for the FILLED portion (Primary Color)
+                            val filledPath = androidx.compose.ui.graphics.Path().apply {
+                                for (i in 0 until currentLine) {
+                                    addRect(androidx.compose.ui.geometry.Rect(
+                                        layoutResult.getLineLeft(i), layoutResult.getLineTop(i),
+                                        layoutResult.getLineRight(i), layoutResult.getLineBottom(i)
+                                    ))
+                                }
+                                
+                                val currentLeft = layoutResult.getLineLeft(currentLine)
+                                val currentRight = layoutResult.getLineRight(currentLine)
+                                val currentWidth = currentRight - currentLeft
+                                val splitX = currentLeft + (currentWidth * lineProgress)
+                                
+                                addRect(androidx.compose.ui.geometry.Rect(
+                                    currentLeft, layoutResult.getLineTop(currentLine),
+                                    splitX, layoutResult.getLineBottom(currentLine)
+                                ))
+                            }
+                            
+                            // Path for the UNFILLED portion (Dim Color)
+                            val unfilledPath = androidx.compose.ui.graphics.Path().apply {
+                                val currentLeft = layoutResult.getLineLeft(currentLine)
+                                val currentRight = layoutResult.getLineRight(currentLine)
+                                val currentWidth = currentRight - currentLeft
+                                val splitX = currentLeft + (currentWidth * lineProgress)
+                                
+                                addRect(androidx.compose.ui.geometry.Rect(
+                                    splitX, layoutResult.getLineTop(currentLine),
+                                    currentRight, layoutResult.getLineBottom(currentLine)
+                                ))
+                                
+                                for (i in (currentLine + 1) until lineCount) {
+                                    addRect(androidx.compose.ui.geometry.Rect(
+                                        layoutResult.getLineLeft(i), layoutResult.getLineTop(i),
+                                        layoutResult.getLineRight(i), layoutResult.getLineBottom(i)
+                                    ))
+                                }
+                            }
+                            
+                            // Color the filled part (100% vibrant primary)
+                            clipPath(filledPath) {
+                                drawRect(color = primaryColor, blendMode = BlendMode.SrcIn)
+                            }
+                            
+                            // Color the unfilled part (60% translucent dim)
+                            clipPath(unfilledPath) {
+                                drawRect(color = dimColor, blendMode = BlendMode.SrcIn)
+                            }
+                        }
+                    }
             )
         }
     }
