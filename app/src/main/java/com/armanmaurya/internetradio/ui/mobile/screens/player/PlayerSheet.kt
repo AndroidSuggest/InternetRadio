@@ -710,7 +710,17 @@ fun PlayerSheetContent(
                     } else if (playbackState.isLoading) {
                         bufferingText
                     } else {
-                        playbackState.currentTrack ?: noTrackDataText
+                        val rawTrack = playbackState.currentTrack ?: noTrackDataText
+                        if (rawTrack != noTrackDataText && rawTrack.contains(" - ")) {
+                            val parts = rawTrack.split(" - ", limit = 2)
+                            if (parts.size == 2) {
+                                "${parts[1].trim()} - ${parts[0].trim()}"
+                            } else {
+                                rawTrack
+                            }
+                        } else {
+                            rawTrack
+                        }
                     }
                     val isSearchExpanded = searchDialogTrack != null
 

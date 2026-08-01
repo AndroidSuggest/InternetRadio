@@ -15,7 +15,36 @@ class LyricsRepository @Inject constructor(
     fun getLyricsForTrack(trackName: String): Flow<LyricsState> = flow {
         emit(LyricsState.Loading)
         try {
-            val response = lrcLibApi.searchLyrics(trackName)
+            var response = lrcLibApi.searchLyrics(trackName)
+
+            // Helper function to clean common words and punctuation
+            fun cleanQuery(query: String): String {
+                return query
+                    .replace(Regex("(?i)\\b(and|feat\\.?|ft\\.?)\\b"), "")
+                    .replace(Regex("[&,\\(\\)\\[\\]\\-]"), " ")
+                    .replace(Regex("\\s+"), " ")
+                    .trim()
+            }
+
+            // Fallback 1: Cleaned full query without hyphens or extra punctuation
+            if (response.isEmpty()) {
+                val cleaned = cleanQuery(trackName)
+                if (cleaned != trackName && cleaned.isNotBlank()) {
+                    response = lrcLibApi.searchLyrics(cleaned)
+                }
+            }
+            
+            // Fallback 2: Just the song title (cleaned)
+            if (response.isEmpty() && trackName.contains(" - ")) {
+                val parts = trackName.split(" - ", limit = 2)
+                if (parts.size == 2) {
+                    val cleanedTitle = cleanQuery(parts[1])
+                    if (cleanedTitle.isNotBlank()) {
+                        response = lrcLibApi.searchLyrics(cleanedTitle)
+                    }
+                }
+            }
+
             if (response.isNotEmpty()) {
                 val firstMatch = response.first()
                 val parsedSyncedLyrics = firstMatch.syncedLyrics?.let { parseLrc(it) }
