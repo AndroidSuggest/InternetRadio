@@ -15,40 +15,44 @@ class LyricsRepository @Inject constructor(
     fun getLyricsForTrack(trackName: String): Flow<LyricsState> = flow {
         emit(LyricsState.Loading)
         try {
-            var response = lrcLibApi.searchLyrics(trackName)
-
-            // Helper function to clean common words and punctuation
             fun cleanQuery(query: String): String {
                 return query
+                    // 1. Completely remove anything inside (), [], or {}
+                    .replace(Regex("\\(.*?\\)|\\[.*?\\]|\\{.*?\\}"), "")
+                    // 2. Remove common metadata words
                     .replace(Regex("(?i)\\b(and|feat\\.?|ft\\.?)\\b"), "")
-                    .replace(Regex("[&,\\(\\)\\[\\]\\-]"), " ")
+                    // 3. Remove hyphens and extra punctuation
+                    .replace(Regex("[&,\\-]"), " ")
+                    // 4. Collapse multiple spaces into a single space
                     .replace(Regex("\\s+"), " ")
                     .trim()
             }
 
-            // Fallback 1: Cleaned full query without hyphens or extra punctuation
-            if (response.isEmpty()) {
-                val cleaned = cleanQuery(trackName)
-                if (cleaned != trackName && cleaned.isNotBlank()) {
-                    response = lrcLibApi.searchLyrics(cleaned)
-                }
+            suspend fun searchAndFindBestMatch(query: String): com.armanmaurya.internetradio.data.remote.dto.LrcLibResponse? {
+                val responses = lrcLibApi.searchLyrics(query)
+                val valid = responses.filter { !it.instrumental && (!it.syncedLyrics.isNullOrBlank() || !it.plainLyrics.isNullOrBlank()) }
+                // Prefer synced lyrics over plain lyrics
+                return valid.firstOrNull { !it.syncedLyrics.isNullOrBlank() } ?: valid.firstOrNull()
             }
+
+            // 1. Cleaned full query without hyphens or extra punctuation
+            val cleanedFull = cleanQuery(trackName)
+            var bestMatch = if (cleanedFull.isNotBlank()) searchAndFindBestMatch(cleanedFull) else null
             
-            // Fallback 2: Just the song title (cleaned)
-            if (response.isEmpty() && trackName.contains(" - ")) {
+            // 2. Just the song title (cleaned)
+            if (bestMatch == null && trackName.contains(" - ")) {
                 val parts = trackName.split(" - ", limit = 2)
                 if (parts.size == 2) {
-                    val cleanedTitle = cleanQuery(parts[1])
+                    val cleanedTitle = cleanQuery(parts[0]) // Title is now first
                     if (cleanedTitle.isNotBlank()) {
-                        response = lrcLibApi.searchLyrics(cleanedTitle)
+                        bestMatch = searchAndFindBestMatch(cleanedTitle)
                     }
                 }
             }
 
-            if (response.isNotEmpty()) {
-                val firstMatch = response.first()
-                val parsedSyncedLyrics = firstMatch.syncedLyrics?.let { parseLrc(it) }
-                emit(LyricsState.Success(firstMatch.plainLyrics, parsedSyncedLyrics))
+            if (bestMatch != null) {
+                val parsedSyncedLyrics = bestMatch.syncedLyrics?.let { parseLrc(it) }
+                emit(LyricsState.Success(bestMatch.plainLyrics, parsedSyncedLyrics))
             } else {
                 emit(LyricsState.NotAvailable)
             }

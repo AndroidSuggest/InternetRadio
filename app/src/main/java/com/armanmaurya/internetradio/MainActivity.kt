@@ -250,13 +250,15 @@ class MainActivity : AppCompatActivity() {
                                 recordingDuration = recordingDuration,
                                 amplitude = amplitude,
                                 onToggleRecording = playerViewModel::toggleRecording,
+                                onSyncOffsetChange = playerViewModel::setLyricsSyncOffset,
                                 discoveredCastDevices = discoveredCastDevices,
                                 volume = castVolume.toFloat(),
                                 onVolumeChange = playerViewModel::setVolume,
                                 connectedCastDevice = connectedCastDevice,
                                 onConnectCastDevice = playerViewModel::connectToCastDevice,
                                 onDisconnectCastDevice = playerViewModel::disconnectCastDevice,
-                                onDeleteRecording = playerViewModel::deleteRecording
+                                onDeleteRecording = playerViewModel::deleteRecording,
+                                getCurrentPosition = { playerViewModel.currentPosition }
                             )
                         }
                     }

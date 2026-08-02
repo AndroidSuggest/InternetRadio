@@ -45,10 +45,13 @@ fun LyricsTab(
     listState: LazyListState,
     nestedScrollConnection: NestedScrollConnection,
     lyricsState: LyricsState,
-    trackStartTime: Long?
+    trackStartTime: Long?,
+    syncOffsetMs: Long,
+    isPlaying: Boolean,
+    getCurrentPosition: () -> Long,
+    onSyncOffsetChange: (Long) -> Unit
 ) {
     var isSyncEnabled by rememberSaveable { mutableStateOf(true) }
-    var syncOffsetMs by remember(trackStartTime) { mutableLongStateOf(0L) }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -109,14 +112,15 @@ fun LyricsTab(
                     
                     if (actuallySync) {
                         SyncedLyricsView(
-                            lines = lyricsState.syncedLyrics,
+                            lines = lyricsState.syncedLyrics!!,
                             listState = listState,
-                            trackStartTime = trackStartTime,
-                            syncOffsetMs = syncOffsetMs
+                            trackStartTime = trackStartTime!!,
+                            syncOffsetMs = syncOffsetMs,
+                            getCurrentPosition = getCurrentPosition
                         )
                     } else if (!lyricsState.plainLyrics.isNullOrEmpty()) {
                         PlainLyricsView(
-                            lyrics = lyricsState.plainLyrics,
+                            lyrics = lyricsState.plainLyrics!!,
                             listState = listState
                         )
                     } else {
@@ -168,8 +172,8 @@ fun LyricsTab(
                         exit = androidx.compose.animation.slideOutHorizontally(targetOffsetX = { it * 2 })
                     ) {
                         IconButton(
-                            onClick = { syncOffsetMs -= 500L },
-                            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                            onClick = { onSyncOffsetChange(syncOffsetMs - 500L) },
+                            modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                         ) {
                             Icon(
                                 Icons.Default.Remove, 
@@ -204,8 +208,8 @@ fun LyricsTab(
                         exit = androidx.compose.animation.slideOutHorizontally(targetOffsetX = { -it * 2 })
                     ) {
                         IconButton(
-                            onClick = { syncOffsetMs += 500L },
-                            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                            onClick = { onSyncOffsetChange(syncOffsetMs + 500L) },
+                            modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                         ) {
                             Icon(
                                 Icons.Default.Add, 
@@ -248,15 +252,16 @@ fun SyncedLyricsView(
     lines: List<com.armanmaurya.internetradio.data.model.LrcLine>,
     listState: LazyListState,
     trackStartTime: Long,
-    syncOffsetMs: Long
+    syncOffsetMs: Long,
+    getCurrentPosition: () -> Long
 ) {
     var currentTimeMs by remember { mutableLongStateOf(0L) }
     var activeIndex by remember(trackStartTime) { mutableIntStateOf(0) }
 
-    LaunchedEffect(trackStartTime) {
+    LaunchedEffect(lines, trackStartTime) {
         listState.scrollToItem(0)
         while (true) {
-            currentTimeMs = System.currentTimeMillis() - trackStartTime
+            currentTimeMs = getCurrentPosition() - trackStartTime
             delay(100) // update 10 times a second
         }
     }
@@ -271,20 +276,26 @@ fun SyncedLyricsView(
     LaunchedEffect(derivedIndex) {
         activeIndex = derivedIndex
         if (!listState.isScrollInProgress) {
-            val targetIndex = java.lang.Math.max(0, activeIndex - 3)
-            val targetItem = listState.layoutInfo.visibleItemsInfo.find { it.index == targetIndex }
+            val layoutInfo = listState.layoutInfo
+            val viewportHeight = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+            val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == activeIndex }
             
-            if (targetItem != null) {
-                val scrollDistance = targetItem.offset
+            if (itemInfo != null) {
+                val center = layoutInfo.viewportStartOffset + (viewportHeight / 2)
+                val itemCenter = itemInfo.offset + (itemInfo.size / 2)
+                val distance = itemCenter - center
                 listState.animateScrollBy(
-                    value = scrollDistance.toFloat(),
+                    value = distance.toFloat(),
                     animationSpec = androidx.compose.animation.core.tween(
                         durationMillis = 800,
                         easing = androidx.compose.animation.core.LinearOutSlowInEasing
                     )
                 )
             } else {
-                listState.animateScrollToItem(targetIndex)
+                listState.animateScrollToItem(
+                    index = activeIndex,
+                    scrollOffset = -(viewportHeight / 2)
+                )
             }
         }
     }

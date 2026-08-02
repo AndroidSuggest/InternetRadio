@@ -73,6 +73,9 @@ class PlayerViewModel @Inject constructor(
     val castPlaybackState = castController.playbackState
     val castVolume = castController.volume
 
+    val currentPosition: Long
+        get() = playerController.currentPosition
+
     init {
         playbackState
             .onEach { state ->
@@ -240,6 +243,10 @@ class PlayerViewModel @Inject constructor(
 
     fun previous() {
         playerController.previous()
+    }
+
+    fun setLyricsSyncOffset(offsetMs: Long) {
+        playerController.setLyricsSyncOffset(offsetMs)
     }
 
     fun togglePlayPause() {

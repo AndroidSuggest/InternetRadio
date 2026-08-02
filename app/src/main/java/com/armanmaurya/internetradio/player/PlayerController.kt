@@ -61,13 +61,20 @@ class PlayerController @Inject constructor(
         val station = stations.getOrNull(startIndex)
         if (station != null) {
             activeStation = station
-            _playbackState.update { it.copy(currentStation = station, currentTrack = null, trackStartTime = null) }
+            _playbackState.update { it.copy(currentStation = station, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L) }
         }
     }
 
+    val currentPosition: Long
+        get() = controller?.currentPosition ?: 0L
+
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            _playbackState.update { it.copy(isPlaying = isPlaying) }
+            _playbackState.update { 
+                it.copy(
+                    isPlaying = isPlaying
+                ) 
+            }
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
@@ -114,7 +121,7 @@ class PlayerController @Inject constructor(
                 
             if (tagStation != null) {
                 activeStation = tagStation
-                _playbackState.update { it.copy(currentStation = activeStation, currentTrack = null, trackStartTime = null) }
+                _playbackState.update { it.copy(currentStation = activeStation, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L) }
                 scope.launch { recentRepository.addRecentStation(tagStation) }
             } else {
                 // Fallback for scheduled cold start: get FULL RadioStation from library DB
@@ -122,7 +129,7 @@ class PlayerController @Inject constructor(
                     val dbStation = libraryRepository.getStationById(originalId)
                     if (dbStation != null) {
                         activeStation = dbStation
-                        _playbackState.update { it.copy(currentStation = activeStation, currentTrack = null, trackStartTime = null) }
+                        _playbackState.update { it.copy(currentStation = activeStation, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L) }
                         recentRepository.addRecentStation(dbStation)
                     }
                 }
@@ -166,13 +173,14 @@ class PlayerController @Inject constructor(
             val trackInfo = mediaMetadata.artist?.toString() ?: mediaMetadata.title?.toString()
             val previousTrack = _playbackState.value.currentTrack
             if (trackInfo != null && trackInfo.isNotBlank() && trackInfo != activeStation?.name) {
-                if (previousTrack == null) {
-                    // First track since connecting. We don't know the playback position.
-                    _playbackState.update { it.copy(currentTrack = trackInfo, trackStartTime = null) }
-                } else if (previousTrack != trackInfo) {
-                    // Track changed while listening! We know the exact start time.
-                    _playbackState.update { it.copy(currentTrack = trackInfo, trackStartTime = System.currentTimeMillis()) }
-                }
+                // Read the exact start time recorded by the background service. 
+                // If it's -1, it means it's the tune-in track and we don't know the position.
+                val exactStartTime = mediaMetadata.extras?.getLong("track_start_time")?.takeIf { it > 0L }
+                
+                _playbackState.update { it.copy(
+                    currentTrack = trackInfo, 
+                    trackStartTime = exactStartTime
+                ) }
             } else {
                 _playbackState.update { it.copy(currentTrack = null, trackStartTime = null) }
             }
@@ -290,7 +298,7 @@ class PlayerController @Inject constructor(
         }
 
         activeStation = station
-        _playbackState.update { it.copy(currentStation = station, currentTrack = null, trackStartTime = null) }
+        _playbackState.update { it.copy(currentStation = station, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L) }
         
         val mediaItems = stations.map { it.toMediaItem() }
         player.setMediaItems(mediaItems, startIndex, 0L)
@@ -422,6 +430,10 @@ class PlayerController @Inject constructor(
             .setTag(this)
             .build()
     }
+
+    fun setLyricsSyncOffset(offsetMs: Long) {
+        _playbackState.update { it.copy(lyricsSyncOffsetMs = offsetMs) }
+    }
 }
 
 sealed class PlaybackSource {
@@ -443,6 +455,7 @@ data class PlaybackState(
     val currentStation: RadioStation? = null,
     val currentTrack: String? = null,
     val trackStartTime: Long? = null,
+    val lyricsSyncOffsetMs: Long = 0L,
     val isPlaying: Boolean = false,
     val isLoading: Boolean = false,
     val isError: Boolean = false,

@@ -46,6 +46,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -113,6 +115,7 @@ fun PlayerSheetContent(
     recordingDuration: Long = 0L,
     amplitude: Float = 0f,
     onToggleRecording: () -> Unit,
+    onSyncOffsetChange: (Long) -> Unit,
     discoveredCastDevices: List<org.fcast.sender_sdk.DeviceInfo> = emptyList(),
     connectedCastDevice: org.fcast.sender_sdk.CastingDevice? = null,
     volume: Float = 1f,
@@ -120,6 +123,7 @@ fun PlayerSheetContent(
     onConnectCastDevice: (org.fcast.sender_sdk.DeviceInfo) -> Unit = {},
     onDisconnectCastDevice: () -> Unit = {},
     onDeleteRecording: (com.armanmaurya.internetradio.data.repository.RecordingFile) -> Unit,
+    getCurrentPosition: () -> Long,
     modifier: Modifier = Modifier
 ) {
     val station = playbackState.currentStation ?: return
@@ -710,17 +714,7 @@ fun PlayerSheetContent(
                     } else if (playbackState.isLoading) {
                         bufferingText
                     } else {
-                        val rawTrack = playbackState.currentTrack ?: noTrackDataText
-                        if (rawTrack != noTrackDataText && rawTrack.contains(" - ")) {
-                            val parts = rawTrack.split(" - ", limit = 2)
-                            if (parts.size == 2) {
-                                "${parts[1].trim()} - ${parts[0].trim()}"
-                            } else {
-                                rawTrack
-                            }
-                        } else {
-                            rawTrack
-                        }
+                        playbackState.currentTrack ?: noTrackDataText
                     }
                     val isSearchExpanded = searchDialogTrack != null
 
@@ -927,19 +921,32 @@ fun PlayerSheetContent(
 
                     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerLow == androidx.compose.ui.graphics.Color.Black
                     
-                    androidx.compose.material3.ScrollableTabRow(
-                        selectedTabIndex = bottomPagerState.currentPage,
-                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                        divider = {},
-                        edgePadding = 16.dp,
-                        indicator = { tabPositions ->
-                            if (isHistoryExpanded && bottomPagerState.currentPage < tabPositions.size) {
-                                val currentTabPosition = tabPositions[bottomPagerState.currentPage]
+                    val scrollState = rememberScrollState()
+                    val density = androidx.compose.ui.platform.LocalDensity.current
+                    val tabWidths = remember { androidx.compose.runtime.mutableStateListOf(0.dp, 0.dp, 0.dp, 0.dp) }
+                    val tabOffsets = remember { androidx.compose.runtime.mutableStateListOf(0.dp, 0.dp, 0.dp, 0.dp) }
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier.horizontalScroll(scrollState)
+                        ) {
+                            if (isHistoryExpanded) {
+                                val currentOffset = tabOffsets.getOrElse(bottomPagerState.currentPage) { 0.dp }
+                                val currentWidth = tabWidths.getOrElse(bottomPagerState.currentPage) { 0.dp }
+                                
+                                val animOffset by androidx.compose.animation.core.animateDpAsState(currentOffset, label = "offset")
+                                val animWidth by androidx.compose.animation.core.animateDpAsState(currentWidth, label = "width")
+                                
                                 Box(
                                     modifier = Modifier
-                                        .tabIndicatorOffset(currentTabPosition)
-                                        .fillMaxHeight()
-                                        .padding(vertical = 4.dp, horizontal = 4.dp)
+                                        .align(Alignment.CenterStart)
+                                        .offset(x = animOffset)
+                                        .width(animWidth)
+                                        .height(36.dp)
+                                        .padding(horizontal = 4.dp)
                                         .zIndex(-1f)
                                         .background(
                                             if (isPureBlack) androidx.compose.ui.graphics.Color.Black else MaterialTheme.colorScheme.surface,
@@ -954,44 +961,52 @@ fun PlayerSheetContent(
                                         )
                                 )
                             }
-                        }
-                    ) {
-                        val tabs = listOf(
-                            stringResource(R.string.player_tab_tracks) to tab1TextColor,
-                            stringResource(R.string.home_tab_recordings) to tab2TextColor,
-                            "Lyrics" to tab3TextColor,
-                            stringResource(R.string.player_tab_about) to tab4TextColor
-                        )
-                        
-                        tabs.forEachIndexed { index, (title, color) ->
-                            Box(
-                                modifier = Modifier
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            if (bottomPagerState.currentPage != index) {
-                                                coroutineScope.launch {
-                                                    launch { bottomPagerState.animateScrollToPage(index) }
-                                                    if (!isHistoryExpanded) {
-                                                        launch { historyProgressAnim.animateTo(1f) }
+                            
+                            val tabs = listOf(
+                                stringResource(R.string.player_tab_tracks) to tab1TextColor,
+                                stringResource(R.string.home_tab_recordings) to tab2TextColor,
+                                "Lyrics" to tab3TextColor,
+                                stringResource(R.string.player_tab_about) to tab4TextColor
+                            )
+                            
+                            Row {
+                                tabs.forEachIndexed { index, (title, color) ->
+                                    Box(
+                                        modifier = Modifier
+                                            .onGloballyPositioned { coords ->
+                                                val width = with(density) { coords.size.width.toDp() }
+                                                val offset = with(density) { coords.positionInParent().x.toDp() }
+                                                if (tabWidths[index] != width) tabWidths[index] = width
+                                                if (tabOffsets[index] != offset) tabOffsets[index] = offset
+                                            }
+                                            .clickable(
+                                                indication = null,
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = {
+                                                    if (bottomPagerState.currentPage != index) {
+                                                        coroutineScope.launch {
+                                                            launch { bottomPagerState.animateScrollToPage(index) }
+                                                            if (!isHistoryExpanded) {
+                                                                launch { historyProgressAnim.animateTo(1f) }
+                                                            }
+                                                        }
+                                                    } else {
+                                                        coroutineScope.launch {
+                                                            historyProgressAnim.animateTo(if (isHistoryExpanded) 0f else 1f)
+                                                        }
                                                     }
                                                 }
-                                            } else {
-                                                coroutineScope.launch {
-                                                    historyProgressAnim.animateTo(if (isHistoryExpanded) 0f else 1f)
-                                                }
-                                            }
-                                        }
-                                    )
-                                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = title,
-                                    fontWeight = FontWeight.Bold,
-                                    color = color
-                                )
+                                            )
+                                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = title,
+                                            fontWeight = FontWeight.Bold,
+                                            color = color
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -1029,7 +1044,11 @@ fun PlayerSheetContent(
                                     listState = lyricsListState,
                                     nestedScrollConnection = nestedScrollConnection,
                                     lyricsState = lyricsState,
-                                    trackStartTime = playbackState.trackStartTime
+                                    trackStartTime = playbackState.trackStartTime,
+                                    syncOffsetMs = playbackState.lyricsSyncOffsetMs,
+                                    isPlaying = playbackState.isPlaying,
+                                    getCurrentPosition = getCurrentPosition,
+                                    onSyncOffsetChange = onSyncOffsetChange
                                 )
                             }
                         } else if (page == 3) {

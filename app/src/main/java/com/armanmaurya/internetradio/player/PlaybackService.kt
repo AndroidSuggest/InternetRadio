@@ -103,19 +103,37 @@ class PlaybackService : MediaLibraryService() {
             for (i in 0 until metadata.length()) {
                 val entry = metadata.get(i)
                 if (entry is androidx.media3.extractor.metadata.icy.IcyInfo) {
-                    val trackTitle = entry.title
-                    if (!trackTitle.isNullOrBlank()) {
+                    val rawTrackTitle = entry.title
+                    if (!rawTrackTitle.isNullOrBlank()) {
+                        val trackTitle = if (rawTrackTitle.contains(" - ")) {
+                            val parts = rawTrackTitle.split(" - ", limit = 2)
+                            if (parts.size == 2) {
+                                "${parts[1].trim()} - ${parts[0].trim()}"
+                            } else rawTrackTitle
+                        } else rawTrackTitle
+
                         val currentPlayer = player ?: return
                         val currentMediaItem = currentPlayer.currentMediaItem ?: return
                         
                         // Avoid unnecessary updates
                         val currentExtras = currentMediaItem.mediaMetadata.extras
-                        if (currentExtras?.getString("icy_title") == trackTitle) return
+                        val previousRawTitle = currentExtras?.getString("icy_raw_title")
+                        
+                        if (previousRawTitle == rawTrackTitle) return
                         
                         val stationName = currentExtras?.getString("stationName")
 
                         val newExtras = android.os.Bundle(currentExtras ?: android.os.Bundle.EMPTY).apply {
+                            putString("icy_raw_title", rawTrackTitle)
                             putString("icy_title", trackTitle)
+                            
+                            if (previousRawTitle == null) {
+                                // First track since tuning in. We do not know when it actually started.
+                                putLong("track_start_time", -1L)
+                            } else {
+                                // Real track change while listening! We know the exact start time.
+                                putLong("track_start_time", currentPlayer.currentPosition)
+                            }
                         }
 
                         val newMetadataBuilder = currentMediaItem.mediaMetadata.buildUpon()
@@ -197,17 +215,9 @@ class PlaybackService : MediaLibraryService() {
         player = object : androidx.media3.common.ForwardingPlayer(exoPlayer) {
             override fun play() {
                 // Since stop() removes the notification, we let it pause() normally.
-                // However, to prevent playing old buffered audio and crashing from a stale
-                // connection when the user resumes, we force a fresh connection here.
                 val item = currentMediaItem
-                // Only reset if we are actually paused. This prevents interrupting 
-                // playback if a redundant play() command is received.
                 if (item != null && !playWhenReady) {
                     retryStateTracker.reset()
-                    // Seeking to the default position (the live edge) forces ExoPlayer 
-                    // to discard the stale buffer and reconnect.
-                    seekToDefaultPosition()
-                    prepare()
                 }
                 super.play()
             }
