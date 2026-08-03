@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.player
 
 import androidx.compose.ui.res.stringResource
+import androidx.activity.compose.BackHandler
 import com.armanmaurya.internetradio.ui.mobile.screens.player.components.SleepTimerDialog
 
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.history.HistoryTab
@@ -200,6 +201,12 @@ fun PlayerSheetContent(
     LaunchedEffect(progress) {
         if (progress < 0.1f && historyProgress > 0f) {
             historyProgressAnim.snapTo(0f)
+        }
+    }
+
+    BackHandler(enabled = historyProgress > 0f) {
+        coroutineScope.launch {
+            historyProgressAnim.animateTo(0f)
         }
     }
 

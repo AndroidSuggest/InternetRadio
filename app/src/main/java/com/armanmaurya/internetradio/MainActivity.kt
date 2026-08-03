@@ -2,6 +2,7 @@ package com.armanmaurya.internetradio
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.Box
@@ -120,6 +121,12 @@ class MainActivity : AppCompatActivity() {
                         skipHiddenState = false
                     )
                 )
+
+                BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+                    scope.launch {
+                        scaffoldState.bottomSheetState.partialExpand()
+                    }
+                }
 
                 // Handle Swipe to Dismiss (Stop playback when swiped away)
                 LaunchedEffect(scaffoldState.bottomSheetState.currentValue) {
