@@ -41,12 +41,20 @@ Join the Telegram community for discussions, feedback, and announcements, sharin
 ### Mobile
 
 <div align="center">
-  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Browse Screen">
-  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Player Screen">
-  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Search Screen">
-  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Settings Screen">
-  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Library Screen">
-  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" alt="Edit Station Screen">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpeg" alt="Screenshot 1">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpeg" alt="Screenshot 2">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpeg" alt="Screenshot 3">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpeg" alt="Screenshot 4">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpeg" alt="Screenshot 5">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpeg" alt="Screenshot 6">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpeg" alt="Screenshot 7">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/8.jpeg" alt="Screenshot 8">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/9.jpeg" alt="Screenshot 9">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/10.jpeg" alt="Screenshot 10">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/11.jpeg" alt="Screenshot 11">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/12.jpeg" alt="Screenshot 12">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/13.jpeg" alt="Screenshot 13">
+  <img width="30%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/14.jpeg" alt="Screenshot 14">
 </div>
 
 ### Android TV
