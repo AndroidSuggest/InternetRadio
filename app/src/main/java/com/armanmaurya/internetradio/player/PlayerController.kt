@@ -170,7 +170,12 @@ class PlayerController @Inject constructor(
         }
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-            val trackInfo = mediaMetadata.artist?.toString() ?: mediaMetadata.title?.toString()
+            val trackInfo = mediaMetadata.extras?.getString("icy_title") 
+                ?: if (mediaMetadata.title != null && mediaMetadata.artist != null) {
+                    "${mediaMetadata.title} - ${mediaMetadata.artist}"
+                } else {
+                    mediaMetadata.title?.toString() ?: mediaMetadata.artist?.toString()
+                }
             val previousTrack = _playbackState.value.currentTrack
             if (trackInfo != null && trackInfo.isNotBlank() && trackInfo != activeStation?.name) {
                 // Read the exact start time recorded by the background service. 

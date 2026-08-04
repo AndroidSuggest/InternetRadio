@@ -105,12 +105,28 @@ class PlaybackService : MediaLibraryService() {
                 if (entry is androidx.media3.extractor.metadata.icy.IcyInfo) {
                     val rawTrackTitle = entry.title
                     if (!rawTrackTitle.isNullOrBlank()) {
-                        val trackTitle = if (rawTrackTitle.contains(" - ")) {
+                        val trackName: String
+                        val artistName: String?
+                        
+                        if (rawTrackTitle.contains(" - ")) {
                             val parts = rawTrackTitle.split(" - ", limit = 2)
                             if (parts.size == 2) {
-                                "${parts[1].trim()} - ${parts[0].trim()}"
-                            } else rawTrackTitle
-                        } else rawTrackTitle
+                                artistName = parts[0].trim()
+                                trackName = parts[1].trim()
+                            } else {
+                                artistName = null
+                                trackName = rawTrackTitle
+                            }
+                        } else {
+                            artistName = null
+                            trackName = rawTrackTitle
+                        }
+
+                        val trackTitle = if (artistName != null) {
+                            "$trackName - $artistName"
+                        } else {
+                            trackName
+                        }
 
                         val currentPlayer = player ?: return
                         val currentMediaItem = currentPlayer.currentMediaItem ?: return
@@ -137,8 +153,8 @@ class PlaybackService : MediaLibraryService() {
                         }
 
                         val newMetadataBuilder = currentMediaItem.mediaMetadata.buildUpon()
-                            .setTitle(stationName)
-                            .setArtist(trackTitle)
+                            .setTitle(trackName)
+                            .setArtist(artistName)
                             .setExtras(newExtras)
                             
                         val newMediaItem = currentMediaItem.buildUpon()
