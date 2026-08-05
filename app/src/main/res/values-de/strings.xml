@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ========================================== -->
+    <!-- 1. APP DEFINITION                          -->
+    <!-- ========================================== -->
     <string name="app_name">Internet Radio</string>
     <string name="version_format">Version %1$s</string>
+
+    <!-- ========================================== -->
+    <!-- 2. GENERAL ACTIONS                         -->
+    <!-- ========================================== -->
     <string name="general_search">Suchen</string>
     <string name="general_clear">Löschen</string>
     <string name="general_later">Später</string>
@@ -13,21 +20,33 @@
     <string name="general_save">Speichern</string>
     <string name="general_add">Hinzufügen</string>
     <string name="cd_back">Zurück</string>
-    <string name="cd_close_search">Suche schliessen</string>
+    <string name="cd_close_search">Suche schließen</string>
     <string name="cd_search">Suchen</string>
     <string name="cd_clear_search">Suche löschen</string>
+
+    <!-- ========================================== -->
+    <!-- 3. GENERAL LABELS                          -->
+    <!-- ========================================== -->
     <string name="general_name">Name</string>
     <string name="general_hours">Stunden</string>
     <string name="general_minutes">Minuten</string>
     <string name="general_unknown">Unbekannt</string>
     <string name="general_station_count_msg">%1$d Sender</string>
     <string name="general_no_recordings">Bisher keine Aufnahmen</string>
+
+    <!-- ========================================== -->
+    <!-- 4. ERRORS                                  -->
+    <!-- ========================================== -->
     <string name="error_unknown">Unbekannter Fehler</string>
     <string name="error_something_went_wrong">Es ist ein Fehler aufgetreten, bitte erneut versuchen.</string>
     <string name="error_station_not_found">Sender nicht gefunden</string>
     <string name="error_invalid_url">Ungültige URL</string>
     <string name="error_cannot_open_website">Webseite kann nicht geöffnet werden</string>
     <string name="error_cannot_open_url">URL kann nicht geöffnet werden</string>
+
+    <!-- ========================================== -->
+    <!-- 5. SETTINGS                                -->
+    <!-- ========================================== -->
     <string name="settings_title">Einstellungen</string>
     <string name="settings_appearance_section">Aussehen</string>
     <string name="settings_dynamic_theme_title">Dynamische Farben</string>
@@ -43,7 +62,7 @@
     <string name="settings_auto_route_search_subtitle">Beim Suchen automatisch zum Tab „Entdecken“ wechseln</string>
     <string name="settings_auto_play">Automatisches Abspielen beim Start</string>
     <string name="settings_auto_play_desc">Beim Start der App den zuletzt gehörten Sender abspielen</string>
-    <string name="settings_default_tab">Standard Tab beim Start</string>
+    <string name="settings_default_tab">Standardtab beim Start</string>
     <string name="settings_player_section">Player</string>
     <string name="settings_stop_on_audio_noisy">Pause bei Gerätetrennung</string>
     <string name="settings_stop_on_audio_noisy_desc">Wiedergabe pausieren, wenn Bluetooth- oder kabelgebundene Kopfhörer getrennt werden</string>
@@ -56,11 +75,15 @@
     <string name="settings_check_updates">Auf Aktualisierungen prüfen</string>
     <string name="settings_rate_review">Bewerten und Rezensieren</string>
     <string name="settings_track_history_limit">Titel-Verlauf Begrenzung</string>
-    <string name="settings_system_default">Standard System</string>
-    <string name="settings_number_of_tracks">Anzahl Titel</string>
+    <string name="settings_system_default">Systemstandard</string>
+    <string name="settings_number_of_tracks">Anzahl der Titel</string>
     <string name="settings_checking_for_updates">Prüfen auf Aktualisierungen...</string>
     <string name="settings_no_update_available">Keine Aktualisierung verfügbar</string>
-    <string name="settings_theme_system">Standard System</string>
+    <string name="settings_theme_system">Systemstandard</string>
+
+    <!-- ========================================== -->
+    <!-- 6b. BACKUP & RESTORE                       -->
+    <!-- ========================================== -->
     <string name="settings_backup_section">Sicherung und Wiederherstellung</string>
     <string name="settings_conflict_title">Wenn ein Konflikt auftritt</string>
     <string name="settings_conflict_skip">Vorhandene überspringen</string>
@@ -73,6 +96,10 @@
     <string name="settings_export_subtitle">Sender in einer Datei sichern</string>
     <string name="settings_import_title">Bibliothek importieren</string>
     <string name="settings_import_subtitle">Sender aus einer Sicherungsdatei wiederherstellen</string>
+
+    <!-- ========================================== -->
+    <!-- 6. ABOUT                                   -->
+    <!-- ========================================== -->
     <string name="about_title">Über</string>
     <string name="about_us">Über uns</string>
     <string name="about_app_description">Ein einfacher Internetradio-Player, mit dem Sie Tausende von Radiosendern aus aller Welt entdecken und anhören können.</string>
@@ -86,6 +113,10 @@
     <string name="about_cd_linkedin">LinkedIn</string>
     <string name="about_cd_github">GitHub</string>
     <string name="about_cd_instagram">Instagram</string>
+
+    <!-- ========================================== -->
+    <!-- 7. HOME                                    -->
+    <!-- ========================================== -->
     <string name="home_tab_browse">Entdecken</string>
     <string name="home_tab_recent">Zuletzt</string>
     <string name="home_tab_library">Bibliothek</string>
@@ -112,6 +143,7 @@
     <string name="home_cd_station_logo">%1$s logo</string>
     <string name="home_cd_favorite">Favorit</string>
     <string name="home_cd_more_options">Weitere Optionen</string>
+    <string name="home_export_station">Station exportieren</string>
     <string name="home_no_recent_stations_filtered">Keine kürzlich abgespielten Sender entsprechen den Filtern.</string>
     <string name="home_no_recent_stations">Keine kürzlich abgespielten Sender</string>
     <string name="home_no_stations_found_for">Für \"%1$s\" wurden keine Sender gefunden</string>
@@ -119,12 +151,24 @@
     <string name="home_no_library_stations_yet">Noch keine Sender in der Bibliothek</string>
     <string name="home_clear_recent_title">Verlauf löschen?</string>
     <string name="home_clear_recent_message">Sollen die zuletzt verwendeten Sender wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+
+    <!-- ========================================== -->
+    <!-- 8. SELECT COUNTRY                          -->
+    <!-- ========================================== -->
     <string name="select_country_search">Land suchen</string>
     <string name="select_country_title">Land auswählen</string>
     <string name="select_country_all">Alle Länder</string>
+
+    <!-- ========================================== -->
+    <!-- 9. SELECT LANGUAGE                         -->
+    <!-- ========================================== -->
     <string name="select_language_search">Sprache suchen</string>
     <string name="select_language_title">Sprache auswählen</string>
     <string name="select_language_all">Alle Sprachen</string>
+
+    <!-- ========================================== -->
+    <!-- 10. SELECT TAGS                            -->
+    <!-- ========================================== -->
     <string name="select_tags_search">Tags suchen</string>
     <string name="select_tags_title">Tags auswählen</string>
     <string name="select_tags_cd_clear_all">Alles löschen</string>
@@ -132,6 +176,10 @@
     <string name="select_tags_cd_remove_tag">Tag entfernen</string>
     <string name="select_tags_discard_changes">Änderungen verwerfen?</string>
     <string name="select_tags_discard_changes_message">Die ausgewählten Tags sind noch nicht gespeichert. Sollen diese wirklich verworfen werden?</string>
+
+        <!-- ========================================== -->
+    <!-- 11. EDIT STATION                           -->
+    <!-- ========================================== -->
     <string name="edit_station_add_station">Sender hinzufügen</string>
     <string name="edit_station_title">Sender bearbeiten</string>
     <string name="edit_station_name_field">Name</string>
@@ -140,7 +188,7 @@
     <string name="edit_station_favicon_url_field">Favicon-URL</string>
     <string name="edit_station_country_field">Land</string>
     <string name="edit_station_language_field">Sprache</string>
-    <string name="edit_station_tags_optional">Tags (Komma getrennt)</string>
+    <string name="edit_station_tags_optional">Tags (Kommatrennung)</string>
     <string name="edit_station_failed_fetch_original_data">Die Originaldaten konnten nicht abgerufen werden</string>
     <string name="edit_station_unsaved_changes">Nicht gespeicherte Änderungen</string>
     <string name="edit_station_unsaved_changes_message_exit">Die Änderungen sind noch nicht gespeichert. Sollen diese wirklich verworfen und das Programm beendet werden?</string>
@@ -149,6 +197,10 @@
     <string name="edit_station_fields_reset_message">Felder auf Originaldaten zurückgesetzt</string>
     <string name="edit_station_saved_message">Gespeichert</string>
     <string name="edit_station_cd_reset_to_original">Auf Originalzustand zurückgesetzt</string>
+
+    <!-- ========================================== -->
+    <!-- 12. PLAYER                                 -->
+    <!-- ========================================== -->
     <string name="player_buffering">Pufferung</string>
     <string name="player_no_track_data">Keine Titelinformationen</string>
     <string name="player_station_info">Senderinformationen</string>
@@ -184,13 +236,22 @@
     <string name="player_tab_tracks">Titel</string>
     <string name="player_retrying_in">Wiederholungsversuch in %1$ds...</string>
     <string name="player_retrying_connection">Verbindung wird erneut versucht...</string>
+
+    <!-- ========================================== -->
+    <!-- 13. CAST DIALOG                            -->
+    <!-- ========================================== -->
     <string name="cast_connected_to">Verbunden mit</string>
     <string name="cast_to_device">Auf Gerät übertragen</string>
     <string name="cast_available_devices">Verfügbare Geräte</string>
     <string name="cast_no_devices_found">Keine Geräte im Netzwerk gefunden.</string>
     <string name="cast_disconnect">Trennen</string>
-    <string name="cast_close">Schliessen</string>
+    <string name="cast_close">Schließen</string>
+    
     <string name="action_retry">Wiederholen</string>
+
+    <!-- ========================================== -->
+    <!-- 14. SCHEDULE                               -->
+    <!-- ========================================== -->
     <string name="schedule_create">Zeitplan erstellen</string>
     <string name="schedule_edit">Zeitplan bearbeiten</string>
     <string name="schedule_name_optional">Name des Zeitplans (optional)</string>
