@@ -151,6 +151,10 @@
     <string name="home_no_library_stations_yet">Noch keine Sender in der Bibliothek</string>
     <string name="home_clear_recent_title">Verlauf löschen?</string>
     <string name="home_clear_recent_message">Sollen die zuletzt verwendeten Sender wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="home_sort_played">Abgespielt</string>
+    <string name="home_sort_added">Hinzugefügt</string>
+    <string name="home_sort_name">Name</string>
+    <string name="home_sort_custom">Individuell</string>
 
     <!-- ========================================== -->
     <!-- 8. SELECT COUNTRY                          -->
@@ -177,7 +181,7 @@
     <string name="select_tags_discard_changes">Änderungen verwerfen?</string>
     <string name="select_tags_discard_changes_message">Die ausgewählten Tags sind noch nicht gespeichert. Sollen diese wirklich verworfen werden?</string>
 
-        <!-- ========================================== -->
+    <!-- ========================================== -->
     <!-- 11. EDIT STATION                           -->
     <!-- ========================================== -->
     <string name="edit_station_add_station">Sender hinzufügen</string>
@@ -236,6 +240,8 @@
     <string name="player_tab_tracks">Titel</string>
     <string name="player_retrying_in">Wiederholungsversuch in %1$ds...</string>
     <string name="player_retrying_connection">Verbindung wird erneut versucht...</string>
+    <string name="player_tab_lyrics">Songtext</string>
+    <string name="player_lyrics_not_available">Songtext nicht verfügbar</string>
 
     <!-- ========================================== -->
     <!-- 13. CAST DIALOG                            -->
