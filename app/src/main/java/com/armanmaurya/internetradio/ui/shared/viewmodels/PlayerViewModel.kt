@@ -225,6 +225,12 @@ class PlayerViewModel @Inject constructor(
 
     fun play(stations: List<RadioStation>, startIndex: Int, source: PlaybackSource = PlaybackSource.None) {
         val station = stations[startIndex]
+        
+        if (playbackState.value.currentStation?.stationUuid == station.stationUuid) {
+            togglePlayPause()
+            return
+        }
+
         playerController.play(
             stations = stations,
             startIndex = startIndex,

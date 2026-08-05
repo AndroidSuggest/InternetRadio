@@ -5,6 +5,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.border
@@ -54,6 +55,8 @@ fun StationListCard(
     isPlaybackActive: Boolean = false,
     isFavorite: Boolean = false,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+
     val subtitleText = remember(station.country, station.language, station.codec, station.bitrate) {
         buildString {
             if (station.country.isNotBlank()) append(station.country)
@@ -73,7 +76,11 @@ fun StationListCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
