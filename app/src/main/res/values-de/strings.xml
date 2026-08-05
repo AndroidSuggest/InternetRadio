@@ -129,7 +129,7 @@
     <string name="home_clicks">Klicks</string>
     <string name="home_trend">Tendenz</string>
     <string name="home_toggle_view">Ansicht umschalten</string>
-    <string name="home_delete_station">Sender löschen</string>
+
     <string name="home_descending">Absteigend</string>
     <string name="home_ascending">Aufsteigend</string>
     <string name="home_cd_descending">Absteigend</string>

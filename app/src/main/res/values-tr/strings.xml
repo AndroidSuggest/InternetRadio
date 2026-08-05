@@ -110,7 +110,7 @@
     <string name="home_clicks">Tıklamalar</string>
     <string name="home_trend">Trend</string>
     <string name="home_toggle_view">Görünümü Değiştir</string>
-    <string name="home_delete_station">İstasyonu Sil</string>
+
     <string name="home_descending">Azalan</string>
     <string name="home_ascending">Artan</string>
     <string name="home_cd_descending">Azalan</string>
