@@ -565,6 +565,7 @@ private fun ScheduleConfigurationForm(
             }
         }
 
+        Spacer(modifier = Modifier.height(160.dp))
         }
     }
 }

@@ -345,7 +345,7 @@ fun EditStationScreen(
                         unfocusedContainerColor = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(160.dp))
             }
         }
     }
