@@ -325,7 +325,7 @@ class PlaybackService : MediaLibraryService() {
                     nm.createNotificationChannel(channel)
                 }
                 val notification = android.app.Notification.Builder(this, channelId)
-                    .setSmallIcon(com.armanmaurya.internetradio.R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(com.armanmaurya.internetradio.R.drawable.media3_notification_small_icon)
                     .setContentTitle("Connecting to station...")
                     .setOngoing(true)
                     .build()
