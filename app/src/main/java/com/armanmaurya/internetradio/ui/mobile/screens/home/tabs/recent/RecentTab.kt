@@ -171,6 +171,8 @@ fun RecentContent(
                     Text(
                         text = if (useFilter) stringResource(R.string.home_no_recent_stations_filtered) else stringResource(R.string.home_no_recent_stations),
                         style = MaterialTheme.typography.bodyLarge,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(32.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

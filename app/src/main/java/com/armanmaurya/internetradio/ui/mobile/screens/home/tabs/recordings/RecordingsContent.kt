@@ -64,6 +64,8 @@ fun RecordingsContent(
             Text(
                 text = stringResource(R.string.general_no_recordings),
                 style = MaterialTheme.typography.bodyLarge,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(32.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

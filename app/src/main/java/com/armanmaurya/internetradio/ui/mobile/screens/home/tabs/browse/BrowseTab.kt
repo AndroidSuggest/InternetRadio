@@ -156,7 +156,13 @@ fun BrowseContent(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text(text = stringResource(R.string.error_something_went_wrong))
+                        Text(
+                            text = stringResource(R.string.error_something_went_wrong),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 32.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { viewModel.retry() }) {
                             Text(text = stringResource(R.string.action_retry))
@@ -173,7 +179,13 @@ fun BrowseContent(
                             .padding(top = 64.dp),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = stringResource(R.string.home_no_stations_found_for, uiState.searchQuery))
+                        Text(
+                            text = stringResource(R.string.home_no_stations_found_for, uiState.searchQuery),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(32.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }

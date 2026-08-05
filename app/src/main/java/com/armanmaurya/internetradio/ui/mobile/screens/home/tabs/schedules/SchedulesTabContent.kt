@@ -48,7 +48,13 @@ fun SchedulesTabContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(stringResource(R.string.schedule_no_schedules_yet))
+                Text(
+                    text = stringResource(R.string.schedule_no_schedules_yet),
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.padding(32.dp),
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         } else {
             LazyColumn(
