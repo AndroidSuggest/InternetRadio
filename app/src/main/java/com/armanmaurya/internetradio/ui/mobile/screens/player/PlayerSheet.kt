@@ -972,7 +972,7 @@ fun PlayerSheetContent(
                             val tabs = listOf(
                                 stringResource(R.string.player_tab_tracks) to tab1TextColor,
                                 stringResource(R.string.home_tab_recordings) to tab2TextColor,
-                                "Lyrics" to tab3TextColor,
+                                stringResource(R.string.player_tab_lyrics) to tab3TextColor,
                                 stringResource(R.string.player_tab_about) to tab4TextColor
                             )
                             

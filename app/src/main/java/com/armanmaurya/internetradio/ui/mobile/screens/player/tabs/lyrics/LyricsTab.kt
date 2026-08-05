@@ -8,6 +8,8 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
+import com.armanmaurya.internetradio.R
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,7 +104,7 @@ fun LyricsTab(
                     ) {
                         item {
                             Text(
-                                text = "Lyrics not available",
+                                text = stringResource(R.string.player_lyrics_not_available),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -135,7 +137,7 @@ fun LyricsTab(
                         ) {
                             item {
                                 Text(
-                                    text = "Lyrics not available",
+                                    text = stringResource(R.string.player_lyrics_not_available),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

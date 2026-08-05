@@ -150,6 +150,10 @@
     <string name="home_no_library_stations_yet">No library stations yet</string>
     <string name="home_clear_recent_title">Clear recent history?</string>
     <string name="home_clear_recent_message">Are you sure you want to clear all your recent stations? This action cannot be undone.</string>
+    <string name="home_sort_played">Played</string>
+    <string name="home_sort_added">Added</string>
+    <string name="home_sort_name">Name</string>
+    <string name="home_sort_custom">Custom</string>
 
     <!-- ========================================== -->
     <!-- 8. SELECT COUNTRY                          -->
@@ -235,6 +239,8 @@
     <string name="player_tab_tracks">Tracks</string>
     <string name="player_retrying_in">Retrying in %1$ds...</string>
     <string name="player_retrying_connection">Retrying connection...</string>
+    <string name="player_tab_lyrics">Lyrics</string>
+    <string name="player_lyrics_not_available">Lyrics not available</string>
 
     <!-- ========================================== -->
     <!-- 13. CAST DIALOG                            -->

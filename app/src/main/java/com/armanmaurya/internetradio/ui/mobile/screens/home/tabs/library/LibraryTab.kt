@@ -190,10 +190,10 @@ fun LibraryContent(
                             )
                             Spacer(Modifier.width(8.dp))
                             val sortText = when (sortOption) {
-                                LibrarySortOption.NAME_A_Z, LibrarySortOption.NAME_Z_A -> "Name"
-                                LibrarySortOption.RECENTLY_ADDED, LibrarySortOption.OLDEST_ADDED -> "Added"
-                                LibrarySortOption.RECENTLY_PLAYED, LibrarySortOption.LEAST_RECENTLY_PLAYED -> "Played"
-                                LibrarySortOption.CUSTOM -> "Custom"
+                                LibrarySortOption.NAME_A_Z, LibrarySortOption.NAME_Z_A -> stringResource(R.string.home_sort_name)
+                                LibrarySortOption.RECENTLY_ADDED, LibrarySortOption.OLDEST_ADDED -> stringResource(R.string.home_sort_added)
+                                LibrarySortOption.RECENTLY_PLAYED, LibrarySortOption.LEAST_RECENTLY_PLAYED -> stringResource(R.string.home_sort_played)
+                                LibrarySortOption.CUSTOM -> stringResource(R.string.home_sort_custom)
                             }
                             Text(
                                 text = sortText,
@@ -233,7 +233,7 @@ fun LibraryContent(
                                 ) {
                                     Column(modifier = Modifier.width(IntrinsicSize.Max)) {
                                         DropdownMenuItem(
-                                            text = { Text("Played") },
+                                            text = { Text(stringResource(R.string.home_sort_played)) },
                                             onClick = { 
                                                 if (sortOption == LibrarySortOption.RECENTLY_PLAYED) {
                                                     viewModel.setSortOption(LibrarySortOption.LEAST_RECENTLY_PLAYED)
@@ -248,7 +248,7 @@ fun LibraryContent(
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text("Added") },
+                                            text = { Text(stringResource(R.string.home_sort_added)) },
                                             onClick = { 
                                                 if (sortOption == LibrarySortOption.RECENTLY_ADDED) {
                                                     viewModel.setSortOption(LibrarySortOption.OLDEST_ADDED)
@@ -263,7 +263,7 @@ fun LibraryContent(
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text("Name") },
+                                            text = { Text(stringResource(R.string.home_sort_name)) },
                                             onClick = { 
                                                 if (sortOption == LibrarySortOption.NAME_A_Z) {
                                                     viewModel.setSortOption(LibrarySortOption.NAME_Z_A)
@@ -278,7 +278,7 @@ fun LibraryContent(
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text("Custom") },
+                                            text = { Text(stringResource(R.string.home_sort_custom)) },
                                             onClick = { 
                                                 viewModel.setSortOption(LibrarySortOption.CUSTOM)
                                                 showSortMenu = false
