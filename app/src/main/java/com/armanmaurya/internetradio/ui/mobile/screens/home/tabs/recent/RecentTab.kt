@@ -190,6 +190,7 @@ fun RecentContent(
                         isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                         isPlaybackActive = isPlaybackActive,
                         isFavorite = libraryStationUuids.contains(station.stationUuid),
+                        onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
                         onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
                         onExportClick = { onExportStation?.invoke(station) }
                     )
@@ -203,6 +204,7 @@ fun RecentContent(
                         isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                         isPlaybackActive = isPlaybackActive,
                         isFavorite = libraryStationUuids.contains(station.stationUuid),
+                        onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
                         onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
                         onExportClick = { onExportStation?.invoke(station) }
                     )

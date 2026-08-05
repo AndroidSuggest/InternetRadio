@@ -199,6 +199,7 @@ fun BrowseContent(
                                 .fillMaxWidth()
                                 .animateItem(),
                             onExportClick = { onExportStation?.invoke(station) },
+                            onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
                             isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                             isPlaybackActive = isPlaybackActive,
                             isFavorite = libraryStationUuids.contains(station.stationUuid)
@@ -211,6 +212,7 @@ fun BrowseContent(
                                 .fillMaxWidth()
                                 .animateItem(),
                             onExportClick = { onExportStation?.invoke(station) },
+                            onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
                             isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                             isPlaybackActive = isPlaybackActive,
                             isFavorite = libraryStationUuids.contains(station.stationUuid)

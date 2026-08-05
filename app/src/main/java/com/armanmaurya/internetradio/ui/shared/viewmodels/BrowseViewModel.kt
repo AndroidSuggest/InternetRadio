@@ -281,6 +281,16 @@ class BrowseViewModel @Inject constructor(
         }
     }
 
+    fun toggleLibrary(station: RadioStation) {
+        viewModelScope.launch {
+            if (libraryStationUuids.value.contains(station.stationUuid)) {
+                libraryRepository.removeStationFromLibrary(station.stationUuid)
+            } else {
+                libraryRepository.addStationToLibrary(station)
+            }
+        }
+    }
+
     private data class BrowseFilterParams(
         val selectedCountryCode: String?,
         val selectedLanguage: String?,

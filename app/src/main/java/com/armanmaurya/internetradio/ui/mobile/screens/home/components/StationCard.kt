@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.FileUpload
@@ -54,7 +56,7 @@ fun StationCard(
     station: RadioStation,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onDeleteClick: (() -> Unit)? = null,
+    onToggleFavoriteClick: (() -> Unit)? = null,
     onEditClick: (() -> Unit)? = null,
     onRemoveFromRecentClick: (() -> Unit)? = null,
     onExportClick: (() -> Unit)? = null,
@@ -172,7 +174,7 @@ fun StationCard(
                 )
             }
 
-            if (onDeleteClick != null || onEditClick != null || onRemoveFromRecentClick != null || onExportClick != null) {
+            if (onToggleFavoriteClick != null || onEditClick != null || onRemoveFromRecentClick != null || onExportClick != null) {
                 Box(modifier = Modifier.align(Alignment.TopEnd)) {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(
@@ -209,15 +211,19 @@ fun StationCard(
                                 }
                             )
                         }
-                        if (onDeleteClick != null) {
+                        if (onToggleFavoriteClick != null) {
                             DropdownMenuItem(
-                                text = { Text(stringResource(R.string.home_delete_station)) },
+                                text = { Text(if (isFavorite) stringResource(R.string.home_remove_from_library) else stringResource(R.string.home_add_to_library)) },
                                 onClick = {
                                     showMenu = false
-                                    onDeleteClick()
+                                    onToggleFavoriteClick()
                                 },
                                 leadingIcon = {
-                                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                                    Icon(
+                                        if (isFavorite) Icons.Default.BookmarkRemove else Icons.Default.BookmarkAdd,
+                                        contentDescription = null,
+                                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                                    )
                                 }
                             )
                         }

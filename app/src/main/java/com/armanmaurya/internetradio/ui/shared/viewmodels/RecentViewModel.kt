@@ -102,4 +102,14 @@ class RecentViewModel @Inject constructor(
             recentRepository.clearAllRecent()
         }
     }
+
+    fun toggleLibrary(station: RadioStation) {
+        viewModelScope.launch {
+            if (libraryStationUuids.value.contains(station.stationUuid)) {
+                libraryRepository.removeStationFromLibrary(station.stationUuid)
+            } else {
+                libraryRepository.addStationToLibrary(station)
+            }
+        }
+    }
 }

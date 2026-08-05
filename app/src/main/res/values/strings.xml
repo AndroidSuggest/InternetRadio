@@ -130,7 +130,8 @@
     <string name="home_clicks">Clicks</string>
     <string name="home_trend">Trend</string>
     <string name="home_toggle_view">Toggle View</string>
-    <string name="home_delete_station">Delete Station</string>
+    <string name="home_add_to_library">Add to library</string>
+    <string name="home_remove_from_library">Remove from library</string>
     <string name="home_descending">Descending</string>
     <string name="home_ascending">Ascending</string>
     <string name="home_cd_descending">Descending</string>

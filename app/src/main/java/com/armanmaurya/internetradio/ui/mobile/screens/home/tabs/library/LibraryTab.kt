@@ -358,23 +358,25 @@ fun LibraryContent(
                             StationCard(
                                 station = station,
                                 onClick = { onStationClick(currentStations, index, PlaybackSource.Library) },
-                                onDeleteClick = { viewModel.removeStation(station.stationUuid) },
+                                onToggleFavoriteClick = { viewModel.removeStation(station.stationUuid) },
                                 onEditClick = { onEditStation(station.stationUuid) },
                                 onExportClick = { onExportStation?.invoke(station) },
                                 modifier = Modifier.fillMaxWidth().then(dragModifier),
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
-                                isPlaybackActive = isPlaybackActive
+                                isPlaybackActive = isPlaybackActive,
+                                isFavorite = true
                             )
                         } else {
                             StationListCard(
                                 station = station,
                                 onClick = { onStationClick(currentStations, index, PlaybackSource.Library) },
-                                onDeleteClick = { viewModel.removeStation(station.stationUuid) },
+                                onToggleFavoriteClick = { viewModel.removeStation(station.stationUuid) },
                                 onEditClick = { onEditStation(station.stationUuid) },
                                 onExportClick = { onExportStation?.invoke(station) },
                                 modifier = Modifier.fillMaxWidth().then(dragModifier),
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
-                                isPlaybackActive = isPlaybackActive
+                                isPlaybackActive = isPlaybackActive,
+                                isFavorite = true
                             )
                         }
                     }
