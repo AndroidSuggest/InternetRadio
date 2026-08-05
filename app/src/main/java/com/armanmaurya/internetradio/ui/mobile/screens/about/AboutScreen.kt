@@ -118,7 +118,7 @@ fun AboutScreen(
                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
                     contentDescription = stringResource(R.string.about_cd_app_icon),
                     modifier = Modifier.size(120.dp),
-                    tint = Color.Unspecified
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
