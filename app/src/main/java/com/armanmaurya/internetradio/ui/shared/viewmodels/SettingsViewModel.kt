@@ -77,6 +77,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setDisableUpdateCheck(disabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setDisableUpdateCheck(disabled)
+        }
+    }
+
     fun setStopOnAudioBecomingNoisy(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setStopOnAudioBecomingNoisy(enabled)

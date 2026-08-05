@@ -87,17 +87,19 @@ class MainActivity : AppCompatActivity() {
             val mainViewModel: MainViewModel = hiltViewModel()
             val updateAvailable by mainViewModel.updateAvailable.collectAsStateWithLifecycle()
             
-            LaunchedEffect(Unit) {
-                val versionName = try {
-                    packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
-                } catch (e: Exception) {
-                    "0.0.0"
-                }
-                mainViewModel.checkForUpdates(versionName)
-            }
-            
             val appPreferences by settingsRepository.appPreferencesFlow
                 .collectAsStateWithLifecycle(initialValue = com.armanmaurya.internetradio.data.model.AppPreferences())
+
+            LaunchedEffect(appPreferences.disableUpdateCheck) {
+                if (!appPreferences.disableUpdateCheck) {
+                    val versionName = try {
+                        packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
+                    } catch (e: Exception) {
+                        "0.0.0"
+                    }
+                    mainViewModel.checkForUpdates(versionName)
+                }
+            }
 
             InternetRadioTheme(appPreferences = appPreferences) {
                 updateAvailable?.let { release ->

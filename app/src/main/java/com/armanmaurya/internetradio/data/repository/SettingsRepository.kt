@@ -53,6 +53,7 @@ class SettingsRepository @Inject constructor(
         val TRACK_HISTORY_LIMIT = androidx.datastore.preferences.core.intPreferencesKey("track_history_limit")
         val DEFAULT_TAB = androidx.datastore.preferences.core.intPreferencesKey("default_tab")
         val AUTO_PLAY_ON_START = booleanPreferencesKey("auto_play_on_start")
+        val DISABLE_UPDATE_CHECK = booleanPreferencesKey("disable_update_check")
         val LAST_UPDATE_CHECK_TIME = androidx.datastore.preferences.core.longPreferencesKey("last_update_check_time")
         val MAX_RETRY_DURATION = androidx.datastore.preferences.core.longPreferencesKey("max_retry_duration")
         val CONFLICT_STRATEGY = stringPreferencesKey("conflict_strategy")
@@ -92,6 +93,7 @@ class SettingsRepository @Inject constructor(
             val trackHistoryLimit = preferences[PreferencesKeys.TRACK_HISTORY_LIMIT] ?: 50
             val defaultTab = preferences[PreferencesKeys.DEFAULT_TAB] ?: 0
             val autoPlayOnStart = preferences[PreferencesKeys.AUTO_PLAY_ON_START] ?: false
+            val disableUpdateCheck = preferences[PreferencesKeys.DISABLE_UPDATE_CHECK] ?: false
             val lastUpdateCheckTime = preferences[PreferencesKeys.LAST_UPDATE_CHECK_TIME] ?: 0L
             val maxRetryDuration = preferences[PreferencesKeys.MAX_RETRY_DURATION] ?: 300_000L
             val conflictStrategyName = preferences[PreferencesKeys.CONFLICT_STRATEGY]
@@ -121,6 +123,7 @@ class SettingsRepository @Inject constructor(
                 trackHistoryLimit = trackHistoryLimit,
                 defaultTab = defaultTab,
                 autoPlayOnStart = autoPlayOnStart,
+                disableUpdateCheck = disableUpdateCheck,
                 lastUpdateCheckTime = lastUpdateCheckTime,
                 maxRetryDuration = maxRetryDuration,
                 conflictStrategy = conflictStrategy,
@@ -138,6 +141,10 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setAutoPlayOnStart(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.AUTO_PLAY_ON_START] = enabled }
+    }
+
+    suspend fun setDisableUpdateCheck(disabled: Boolean) {
+        context.dataStore.edit { it[PreferencesKeys.DISABLE_UPDATE_CHECK] = disabled }
     }
 
     suspend fun setStopOnAudioBecomingNoisy(enabled: Boolean) {

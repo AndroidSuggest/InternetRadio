@@ -137,7 +137,8 @@ fun SettingsScreen(
                 defaultTabExpanded = defaultTabExpanded,
                 onToggleDefaultTabExpanded = { defaultTabExpanded = !defaultTabExpanded },
                 onSetDefaultTab = viewModel::setDefaultTab,
-                onSetAutoRouteToBrowseOnSearch = viewModel::setAutoRouteToBrowseOnSearch
+                onSetAutoRouteToBrowseOnSearch = viewModel::setAutoRouteToBrowseOnSearch,
+                onSetDisableUpdateCheck = viewModel::setDisableUpdateCheck
             )
             PlayerSection(
                 uiState = uiState,
@@ -270,7 +271,8 @@ private fun GeneralSection(
     defaultTabExpanded: Boolean,
     onToggleDefaultTabExpanded: () -> Unit,
     onSetDefaultTab: (Int) -> Unit,
-    onSetAutoRouteToBrowseOnSearch: (Boolean) -> Unit
+    onSetAutoRouteToBrowseOnSearch: (Boolean) -> Unit,
+    onSetDisableUpdateCheck: (Boolean) -> Unit
 ) {
     val currentLocales = AppCompatDelegate.getApplicationLocales()
     val activeLanguageCode = if (currentLocales.isEmpty) {
@@ -320,6 +322,14 @@ private fun GeneralSection(
             isEnabled = uiState.autoRouteToBrowseOnSearch,
             onToggle = onSetAutoRouteToBrowseOnSearch,
             icon = Icons.Default.Search
+        )
+
+        ToggleItem(
+            title = stringResource(R.string.settings_disable_update_check),
+            subtitle = stringResource(R.string.settings_disable_update_check_desc),
+            isEnabled = uiState.disableUpdateCheck,
+            onToggle = onSetDisableUpdateCheck,
+            icon = Icons.Default.Update
         )
     }
 }
