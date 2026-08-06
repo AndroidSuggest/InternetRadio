@@ -70,10 +70,21 @@ class PlayerController @Inject constructor(
 
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            _playbackState.update { 
-                it.copy(
-                    isPlaying = isPlaying
-                ) 
+            val now = System.currentTimeMillis()
+            _playbackState.update { state ->
+                if (isPlaying) {
+                    state.copy(
+                        isPlaying = true,
+                        sessionResumeTimeMs = now
+                    )
+                } else {
+                    val activeTime = state.sessionResumeTimeMs?.let { now - it } ?: 0L
+                    state.copy(
+                        isPlaying = false,
+                        sessionActiveDurationMs = state.sessionActiveDurationMs + activeTime,
+                        sessionResumeTimeMs = null
+                    )
+                }
             }
         }
 
@@ -121,7 +132,16 @@ class PlayerController @Inject constructor(
                 
             if (tagStation != null) {
                 activeStation = tagStation
-                _playbackState.update { it.copy(currentStation = activeStation, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L) }
+                _playbackState.update { 
+                    it.copy(
+                        currentStation = activeStation, 
+                        currentTrack = null, 
+                        trackStartTime = null, 
+                        lyricsSyncOffsetMs = 0L,
+                        sessionActiveDurationMs = 0L,
+                        sessionResumeTimeMs = if (it.isPlaying) System.currentTimeMillis() else null
+                    ) 
+                }
                 scope.launch { recentRepository.addRecentStation(tagStation) }
             } else {
                 // Fallback for scheduled cold start: get FULL RadioStation from library DB
@@ -129,7 +149,16 @@ class PlayerController @Inject constructor(
                     val dbStation = libraryRepository.getStationById(originalId)
                     if (dbStation != null) {
                         activeStation = dbStation
-                        _playbackState.update { it.copy(currentStation = activeStation, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L) }
+                        _playbackState.update { 
+                            it.copy(
+                                currentStation = activeStation, 
+                                currentTrack = null, 
+                                trackStartTime = null, 
+                                lyricsSyncOffsetMs = 0L,
+                                sessionActiveDurationMs = 0L,
+                                sessionResumeTimeMs = if (it.isPlaying) System.currentTimeMillis() else null
+                            ) 
+                        }
                         recentRepository.addRecentStation(dbStation)
                     }
                 }
@@ -468,5 +497,7 @@ data class PlaybackState(
     val sleepTimerTotalDuration: Long = 0L,
     val hasNext: Boolean = false,
     val hasPrevious: Boolean = false,
-    val volume: Float = 1f
+    val volume: Float = 1f,
+    val sessionActiveDurationMs: Long = 0L,
+    val sessionResumeTimeMs: Long? = null
 )

@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -540,24 +541,78 @@ fun PlayerSheetContent(
                         }
                     }
                     
-                    if (station.bitrate > 0) {
-                        val bitrateText = if (station.codec.isNotBlank()) {
-                            stringResource(R.string.player_station_codec_bitrate, station.codec.uppercase(), station.bitrate.toString())
+                    val hasBitrate = station.bitrate > 0
+                    val hasCodec = station.codec.isNotBlank()
+                    val hasInfo = hasBitrate || hasCodec
+                    val sessionActiveDurationMs = playbackState.sessionActiveDurationMs
+                    val sessionResumeTimeMs = playbackState.sessionResumeTimeMs
+                    
+                    var showTimer by rememberSaveable(station.stationUuid) { mutableStateOf(!hasInfo) }
+                    var timerSeconds by remember { mutableLongStateOf(0L) }
+
+                    LaunchedEffect(station.stationUuid) {
+                        showTimer = !hasInfo
+                    }
+
+                    LaunchedEffect(sessionActiveDurationMs, sessionResumeTimeMs, playbackState.isPlaying) {
+                        if (playbackState.isPlaying && sessionResumeTimeMs != null) {
+                            while (true) {
+                                val currentElapsedMs = sessionActiveDurationMs + (System.currentTimeMillis() - sessionResumeTimeMs)
+                                timerSeconds = currentElapsedMs / 1000
+                                delay(1000L)
+                            }
                         } else {
-                            stringResource(R.string.player_station_bitrate_only, station.bitrate.toString())
+                            timerSeconds = sessionActiveDurationMs / 1000
                         }
-                        Text(
-                            text = bitrateText,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                    shape = RoundedCornerShape(16.dp)
+                    }
+
+                    val hours = timerSeconds / 3600
+                    val minutes = (timerSeconds % 3600) / 60
+                    val seconds = timerSeconds % 60
+                    val timerString = if (hours > 0) {
+                        String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
+                    } else {
+                        String.format(Locale.US, "%02d:%02d", minutes, seconds)
+                    }
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable(enabled = hasInfo) { showTimer = !showTimer }
+                            .animateContentSize()
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        AnimatedContent(
+                            targetState = showTimer,
+                            label = "TimerTransition"
+                        ) { isShowingTimer ->
+                            if (isShowingTimer) {
+                                Text(
+                                    text = timerString,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        )
+                            } else {
+                                val infoText = if (hasBitrate && hasCodec) {
+                                    stringResource(R.string.player_station_codec_bitrate, station.codec.uppercase(), station.bitrate.toString())
+                                } else if (hasBitrate) {
+                                    stringResource(R.string.player_station_bitrate_only, station.bitrate.toString())
+                                } else {
+                                    station.codec.uppercase()
+                                }
+                                Text(
+                                    text = infoText,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
 
