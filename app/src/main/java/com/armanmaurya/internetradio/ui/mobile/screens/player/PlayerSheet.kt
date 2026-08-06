@@ -1076,14 +1076,17 @@ fun PlayerSheetContent(
 
                 // Tab Panel Content
                 if (historyProgress > 0f) {
-                    @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
-                    androidx.compose.foundation.pager.HorizontalPager(
-                        state = bottomPagerState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(historyProgress.coerceAtLeast(0.01f))
-                            .alpha(historyProgress)
-                    ) { page ->
+                    androidx.compose.runtime.CompositionLocalProvider(
+                        androidx.compose.foundation.LocalOverscrollFactory provides null
+                    ) {
+                        @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+                        androidx.compose.foundation.pager.HorizontalPager(
+                            state = bottomPagerState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(historyProgress.coerceAtLeast(0.01f))
+                                .alpha(historyProgress)
+                        ) { page ->
                         if (page == 0) {
                             HistoryTab(
                                 trackHistory = trackHistory,
@@ -1120,6 +1123,7 @@ fun PlayerSheetContent(
                                 nestedScrollConnection = nestedScrollConnection
                             )
                         }
+                    }
                     }
                 }
             }
