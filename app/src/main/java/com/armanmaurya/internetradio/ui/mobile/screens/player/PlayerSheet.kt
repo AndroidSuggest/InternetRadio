@@ -302,7 +302,7 @@ fun PlayerSheetContent(
         val baseExpandedSize = if (isWidescreen) {
             (screenHeight * 0.6f).coerceAtMost(screenWidth * 0.45f)
         } else {
-            (screenWidth - 32.dp).coerceAtMost((screenHeight - 440.dp).coerceAtLeast(120.dp))
+            (screenWidth - 32.dp).coerceAtMost((screenHeight - 460.dp).coerceAtLeast(48.dp))
         }
         val historySize = if (isWidescreen) baseExpandedSize else 48.dp // Match exact collapsed size
         val actualExpandedSize = lerp(baseExpandedSize, historySize, historyProgress)
