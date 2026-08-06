@@ -54,6 +54,10 @@
     <string name="settings_pure_black_subtitle">डार्क मोड में शुद्ध काले रंग की पृष्ठभूमि का उपयोग करें</string>
     <string name="settings_general_section">सामान्य</string>
     <string name="settings_language_title">भाषा</string>
+    <string name="settings_auto_route_search_title">खोज पर ऑटो-रूट</string>
+    <string name="settings_auto_route_search_subtitle">खोजते समय स्वचालित रूप से ब्राउज़ टैब पर जाएँ</string>
+    <string name="settings_disable_update_check">अपडेट जाँच बंद करें</string>
+    <string name="settings_disable_update_check_desc">ऐप शुरू होने पर अपडेट की स्वचालित रूप से जाँच न करें</string>
     <string name="settings_auto_play">शुरू होने पर स्वतः चलाएँ</string>
     <string name="settings_auto_play_desc">ऐप शुरू होने पर पिछला सुना गया स्टेशन चलाएँ</string>
     <string name="settings_default_tab">शुरुआत में डिफ़ॉल्ट टैब</string>
@@ -120,7 +124,9 @@
     <string name="home_clicks">क्लिक</string>
     <string name="home_trend">रुझान</string>
     <string name="home_toggle_view">दृश्य बदलें</string>
-
+    <string name="home_add_to_library">लाइब्रेरी में जोड़ें</string>
+    <string name="home_remove_from_library">लाइब्रेरी से हटाएँ</string>
+    <string name="home_remove_from_recent">हाल ही के स्टेशनों से हटाएँ</string>
     <string name="home_descending">अवरोही</string>
     <string name="home_ascending">आरोही</string>
     <string name="home_cd_descending">अवरोही</string>
@@ -134,11 +140,18 @@
     <string name="home_cd_station_logo">%1$s लोगो</string>
     <string name="home_cd_favorite">पसंदीदा</string>
     <string name="home_cd_more_options">अधिक विकल्प</string>
+    <string name="home_export_station">स्टेशन निर्यात करें</string>
     <string name="home_no_recent_stations_filtered">आपके फ़िल्टर से मेल खाने वाला कोई हाल ही में बजाया गया स्टेशन नहीं है।</string>
     <string name="home_no_recent_stations">हाल ही में कोई स्टेशन नहीं बजाया गया</string>
     <string name="home_no_stations_found_for">\"%1$s\" के लिए कोई स्टेशन नहीं मिला</string>
     <string name="home_no_library_stations_filter">फ़िल्टर के साथ कोई लाइब्रेरी स्टेशन नहीं मिला</string>
     <string name="home_no_library_stations_yet">अभी तक कोई लाइब्रेरी स्टेशन नहीं</string>
+    <string name="home_clear_recent_title">हाल का इतिहास साफ़ करें?</string>
+    <string name="home_clear_recent_message">क्या आप वाकई अपने सभी हाल ही के स्टेशनों को साफ़ करना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता है।</string>
+    <string name="home_sort_played">बजाए गए</string>
+    <string name="home_sort_added">जोड़े गए</string>
+    <string name="home_sort_name">नाम</string>
+    <string name="home_sort_custom">कस्टम</string>
     <!-- ========================================== -->
     <!-- 8. SELECT COUNTRY                          -->
     <!-- ========================================== -->
@@ -219,6 +232,8 @@
     <string name="player_tab_tracks">ट्रैक</string>
     <string name="player_retrying_in">%1$ds में पुनः प्रयास...</string>
     <string name="player_retrying_connection">कनेक्शन पुनः प्रयास कर रहा है...</string>
+    <string name="player_tab_lyrics">बोल</string>
+    <string name="player_lyrics_not_available">बोल उपलब्ध नहीं हैं</string>
     <!-- ========================================== -->
     <!-- 13. CAST DIALOG                            -->
     <!-- ========================================== -->
@@ -228,6 +243,7 @@
     <string name="cast_no_devices_found">नेटवर्क पर कोई डिवाइस नहीं मिला।</string>
     <string name="cast_disconnect">डिस्कनेक्ट करें</string>
     <string name="cast_close">बंद करें</string>
+    <string name="action_retry">पुनः प्रयास करें</string>
     <!-- ========================================== -->
     <!-- 14. SCHEDULE                               -->
     <!-- ========================================== -->
@@ -255,4 +271,8 @@
     <string name="schedule_station_logo_cd">स्टेशन लोगो</string>
     <string name="schedule_no_schedules_yet">अभी तक कोई शेड्यूल नहीं। एक बनाएँ!</string>
     <string name="schedule_add_schedule_cd">शेड्यूल जोड़ें</string>
+    <string name="schedule_volume">वॉल्यूम: %1$d%%</string>
+    <string name="schedule_select_time">समय चुनें</string>
+    <string name="delete_recording">हटाएँ</string>
+    <string name="more_options">अधिक विकल्प</string>
 </resources>

@@ -132,6 +132,7 @@
     <string name="home_toggle_view">Toggle View</string>
     <string name="home_add_to_library">Add to library</string>
     <string name="home_remove_from_library">Remove from library</string>
+    <string name="home_remove_from_recent">Remove from recent</string>
     <string name="home_descending">Descending</string>
     <string name="home_ascending">Ascending</string>
     <string name="home_cd_descending">Descending</string>
@@ -284,6 +285,8 @@
     <string name="schedule_station_logo_cd">Station Logo</string>
     <string name="schedule_no_schedules_yet">No schedules yet. Create one!</string>
     <string name="schedule_add_schedule_cd">Add Schedule</string>
+    <string name="schedule_volume">Volume: %1$d%%</string>
+    <string name="schedule_select_time">Select Time</string>
     <string name="delete_recording">Delete</string>
     <string name="more_options">More options</string>
 </resources>

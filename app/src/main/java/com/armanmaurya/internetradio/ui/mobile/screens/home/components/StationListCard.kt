@@ -233,7 +233,7 @@ fun StationListCard(
                         }
                         if (onRemoveFromRecentClick != null) {
                             DropdownMenuItem(
-                                text = { Text("Remove from recent") },
+                                text = { Text(stringResource(R.string.home_remove_from_recent)) },
                                 onClick = {
                                     showMenu = false
                                     onRemoveFromRecentClick()

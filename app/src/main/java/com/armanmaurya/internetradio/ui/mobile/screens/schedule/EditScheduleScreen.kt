@@ -191,8 +191,9 @@ private fun ScheduleConfigurationForm(
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     
-    val startTimePickerState = rememberTimePickerState(initialHour = startHour, initialMinute = startMinute, is24Hour = false)
-    val endTimePickerState = rememberTimePickerState(initialHour = endHour, initialMinute = endMinute, is24Hour = false)
+    val is24HourFormat = android.text.format.DateFormat.is24HourFormat(context)
+    val startTimePickerState = rememberTimePickerState(initialHour = startHour, initialMinute = startMinute, is24Hour = is24HourFormat)
+    val endTimePickerState = rememberTimePickerState(initialHour = endHour, initialMinute = endMinute, is24Hour = is24HourFormat)
 
     if (showStartTimePicker) {
         TimePickerDialog(
@@ -222,9 +223,11 @@ private fun ScheduleConfigurationForm(
     }
 
     fun formatTime(hour: Int, minute: Int): String {
-        val amPm = if (hour >= 12) "PM" else "AM"
-        val displayHour = if (hour % 12 == 0) 12 else hour % 12
-        return String.format(java.util.Locale.getDefault(), "%02d:%02d %s", displayHour, minute, amPm)
+        val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+        }
+        return android.text.format.DateFormat.getTimeFormat(context).format(cal.time)
     }
 
     Scaffold(
@@ -450,7 +453,10 @@ private fun ScheduleConfigurationForm(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            val dayNames = listOf("S", "M", "T", "W", "T", "F", "S")
+            val dayNames = listOf(
+                java.time.DayOfWeek.SUNDAY, java.time.DayOfWeek.MONDAY, java.time.DayOfWeek.TUESDAY,
+                java.time.DayOfWeek.WEDNESDAY, java.time.DayOfWeek.THURSDAY, java.time.DayOfWeek.FRIDAY, java.time.DayOfWeek.SATURDAY
+            ).map { it.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).take(2) }
             for (i in 1..7) {
                 val isSelected = selectedDays.contains(i)
                 Surface(
@@ -483,7 +489,7 @@ private fun ScheduleConfigurationForm(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Volume: ${(volumeLevel * 100).toInt()}%",
+                    text = stringResource(R.string.schedule_volume, (volumeLevel * 100).toInt()),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.align(Alignment.Start)
                 )
@@ -572,7 +578,7 @@ private fun ScheduleConfigurationForm(
 
 @Composable
 fun TimePickerDialog(
-    title: String = "Select Time",
+    title: String = stringResource(R.string.schedule_select_time),
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
     content: @Composable () -> Unit,
@@ -583,12 +589,12 @@ fun TimePickerDialog(
         text = { content() },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("OK")
+                Text(stringResource(R.string.general_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
+                Text(stringResource(R.string.general_cancel))
             }
         }
     )
