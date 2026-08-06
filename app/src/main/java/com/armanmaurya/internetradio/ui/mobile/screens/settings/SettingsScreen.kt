@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
@@ -58,6 +59,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.AppPreferences
 import com.armanmaurya.internetradio.data.model.ConflictStrategy
+import com.armanmaurya.internetradio.data.model.StartOfWeek
 import com.armanmaurya.internetradio.ui.shared.viewmodels.SettingsViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.ExpandableItem
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.Item
@@ -81,6 +83,7 @@ fun SettingsScreen(
     // UI-only state for expand/collapse
     var themeExpanded by remember { mutableStateOf(false) }
     var languageExpanded by remember { mutableStateOf(false) }
+    var startWeekExpanded by remember { mutableStateOf(false) }
     var showHistoryLimitDialog by remember { mutableStateOf(false) }
     var defaultTabExpanded by remember { mutableStateOf(false) }
     var maxRetryDurationExpanded by remember { mutableStateOf(false) }
@@ -134,6 +137,9 @@ fun SettingsScreen(
                 languageExpanded = languageExpanded,
                 onToggleLanguageExpanded = { languageExpanded = !languageExpanded },
                 onSetLanguage = viewModel::setAppLanguage,
+                startWeekExpanded = startWeekExpanded,
+                onToggleStartWeekExpanded = { startWeekExpanded = !startWeekExpanded },
+                onSetStartOfWeek = viewModel::setStartOfWeek,
                 defaultTabExpanded = defaultTabExpanded,
                 onToggleDefaultTabExpanded = { defaultTabExpanded = !defaultTabExpanded },
                 onSetDefaultTab = viewModel::setDefaultTab,
@@ -262,12 +268,23 @@ private fun AppTheme.toDisplayString(): String = when (this) {
 }
 
 @Composable
+private fun StartOfWeek.toDisplayString(): String = when (this) {
+    StartOfWeek.SUNDAY -> stringResource(R.string.settings_start_week_sunday)
+    StartOfWeek.MONDAY -> stringResource(R.string.settings_start_week_monday)
+    StartOfWeek.FRIDAY -> stringResource(R.string.settings_start_week_friday)
+    StartOfWeek.SATURDAY -> stringResource(R.string.settings_start_week_saturday)
+}
+
+@Composable
 private fun GeneralSection(
     uiState: AppPreferences,
     languages: List<Pair<String, String>>,
     languageExpanded: Boolean,
     onToggleLanguageExpanded: () -> Unit,
     onSetLanguage: (String) -> Unit,
+    startWeekExpanded: Boolean,
+    onToggleStartWeekExpanded: () -> Unit,
+    onSetStartOfWeek: (StartOfWeek) -> Unit,
     defaultTabExpanded: Boolean,
     onToggleDefaultTabExpanded: () -> Unit,
     onSetDefaultTab: (Int) -> Unit,
@@ -294,6 +311,22 @@ private fun GeneralSection(
                     label = name,
                     isSelected = activeLanguageCode == code,
                     onClick = { onSetLanguage(code) }
+                )
+            }
+        }
+
+        ExpandableItem(
+            title = stringResource(R.string.settings_start_week_title),
+            subtitle = uiState.startOfWeek.toDisplayString(),
+            isExpanded = startWeekExpanded,
+            onToggle = onToggleStartWeekExpanded,
+            icon = Icons.Default.CalendarMonth
+        ) {
+            StartOfWeek.entries.forEach { startOfWeek ->
+                OptionItem(
+                    label = startOfWeek.toDisplayString(),
+                    isSelected = uiState.startOfWeek == startOfWeek,
+                    onClick = { onSetStartOfWeek(startOfWeek) }
                 )
             }
         }

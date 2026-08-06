@@ -58,6 +58,7 @@ fun EditScheduleScreen(
 ) {
     val libraryStations by viewModel.libraryStations.collectAsState()
     val schedules by viewModel.schedules.collectAsState()
+    val appPreferences by viewModel.appPreferences.collectAsState()
     
     val scheduleToEdit = remember(scheduleId, schedules) {
         schedules.find { it.id == scheduleId }
@@ -131,6 +132,7 @@ fun EditScheduleScreen(
     ScheduleConfigurationForm(
         station = selectedStation,
         initialSchedule = scheduleToEdit,
+        startOfWeek = appPreferences.startOfWeek,
         onStationClick = { isSheetOpen = true },
         onSave = { entity ->
             viewModel.saveSchedule(entity)
@@ -152,6 +154,7 @@ private fun ScheduleConfigurationForm(
     modifier: Modifier = Modifier,
     station: RadioStation?,
     initialSchedule: ScheduleEntity?,
+    startOfWeek: com.armanmaurya.internetradio.data.model.StartOfWeek,
     onStationClick: () -> Unit,
     onSave: (ScheduleEntity) -> Unit,
     onNavigateBack: () -> Unit,
@@ -453,25 +456,26 @@ private fun ScheduleConfigurationForm(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            val dayNames = listOf(
-                java.time.DayOfWeek.SUNDAY, java.time.DayOfWeek.MONDAY, java.time.DayOfWeek.TUESDAY,
-                java.time.DayOfWeek.WEDNESDAY, java.time.DayOfWeek.THURSDAY, java.time.DayOfWeek.FRIDAY, java.time.DayOfWeek.SATURDAY
-            ).map { it.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).take(2) }
-            for (i in 1..7) {
-                val isSelected = selectedDays.contains(i)
+            val dayOrder = startOfWeek.getDaysOrder()
+            
+            for (dayValue in dayOrder) {
+                val isSelected = selectedDays.contains(dayValue)
+                val javaTimeDay = if (dayValue == 1) java.time.DayOfWeek.SUNDAY else java.time.DayOfWeek.of(dayValue - 1)
+                val dayName = javaTimeDay.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).take(2)
+                
                 Surface(
                     shape = androidx.compose.foundation.shape.CircleShape,
                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier
                         .size(44.dp)
                         .clickable {
-                            if (isSelected) selectedDays.remove(i)
-                            else selectedDays.add(i)
+                            if (isSelected) selectedDays.remove(dayValue)
+                            else selectedDays.add(dayValue)
                         }
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = dayNames[i - 1],
+                            text = dayName,
                             style = MaterialTheme.typography.titleMedium,
                             color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                         )

@@ -7,6 +7,8 @@ import com.armanmaurya.internetradio.data.repository.ScheduleRepository
 import com.armanmaurya.internetradio.data.repository.LibraryRepository
 import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.player.ScheduleManager
+import com.armanmaurya.internetradio.data.model.AppPreferences
+import com.armanmaurya.internetradio.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +20,16 @@ import javax.inject.Inject
 class SchedulesViewModel @Inject constructor(
     private val scheduleRepository: ScheduleRepository,
     private val scheduleManager: ScheduleManager,
-    private val libraryRepository: LibraryRepository
+    private val libraryRepository: LibraryRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+
+    val appPreferences = settingsRepository.appPreferencesFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppPreferences()
+        )
 
     val schedules: StateFlow<List<ScheduleEntity>> = scheduleRepository.getAllSchedules()
         .stateIn(

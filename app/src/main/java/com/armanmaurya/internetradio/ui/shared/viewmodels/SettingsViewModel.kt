@@ -125,6 +125,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setStartOfWeek(startOfWeek: com.armanmaurya.internetradio.data.model.StartOfWeek) {
+        viewModelScope.launch {
+            settingsRepository.setStartOfWeek(startOfWeek)
+        }
+    }
+
     fun exportLibrary(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {

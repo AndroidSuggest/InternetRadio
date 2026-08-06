@@ -36,6 +36,7 @@ fun SchedulesTabContent(
 ) {
     val schedules by viewModel.schedules.collectAsState()
     val libraryStations by viewModel.libraryStations.collectAsState()
+    val appPreferences by viewModel.appPreferences.collectAsState()
     val context = LocalContext.current
 
     Box(
@@ -67,6 +68,7 @@ fun SchedulesTabContent(
                         modifier = Modifier.clickable { onEditSchedule(schedule.id) },
                         schedule = schedule,
                         stationFavicon = stationFavicon,
+                        startOfWeek = appPreferences.startOfWeek,
                         onToggle = { isEnabled -> viewModel.toggleSchedule(schedule, isEnabled) }
                     )
                 }

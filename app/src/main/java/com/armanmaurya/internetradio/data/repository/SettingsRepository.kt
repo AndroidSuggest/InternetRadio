@@ -59,6 +59,7 @@ class SettingsRepository @Inject constructor(
         val CONFLICT_STRATEGY = stringPreferencesKey("conflict_strategy")
         val STOP_ON_AUDIO_BECOMING_NOISY = booleanPreferencesKey("stop_on_audio_becoming_noisy")
         val LIBRARY_SORT_OPTION = stringPreferencesKey("library_sort_option")
+        val START_OF_WEEK = stringPreferencesKey("start_of_week")
     }
 
     val appPreferencesFlow: Flow<AppPreferences> = context.dataStore.data
@@ -100,6 +101,8 @@ class SettingsRepository @Inject constructor(
             val conflictStrategy = ConflictStrategy.entries.find { it.name == conflictStrategyName } ?: ConflictStrategy.SKIP
             val librarySortOptionName = preferences[PreferencesKeys.LIBRARY_SORT_OPTION]
             val librarySortOption = com.armanmaurya.internetradio.data.model.LibrarySortOption.entries.find { it.name == librarySortOptionName } ?: com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED
+            val startOfWeekName = preferences[PreferencesKeys.START_OF_WEEK]
+            val startOfWeek = com.armanmaurya.internetradio.data.model.StartOfWeek.entries.find { it.name == startOfWeekName } ?: com.armanmaurya.internetradio.data.model.StartOfWeek.SUNDAY
 
             AppPreferences(
                 themeMode = themeMode, 
@@ -127,7 +130,8 @@ class SettingsRepository @Inject constructor(
                 lastUpdateCheckTime = lastUpdateCheckTime,
                 maxRetryDuration = maxRetryDuration,
                 conflictStrategy = conflictStrategy,
-                librarySortOption = librarySortOption
+                librarySortOption = librarySortOption,
+                startOfWeek = startOfWeek
             )
         }
 
@@ -282,6 +286,12 @@ class SettingsRepository @Inject constructor(
     suspend fun setLibrarySortOption(option: com.armanmaurya.internetradio.data.model.LibrarySortOption) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.LIBRARY_SORT_OPTION] = option.name
+        }
+    }
+
+    suspend fun setStartOfWeek(startOfWeek: com.armanmaurya.internetradio.data.model.StartOfWeek) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.START_OF_WEEK] = startOfWeek.name
         }
     }
 }

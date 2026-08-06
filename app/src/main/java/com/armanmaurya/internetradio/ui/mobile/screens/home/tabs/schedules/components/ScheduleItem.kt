@@ -23,27 +23,39 @@ import coil3.compose.AsyncImage
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
 import com.armanmaurya.internetradio.data.local.entity.ScheduleType
+import com.armanmaurya.internetradio.data.model.StartOfWeek
 import java.util.Locale
+import java.util.Calendar
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleItem(
     schedule: ScheduleEntity,
     stationFavicon: String?,
+    startOfWeek: StartOfWeek,
     onToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val startAmPm = if (schedule.timeHour >= 12) "PM" else "AM"
-    val startHour12 = if (schedule.timeHour % 12 == 0) 12 else schedule.timeHour % 12
-    val startTimeString = String.format(Locale.getDefault(), "%02d:%02d %s", startHour12, schedule.timeMinute, startAmPm)
+    val context = LocalContext.current
+    val timeFormat = android.text.format.DateFormat.getTimeFormat(context)
+
+    val startCal = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, schedule.timeHour)
+        set(Calendar.MINUTE, schedule.timeMinute)
+    }
+    val startTimeString = timeFormat.format(startCal.time)
     
     val endTotalMinutes = schedule.timeHour * 60 + schedule.timeMinute + schedule.durationMinutes
     val endHour = (endTotalMinutes / 60) % 24
     val endMinute = endTotalMinutes % 60
-    val endAmPm = if (endHour >= 12) "PM" else "AM"
-    val endHour12 = if (endHour % 12 == 0) 12 else endHour % 12
-    val endTimeString = String.format(Locale.getDefault(), "%02d:%02d %s", endHour12, endMinute, endAmPm)
+    
+    val endCal = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, endHour)
+        set(Calendar.MINUTE, endMinute)
+    }
+    val endTimeString = timeFormat.format(endCal.time)
     
     val timeRangeString = if (schedule.durationMinutes > 0) {
         "$startTimeString - $endTimeString"
@@ -121,7 +133,7 @@ fun ScheduleItem(
 
             if (schedule.isRecurring) {
                 val enabledDays = schedule.daysOfWeek.split(",").mapNotNull { it.toIntOrNull() }
-                val dayNames = listOf("S", "M", "T", "W", "T", "F", "S")
+                val dayOrder = startOfWeek.getDaysOrder()
 
                 Row(
                     modifier = Modifier
@@ -129,8 +141,11 @@ fun ScheduleItem(
                         .padding(bottom = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    for (i in 1..7) {
-                        val isSelected = enabledDays.contains(i)
+                    for (dayValue in dayOrder) {
+                        val isSelected = enabledDays.contains(dayValue)
+                        val javaTimeDay = if (dayValue == 1) java.time.DayOfWeek.SUNDAY else java.time.DayOfWeek.of(dayValue - 1)
+                        val dayName = javaTimeDay.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).take(2)
+                        
                         Box(
                             modifier = Modifier
                                 .size(44.dp)
@@ -142,7 +157,7 @@ fun ScheduleItem(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = dayNames[i - 1],
+                                text = dayName,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isSelected) MaterialTheme.colorScheme.onPrimary

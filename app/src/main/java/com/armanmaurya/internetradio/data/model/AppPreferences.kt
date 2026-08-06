@@ -28,5 +28,6 @@ data class AppPreferences(
     val lastUpdateCheckTime: Long = 0L,
     val maxRetryDuration: Long = 300_000L,
     val conflictStrategy: ConflictStrategy = ConflictStrategy.SKIP,
-    val librarySortOption: LibrarySortOption = LibrarySortOption.RECENTLY_ADDED
+    val librarySortOption: LibrarySortOption = LibrarySortOption.RECENTLY_ADDED,
+    val startOfWeek: StartOfWeek = StartOfWeek.SUNDAY
 )

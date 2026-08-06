@@ -77,6 +77,11 @@
     <string name="settings_rate_review">Rate &amp; Review</string>
     <string name="settings_track_history_limit">Track History Limit</string>
     <string name="settings_system_default">System Default</string>
+    <string name="settings_start_week_title">Start Week on</string>
+    <string name="settings_start_week_sunday">Sunday</string>
+    <string name="settings_start_week_monday">Monday</string>
+    <string name="settings_start_week_friday">Friday</string>
+    <string name="settings_start_week_saturday">Saturday</string>
     <string name="settings_number_of_tracks">Number of tracks</string>
     <string name="settings_checking_for_updates">Checking for updates...</string>
     <string name="settings_no_update_available">No update available</string>
