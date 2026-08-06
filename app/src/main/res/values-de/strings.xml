@@ -60,6 +60,8 @@
     <string name="settings_language_title">Sprache</string>
     <string name="settings_auto_route_search_title">Umschalten beim Suchen</string>
     <string name="settings_auto_route_search_subtitle">Beim Suchen automatisch zum Tab „Entdecken“ wechseln</string>
+    <string name="settings_disable_update_check">Deaktiviere automatische Updatesuche</string>
+    <string name="settings_disable_update_check_desc">Suche beim Start nicht automatisch nach App-Updates</string>
     <string name="settings_auto_play">Automatisches Abspielen beim Start</string>
     <string name="settings_auto_play_desc">Beim Start der App den zuletzt gehörten Sender abspielen</string>
     <string name="settings_default_tab">Standardtab beim Start</string>
@@ -77,8 +79,8 @@
     <string name="settings_track_history_limit">Titel-Verlauf Begrenzung</string>
     <string name="settings_system_default">Systemstandard</string>
     <string name="settings_number_of_tracks">Anzahl der Titel</string>
-    <string name="settings_checking_for_updates">Prüfen auf Aktualisierungen...</string>
-    <string name="settings_no_update_available">Keine Aktualisierung verfügbar</string>
+    <string name="settings_checking_for_updates">Suche nach App-Updates...</string>
+    <string name="settings_no_update_available">Keine Updates verfügbar</string>
     <string name="settings_theme_system">Systemstandard</string>
 
     <!-- ========================================== -->
@@ -129,7 +131,9 @@
     <string name="home_clicks">Klicks</string>
     <string name="home_trend">Tendenz</string>
     <string name="home_toggle_view">Ansicht umschalten</string>
-
+    <string name="home_add_to_library">Zur Bibliothek hinzufügen</string>
+    <string name="home_remove_from_library">Aus Bibliothek entfernen</string>
+    <string name="home_remove_from_recent">Aus Zuletzt entfernen</string>
     <string name="home_descending">Absteigend</string>
     <string name="home_ascending">Aufsteigend</string>
     <string name="home_cd_descending">Absteigend</string>
@@ -143,7 +147,7 @@
     <string name="home_cd_station_logo">%1$s logo</string>
     <string name="home_cd_favorite">Favorit</string>
     <string name="home_cd_more_options">Weitere Optionen</string>
-    <string name="home_export_station">Station exportieren</string>
+    <string name="home_export_station">Sender exportieren</string>
     <string name="home_no_recent_stations_filtered">Keine kürzlich abgespielten Sender entsprechen den Filtern.</string>
     <string name="home_no_recent_stations">Keine kürzlich abgespielten Sender</string>
     <string name="home_no_stations_found_for">Für \"%1$s\" wurden keine Sender gefunden</string>
@@ -260,7 +264,7 @@
     <!-- ========================================== -->
     <string name="schedule_create">Zeitplan erstellen</string>
     <string name="schedule_edit">Zeitplan bearbeiten</string>
-    <string name="schedule_name_optional">Name des Zeitplans (optional)</string>
+    <string name="schedule_name_optional">Name des Zeitplans (Optional)</string>
     <string name="schedule_select_station_title">Sender auswählen</string>
     <string name="schedule_search_library">Bibliothek durchsuchen</string>
     <string name="schedule_no_stations_library">Keine Sender in der Bibliothek.</string>
@@ -279,7 +283,11 @@
     <string name="schedule_grant_exact_alarm_permission">Bitte die Exakte-Alarm-Berechtigung erteilen um die Aufnahme zu planen</string>
     <string name="schedule_indefinite">Unbestimmt</string>
     <string name="schedule_once">Einmalig</string>
-    <string name="schedule_station_logo_cd">Sender Logo</string>
-    <string name="schedule_no_schedules_yet">Noch keine Zeitpläne vorhanden. Bitte einen neuen erstellen!</string>
+    <string name="schedule_station_logo_cd">Senderlogo</string>
+    <string name="schedule_no_schedules_yet">Noch keine Zeitpläne vorhanden. Bitte erstelle einen!</string>
     <string name="schedule_add_schedule_cd">Zeitplan hinzufügen</string>
+    <string name="schedule_volume">Lautstärke: %1$d%%</string>
+    <string name="schedule_select_time">Uhrzeit auswählen</string>
+    <string name="delete_recording">Löschen</string>
+    <string name="more_options">Mehr Optionen</string>
 </resources>
