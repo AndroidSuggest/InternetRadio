@@ -249,8 +249,8 @@
     <string name="player_tab_tracks">Titel</string>
     <string name="player_retrying_in">Wiederholungsversuch in %1$ds...</string>
     <string name="player_retrying_connection">Verbindung wird erneut versucht...</string>
-    <string name="player_tab_lyrics">Songtexte</string>
-    <string name="player_lyrics_not_available">Songtexte nicht verfügbar</string>
+    <string name="player_tab_lyrics">Songtext</string>
+    <string name="player_lyrics_not_available">Songtext nicht verfügbar</string>
 
     <!-- ========================================== -->
     <!-- 13. CAST DIALOG                            -->
