@@ -78,11 +78,16 @@
     <string name="settings_rate_review">Bewerten und Rezensieren</string>
     <string name="settings_track_history_limit">Titel-Verlauf Begrenzung</string>
     <string name="settings_system_default">Systemstandard</string>
+    <string name="settings_start_week_title">Erster Tag der Woche</string>
+    <string name="settings_start_week_sunday">Sonntag</string>
+    <string name="settings_start_week_monday">Montag</string>
+    <string name="settings_start_week_friday">Freitag</string>
+    <string name="settings_start_week_saturday">Samstag</string>
     <string name="settings_number_of_tracks">Anzahl der Titel</string>
     <string name="settings_checking_for_updates">Suche nach App-Updates...</string>
     <string name="settings_no_update_available">Keine Updates verfügbar</string>
     <string name="settings_theme_system">Systemstandard</string>
-
+    
     <!-- ========================================== -->
     <!-- 6b. BACKUP & RESTORE                       -->
     <!-- ========================================== -->
@@ -244,8 +249,8 @@
     <string name="player_tab_tracks">Titel</string>
     <string name="player_retrying_in">Wiederholungsversuch in %1$ds...</string>
     <string name="player_retrying_connection">Verbindung wird erneut versucht...</string>
-    <string name="player_tab_lyrics">Songtext</string>
-    <string name="player_lyrics_not_available">Songtext nicht verfügbar</string>
+    <string name="player_tab_lyrics">Songtexte</string>
+    <string name="player_lyrics_not_available">Songtexte nicht verfügbar</string>
 
     <!-- ========================================== -->
     <!-- 13. CAST DIALOG                            -->
