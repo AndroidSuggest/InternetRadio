@@ -168,7 +168,7 @@ class PlaybackService : MediaLibraryService() {
                         val newMetadataBuilder = currentMediaItem.mediaMetadata.buildUpon()
                             .setTitle(trackName)
                             .setArtist(artistName)
-                            .setArtworkUri(null) // Revert to null during fetch so MediaMetadata differs
+                            .setArtworkUri(stationFaviconUri) // Show station thumbnail while fetching track cover art
                             .setExtras(newExtras)
                             
                         val newMediaItem = currentMediaItem.buildUpon()
