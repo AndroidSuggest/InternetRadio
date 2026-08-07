@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.ToggleChip
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.DeleteSweep
 import kotlinx.coroutines.launch
@@ -128,36 +129,14 @@ fun RecentContent(
                     }
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable { viewModel.toggleFilter() }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .animateContentSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = if (useFilter) stringResource(R.string.home_filters_active) else stringResource(R.string.home_use_filters),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    if (useFilter) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(R.string.general_clear),
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+                ToggleChip(
+                    text = if (useFilter) stringResource(R.string.home_filters_active) else stringResource(R.string.home_use_filters),
+                    onClick = { viewModel.toggleFilter() },
+                    isActive = useFilter,
+                    leadingIcon = Icons.Default.FilterList,
+                    trailingIcon = if (useFilter) Icons.Default.Close else null,
+                    trailingIconContentDescription = if (useFilter) stringResource(R.string.general_clear) else null
+                )
             }
         }
         if (currentStations.isEmpty()) {

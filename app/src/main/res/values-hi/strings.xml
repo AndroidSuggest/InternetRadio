@@ -64,6 +64,8 @@
     <string name="settings_player_section">प्लेयर</string>
     <string name="settings_stop_on_audio_noisy">डिवाइस डिस्कनेक्ट होने पर रोकें</string>
     <string name="settings_stop_on_audio_noisy_desc">ब्लूटूथ या वायर्ड हेडफ़ोन के डिस्कनेक्ट होने पर प्लेबैक रोकें</string>
+    <string name="settings_show_cover_art">नोटिफिकेशन में कवर आर्ट</string>
+    <string name="settings_show_cover_art_desc">लॉक स्क्रीन और नोटिफिकेशन में स्टेशन थंबनेल के बजाय ट्रैक कवर आर्ट दिखाएं</string>
     <string name="settings_max_retry_duration">पुनः प्रयास की अधिकतम अवधि</string>
     <string name="settings_retry_1_min">1 मिनट</string>
     <string name="settings_retry_5_min">5 मिनट</string>
@@ -128,6 +130,7 @@
     <string name="home_votes">वोट</string>
     <string name="home_clicks">क्लिक</string>
     <string name="home_trend">रुझान</string>
+    <string name="home_verified">सत्यापित</string>
     <string name="home_toggle_view">दृश्य बदलें</string>
     <string name="home_add_to_library">लाइब्रेरी में जोड़ें</string>
     <string name="home_remove_from_library">लाइब्रेरी से हटाएँ</string>

@@ -52,6 +52,7 @@ import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.player.PlaybackSource
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.ToggleChip
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
 import com.armanmaurya.internetradio.data.model.LibrarySortOption
@@ -176,46 +177,25 @@ fun LibraryContent(
                         }
                     }
                     Box {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically, 
-                            modifier = Modifier
-                                .clip(MaterialTheme.shapes.small)
-                                .clickable { showSortMenu = true }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Sort,
-                                contentDescription = "Sort Options",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(Modifier.width(8.dp))
                             val sortText = when (sortOption) {
                                 LibrarySortOption.NAME_A_Z, LibrarySortOption.NAME_Z_A -> stringResource(R.string.home_sort_name)
                                 LibrarySortOption.RECENTLY_ADDED, LibrarySortOption.OLDEST_ADDED -> stringResource(R.string.home_sort_added)
                                 LibrarySortOption.RECENTLY_PLAYED, LibrarySortOption.LEAST_RECENTLY_PLAYED -> stringResource(R.string.home_sort_played)
                                 LibrarySortOption.CUSTOM -> stringResource(R.string.home_sort_custom)
                             }
-                            Text(
-                                text = sortText,
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
                             
                             val sortIcon = when (sortOption) {
                                 LibrarySortOption.NAME_A_Z, LibrarySortOption.RECENTLY_ADDED, LibrarySortOption.RECENTLY_PLAYED -> Icons.Default.ArrowDownward
                                 LibrarySortOption.NAME_Z_A, LibrarySortOption.OLDEST_ADDED, LibrarySortOption.LEAST_RECENTLY_PLAYED -> Icons.Default.ArrowUpward
                                 else -> null
                             }
-                            if (sortIcon != null) {
-                                Spacer(Modifier.width(4.dp))
-                                Icon(
-                                    imageVector = sortIcon,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
+                            ToggleChip(
+                                text = sortText,
+                                onClick = { showSortMenu = true },
+                                leadingIcon = Icons.AutoMirrored.Filled.Sort,
+                                leadingIconContentDescription = "Sort Options",
+                                trailingIcon = sortIcon
+                            )
                         val transitionState = remember { MutableTransitionState(false) }
                         transitionState.targetState = showSortMenu
                         

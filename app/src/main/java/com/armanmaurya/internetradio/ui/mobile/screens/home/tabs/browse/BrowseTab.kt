@@ -21,6 +21,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -71,6 +73,7 @@ import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationLi
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material3.IconButton
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.ToggleChip
 import com.armanmaurya.internetradio.ui.shared.viewmodels.BrowseViewModel
 
 @Composable
@@ -127,6 +130,8 @@ fun BrowseContent(
                 onReverseChange = viewModel::onReverseChange,
                 isGridView = uiState.isGridView,
                 onGridViewChange = viewModel::onGridViewChange,
+                isVerified = uiState.isVerified,
+                onVerifiedChange = viewModel::onVerifiedChange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -283,6 +288,8 @@ private fun SearchFilters(
     onReverseChange: (Boolean) -> Unit,
     isGridView: Boolean,
     onGridViewChange: (Boolean) -> Unit,
+    isVerified: Boolean,
+    onVerifiedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val orderOptions = listOf(
@@ -298,47 +305,29 @@ private fun SearchFilters(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        IconButton(onClick = { onGridViewChange(!isGridView) }) {
-            androidx.compose.animation.AnimatedContent(
-                targetState = isGridView,
-                label = "view_toggle"
-            ) { isGrid ->
-                Icon(
-                    imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
-                    contentDescription = stringResource(R.string.home_toggle_view),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable { orderExpanded = true }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
+            IconButton(onClick = { onGridViewChange(!isGridView) }) {
+                androidx.compose.animation.AnimatedContent(
+                    targetState = isGridView,
+                    label = "view_toggle"
+                ) { isGrid ->
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Sort,
-                        contentDescription = "Sort Options",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = orderOptions.find { it.first == order }?.second ?: order,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = if (reverse) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
-                        contentDescription = if (reverse) stringResource(R.string.home_descending) else stringResource(R.string.home_ascending),
-                        modifier = Modifier.size(16.dp),
+                        imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
+                        contentDescription = stringResource(R.string.home_toggle_view),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
+            }
+
+            Box {
+                ToggleChip(
+                    text = orderOptions.find { it.first == order }?.second ?: order,
+                    onClick = { orderExpanded = true },
+                    leadingIcon = Icons.AutoMirrored.Filled.Sort,
+                    leadingIconContentDescription = "Sort Options",
+                    trailingIcon = if (reverse) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
+                    trailingIconContentDescription = if (reverse) stringResource(R.string.home_descending) else stringResource(R.string.home_ascending)
+                )
                 val transitionState = remember { MutableTransitionState(false) }
                 transitionState.targetState = orderExpanded
 
@@ -384,6 +373,14 @@ private fun SearchFilters(
                 }
             }
         }
+
+        ToggleChip(
+            text = stringResource(R.string.home_verified),
+            onClick = { onVerifiedChange(!isVerified) },
+            isActive = isVerified,
+            leadingIcon = Icons.Default.FilterList,
+            trailingIcon = if (isVerified) Icons.Default.Check else null
+        )
     }
 }
 

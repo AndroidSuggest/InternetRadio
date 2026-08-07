@@ -136,6 +136,7 @@
     <string name="home_votes">Votes</string>
     <string name="home_clicks">Clicks</string>
     <string name="home_trend">Trend</string>
+    <string name="home_verified">Verified</string>
     <string name="home_toggle_view">Toggle View</string>
     <string name="home_add_to_library">Add to library</string>
     <string name="home_remove_from_library">Remove from library</string>

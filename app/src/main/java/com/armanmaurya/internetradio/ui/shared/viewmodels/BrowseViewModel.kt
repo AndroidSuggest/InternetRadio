@@ -26,6 +26,7 @@ data class BrowseUiState(
     val order: String = "votes",
     val reverse: Boolean = true,
     val isGridView: Boolean = true,
+    val isVerified: Boolean = false
 )
 
 @HiltViewModel
@@ -128,6 +129,7 @@ class BrowseViewModel @Inject constructor(
                 countryCode = countryCode?.takeIf { it.isNotBlank() },
                 language = language?.takeIf { it.isNotBlank() },
                 tagList = tags.joinToString(",").takeIf { it.isNotBlank() },
+                hasExtendedInfo = state.isVerified.takeIf { it },
                 order = state.order,
                 reverse = state.reverse,
                 limit = pageSize,
@@ -169,6 +171,7 @@ class BrowseViewModel @Inject constructor(
                     countryCode = state.selectedCountryCode?.takeIf { it.isNotBlank() },
                     language = state.selectedLanguage?.takeIf { it.isNotBlank() },
                     tagList = state.selectedTags.joinToString(",").takeIf { it.isNotBlank() },
+                    hasExtendedInfo = state.isVerified.takeIf { it },
                     order = state.order,
                     reverse = state.reverse,
                     limit = pageSize,
@@ -179,6 +182,7 @@ class BrowseViewModel @Inject constructor(
                     name = state.searchQuery,
                     language = state.selectedLanguage?.takeIf { it.isNotBlank() },
                     tagList = state.selectedTags.joinToString(",").takeIf { it.isNotBlank() },
+                    hasExtendedInfo = state.isVerified.takeIf { it },
                     order = state.order,
                     reverse = state.reverse,
                     limit = pageSize,
@@ -226,6 +230,7 @@ class BrowseViewModel @Inject constructor(
                 name = query,
                 language = state.selectedLanguage?.takeIf { it.isNotBlank() },
                 tagList = state.selectedTags.joinToString(",").takeIf { it.isNotBlank() },
+                hasExtendedInfo = state.isVerified.takeIf { it },
                 order = state.order,
                 reverse = state.reverse,
                 limit = pageSize,
@@ -260,6 +265,12 @@ class BrowseViewModel @Inject constructor(
 
     fun onGridViewChange(isGrid: Boolean) {
         viewModelScope.launch { settingsRepository.setGridViewBrowse(isGrid) }
+    }
+
+    fun onVerifiedChange(isVerified: Boolean) {
+        if (_uiState.value.isVerified == isVerified) return
+        _uiState.update { it.copy(isVerified = isVerified) }
+        retry()
     }
 
     fun retry() {
