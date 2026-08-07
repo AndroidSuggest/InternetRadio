@@ -14,6 +14,11 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +36,13 @@ fun SharedTransitionScope.VolumeDialog(
     volume: Float,
     onVolumeChange: (Float) -> Unit
 ) {
+    var previousVolume by remember { mutableFloatStateOf(volume.takeIf { it > 0f } ?: 0.5f) }
+
+    LaunchedEffect(volume) {
+        if (volume > 0f) {
+            previousVolume = volume
+        }
+    }
     AnimatedVisibility(
         visible = showDialog,
         enter = fadeIn(tween(300)),
@@ -74,6 +86,15 @@ fun SharedTransitionScope.VolumeDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
+                Text(
+                    text = "${(volume * 100).toInt()}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center
@@ -86,7 +107,7 @@ fun SharedTransitionScope.VolumeDialog(
                                 rotationZ = 270f
                                 transformOrigin = TransformOrigin(0.5f, 0.5f)
                             }
-                            .requiredWidth(180.dp) // Becomes height after rotation
+                            .requiredWidth(140.dp) // Adjusted width so it doesn't overlap
                     )
                 }
 
@@ -108,6 +129,14 @@ fun SharedTransitionScope.VolumeDialog(
                             animatedVisibilityScope = this@AnimatedVisibility,
                             boundsTransform = { _, _ -> tween(durationMillis = 350) }
                         )
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
+                            if (volume > 0f) {
+                                onVolumeChange(0f)
+                            } else {
+                                onVolumeChange(previousVolume)
+                            }
+                        }
                         .size(32.dp)
                 )
             }
