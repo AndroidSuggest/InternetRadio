@@ -186,6 +186,15 @@ fun PlayerSheetContent(
         }
     }
 
+    val hasBitrate = station.bitrate > 0
+    val hasCodec = station.codec.isNotBlank()
+    val hasInfo = hasBitrate || hasCodec
+    var showTimer by rememberSaveable(station.stationUuid) { mutableStateOf(!hasInfo) }
+
+    LaunchedEffect(station.stationUuid) {
+        showTimer = !hasInfo
+    }
+
     var showVolumeDialog by remember { mutableStateOf(false) }
     val volumeLevel = if (connectedCastDevice != null) volume else playbackState.volume
 
@@ -549,18 +558,10 @@ fun PlayerSheetContent(
                         }
                     }
                     
-                    val hasBitrate = station.bitrate > 0
-                    val hasCodec = station.codec.isNotBlank()
-                    val hasInfo = hasBitrate || hasCodec
                     val sessionActiveDurationMs = playbackState.sessionActiveDurationMs
                     val sessionResumeTimeMs = playbackState.sessionResumeTimeMs
                     
-                    var showTimer by rememberSaveable(station.stationUuid) { mutableStateOf(!hasInfo) }
                     var timerSeconds by remember { mutableLongStateOf(0L) }
-
-                    LaunchedEffect(station.stationUuid) {
-                        showTimer = !hasInfo
-                    }
 
                     LaunchedEffect(sessionActiveDurationMs, sessionResumeTimeMs, playbackState.isPlaying) {
                         if (playbackState.isPlaying && sessionResumeTimeMs != null) {
