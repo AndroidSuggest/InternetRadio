@@ -68,6 +68,8 @@
     <string name="settings_player_section">Player</string>
     <string name="settings_stop_on_audio_noisy">Pause bei Gerätetrennung</string>
     <string name="settings_stop_on_audio_noisy_desc">Wiedergabe pausieren, wenn Bluetooth- oder kabelgebundene Kopfhörer getrennt werden</string>
+    <string name="settings_show_cover_art">Titelbild des Songs</string>
+    <string name="settings_show_cover_art_desc">Zeige im Sperrbildschirm und in Benachrichtigungen das Titelbild des Songs anstatt des Senderlogos an</string>
     <string name="settings_max_retry_duration">Maximale Wiederholungsdauer</string>
     <string name="settings_retry_1_min">1 Minute</string>
     <string name="settings_retry_5_min">5 Minuten</string>
