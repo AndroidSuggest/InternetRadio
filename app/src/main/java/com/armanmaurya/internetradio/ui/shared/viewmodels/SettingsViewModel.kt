@@ -131,6 +131,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setShowCoverArtInNotification(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setShowCoverArtInNotification(enabled)
+        }
+    }
+
     fun exportLibrary(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {

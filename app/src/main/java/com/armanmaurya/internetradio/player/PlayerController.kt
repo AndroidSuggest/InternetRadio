@@ -199,6 +199,7 @@ class PlayerController @Inject constructor(
         }
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+            val artworkUri = mediaMetadata.extras?.getString("track_cover_art_url") ?: mediaMetadata.artworkUri?.toString()
             val trackInfo = mediaMetadata.extras?.getString("icy_title") 
                 ?: if (mediaMetadata.title != null && mediaMetadata.artist != null) {
                     "${mediaMetadata.title} - ${mediaMetadata.artist}"
@@ -210,13 +211,16 @@ class PlayerController @Inject constructor(
                 // Read the exact start time recorded by the background service. 
                 // If it's -1, it means it's the tune-in track and we don't know the position.
                 val exactStartTime = mediaMetadata.extras?.getLong("track_start_time")?.takeIf { it > 0L }
+                val isFetchingArtwork = mediaMetadata.extras?.getString("is_fetching_artwork") == "true"
                 
                 _playbackState.update { it.copy(
                     currentTrack = trackInfo, 
-                    trackStartTime = exactStartTime
+                    trackStartTime = exactStartTime,
+                    trackCoverArtUri = artworkUri,
+                    isFetchingArtwork = isFetchingArtwork
                 ) }
             } else {
-                _playbackState.update { it.copy(currentTrack = null, trackStartTime = null) }
+                _playbackState.update { it.copy(currentTrack = null, trackStartTime = null, trackCoverArtUri = artworkUri, isFetchingArtwork = false) }
             }
         }
     }
@@ -458,6 +462,7 @@ class PlayerController @Inject constructor(
                     .setArtworkUri(artworkUri)
                     .setExtras(android.os.Bundle().apply {
                         putString("stationName", this@toMediaItem.name)
+                        putString("stationFavicon", artworkUriStr)
                     })
                     .build()
             )
@@ -490,6 +495,8 @@ data class PlaybackState(
     val currentTrack: String? = null,
     val trackStartTime: Long? = null,
     val lyricsSyncOffsetMs: Long = 0L,
+    val trackCoverArtUri: String? = null,
+    val isFetchingArtwork: Boolean = false,
     val isPlaying: Boolean = false,
     val isLoading: Boolean = false,
     val isError: Boolean = false,

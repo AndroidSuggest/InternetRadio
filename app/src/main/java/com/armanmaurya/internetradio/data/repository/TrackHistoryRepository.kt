@@ -43,4 +43,8 @@ class TrackHistoryRepository @Inject constructor(
                 trackHistoryDao.getTrackHistoryForStation(stationUuid, limit = limit)
             }
     }
+
+    suspend fun updateCoverArt(stationUuid: String, trackTitle: String, coverArtUrl: String) = withContext(Dispatchers.IO) {
+        trackHistoryDao.updateCoverArt(stationUuid, trackTitle, coverArtUrl)
+    }
 }

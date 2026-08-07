@@ -20,4 +20,7 @@ interface TrackHistoryDao {
     
     @Query("SELECT * FROM track_history WHERE stationUuid = :stationUuid ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLatestTrackForStation(stationUuid: String): TrackHistoryEntity?
+
+    @Query("UPDATE track_history SET coverArtUrl = :coverArtUrl WHERE stationUuid = :stationUuid AND trackTitle = :trackTitle")
+    suspend fun updateCoverArt(stationUuid: String, trackTitle: String, coverArtUrl: String)
 }

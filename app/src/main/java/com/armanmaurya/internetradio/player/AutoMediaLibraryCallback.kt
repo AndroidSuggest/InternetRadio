@@ -558,6 +558,7 @@ fun RadioStation.toMediaItem(context: android.content.Context, parentId: String?
                     // Carry the station name so onMediaMetadataChanged can
                     // distinguish ICY track updates from station-name echoes
                     putString("stationName", name)
+                    putString("stationFavicon", favicon)
                 })
                 .build()
         )

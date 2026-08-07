@@ -29,6 +29,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.SubcomposeAsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.local.entity.TrackHistoryEntity
 
@@ -94,6 +98,10 @@ fun HistoryTab(
                         )
                         .animateContentSize()
                 ) {
+                    val parts = track.trackTitle.split(" - ", limit = 2)
+                    val title = parts[0].trim()
+                    val subtitle = if (parts.size > 1) parts[1].trim() else ""
+
                     ListItem(
                         modifier = Modifier
                             .combinedClickable(
@@ -105,12 +113,22 @@ fun HistoryTab(
                             ),
                         headlineContent = {
                             Text(
-                                text = track.trackTitle,
+                                text = title,
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                                 modifier = Modifier.basicMarquee()
                             )
                         },
+                        supportingContent = if (subtitle.isNotEmpty()) {
+                            {
+                                Text(
+                                    text = subtitle,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 1,
+                                    modifier = Modifier.basicMarquee()
+                                )
+                            }
+                        } else null,
                         trailingContent = {
                             Text(
                                 text = time,
@@ -119,10 +137,28 @@ fun HistoryTab(
                             )
                         },
                         leadingContent = {
-                            Icon(
-                                imageVector = Icons.Default.MusicNote,
+                            SubcomposeAsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(track.coverArtUrl)
+                                    .size(Size.ORIGINAL)
+                                    .build(),
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                error = {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.MusicNote,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
                             )
                         },
                         colors = ListItemDefaults.colors(

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,14 +46,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.SubcomposeAsyncImage
+import coil3.request.crossfade
 import androidx.compose.ui.zIndex
 import com.armanmaurya.internetradio.R
+import com.armanmaurya.internetradio.ui.shared.components.shimmerEffect
 import java.net.URLEncoder
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SharedTransitionScope.TrackDialog(
     searchDialogTrack: String?,
+    trackCoverArtUri: String?,
+    isFetchingArtwork: Boolean,
     onDismissRequest: () -> Unit
 ) {
     val clipboardManager = LocalClipboardManager.current
@@ -105,21 +112,75 @@ fun SharedTransitionScope.TrackDialog(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = trackToSearch,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
+                    if (isFetchingArtwork) {
+                        Box(
+                            modifier = Modifier
+                                .sharedElement(
+                                    sharedContentState = rememberSharedContentState(key = "track_cover"),
+                                    animatedVisibilityScope = this@AnimatedVisibility,
+                                    boundsTransform = { _, _ -> tween(durationMillis = 350) }
+                                )
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .shimmerEffect()
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    } else if (trackCoverArtUri != null) {
+                        SubcomposeAsyncImage(
+                            model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                                .data(trackCoverArtUri)
+                                .crossfade(true)
+                                .build(),
+                            loading = {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .shimmerEffect()
+                                )
+                            },
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .sharedElement(
+                                    sharedContentState = rememberSharedContentState(key = "track_cover"),
+                                    animatedVisibilityScope = this@AnimatedVisibility,
+                                    boundsTransform = { _, _ -> tween(durationMillis = 350) }
+                                )
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                    Column(
                         modifier = Modifier
-                            .sharedElement(
+                            .sharedBounds(
                                 sharedContentState = rememberSharedContentState(key = "track_text"),
                                 animatedVisibilityScope = this@AnimatedVisibility,
                                 boundsTransform = { _, _ -> tween(durationMillis = 350) }
                             )
                             .weight(1f)
-                            .basicMarquee()
-                    )
+                    ) {
+                        val trackParts = trackToSearch.split(" - ", limit = 2)
+                        
+                        Text(
+                            text = trackParts[0].trim(),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            modifier = Modifier.basicMarquee()
+                        )
+                        
+                        if (trackParts.size > 1) {
+                            Text(
+                                text = trackParts[1].trim(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                modifier = Modifier.basicMarquee()
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = {
                             clipboardManager.setText(AnnotatedString(trackToSearch))

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Headphones
@@ -150,6 +151,7 @@ fun SettingsScreen(
                 uiState = uiState,
                 onSetAutoPlayOnStart = viewModel::setAutoPlayOnStart,
                 onSetStopOnAudioBecomingNoisy = viewModel::setStopOnAudioBecomingNoisy,
+                onSetShowCoverArtInNotification = viewModel::setShowCoverArtInNotification,
                 showHistoryLimitDialog = showHistoryLimitDialog,
                 onToggleHistoryLimitDialog = { showHistoryLimitDialog = !showHistoryLimitDialog },
                 onSetHistoryLimit = viewModel::setTrackHistoryLimit,
@@ -372,6 +374,7 @@ private fun PlayerSection(
     uiState: AppPreferences,
     onSetAutoPlayOnStart: (Boolean) -> Unit,
     onSetStopOnAudioBecomingNoisy: (Boolean) -> Unit,
+    onSetShowCoverArtInNotification: (Boolean) -> Unit,
     showHistoryLimitDialog: Boolean,
     onToggleHistoryLimitDialog: () -> Unit,
     onSetHistoryLimit: (Int) -> Unit,
@@ -394,6 +397,14 @@ private fun PlayerSection(
             isEnabled = uiState.stopOnAudioBecomingNoisy,
             onToggle = onSetStopOnAudioBecomingNoisy,
             icon = Icons.Default.Headphones
+        )
+
+        ToggleItem(
+            title = stringResource(R.string.settings_show_cover_art),
+            subtitle = stringResource(R.string.settings_show_cover_art_desc),
+            isEnabled = uiState.showCoverArtInNotification,
+            onToggle = onSetShowCoverArtInNotification,
+            icon = Icons.Default.Image
         )
 
         val retryOptions = listOf(

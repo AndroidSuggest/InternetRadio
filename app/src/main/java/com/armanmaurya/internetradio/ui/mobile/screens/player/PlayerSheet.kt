@@ -462,10 +462,18 @@ fun PlayerSheetContent(
                 }
 
                 IconButton(onClick = onTogglePlayPause) {
-                    Icon(
-                        imageVector = if (playbackState.isPlaying || playbackState.isLoading) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = null
-                    )
+                    if (playbackState.isLoading) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    } else {
+                        Icon(
+                            imageVector = if (playbackState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = null
+                        )
+                    }
                 }
 
                 IconButton(
@@ -692,10 +700,18 @@ fun PlayerSheetContent(
                             }
 
                             IconButton(onClick = onTogglePlayPause) {
-                                Icon(
-                                    imageVector = if (playbackState.isPlaying || playbackState.isLoading) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                    contentDescription = null
-                                )
+                                if (playbackState.isLoading) {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = if (playbackState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                        contentDescription = null
+                                    )
+                                }
                             }
 
                             IconButton(
@@ -773,17 +789,20 @@ fun PlayerSheetContent(
                     val noTrackDataText = stringResource(R.string.player_no_track_data)
                     val displayTrack = if (retryCountdown != null) {
                         stringResource(R.string.player_retrying_in, retryCountdown!!)
+                    } else if (playbackState.currentTrack != null) {
+                        playbackState.currentTrack!!
                     } else if (playbackState.isLoading) {
                         bufferingText
                     } else {
-                        playbackState.currentTrack ?: noTrackDataText
+                        noTrackDataText
                     }
                     val isSearchExpanded = searchDialogTrack != null
 
                     val canSearch = displayTrack != bufferingText && displayTrack != noTrackDataText
-                    
                     TrackPill(
                         displayTrack = displayTrack,
+                        trackCoverArtUri = if (canSearch) playbackState.trackCoverArtUri else null,
+                        isFetchingArtwork = if (canSearch) playbackState.isFetchingArtwork else false,
                         canSearch = canSearch,
                         isSearchExpanded = isSearchExpanded,
                         onOpenSearch = { track -> searchDialogTrack = track }
@@ -1133,6 +1152,8 @@ fun PlayerSheetContent(
         // DIALOG: visible when expanded — same sharedBounds key as pill = true container transform
         TrackDialog(
             searchDialogTrack = searchDialogTrack,
+            trackCoverArtUri = playbackState.trackCoverArtUri,
+            isFetchingArtwork = playbackState.isFetchingArtwork,
             onDismissRequest = { searchDialogTrack = null }
         )
 

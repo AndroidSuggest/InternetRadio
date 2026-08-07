@@ -55,11 +55,15 @@ class PlaybackService : MediaLibraryService() {
     @Inject
     lateinit var recentRepository: com.armanmaurya.internetradio.data.repository.RecentRepository
 
+    @Inject
+    lateinit var coverArtRepository: com.armanmaurya.internetradio.data.repository.CoverArtRepository
+
     private var player: Player? = null
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var loadErrorHandlingPolicy: ExponentialBackoffLoadErrorHandlingPolicy
     
     private var stopOnAudioBecomingNoisy: Boolean = true
+    private var showCoverArtInNotification: Boolean = true
     
     private val audioNoisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -138,10 +142,19 @@ class PlaybackService : MediaLibraryService() {
                         if (previousRawTitle == rawTrackTitle) return
                         
                         val stationName = currentExtras?.getString("stationName")
+                        val stationFaviconStr = currentExtras?.getString("stationFavicon")
+                        val stationFaviconUri = when {
+                            stationFaviconStr?.endsWith(".svg", ignoreCase = true) == true ->
+                                android.net.Uri.parse(SvgProxyProvider.createProxyUri(this@PlaybackService, stationFaviconStr))
+                            !stationFaviconStr.isNullOrBlank() -> android.net.Uri.parse(stationFaviconStr)
+                            else -> android.net.Uri.EMPTY
+                        }
 
                         val newExtras = android.os.Bundle(currentExtras ?: android.os.Bundle.EMPTY).apply {
                             putString("icy_raw_title", rawTrackTitle)
                             putString("icy_title", trackTitle)
+                            putString("is_fetching_artwork", "true")
+                            remove("track_cover_art_url") // Clear old cover art for the new track
                             
                             if (previousRawTitle == null) {
                                 // First track since tuning in. We do not know when it actually started.
@@ -155,6 +168,7 @@ class PlaybackService : MediaLibraryService() {
                         val newMetadataBuilder = currentMediaItem.mediaMetadata.buildUpon()
                             .setTitle(trackName)
                             .setArtist(artistName)
+                            .setArtworkUri(null) // Revert to null during fetch so MediaMetadata differs
                             .setExtras(newExtras)
                             
                         val newMediaItem = currentMediaItem.buildUpon()
@@ -168,6 +182,36 @@ class PlaybackService : MediaLibraryService() {
                         val stationUuid = currentMediaItem.mediaId
                         serviceScope.launch {
                             trackHistoryRepository.logTrack(stationUuid, trackTitle)
+                            
+                            // Fetch track cover art
+                            val coverArtUrl = coverArtRepository.getCoverArt(trackName, artistName)
+                            if (coverArtUrl != null) {
+                                android.util.Log.d("PlaybackService", "Found cover art: $coverArtUrl")
+                                trackHistoryRepository.updateCoverArt(stationUuid, trackTitle, coverArtUrl)
+                            }
+                            
+                            val latestPlayer = player ?: return@launch
+                            val latestMediaItem = latestPlayer.currentMediaItem ?: return@launch
+                            val latestRawTitle = latestMediaItem.mediaMetadata.extras?.getString("icy_raw_title")
+                            
+                            // Ensure track hasn't changed while fetching
+                            if (latestRawTitle == rawTrackTitle) {
+                                val latestExtras = latestMediaItem.mediaMetadata.extras
+                                val updatedExtras = android.os.Bundle(latestExtras ?: android.os.Bundle.EMPTY).apply {
+                                    putString("is_fetching_artwork", "false")
+                                    if (coverArtUrl != null) {
+                                        putString("track_cover_art_url", coverArtUrl) // Make cover art available to internal UI
+                                    }
+                                }
+                                val metadataWithArt = latestMediaItem.mediaMetadata.buildUpon()
+                                    .setArtworkUri(if (showCoverArtInNotification && coverArtUrl != null) android.net.Uri.parse(coverArtUrl) else stationFaviconUri)
+                                    .setExtras(updatedExtras)
+                                    .build()
+                                val itemWithArt = latestMediaItem.buildUpon()
+                                    .setMediaMetadata(metadataWithArt)
+                                    .build()
+                                latestPlayer.replaceMediaItem(latestPlayer.currentMediaItemIndex, itemWithArt)
+                            }
                         }
                     }
                 }
@@ -184,6 +228,7 @@ class PlaybackService : MediaLibraryService() {
             settingsRepository.appPreferencesFlow.collect { prefs ->
                 loadErrorHandlingPolicy.maxRetryDurationMs = prefs.maxRetryDuration
                 stopOnAudioBecomingNoisy = prefs.stopOnAudioBecomingNoisy
+                showCoverArtInNotification = prefs.showCoverArtInNotification
             }
         }
 
@@ -360,6 +405,7 @@ class PlaybackService : MediaLibraryService() {
                             .setArtworkUri(artworkUri)
                             .setExtras(android.os.Bundle().apply {
                                 putString("stationName", stationName)
+                                putString("stationFavicon", stationFavicon)
                             })
                             .build()
                     )

@@ -67,6 +67,8 @@
     <string name="settings_player_section">Player</string>
     <string name="settings_stop_on_audio_noisy">Pause on device disconnect</string>
     <string name="settings_stop_on_audio_noisy_desc">Pause playback when Bluetooth or wired headphones are disconnected</string>
+    <string name="settings_show_cover_art">Cover Art in Notification</string>
+    <string name="settings_show_cover_art_desc">Show track cover art instead of station thumbnail in lock screen and notifications</string>
     <string name="settings_max_retry_duration">Maximum retry duration</string>
     <string name="settings_retry_1_min">1 minute</string>
     <string name="settings_retry_5_min">5 minutes</string>

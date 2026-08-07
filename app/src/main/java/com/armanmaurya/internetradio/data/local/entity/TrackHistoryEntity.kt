@@ -9,5 +9,7 @@ data class TrackHistoryEntity(
     val id: Long = 0,
     val stationUuid: String,
     val trackTitle: String,
-    val timestamp: Long
+    val timestamp: Long,
+    @androidx.room.ColumnInfo(defaultValue = "NULL")
+    val coverArtUrl: String? = null
 )

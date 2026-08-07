@@ -13,9 +13,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,15 +27,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil3.compose.SubcomposeAsyncImage
+import coil3.request.crossfade
 import com.armanmaurya.internetradio.R
+import com.armanmaurya.internetradio.ui.shared.components.shimmerEffect
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.TrackPill(
     displayTrack: String,
+    trackCoverArtUri: String?,
+    isFetchingArtwork: Boolean,
     canSearch: Boolean,
     isSearchExpanded: Boolean,
     onOpenSearch: (String) -> Unit
@@ -85,9 +94,49 @@ fun SharedTransitionScope.TrackPill(
                             onOpenSearch(displayTrack)
                         }
                     }
-                    .padding(start = 12.dp, end = 6.dp, top = 2.dp, bottom = 2.dp),
+                    .padding(start = 4.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                if (isFetchingArtwork) {
+                    Box(
+                        modifier = Modifier
+                            .sharedElement(
+                                sharedContentState = rememberSharedContentState(key = "track_cover"),
+                                animatedVisibilityScope = this@AnimatedVisibility,
+                                boundsTransform = { _, _ -> tween(durationMillis = 350) }
+                            )
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .shimmerEffect()
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                } else if (trackCoverArtUri != null) {
+                    SubcomposeAsyncImage(
+                        model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                            .data(trackCoverArtUri)
+                            .crossfade(true)
+                            .build(),
+                        loading = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .shimmerEffect()
+                            )
+                        },
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .sharedElement(
+                                sharedContentState = rememberSharedContentState(key = "track_cover"),
+                                animatedVisibilityScope = this@AnimatedVisibility,
+                                boundsTransform = { _, _ -> tween(durationMillis = 350) }
+                            )
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                
                 Text(
                     text = displayTrack,
                     style = MaterialTheme.typography.bodyMedium,
@@ -95,7 +144,7 @@ fun SharedTransitionScope.TrackPill(
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     modifier = Modifier
-                        .sharedElement(
+                        .sharedBounds(
                             sharedContentState = rememberSharedContentState(key = "track_text"),
                             animatedVisibilityScope = this@AnimatedVisibility,
                             boundsTransform = { _, _ -> tween(durationMillis = 350) }

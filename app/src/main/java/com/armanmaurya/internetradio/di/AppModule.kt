@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.armanmaurya.internetradio.data.local.database.RadioDatabase
 import com.armanmaurya.internetradio.data.remote.RadioBrowserApi
+import com.armanmaurya.internetradio.data.remote.MusicBrainzApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,7 +31,7 @@ object AppModule {
      * https://docs.radio-browser.info/#server-selection
      */
     private const val BASE_URL = "https://de1.api.radio-browser.info/"
-    private const val APP_USER_AGENT = "InternetRadio/1.0"
+    private const val APP_USER_AGENT = "InternetRadio/1.0 ( https://github.com/armanmaurya/InternetRadio )"
     private const val CACHE_SIZE = 50 * 1024 * 1024L // 50 MB
 
     @Provides
@@ -111,6 +112,21 @@ object AppModule {
     @Singleton
     fun provideLrcLibApi(@Named("LrcLibRetrofit") retrofit: Retrofit): com.armanmaurya.internetradio.data.remote.LrcLibApi =
         retrofit.create(com.armanmaurya.internetradio.data.remote.LrcLibApi::class.java)
+
+    @Provides
+    @Singleton
+    @Named("MusicBrainzRetrofit")
+    fun provideMusicBrainzRetrofit(okHttpClient: OkHttpClient): Retrofit =
+        Retrofit.Builder()
+            .baseUrl("https://musicbrainz.org/ws/2/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideMusicBrainzApiService(@Named("MusicBrainzRetrofit") retrofit: Retrofit): MusicBrainzApiService =
+        retrofit.create(MusicBrainzApiService::class.java)
 
     @Provides
     @Singleton

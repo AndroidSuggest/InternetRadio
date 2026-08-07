@@ -112,11 +112,19 @@ fun Controls(
             modifier = Modifier.weight(2f).height(64.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Icon(
-                imageVector = if (isPlaying || isLoading) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp)
-            )
+            if (isLoading) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    modifier = Modifier.size(32.dp),
+                    strokeWidth = 3.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
         }
 
         FilledIconButton(
