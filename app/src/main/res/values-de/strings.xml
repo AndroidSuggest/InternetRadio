@@ -136,7 +136,8 @@
     <string name="home_cd_settings">Einstellungen</string>
     <string name="home_votes">Stimmen</string>
     <string name="home_clicks">Klicks</string>
-    <string name="home_trend">Tendenz</string>
+    <string name="home_trend">Trend</string>
+    <string name="home_verified">Verifiziert</string>
     <string name="home_toggle_view">Ansicht umschalten</string>
     <string name="home_add_to_library">Zur Bibliothek hinzufügen</string>
     <string name="home_remove_from_library">Aus Bibliothek entfernen</string>
