@@ -23,10 +23,13 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,6 +74,7 @@ import com.armanmaurya.internetradio.player.PlaybackSource
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import androidx.compose.material.icons.filled.ViewModule
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material3.IconButton
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.ToggleChip
@@ -134,7 +138,7 @@ fun BrowseContent(
                 onVerifiedChange = viewModel::onVerifiedChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(top = 16.dp, bottom = 8.dp)
             )
         }
 
@@ -305,102 +309,83 @@ private fun SearchFilters(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { onGridViewChange(!isGridView) }) {
-                androidx.compose.animation.AnimatedContent(
-                    targetState = isGridView,
-                    label = "view_toggle"
-                ) { isGrid ->
-                    Icon(
-                        imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
-                        contentDescription = stringResource(R.string.home_toggle_view),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { onGridViewChange(!isGridView) }
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.animation.AnimatedContent(
+                targetState = isGridView,
+                label = "view_toggle"
+            ) { isGrid ->
+                Icon(
+                    imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
+                    contentDescription = stringResource(R.string.home_toggle_view),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ToggleChip(
+                text = stringResource(R.string.home_verified),
+                onClick = { onVerifiedChange(!isVerified) },
+                isActive = isVerified,
+                leadingIcon = Icons.Default.FilterList,
+                trailingIcon = if (isVerified) Icons.Default.Check else null
+            )
 
             Box {
                 ToggleChip(
                     text = orderOptions.find { it.first == order }?.second ?: order,
-                    onClick = { orderExpanded = true },
-                    leadingIcon = Icons.AutoMirrored.Filled.Sort,
-                    leadingIconContentDescription = "Sort Options",
-                    trailingIcon = if (reverse) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
-                    trailingIconContentDescription = if (reverse) stringResource(R.string.home_descending) else stringResource(R.string.home_ascending)
+                    onClick = { orderExpanded = !orderExpanded },
+                    leadingContent = {
+                        Icon(
+                            painter = androidx.compose.ui.res.painterResource(
+                                id = if (reverse) R.drawable.ic_sort_down else R.drawable.ic_sort_up
+                            ),
+                            contentDescription = if (reverse) stringResource(R.string.home_descending) else stringResource(R.string.home_ascending),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
+                    trailingIcon = if (orderExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    trailingIconContentDescription = if (orderExpanded) "Close sort menu" else "Open sort menu"
                 )
-                val transitionState = remember { MutableTransitionState(false) }
-                transitionState.targetState = orderExpanded
-
-                if (transitionState.currentState || transitionState.targetState) {
-                    SortPopupContent(
-                        transitionState = transitionState,
-                        onDismissRequest = { orderExpanded = false }
-                    ) {
-                        Surface(
-                            shape = MaterialTheme.shapes.extraSmall,
-                            color = MaterialTheme.colorScheme.surfaceContainer,
-                            tonalElevation = 3.dp,
-                            shadowElevation = 3.dp,
-                            modifier = Modifier.padding(top = 40.dp, end = 16.dp)
-                        ) {
-                            Column(modifier = Modifier.width(IntrinsicSize.Max)) {
-                                orderOptions.forEach { (value, label) ->
-                                    DropdownMenuItem(
-                                        text = { Text(label) },
-                                        onClick = {
-                                            if (order == value) {
-                                                onReverseChange(!reverse)
-                                            } else {
-                                                onOrderChange(value)
-                                            }
-                                            orderExpanded = false
-                                        },
-                                        trailingIcon = {
-                                            if (order == value) {
-                                                Icon(
-                                                    imageVector = if (reverse) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
-                                                    contentDescription = if (reverse) stringResource(R.string.home_cd_descending) else stringResource(R.string.home_cd_ascending),
-                                                    modifier = Modifier.size(16.dp),
-                                                    tint = MaterialTheme.colorScheme.primary
-                                                )
-                                            }
-                                        }
+                DropdownMenu(
+                    expanded = orderExpanded,
+                    onDismissRequest = { orderExpanded = false }
+                ) {
+                    orderOptions.forEach { (value, label) ->
+                        DropdownMenuItem(
+                            text = { Text(label) },
+                            onClick = {
+                                if (order == value) {
+                                    onReverseChange(!reverse)
+                                } else {
+                                    onOrderChange(value)
+                                }
+                                orderExpanded = false
+                            },
+                            trailingIcon = {
+                                if (order == value) {
+                                    Icon(
+                                        painter = androidx.compose.ui.res.painterResource(
+                                            id = if (reverse) R.drawable.ic_sort_down else R.drawable.ic_sort_up
+                                        ),
+                                        contentDescription = if (reverse) stringResource(R.string.home_cd_descending) else stringResource(R.string.home_cd_ascending),
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
-                        }
+                        )
                     }
                 }
             }
         }
-
-        ToggleChip(
-            text = stringResource(R.string.home_verified),
-            onClick = { onVerifiedChange(!isVerified) },
-            isActive = isVerified,
-            leadingIcon = Icons.Default.FilterList,
-            trailingIcon = if (isVerified) Icons.Default.Check else null
-        )
     }
 }
 
-@Composable
-fun SortPopupContent(
-    transitionState: MutableTransitionState<Boolean>,
-    onDismissRequest: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    Popup(
-        alignment = Alignment.TopEnd,
-        onDismissRequest = onDismissRequest,
-        properties = PopupProperties(focusable = true)
-    ) {
-        AnimatedVisibility(
-            visibleState = transitionState,
-            enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
-        ) {
-            content()
-        }
-    }
-}

@@ -28,12 +28,13 @@ fun ToggleChip(
     leadingIcon: ImageVector? = null,
     leadingIconContentDescription: String? = null,
     leadingIconSize: androidx.compose.ui.unit.Dp = 24.dp,
+    leadingContent: (@Composable () -> Unit)? = null,
     trailingIcon: ImageVector? = null,
     trailingIconContentDescription: String? = null,
     trailingIconSize: androidx.compose.ui.unit.Dp = 16.dp
 ) {
-    val backgroundColor = if (isActive) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
-    val contentColor = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.primary
+    val backgroundColor = if (isActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -44,7 +45,13 @@ fun ToggleChip(
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .animateContentSize()
     ) {
-        if (leadingIcon != null) {
+        androidx.compose.runtime.CompositionLocalProvider(
+            androidx.compose.material3.LocalContentColor provides contentColor
+        ) {
+            if (leadingContent != null) {
+            leadingContent()
+            Spacer(Modifier.width(8.dp))
+        } else if (leadingIcon != null) {
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = leadingIconContentDescription,
@@ -66,6 +73,7 @@ fun ToggleChip(
                 modifier = Modifier.size(trailingIconSize),
                 tint = contentColor
             )
+        }
         }
     }
 }

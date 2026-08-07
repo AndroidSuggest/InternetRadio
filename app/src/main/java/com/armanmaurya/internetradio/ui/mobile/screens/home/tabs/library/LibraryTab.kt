@@ -23,7 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.animation.AnimatedVisibility
@@ -58,7 +61,7 @@ import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
 import com.armanmaurya.internetradio.data.model.LibrarySortOption
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
-import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.browse.SortPopupContent
+
 
 import androidx.compose.material.icons.filled.DragIndicator
 
@@ -159,147 +162,131 @@ fun LibraryContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(top = 16.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { viewModel.onGridViewChange(!isGridView) }) {
-                        androidx.compose.animation.AnimatedContent(
-                            targetState = isGridView,
-                            label = "view_toggle"
-                        ) { isGrid ->
-                            Icon(
-                                imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
-                                contentDescription = stringResource(R.string.home_toggle_view),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                    Box {
-                            val sortText = when (sortOption) {
-                                LibrarySortOption.NAME_A_Z, LibrarySortOption.NAME_Z_A -> stringResource(R.string.home_sort_name)
-                                LibrarySortOption.RECENTLY_ADDED, LibrarySortOption.OLDEST_ADDED -> stringResource(R.string.home_sort_added)
-                                LibrarySortOption.RECENTLY_PLAYED, LibrarySortOption.LEAST_RECENTLY_PLAYED -> stringResource(R.string.home_sort_played)
-                                LibrarySortOption.CUSTOM -> stringResource(R.string.home_sort_custom)
-                            }
-                            
-                            val sortIcon = when (sortOption) {
-                                LibrarySortOption.NAME_A_Z, LibrarySortOption.RECENTLY_ADDED, LibrarySortOption.RECENTLY_PLAYED -> Icons.Default.ArrowDownward
-                                LibrarySortOption.NAME_Z_A, LibrarySortOption.OLDEST_ADDED, LibrarySortOption.LEAST_RECENTLY_PLAYED -> Icons.Default.ArrowUpward
-                                else -> null
-                            }
-                            ToggleChip(
-                                text = sortText,
-                                onClick = { showSortMenu = true },
-                                leadingIcon = Icons.AutoMirrored.Filled.Sort,
-                                leadingIconContentDescription = "Sort Options",
-                                trailingIcon = sortIcon
-                            )
-                        val transitionState = remember { MutableTransitionState(false) }
-                        transitionState.targetState = showSortMenu
-                        
-                        if (transitionState.currentState || transitionState.targetState) {
-                            SortPopupContent(
-                                transitionState = transitionState,
-                                onDismissRequest = { showSortMenu = false }
-                            ) {
-                                Surface(
-                                    shape = MaterialTheme.shapes.extraSmall,
-                                    color = MaterialTheme.colorScheme.surfaceContainer,
-                                    tonalElevation = 3.dp,
-                                    shadowElevation = 3.dp,
-                                    modifier = Modifier.padding(top = 40.dp, end = 16.dp)
-                                ) {
-                                    Column(modifier = Modifier.width(IntrinsicSize.Max)) {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.home_sort_played)) },
-                                            onClick = { 
-                                                if (sortOption == LibrarySortOption.RECENTLY_PLAYED) {
-                                                    viewModel.setSortOption(LibrarySortOption.LEAST_RECENTLY_PLAYED)
-                                                } else {
-                                                    viewModel.setSortOption(LibrarySortOption.RECENTLY_PLAYED)
-                                                }
-                                                showSortMenu = false
-                                            },
-                                            trailingIcon = {
-                                                if (sortOption == LibrarySortOption.RECENTLY_PLAYED) Icon(Icons.Default.ArrowDownward, "Descending")
-                                                else if (sortOption == LibrarySortOption.LEAST_RECENTLY_PLAYED) Icon(Icons.Default.ArrowUpward, "Ascending")
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.home_sort_added)) },
-                                            onClick = { 
-                                                if (sortOption == LibrarySortOption.RECENTLY_ADDED) {
-                                                    viewModel.setSortOption(LibrarySortOption.OLDEST_ADDED)
-                                                } else {
-                                                    viewModel.setSortOption(LibrarySortOption.RECENTLY_ADDED)
-                                                }
-                                                showSortMenu = false
-                                            },
-                                            trailingIcon = {
-                                                if (sortOption == LibrarySortOption.RECENTLY_ADDED) Icon(Icons.Default.ArrowDownward, "Descending")
-                                                else if (sortOption == LibrarySortOption.OLDEST_ADDED) Icon(Icons.Default.ArrowUpward, "Ascending")
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.home_sort_name)) },
-                                            onClick = { 
-                                                if (sortOption == LibrarySortOption.NAME_A_Z) {
-                                                    viewModel.setSortOption(LibrarySortOption.NAME_Z_A)
-                                                } else {
-                                                    viewModel.setSortOption(LibrarySortOption.NAME_A_Z)
-                                                }
-                                                showSortMenu = false
-                                            },
-                                            trailingIcon = {
-                                                if (sortOption == LibrarySortOption.NAME_A_Z) Icon(Icons.Default.ArrowDownward, "A-Z")
-                                                else if (sortOption == LibrarySortOption.NAME_Z_A) Icon(Icons.Default.ArrowUpward, "Z-A")
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.home_sort_custom)) },
-                                            onClick = { 
-                                                viewModel.setSortOption(LibrarySortOption.CUSTOM)
-                                                showSortMenu = false
-                                            },
-                                            trailingIcon = if (sortOption == LibrarySortOption.CUSTOM) { { Icon(Icons.Default.Check, "Active") } } else null
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                Box(
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { viewModel.onGridViewChange(!isGridView) }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    androidx.compose.animation.AnimatedContent(
+                        targetState = isGridView,
+                        label = "view_toggle"
+                    ) { isGrid ->
+                        Icon(
+                            imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
+                            contentDescription = stringResource(R.string.home_toggle_view),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable { viewModel.toggleFilter() }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .animateContentSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ToggleChip(
                         text = if (useFilter) stringResource(R.string.home_filters_active) else stringResource(R.string.home_use_filters),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
+                        onClick = { viewModel.toggleFilter() },
+                        isActive = useFilter,
+                        leadingIcon = Icons.Default.FilterList,
+                        trailingIcon = if (useFilter) Icons.Default.Close else null,
+                        trailingIconContentDescription = if (useFilter) stringResource(R.string.general_clear) else null
                     )
-                    if (useFilter) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(R.string.general_clear),
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
+
+                    Box {
+                        val sortText = when (sortOption) {
+                            LibrarySortOption.NAME_A_Z, LibrarySortOption.NAME_Z_A -> stringResource(R.string.home_sort_name)
+                            LibrarySortOption.RECENTLY_ADDED, LibrarySortOption.OLDEST_ADDED -> stringResource(R.string.home_sort_added)
+                            LibrarySortOption.RECENTLY_PLAYED, LibrarySortOption.LEAST_RECENTLY_PLAYED -> stringResource(R.string.home_sort_played)
+                            LibrarySortOption.CUSTOM -> stringResource(R.string.home_sort_custom)
+                        }
+                        
+                        val sortIconRes = when (sortOption) {
+                            LibrarySortOption.NAME_A_Z, LibrarySortOption.RECENTLY_ADDED, LibrarySortOption.RECENTLY_PLAYED -> R.drawable.ic_sort_down
+                            LibrarySortOption.NAME_Z_A, LibrarySortOption.OLDEST_ADDED, LibrarySortOption.LEAST_RECENTLY_PLAYED -> R.drawable.ic_sort_up
+                            else -> null
+                        }
+                        ToggleChip(
+                            text = sortText,
+                            onClick = { showSortMenu = !showSortMenu },
+                            leadingContent = {
+                                if (sortIconRes != null) {
+                                    Icon(
+                                        painter = androidx.compose.ui.res.painterResource(id = sortIconRes),
+                                        contentDescription = "Sort Options",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.Sort,
+                                        contentDescription = "Sort Options",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            },
+                            trailingIcon = if (showSortMenu) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown
                         )
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.home_sort_played)) },
+                                onClick = { 
+                                    if (sortOption == LibrarySortOption.RECENTLY_PLAYED) {
+                                        viewModel.setSortOption(LibrarySortOption.LEAST_RECENTLY_PLAYED)
+                                    } else {
+                                        viewModel.setSortOption(LibrarySortOption.RECENTLY_PLAYED)
+                                    }
+                                    showSortMenu = false
+                                },
+                                trailingIcon = {
+                                    if (sortOption == LibrarySortOption.RECENTLY_PLAYED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = "Descending", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    else if (sortOption == LibrarySortOption.LEAST_RECENTLY_PLAYED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = "Ascending", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.home_sort_added)) },
+                                onClick = { 
+                                    if (sortOption == LibrarySortOption.RECENTLY_ADDED) {
+                                        viewModel.setSortOption(LibrarySortOption.OLDEST_ADDED)
+                                    } else {
+                                        viewModel.setSortOption(LibrarySortOption.RECENTLY_ADDED)
+                                    }
+                                    showSortMenu = false
+                                },
+                                trailingIcon = {
+                                    if (sortOption == LibrarySortOption.RECENTLY_ADDED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = "Descending", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    else if (sortOption == LibrarySortOption.OLDEST_ADDED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = "Ascending", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.home_sort_name)) },
+                                onClick = { 
+                                    if (sortOption == LibrarySortOption.NAME_A_Z) {
+                                        viewModel.setSortOption(LibrarySortOption.NAME_Z_A)
+                                    } else {
+                                        viewModel.setSortOption(LibrarySortOption.NAME_A_Z)
+                                    }
+                                    showSortMenu = false
+                                },
+                                trailingIcon = {
+                                    if (sortOption == LibrarySortOption.NAME_A_Z) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = "A-Z", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    else if (sortOption == LibrarySortOption.NAME_Z_A) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = "Z-A", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.home_sort_custom)) },
+                                onClick = { 
+                                    viewModel.setSortOption(LibrarySortOption.CUSTOM)
+                                    showSortMenu = false
+                                },
+                                trailingIcon = if (sortOption == LibrarySortOption.CUSTOM) { { Icon(Icons.Default.Check, "Active") } } else null
+                            )
+                        }
                     }
                 }
             }

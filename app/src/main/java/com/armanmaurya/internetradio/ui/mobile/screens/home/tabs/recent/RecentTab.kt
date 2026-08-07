@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.DeleteSweep
 import kotlinx.coroutines.launch
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
@@ -94,49 +95,48 @@ fun RecentContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(top = 16.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { viewModel.onGridViewChange(!isGridView) }) {
-                        androidx.compose.animation.AnimatedContent(
-                            targetState = isGridView,
-                            label = "view_toggle"
-                        ) { isGrid ->
-                            Icon(
-                                imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
-                                contentDescription = stringResource(R.string.home_toggle_view),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                    if (currentStations.isNotEmpty()) {
-                        androidx.compose.material3.TextButton(
-                            onClick = { showClearDialog = true }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(R.string.general_clear),
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                        }
+                Box(
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { viewModel.onGridViewChange(!isGridView) }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    androidx.compose.animation.AnimatedContent(
+                        targetState = isGridView,
+                        label = "view_toggle"
+                    ) { isGrid ->
+                        Icon(
+                            imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
+                            contentDescription = stringResource(R.string.home_toggle_view),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
-                ToggleChip(
-                    text = if (useFilter) stringResource(R.string.home_filters_active) else stringResource(R.string.home_use_filters),
-                    onClick = { viewModel.toggleFilter() },
-                    isActive = useFilter,
-                    leadingIcon = Icons.Default.FilterList,
-                    trailingIcon = if (useFilter) Icons.Default.Close else null,
-                    trailingIconContentDescription = if (useFilter) stringResource(R.string.general_clear) else null
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (currentStations.isNotEmpty()) {
+                        ToggleChip(
+                            text = stringResource(R.string.general_clear),
+                            onClick = { showClearDialog = true },
+                            leadingIcon = Icons.Default.DeleteSweep
+                        )
+                    }
+
+                    ToggleChip(
+                        text = if (useFilter) stringResource(R.string.home_filters_active) else stringResource(R.string.home_use_filters),
+                        onClick = { viewModel.toggleFilter() },
+                        isActive = useFilter,
+                        leadingIcon = Icons.Default.FilterList,
+                        trailingIcon = if (useFilter) Icons.Default.Close else null,
+                        trailingIconContentDescription = if (useFilter) stringResource(R.string.general_clear) else null
+                    )
+                }
             }
         }
         if (currentStations.isEmpty()) {
