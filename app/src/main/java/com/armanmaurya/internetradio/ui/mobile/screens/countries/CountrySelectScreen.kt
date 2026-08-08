@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.Country
+import com.armanmaurya.internetradio.ui.mobile.screens.countries.components.CountryItem
 import com.armanmaurya.internetradio.ui.shared.viewmodels.CountrySelectViewModel
 import kotlinx.coroutines.delay
 
@@ -176,35 +177,3 @@ fun CountrySelectScreen(
     }
 }
 
-@Composable
-private fun CountryItem(
-    country: Country,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    ListItem(
-        headlineContent = { 
-            Text(
-                text = country.name,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                style = if (isSelected) MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.primary) else MaterialTheme.typography.bodyLarge
-            ) 
-        },
-        supportingContent = { Text(stringResource(R.string.general_station_count_msg, country.stationCount)) },
-        trailingContent = { 
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            } else if (country.isoCode.isNotBlank()) {
-                Text(country.isoCode)
-            }
-        },
-        modifier = modifier
-            .clickable(onClick = onClick)
-            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else Color.Transparent)
-    )
-}

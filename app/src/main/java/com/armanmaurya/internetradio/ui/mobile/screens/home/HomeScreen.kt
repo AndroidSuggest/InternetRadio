@@ -16,9 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,32 +25,21 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.DeleteSweep
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -79,16 +66,15 @@ import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.RadioSearchBar
 import com.armanmaurya.internetradio.ui.shared.viewmodels.PlayerViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.library.LibraryContent
-import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.browse.BrowseContent
 import com.armanmaurya.internetradio.ui.shared.viewmodels.BrowseViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recent.RecentContent
-import com.armanmaurya.internetradio.ui.shared.viewmodels.RecentViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.platform.LocalContext
 import com.armanmaurya.internetradio.data.model.RadioStation
 
@@ -98,7 +84,11 @@ import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationDrawerItem
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.SchedulesTabContent
+import com.armanmaurya.internetradio.ui.mobile.screens.home.layout.ExpandedHomeLayout
+import com.armanmaurya.internetradio.ui.mobile.screens.home.layout.CompactHomeLayout
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -298,297 +288,45 @@ fun HomeScreen(
         }
 
         if (widthSizeClass == WindowWidthSizeClass.Expanded) {
-            val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == androidx.compose.ui.graphics.Color.Black
-            androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize()) {
-                androidx.compose.foundation.layout.Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
-                androidx.compose.foundation.layout.Column(
-                    modifier = Modifier
-                        .width(200.dp)
-                        .padding(start = 12.dp, end = 12.dp)
-                ) {
-                    androidx.compose.foundation.layout.Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        androidx.compose.foundation.layout.Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 0.dp, bottom = 8.dp)
-                                .clip(RoundedCornerShape(100))
-                                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                                .then(
-                                    if (isPureBlack) Modifier.border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(100))
-                                    else Modifier
-                                )
-                                .clickable { isSearchExpanded = true }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Text(
-                                text = uiState.searchQuery.ifEmpty { stringResource(R.string.general_search) },
-                                color = if (uiState.searchQuery.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                        }
-                        
-                        androidx.compose.foundation.layout.Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
-                        ) {
-                            androidx.compose.material3.IconButton(
-                                onClick = onTagClick,
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.LocalOffer,
-                                    contentDescription = stringResource(R.string.home_cd_tags),
-                                    modifier = Modifier.size(20.dp),
-                                    tint = if (uiState.selectedTags.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            androidx.compose.material3.IconButton(
-                                onClick = onLanguageClick,
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                androidx.compose.foundation.layout.Box {
-                                    Icon(
-                                        Icons.Default.Translate,
-                                        contentDescription = stringResource(R.string.edit_station_language_field),
-                                        modifier = Modifier.size(20.dp),
-                                        tint = if (!uiState.selectedLanguage.isNullOrBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    if (!uiState.selectedLanguage.isNullOrBlank()) {
-                                        Text(
-                                            text = uiState.selectedLanguage!!.take(2).uppercase(),
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp),
-                                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                                            ),
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .offset(x = 6.dp, y = (-4).dp)
-                                        )
-                                    }
-                                }
-                            }
-                            androidx.compose.material3.IconButton(
-                                onClick = onCountryClick,
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                androidx.compose.foundation.layout.Box {
-                                    Icon(
-                                        Icons.Default.Public,
-                                        contentDescription = stringResource(R.string.edit_station_country_field),
-                                        modifier = Modifier.size(20.dp),
-                                        tint = if (!uiState.selectedCountryCode.isNullOrBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    if (!uiState.selectedCountryCode.isNullOrBlank()) {
-                                        Text(
-                                            text = uiState.selectedCountryCode!!,
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp),
-                                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                                            ),
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .offset(x = 6.dp, y = (-4).dp)
-                                        )
-                                    }
-                                }
-                            }
-                            androidx.compose.material3.IconButton(
-                                onClick = onSettingsClick,
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.home_cd_settings), modifier = Modifier.size(20.dp))
-                            }
-                        }
-                        val icons = listOf(
-                            androidx.compose.material.icons.Icons.Rounded.Explore,
-                            androidx.compose.material.icons.Icons.Rounded.History,
-                            androidx.compose.material.icons.Icons.Rounded.LibraryMusic,
-                            androidx.compose.material.icons.Icons.Rounded.Mic,
-                            androidx.compose.material.icons.Icons.Rounded.Schedule
-                        )
-                        tabs.forEachIndexed { index, title ->
-                            androidx.compose.material3.NavigationDrawerItem(
-                                icon = { Icon(icons.getOrElse(index) { androidx.compose.material.icons.Icons.Rounded.Explore }, contentDescription = title) },
-                                label = { Text(title) },
-                                selected = pagerState.currentPage == index,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(index)
-                                    }
-                                },
-                                colors = androidx.compose.material3.NavigationDrawerItemDefaults.colors(
-                                    selectedContainerColor = if (isPureBlack) androidx.compose.ui.graphics.Color.Black else MaterialTheme.colorScheme.secondaryContainer
-                                ),
-                                modifier = Modifier
-                                    .padding(vertical = 0.dp)
-                                    .height(40.dp)
-                                    .then(
-                                        if (isPureBlack && pagerState.currentPage == index)
-                                            Modifier.border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(100))
-                                        else Modifier
-                                    )
-                            )
-                        }
-                    }
-
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    pagerContent()
-                }
-            } // End Row
-                
-                if (isSearchExpanded) {
-                    androidx.compose.foundation.layout.Box(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        RadioSearchBar(
-                            query = uiState.searchQuery,
-                            onQueryChange = viewModel::onSearchQueryChange,
-                            isSearchExpanded = isSearchExpanded,
-                            onExpandedChange = { isSearchExpanded = it },
-                            onSearchCleared = viewModel::onSearchCleared,
-                            onCountryClick = onCountryClick,
-                            onLanguageClick = onLanguageClick,
-                            onTagClick = onTagClick,
-                            onSettingsClick = onSettingsClick,
-                            onSearch = { if (uiState.autoRouteToBrowseOnSearch) viewModel.onTabSelected(0) },
-                            selectedCountryCode = uiState.selectedCountryCode,
-                            selectedLanguage = uiState.selectedLanguage,
-                            selectedTags = uiState.selectedTags,
-                            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
-                        ) {
-                            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                                items(
-                                    items = browseUiState.stations,
-                                    key = { it.stationUuid }
-                                ) { station ->
-                                    ListItem(
-                                        headlineContent = { Text(station.name) },
-                                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .animateItem()
-                                            .clickable {
-                                                viewModel.onSearchQueryChange(station.name)
-                                                isSearchExpanded = false
-                                                if (uiState.autoRouteToBrowseOnSearch) {
-                                                    viewModel.onTabSelected(0)
-                                                }
-                                            }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            } // End Box
-        } else {
-            // Tabs
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-            ScrollableTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                edgePadding = 8.dp,
-                modifier = Modifier.padding(horizontal = 4.dp),
-                indicator = { tabPositions ->
-                    if (pagerState.currentPage < tabPositions.size) {
-                        val pagerPage = pagerState.currentPage
-                        val fraction = pagerState.currentPageOffsetFraction
-                        val targetPage = when {
-                            fraction > 0 && pagerPage < tabs.size - 1 -> pagerPage + 1
-                            fraction < 0 && pagerPage > 0 -> pagerPage - 1
-                            else -> pagerPage
-                        }
-
-                        val currentTabPosition = tabPositions[pagerPage]
-                        val targetTabPosition = tabPositions[targetPage]
-
-                        val currentContentWidth = tabWidths.getOrElse(pagerPage) { 0.dp }
-                        val targetContentWidth = tabWidths.getOrElse(targetPage) { 0.dp }
-
-                        val indicatorWidth = lerp(currentContentWidth, targetContentWidth, fraction.absoluteValue) + 32.dp
-                        val indicatorOffset = lerp(currentTabPosition.left, targetTabPosition.left, fraction.absoluteValue)
-                        val tabWidth = lerp(currentTabPosition.width, targetTabPosition.width, fraction.absoluteValue)
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                                .wrapContentSize(Alignment.BottomStart)
-                                .offset(x = indicatorOffset + (tabWidth - indicatorWidth) / 2)
-                                .width(indicatorWidth)
-                                .fillMaxHeight()
-                                .padding(vertical = 8.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    shape = RoundedCornerShape(100)
-                                )
-                                .then(
-                                    if (MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black) {
-                                        Modifier.border(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                                            RoundedCornerShape(100)
-                                        )
-                                    } else Modifier
-                                )
-                                .zIndex(-1f)
-                        )
+            ExpandedHomeLayout(
+                innerPadding = innerPadding,
+                pagerContent = pagerContent,
+                searchQuery = uiState.searchQuery,
+                isSearchExpanded = isSearchExpanded,
+                onSearchExpandedChange = { isSearchExpanded = it },
+                onSearchQueryChange = viewModel::onSearchQueryChange,
+                onSearchCleared = viewModel::onSearchCleared,
+                onCountryClick = onCountryClick,
+                onLanguageClick = onLanguageClick,
+                onTagClick = onTagClick,
+                onSettingsClick = onSettingsClick,
+                onSearch = { _ -> if (uiState.autoRouteToBrowseOnSearch) viewModel.onTabSelected(0) },
+                selectedCountryCode = uiState.selectedCountryCode,
+                selectedLanguage = uiState.selectedLanguage,
+                selectedTags = uiState.selectedTags,
+                browseStations = browseUiState.stations,
+                onStationClick = { station ->
+                    viewModel.onSearchQueryChange(station.name)
+                    isSearchExpanded = false
+                    if (uiState.autoRouteToBrowseOnSearch) {
+                        viewModel.onTabSelected(0)
                     }
                 },
-                divider = {}
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    CompositionLocalProvider(LocalRippleConfiguration provides null) {
-                        Tab(
-                            selected = pagerState.currentPage == index,
-                            onClick = {
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(index)
-                                }
-                            },
-                            text = {
-                                Text(
-                                    text = title,
-                                    style = if (pagerState.currentPage == index)
-                                        MaterialTheme.typography.titleSmall
-                                    else
-                                        MaterialTheme.typography.bodyMedium,
-                                    color = if (pagerState.currentPage == index)
-                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier
-                                        .padding(horizontal = 18.dp)
-                                        .onGloballyPositioned { coords ->
-                                            if (index < tabWidths.size) {
-                                                tabWidths[index] = with(density) { coords.size.width.toDp() }
-                                            }
-                                        }
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-
-            pagerContent()
+                tabs = tabs,
+                pagerState = pagerState,
+                coroutineScope = coroutineScope
+            )
+        } else {
+            CompactHomeLayout(
+                innerPadding = innerPadding,
+                pagerState = pagerState,
+                tabs = tabs,
+                tabWidths = tabWidths,
+                coroutineScope = coroutineScope,
+                pagerContent = pagerContent
+            )
         }
     }
-    }
 }
+
+
