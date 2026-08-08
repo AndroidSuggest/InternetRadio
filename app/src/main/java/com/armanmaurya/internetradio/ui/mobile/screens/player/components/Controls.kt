@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,12 +34,16 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.ui.mobile.screens.player.collapseHeight
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun Controls(
+fun SharedTransitionScope.Controls(
     historyProgress: Float,
+    showSleepTimerDialog: Boolean,
     sleepTimerEndTime: Long?,
     remainingTime: Long,
     sleepTimerProgress: Float,
@@ -63,34 +68,57 @@ fun Controls(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FilledTonalIconButton(
-            onClick = onOpenSleepTimer,
-            modifier = Modifier.weight(0.7f).height(64.dp),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            if (sleepTimerEndTime != null) {
-                Box(contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
-                        progress = { sleepTimerProgress },
-                        modifier = Modifier.size(28.dp),
-                        color = LocalContentColor.current,
-                        strokeWidth = 2.dp,
-                        strokeCap = StrokeCap.Round
-                    )
-                    val mins = (remainingTime / 60000).toInt() + 1
-                    Text(
-                        text = mins.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = LocalContentColor.current
-                    )
+        Box(modifier = Modifier.weight(0.7f).height(64.dp)) {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = !showSleepTimerDialog,
+                enter = fadeIn(tween(300)),
+                exit = fadeOut(tween(300))
+            ) {
+                FilledTonalIconButton(
+                    onClick = onOpenSleepTimer,
+                    modifier = Modifier
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState(key = "sleep_timer_container"),
+                            animatedVisibilityScope = this@AnimatedVisibility,
+                            enter = fadeIn(tween(300)),
+                            exit = fadeOut(tween(300)),
+                            boundsTransform = { _, _ -> tween(durationMillis = 350) },
+                            clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(20.dp))
+                        )
+                        .fillMaxSize(),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    if (sleepTimerEndTime != null) {
+                        Box(contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                progress = { sleepTimerProgress },
+                                modifier = Modifier.size(28.dp),
+                                color = LocalContentColor.current,
+                                strokeWidth = 2.dp,
+                                strokeCap = StrokeCap.Round
+                            )
+                            val mins = (remainingTime / 60000).toInt() + 1
+                            Text(
+                                text = mins.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = LocalContentColor.current
+                            )
+                        }
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = stringResource(R.string.player_sleep_timer_title),
+                            modifier = Modifier
+                                .sharedElement(
+                                    sharedContentState = rememberSharedContentState(key = "sleep_timer_icon"),
+                                    animatedVisibilityScope = this@AnimatedVisibility,
+                                    boundsTransform = { _, _ -> tween(durationMillis = 350) }
+                                )
+                                .size(28.dp)
+                        )
+                    }
                 }
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Timer,
-                    contentDescription = stringResource(R.string.player_sleep_timer_title),
-                    modifier = Modifier.size(28.dp)
-                )
             }
         }
 

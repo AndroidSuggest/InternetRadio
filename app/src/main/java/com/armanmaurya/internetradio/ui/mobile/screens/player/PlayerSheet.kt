@@ -937,6 +937,7 @@ fun PlayerSheetContent(
                 // Controls Row
                 Controls(
                     historyProgress = historyProgress,
+                    showSleepTimerDialog = showSleepTimerDialog,
                     sleepTimerEndTime = playbackState.sleepTimerEndTime,
                     remainingTime = remainingTime,
                     sleepTimerProgress = sleepTimerProgress,
@@ -1164,18 +1165,15 @@ fun PlayerSheetContent(
             volume = volumeLevel,
             onVolumeChange = onVolumeChange
         )
-    }
-}
 
-
-    if (showSleepTimerDialog) {
         SleepTimerDialog(
+            showDialog = showSleepTimerDialog,
             activeTimerEndTime = playbackState.sleepTimerEndTime,
+            timerProgress = sleepTimerProgress,
             onDismissRequest = { showSleepTimerDialog = false },
             onSetTimer = { onSetSleepTimer(it) },
             onCancelTimer = { onCancelSleepTimer() }
         )
     }
 }
-
-
+}
