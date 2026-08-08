@@ -83,18 +83,15 @@ fun StationListCard(
                 indication = null,
                 onClick = onClick
             ),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(72.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .then(
                         if (isCurrentlyPlaying) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
@@ -107,7 +104,7 @@ fun StationListCard(
                         .size(coil3.size.Size.ORIGINAL)
                         .build(),
                     contentDescription = stringResource(R.string.home_cd_station_logo, station.name),
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.FillBounds,
                     filterQuality = FilterQuality.High,
                     modifier = Modifier
                         .fillMaxSize()
@@ -117,6 +114,7 @@ fun StationListCard(
                             painter = painterResource(id = R.drawable.ic_launcher_foreground),
                             contentDescription = null,
                             colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            contentScale = ContentScale.FillBounds,
                             modifier = Modifier.fillMaxSize()
                         )
                     },
@@ -125,6 +123,7 @@ fun StationListCard(
                             painter = painterResource(id = R.drawable.ic_launcher_foreground),
                             contentDescription = null,
                             colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            contentScale = ContentScale.FillBounds,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
