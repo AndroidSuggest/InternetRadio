@@ -75,6 +75,8 @@ fun StationListCard(
         }
     }
 
+    val isPureBlack = MaterialTheme.colorScheme.surface == Color.Black
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -83,7 +85,8 @@ fun StationListCard(
                 indication = null,
                 onClick = onClick
             ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        border = if (isPureBlack) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant) else null
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

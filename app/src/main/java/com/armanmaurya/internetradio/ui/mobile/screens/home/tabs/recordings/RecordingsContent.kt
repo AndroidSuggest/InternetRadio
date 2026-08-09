@@ -93,51 +93,72 @@ fun RecordingsContent(
                 // Show Folders
                 LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(contentPadding),
-                contentPadding = PaddingValues(vertical = 16.dp)
+                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp)
             ) {
                 items(
                     items = folders,
                     key = { it.stationName }
                 ) { folder ->
-                    ListItem(
+                    Row(
                         modifier = Modifier
                             .animateItem()
+                            .fillMaxWidth()
                             .padding(vertical = 4.dp)
                             .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (isPureBlack) androidx.compose.ui.graphics.Color.Black 
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            )
+                            .then(
+                                if (isPureBlack) Modifier.border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                                    RoundedCornerShape(12.dp)
+                                ) else Modifier
+                            )
                             .clickable { selectedStationName = folder.stationName },
-                        headlineContent = {
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RoundedCornerShape(
+                                    topStart = 12.dp,
+                                    bottomStart = 12.dp,
+                                    topEnd = 8.dp,
+                                    bottomEnd = 8.dp
+                                ))
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Folder,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.Center
+                        ) {
                             Text(
                                 text = folder.stationName,
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
-                        },
-                        supportingContent = {
                             Text(
                                 text = "${folder.recordings.size} recordings",
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        },
-                        leadingContent = {
-                            Box(
-                                modifier = Modifier
-                                    .size(56.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.primaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Folder,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
-                        },
-                        colors = ListItemDefaults.colors(
-                            containerColor = androidx.compose.ui.graphics.Color.Transparent
-                        )
-                    )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
                 }
             }
         } else {
