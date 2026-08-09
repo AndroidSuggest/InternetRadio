@@ -145,24 +145,16 @@ class PlayerController @Inject constructor(
                     ) 
                 }
                 scope.launch { recentRepository.addRecentStation(tagStation) }
+                
+                if (controller?.mediaItemCount == 1) {
+                    scope.launch { linkSingleItemToContext(tagStation) }
+                }
             } else {
                 // Fallback for scheduled cold start: get FULL RadioStation from library DB
                 scope.launch {
                     val dbStation = libraryRepository.getStationById(originalId)
                     if (dbStation != null) {
-                        activeStation = dbStation
-                        _playbackState.update { 
-                            it.copy(
-                                currentStation = activeStation, 
-                                currentPlaylistIndex = currentIndex,
-                                currentTrack = null, 
-                                trackStartTime = null, 
-                                lyricsSyncOffsetMs = 0L,
-                                sessionActiveDurationMs = 0L,
-                                sessionResumeTimeMs = if (it.isPlaying) System.currentTimeMillis() else null
-                            ) 
-                        }
-                        recentRepository.addRecentStation(dbStation)
+                        linkSingleItemToContext(dbStation)
                     }
                 }
             }
@@ -279,15 +271,7 @@ class PlayerController @Inject constructor(
                         scope.launch {
                             val dbStation = libraryRepository.getStationById(originalId)
                             if (dbStation != null) {
-                                activeStation = dbStation
-                                _playbackState.update { state ->
-                                    state.copy(
-                                        isPlaying = controller?.isPlaying == true,
-                                        currentStation = dbStation,
-                                        currentPlaylist = currentPlaylist,
-                                        currentPlaylistIndex = currentIndex
-                                    )
-                                }
+                                linkSingleItemToContext(dbStation)
                             }
                         }
                     }
@@ -546,6 +530,63 @@ class PlayerController @Inject constructor(
             }
         } else {
             stations
+        }
+    }
+
+    private suspend fun linkSingleItemToContext(station: RadioStation) {
+        val player = controller ?: return
+        val prefs = settingsRepository.appPreferencesFlow.first()
+        
+        val libraryStations = getFilteredLibraryStations(prefs)
+        var index = libraryStations.indexOfFirst { s -> s.stationUuid == station.stationUuid }
+        var sourceList = libraryStations
+        var playbackSource: PlaybackSource = PlaybackSource.Library
+        
+        if (index == -1) {
+            val recentStations = recentRepository.getAllRecent().first()
+            index = recentStations.indexOfFirst { s -> s.stationUuid == station.stationUuid }
+            sourceList = recentStations
+            playbackSource = PlaybackSource.Recent
+        }
+        
+        if (index != -1) {
+            currentPlaylist = sourceList
+            currentPlaybackSource = playbackSource
+            activeStation = station
+            
+            _playbackState.update { state ->
+                state.copy(
+                    isPlaying = player.isPlaying,
+                    currentStation = station,
+                    currentPlaylist = currentPlaylist,
+                    currentPlaylistIndex = index,
+                    playbackSource = currentPlaybackSource
+                )
+            }
+            
+            if (player.mediaItemCount == 1) {
+                val mediaItems = sourceList.map { it.toMediaItem() }
+                
+                if (index < mediaItems.size - 1) {
+                    player.addMediaItems(1, mediaItems.subList(index + 1, mediaItems.size))
+                }
+                
+                if (index > 0) {
+                    player.addMediaItems(0, mediaItems.subList(0, index))
+                }
+            }
+        } else {
+            activeStation = station
+            currentPlaylist = listOf(station)
+            _playbackState.update { state ->
+                state.copy(
+                    isPlaying = player.isPlaying,
+                    currentStation = station,
+                    currentPlaylist = currentPlaylist,
+                    currentPlaylistIndex = 0
+                )
+            }
+            recentRepository.addRecentStation(station)
         }
     }
 
