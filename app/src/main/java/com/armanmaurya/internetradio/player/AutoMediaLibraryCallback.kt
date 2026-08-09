@@ -292,8 +292,21 @@ class AutoMediaLibraryCallback @Inject constructor(
 
                 val station = recentRepository.getAllRecent().first().firstOrNull()
                 if (station != null) {
-                    val mediaItem = station.toMediaItem(context)
-                    future.set(MediaSession.MediaItemsWithStartPosition(listOf(mediaItem), 0, 0L))
+                    val libraryStations = getLibraryStationsList()
+                    val libraryIndex = libraryStations.indexOfFirst { it.stationUuid == station.stationUuid }
+                    
+                    if (libraryIndex != -1) {
+                        playerController.syncAndroidAutoContext(libraryStations, libraryIndex, PlaybackSource.Library)
+                        val resolvedItems = libraryStations.map { it.toMediaItem(context) }
+                        future.set(MediaSession.MediaItemsWithStartPosition(resolvedItems, libraryIndex, 0L))
+                    } else {
+                        val recentStations = recentRepository.getAllRecent().first()
+                        val recentIndex = recentStations.indexOfFirst { it.stationUuid == station.stationUuid }.coerceAtLeast(0)
+                        
+                        playerController.syncAndroidAutoContext(recentStations, recentIndex, PlaybackSource.Recent)
+                        val resolvedItems = recentStations.map { it.toMediaItem(context) }
+                        future.set(MediaSession.MediaItemsWithStartPosition(resolvedItems, recentIndex, 0L))
+                    }
                 } else {
                     future.setException(UnsupportedOperationException("No recent station found"))
                 }

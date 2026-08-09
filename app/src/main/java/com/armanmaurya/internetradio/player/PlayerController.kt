@@ -306,17 +306,40 @@ class PlayerController @Inject constructor(
                         if (station != null) {
                             try {
                                 if (autoPlay) {
-                                    currentPlaylist = listOf(station)
-                                    activeStation = station
-                                    _playbackState.update { state ->
-                                        state.copy(
-                                            isPlaying = true,
-                                            currentStation = station,
-                                            currentPlaylist = currentPlaylist,
-                                            currentPlaylistIndex = 0
-                                        )
+                                    val libraryStations = getFilteredLibraryStations(prefs)
+                                    val libraryIndex = libraryStations.indexOfFirst { s -> s.stationUuid == station.stationUuid }
+                                    
+                                    if (libraryIndex != -1) {
+                                        currentPlaylist = libraryStations
+                                        currentPlaybackSource = PlaybackSource.Library
+                                        activeStation = station
+                                        _playbackState.update { state ->
+                                            state.copy(
+                                                isPlaying = true,
+                                                currentStation = station,
+                                                currentPlaylist = currentPlaylist,
+                                                currentPlaylistIndex = libraryIndex,
+                                                playbackSource = PlaybackSource.Library
+                                            )
+                                        }
+                                        it.setMediaItems(libraryStations.map { s -> s.toMediaItem() }, libraryIndex, 0L)
+                                    } else {
+                                        val recentStations = recentRepository.getAllRecent().first()
+                                        val recentIndex = recentStations.indexOfFirst { s -> s.stationUuid == station.stationUuid }.coerceAtLeast(0)
+                                        currentPlaylist = recentStations
+                                        currentPlaybackSource = PlaybackSource.Recent
+                                        activeStation = station
+                                        _playbackState.update { state ->
+                                            state.copy(
+                                                isPlaying = true,
+                                                currentStation = station,
+                                                currentPlaylist = currentPlaylist,
+                                                currentPlaylistIndex = recentIndex,
+                                                playbackSource = PlaybackSource.Recent
+                                            )
+                                        }
+                                        it.setMediaItems(recentStations.map { s -> s.toMediaItem() }, recentIndex, 0L)
                                     }
-                                    it.setMediaItem(station.toMediaItem())
                                     it.prepare()
                                     it.play()
                                 }
@@ -493,6 +516,37 @@ class PlayerController @Inject constructor(
             )
             .setTag(this)
             .build()
+    }
+
+    private suspend fun getFilteredLibraryStations(prefs: com.armanmaurya.internetradio.data.model.AppPreferences): List<RadioStation> {
+        val stations = when (prefs.librarySortOption) {
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations().first()
+            com.armanmaurya.internetradio.data.model.LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded().first()
+        }
+
+        return if (prefs.useFilterOnFavorites) {
+            val hasCountryFilter = !prefs.selectedCountryCode.isNullOrBlank()
+            val hasLanguageFilter = !prefs.selectedLanguage.isNullOrBlank()
+            val hasTagFilter = prefs.selectedTags.isNotEmpty()
+
+            if (!hasCountryFilter && !hasLanguageFilter && !hasTagFilter) {
+                stations
+            } else {
+                stations.filter { s ->
+                    val countryMatch = !hasCountryFilter || s.countryCode == prefs.selectedCountryCode
+                    val languageMatch = !hasLanguageFilter || s.language == prefs.selectedLanguage
+                    val tagsMatch = !hasTagFilter || prefs.selectedTags.any { it in s.tags }
+                    countryMatch && languageMatch && tagsMatch
+                }
+            }
+        } else {
+            stations
+        }
     }
 
     fun setLyricsSyncOffset(offsetMs: Long) {
