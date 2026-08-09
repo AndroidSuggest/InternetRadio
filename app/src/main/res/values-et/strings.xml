@@ -235,4 +235,7 @@
     <string name="schedule_select_time">Vali aeg</string>
     <string name="delete_recording">Kustuta</string>
     <string name="more_options">Lisavalikud</string>
+    <string name="settings_show_cover_art">Kaanepilt teavituses</string>
+    <string name="settings_show_cover_art_desc">Näita lukustusvaates ja teavitustes raadiojaama logo asemel esitamisel loo kaanepilti</string>
+    <string name="home_verified">Verifitseeritud</string>
 </resources>
