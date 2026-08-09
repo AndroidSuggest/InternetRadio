@@ -198,6 +198,18 @@ private fun ScheduleConfigurationForm(
     val startTimePickerState = rememberTimePickerState(initialHour = startHour, initialMinute = startMinute, is24Hour = is24HourFormat)
     val endTimePickerState = rememberTimePickerState(initialHour = endHour, initialMinute = endMinute, is24Hour = is24HourFormat)
 
+    val currentConfig = androidx.compose.ui.platform.LocalConfiguration.current
+    val timePickerConfiguration = remember(is24HourFormat, currentConfig) {
+        android.content.res.Configuration(currentConfig).apply {
+            if (!is24HourFormat) {
+                setLocale(java.util.Locale.ENGLISH)
+            }
+        }
+    }
+    val timePickerContext = remember(timePickerConfiguration) {
+        if (!is24HourFormat) context.createConfigurationContext(timePickerConfiguration) else context
+    }
+
     if (showStartTimePicker) {
         TimePickerDialog(
             onDismissRequest = { showStartTimePicker = false },
@@ -207,7 +219,12 @@ private fun ScheduleConfigurationForm(
                 showStartTimePicker = false
             }
         ) {
-            TimePicker(state = startTimePickerState)
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalConfiguration provides timePickerConfiguration,
+                androidx.compose.ui.platform.LocalContext provides timePickerContext
+            ) {
+                TimePicker(state = startTimePickerState)
+            }
         }
     }
 
@@ -221,7 +238,12 @@ private fun ScheduleConfigurationForm(
                 showEndTimePicker = false
             }
         ) {
-            TimePicker(state = endTimePickerState)
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalConfiguration provides timePickerConfiguration,
+                androidx.compose.ui.platform.LocalContext provides timePickerContext
+            ) {
+                TimePicker(state = endTimePickerState)
+            }
         }
     }
 
@@ -230,7 +252,7 @@ private fun ScheduleConfigurationForm(
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
         }
-        return android.text.format.DateFormat.getTimeFormat(context).format(cal.time)
+        return com.armanmaurya.internetradio.utils.FormatUtils.getTimeFormat(context).format(cal.time)
     }
 
     Scaffold(

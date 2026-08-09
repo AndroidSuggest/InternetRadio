@@ -39,7 +39,7 @@ fun ScheduleItem(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val timeFormat = android.text.format.DateFormat.getTimeFormat(context)
+    val timeFormat = com.armanmaurya.internetradio.utils.FormatUtils.getTimeFormat(context)
 
     val startCal = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, schedule.timeHour)
