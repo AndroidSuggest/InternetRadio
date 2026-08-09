@@ -118,7 +118,7 @@ class AutoMediaLibraryCallback @Inject constructor(
     ): ListenableFuture<LibraryResult<MediaItem>> {
         val isSuggested = params?.isSuggested == true
         val rootId = if (isSuggested) AutoBrowseTree.LIBRARY else AutoBrowseTree.ROOT
-        val rootTitle = if (isSuggested) "For You" else "Internet Radio"
+        val rootTitle = if (isSuggested) getLocalizedString(R.string.auto_for_you) else getLocalizedString(R.string.app_name)
 
         val rootItem = MediaItem.Builder()
             .setMediaId(rootId)
@@ -219,7 +219,7 @@ class AutoMediaLibraryCallback @Inject constructor(
     @Suppress("DEPRECATION") // CommandButton.Builder() no-arg is safe pre-1.4 fallback
     private fun buildLibraryButton(isFavorite: Boolean): List<CommandButton> = listOf(
         CommandButton.Builder()
-            .setDisplayName(if (isFavorite) "Remove from Library" else "Add to Library")
+            .setDisplayName(if (isFavorite) getLocalizedString(R.string.home_remove_from_library) else getLocalizedString(R.string.home_add_to_library))
             .setIconResId(
                 if (isFavorite) R.drawable.ic_auto_favorite
                 else R.drawable.ic_auto_favorite_border
@@ -396,21 +396,34 @@ class AutoMediaLibraryCallback @Inject constructor(
 
     // ─── Private helpers ──────────────────────────────────────────────────────
 
+    private fun getLocalizedString(@androidx.annotation.StringRes resId: Int): String {
+        val language = runBlocking { settingsRepository.getSavedAppLanguage() } ?: "System"
+        val locale = if (language == "System" || language.isEmpty()) {
+            java.util.Locale.getDefault()
+        } else {
+            java.util.Locale.forLanguageTag(language)
+        }
+        val config = android.content.res.Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        val localizedContext = context.createConfigurationContext(config)
+        return localizedContext.getString(resId)
+    }
+
     private fun rootChildren(): List<MediaItem> = listOf(
         buildTabItem(
             id = AutoBrowseTree.LIBRARY,
-            title = "Library",
-            subtitle = "Your library stations",
+            title = getLocalizedString(R.string.home_tab_library),
+            subtitle = "",
         ),
         buildTabItem(
             id = AutoBrowseTree.BROWSE,
-            title = "Browse",
-            subtitle = "Top stations",
+            title = getLocalizedString(R.string.home_tab_browse),
+            subtitle = "",
         ),
         buildTabItem(
             id = AutoBrowseTree.RECENT,
-            title = "Recent",
-            subtitle = "Recently played",
+            title = getLocalizedString(R.string.home_tab_recent),
+            subtitle = "",
         ),
     )
 

@@ -296,5 +296,10 @@
     <string name="schedule_volume">Volume: %1$d%%</string>
     <string name="schedule_select_time">Select Time</string>
     <string name="delete_recording">Delete</string>
+    <!-- ========================================== -->
+    <!-- 15. ANDROID AUTO                           -->
+    <!-- ========================================== -->
+    <string name="auto_for_you">For You</string>
+
     <string name="more_options">More options</string>
 </resources>
