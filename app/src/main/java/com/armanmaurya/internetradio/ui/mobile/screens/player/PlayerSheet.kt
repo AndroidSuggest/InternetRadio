@@ -68,6 +68,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import com.armanmaurya.internetradio.player.PlaybackSource
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.graphics.FilterQuality
@@ -112,6 +113,7 @@ fun PlayerSheetContent(
     onExpand: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
+    onPlayIndex: (Int) -> Unit,
     onEditStation: (RadioStation) -> Unit,
     isRecording: Boolean = false,
     recordingDuration: Long = 0L,
@@ -345,58 +347,117 @@ fun PlayerSheetContent(
         val currentY = lerp(miniY, actualExpandedY, progress)
 
         // --- The Moving Thumbnail ---
-        SubcomposeAsyncImage(
-            model = coil3.request.ImageRequest.Builder(LocalContext.current)
-                .data(station.favicon.ifBlank { null })
-                .size(coil3.size.Size.ORIGINAL)
-                .build(),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            filterQuality = FilterQuality.High,
-            modifier = Modifier
-                .offset {
-                    IntOffset(
-                        x = with(density) { currentX.toPx() }.roundToInt(),
-                        y = with(density) { currentY.toPx() }.roundToInt()
-                    )
-                }
-                .size(currentSize)
-                .clip(RoundedCornerShape(12.dp)),
-            error = {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    androidx.compose.foundation.Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = null,
-                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
-                    )
-                }
-            },
-            loading = {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    androidx.compose.foundation.Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = null,
-                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
-                    )
+        val playlist = if (playbackState.currentPlaylist.isEmpty()) listOfNotNull(station) else playbackState.currentPlaylist
+        val playlistSize = playlist.size
+        
+        val isInfinite = playbackState.playbackSource !is PlaybackSource.Browse && playlistSize > 1
+        val pageCount = if (isInfinite) Int.MAX_VALUE else playlistSize
+        val startIndex = playbackState.currentPlaylistIndex.coerceAtLeast(0)
+        
+        val initialPage = if (isInfinite) {
+            val middle = Int.MAX_VALUE / 2
+            middle - (middle % playlistSize) + startIndex
+        } else {
+            startIndex
+        }
+
+        val pagerState = androidx.compose.runtime.key(isInfinite) {
+            androidx.compose.foundation.pager.rememberPagerState(
+                initialPage = initialPage,
+                pageCount = { pageCount }
+            )
+        }
+
+        LaunchedEffect(playbackState.currentPlaylistIndex, playlistSize) {
+            val targetIndex = playbackState.currentPlaylistIndex
+            if (targetIndex >= 0 && playlistSize > 0) {
+                val currentIndex = if (isInfinite) pagerState.currentPage % playlistSize else pagerState.currentPage
+                if (targetIndex != currentIndex) {
+                    if (isInfinite) {
+                        var diff = targetIndex - currentIndex
+                        val half = playlistSize / 2
+                        if (diff > half) diff -= playlistSize
+                        else if (diff < -half) diff += playlistSize
+                        pagerState.animateScrollToPage(pagerState.currentPage + diff)
+                    } else {
+                        pagerState.animateScrollToPage(targetIndex)
+                    }
                 }
             }
-        )
+        }
+
+        LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
+            if (!pagerState.isScrollInProgress && playlistSize > 1) {
+                val currentIndex = if (isInfinite) pagerState.currentPage % playlistSize else pagerState.currentPage
+                if (currentIndex != playbackState.currentPlaylistIndex) {
+                    onPlayIndex(currentIndex)
+                }
+            }
+        }
+
+        androidx.compose.runtime.CompositionLocalProvider(
+            androidx.compose.foundation.LocalOverscrollFactory provides null
+        ) {
+            androidx.compose.foundation.pager.HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .offset {
+                        IntOffset(
+                            x = with(density) { currentX.toPx() }.roundToInt(),
+                            y = with(density) { currentY.toPx() }.roundToInt()
+                        )
+                    }
+                    .size(currentSize)
+                    .clip(RoundedCornerShape(12.dp)),
+                userScrollEnabled = progress > 0.5f // Only allow swiping when expanded
+            ) { page ->
+            val pageStation = if (isInfinite && playlistSize > 0) playlist.getOrNull(page % playlistSize) ?: station else playlist.getOrNull(page) ?: station
+            SubcomposeAsyncImage(
+                model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                    .data(pageStation.favicon.ifBlank { null })
+                    .size(coil3.size.Size.ORIGINAL)
+                    .build(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                filterQuality = FilterQuality.High,
+                modifier = Modifier.fillMaxSize(),
+                error = {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                        )
+                    }
+                },
+                loading = {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                        )
+                    }
+                }
+            )
+        }
+        }
 
         // --- Mini Content (Fades out as we expand) ---
         if (progress < 0.9f) {
@@ -752,62 +813,64 @@ fun PlayerSheetContent(
                         horizontalAlignment = Alignment.Start
                     ) {
                         Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = station.name,
-                            style = MaterialTheme.typography.headlineMedium,
-                            textAlign = TextAlign.Start,
-                            maxLines = 1,
-                            fontWeight = FontWeight.Bold,
                             modifier = Modifier
-                                .weight(1f)
-                                .basicMarquee()
-                        )
-                        
-                        if (isFavorite) {
-                            IconButton(
-                                onClick = {
-                                    onCollapse()
-                                    onEditStation(station)
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = station.name,
+                                style = MaterialTheme.typography.headlineMedium,
+                                textAlign = TextAlign.Start,
+                                maxLines = 1,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .basicMarquee()
+                            )
+                            
+                            if (isFavorite) {
+                                IconButton(
+                                    onClick = {
+                                        onCollapse()
+                                        onEditStation(station)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = stringResource(R.string.edit_station_title),
+                                        tint = LocalContentColor.current
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = stringResource(R.string.edit_station_title),
-                                    tint = LocalContentColor.current
-                                )
                             }
                         }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    val bufferingText = stringResource(R.string.player_buffering)
-                    val noTrackDataText = stringResource(R.string.player_no_track_data)
-                    val displayTrack = if (retryCountdown != null) {
-                        stringResource(R.string.player_retrying_in, retryCountdown!!)
-                    } else if (playbackState.currentTrack != null) {
-                        playbackState.currentTrack!!
-                    } else if (playbackState.isLoading) {
-                        bufferingText
-                    } else {
-                        noTrackDataText
-                    }
-                    val isSearchExpanded = searchDialogTrack != null
-
-                    val canSearch = displayTrack != bufferingText && displayTrack != noTrackDataText
-                    TrackPill(
-                        displayTrack = displayTrack,
-                        trackCoverArtUri = if (canSearch) playbackState.trackCoverArtUri else null,
-                        isFetchingArtwork = if (canSearch) playbackState.isFetchingArtwork else false,
-                        canSearch = canSearch,
-                        isSearchExpanded = isSearchExpanded,
-                        onOpenSearch = { track -> searchDialogTrack = track }
-                    )
+                        val bufferingText = stringResource(R.string.player_buffering)
+                        val noTrackDataText = stringResource(R.string.player_no_track_data)
+                        
+                        val displayTrack = if (retryCountdown != null) {
+                            stringResource(R.string.player_retrying_in, retryCountdown!!)
+                        } else if (playbackState.currentTrack != null) {
+                            playbackState.currentTrack!!
+                        } else if (playbackState.isLoading) {
+                            bufferingText
+                        } else {
+                            noTrackDataText
+                        }
+                        
+                        val isSearchExpanded = searchDialogTrack != null
+                        val canSearch = displayTrack.isNotBlank() && displayTrack != bufferingText && displayTrack != noTrackDataText
+                        
+                        TrackPill(
+                            displayTrack = displayTrack.ifBlank { noTrackDataText },
+                            trackCoverArtUri = if (canSearch) playbackState.trackCoverArtUri else null,
+                            isFetchingArtwork = if (canSearch) playbackState.isFetchingArtwork else false,
+                            canSearch = canSearch,
+                            isSearchExpanded = isSearchExpanded,
+                            onOpenSearch = { track -> searchDialogTrack = track }
+                        )
 
                     // Waveform and Volume UI
                     BoxWithConstraints(

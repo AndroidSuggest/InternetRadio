@@ -271,6 +271,8 @@ class PlaybackService : MediaLibraryService() {
             .setAudioAttributes(audioAttributes, true)
             .build()
             
+        exoPlayer.repeatMode = Player.REPEAT_MODE_ALL
+            
         registerReceiver(audioNoisyReceiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
 
         player = object : androidx.media3.common.ForwardingPlayer(exoPlayer) {

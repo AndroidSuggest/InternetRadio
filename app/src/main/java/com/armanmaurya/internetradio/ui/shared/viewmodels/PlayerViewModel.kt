@@ -243,6 +243,10 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    fun playIndex(index: Int) {
+        playerController.playIndex(index)
+    }
+
     fun next() {
         playerController.next()
     }

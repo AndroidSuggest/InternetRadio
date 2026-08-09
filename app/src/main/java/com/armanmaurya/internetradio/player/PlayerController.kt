@@ -61,7 +61,7 @@ class PlayerController @Inject constructor(
         val station = stations.getOrNull(startIndex)
         if (station != null) {
             activeStation = station
-            _playbackState.update { it.copy(currentStation = station, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L) }
+            _playbackState.update { it.copy(currentStation = station, currentPlaylist = currentPlaylist, currentPlaylistIndex = startIndex, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L, playbackSource = currentPlaybackSource) }
         }
     }
 
@@ -112,15 +112,16 @@ class PlayerController @Inject constructor(
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            val currentIndex = controller?.currentMediaItemIndex ?: -1
             if (mediaItem == null) {
                 activeStation = null
-                _playbackState.update { it.copy(currentStation = null) }
+                _playbackState.update { it.copy(currentStation = null, currentPlaylistIndex = currentIndex) }
                 return
             }
 
             val originalId = mediaItem.mediaId.substringAfter("|")
             if (originalId == activeStation?.stationUuid) {
-                _playbackState.update { it.copy(currentStation = activeStation) }
+                _playbackState.update { it.copy(currentStation = activeStation, currentPlaylistIndex = currentIndex) }
                 return
             }
             
@@ -135,6 +136,7 @@ class PlayerController @Inject constructor(
                 _playbackState.update { 
                     it.copy(
                         currentStation = activeStation, 
+                        currentPlaylistIndex = currentIndex,
                         currentTrack = null, 
                         trackStartTime = null, 
                         lyricsSyncOffsetMs = 0L,
@@ -152,6 +154,7 @@ class PlayerController @Inject constructor(
                         _playbackState.update { 
                             it.copy(
                                 currentStation = activeStation, 
+                                currentPlaylistIndex = currentIndex,
                                 currentTrack = null, 
                                 trackStartTime = null, 
                                 lyricsSyncOffsetMs = 0L,
@@ -188,6 +191,7 @@ class PlayerController @Inject constructor(
                                     .toSet()
                                 val uniqueNew = newStations.filter { it.stationUuid !in existingIds }
                                 currentPlaylist = currentPlaylist + uniqueNew
+                                _playbackState.update { it.copy(currentPlaylist = currentPlaylist) }
                                 val newMediaItems = uniqueNew.map { it.toMediaItem() }
                                 player.addMediaItems(newMediaItems)
                             }
@@ -254,6 +258,7 @@ class PlayerController @Inject constructor(
                 }
 
                 val currentItem = it.currentMediaItem
+                val currentIndex = it.currentMediaItemIndex
                 if (currentItem != null) {
                     val originalId = currentItem.mediaId.substringAfter("|")
                     val station = currentPlaylist.find { s -> s.stationUuid == originalId } 
@@ -264,7 +269,9 @@ class PlayerController @Inject constructor(
                         _playbackState.update { state ->
                             state.copy(
                                 isPlaying = isCurrentlyPlaying,
-                                currentStation = station
+                                currentStation = station,
+                                currentPlaylist = currentPlaylist,
+                                currentPlaylistIndex = currentIndex
                             )
                         }
                     } else {
@@ -276,7 +283,9 @@ class PlayerController @Inject constructor(
                                 _playbackState.update { state ->
                                     state.copy(
                                         isPlaying = controller?.isPlaying == true,
-                                        currentStation = dbStation
+                                        currentStation = dbStation,
+                                        currentPlaylist = currentPlaylist,
+                                        currentPlaylistIndex = currentIndex
                                     )
                                 }
                             }
@@ -302,7 +311,9 @@ class PlayerController @Inject constructor(
                                     _playbackState.update { state ->
                                         state.copy(
                                             isPlaying = true,
-                                            currentStation = station
+                                            currentStation = station,
+                                            currentPlaylist = currentPlaylist,
+                                            currentPlaylistIndex = 0
                                         )
                                     }
                                     it.setMediaItem(station.toMediaItem())
@@ -336,7 +347,7 @@ class PlayerController @Inject constructor(
         }
 
         activeStation = station
-        _playbackState.update { it.copy(currentStation = station, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L) }
+        _playbackState.update { it.copy(currentStation = station, currentPlaylist = currentPlaylist, currentPlaylistIndex = startIndex, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L, playbackSource = currentPlaybackSource) }
         
         val mediaItems = stations.map { it.toMediaItem() }
         player.setMediaItems(mediaItems, startIndex, 0L)
@@ -356,6 +367,7 @@ class PlayerController @Inject constructor(
         currentPlaylist = currentPlaylist.map { 
             if (it.stationUuid == updatedStation.stationUuid) updatedStation else it 
         }
+        _playbackState.update { it.copy(currentPlaylist = currentPlaylist) }
 
         if (urlChanged) {
             val currentIndex = player.currentMediaItemIndex
@@ -374,6 +386,19 @@ class PlayerController @Inject constructor(
         }
     }
     
+    fun playIndex(index: Int) {
+        val player = controller ?: return
+        if (index in 0 until player.mediaItemCount) {
+            player.seekToDefaultPosition(index)
+            if (player.playbackState == Player.STATE_IDLE) {
+                player.prepare()
+            }
+            if (!player.isPlaying) {
+                player.play()
+            }
+        }
+    }
+
     fun next() {
         controller?.let { player ->
             if (player.hasNextMediaItem()) {
@@ -492,6 +517,8 @@ sealed class PlaybackSource {
 
 data class PlaybackState(
     val currentStation: RadioStation? = null,
+    val currentPlaylist: List<RadioStation> = emptyList(),
+    val currentPlaylistIndex: Int = -1,
     val currentTrack: String? = null,
     val trackStartTime: Long? = null,
     val lyricsSyncOffsetMs: Long = 0L,
@@ -506,5 +533,6 @@ data class PlaybackState(
     val hasPrevious: Boolean = false,
     val volume: Float = 1f,
     val sessionActiveDurationMs: Long = 0L,
-    val sessionResumeTimeMs: Long? = null
+    val sessionResumeTimeMs: Long? = null,
+    val playbackSource: PlaybackSource = PlaybackSource.None
 )

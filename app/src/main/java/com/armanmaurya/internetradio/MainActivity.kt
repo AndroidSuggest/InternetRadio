@@ -251,6 +251,7 @@ class MainActivity : AppCompatActivity() {
                                 },
                                 onNext = playerViewModel::next,
                                 onPrevious = playerViewModel::previous,
+                                onPlayIndex = playerViewModel::playIndex,
                                 onEditStation = { station ->
                                     scope.launch { scaffoldState.bottomSheetState.partialExpand() }
                                     navController.navigate(AppDestination.EditStation.createRoute(station.stationUuid))
