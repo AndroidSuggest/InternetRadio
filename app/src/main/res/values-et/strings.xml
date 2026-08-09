@@ -238,4 +238,5 @@
     <string name="settings_show_cover_art">Kaanepilt teavituses</string>
     <string name="settings_show_cover_art_desc">Näita lukustusvaates ja teavitustes raadiojaama logo asemel esitamisel loo kaanepilti</string>
     <string name="home_verified">Verifitseeritud</string>
+    <string name="auto_for_you">Sinu jaoks</string>
 </resources>
