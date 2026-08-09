@@ -166,6 +166,8 @@ class BrowseViewModel @Inject constructor(
             val state = _uiState.value
             currentOffset += pageSize
 
+            val isUrl = android.util.Patterns.WEB_URL.matcher(state.searchQuery).matches()
+
             val result = if (state.searchQuery.isBlank()) {
                 repository.filterStations(
                     countryCode = state.selectedCountryCode?.takeIf { it.isNotBlank() },
@@ -177,6 +179,8 @@ class BrowseViewModel @Inject constructor(
                     limit = pageSize,
                     offset = currentOffset
                 )
+            } else if (isUrl) {
+                Result.success(emptyList<RadioStation>())
             } else {
                 repository.filterStations(
                     name = state.searchQuery,
@@ -226,22 +230,30 @@ class BrowseViewModel @Inject constructor(
             currentOffset = 0
             _uiState.update { it.copy(isLoading = true, error = null, canLoadMore = true) }
             val state = _uiState.value
-            repository.filterStations(
-                name = query,
-                language = state.selectedLanguage?.takeIf { it.isNotBlank() },
-                tagList = state.selectedTags.joinToString(",").takeIf { it.isNotBlank() },
-                hasExtendedInfo = state.isVerified.takeIf { it },
-                order = state.order,
-                reverse = state.reverse,
-                limit = pageSize,
-                offset = currentOffset
-            )
-                .onSuccess { stations ->
+            
+            val isUrl = android.util.Patterns.WEB_URL.matcher(query).matches()
+            
+            val result = if (isUrl) {
+                repository.getStationsByUrl(query)
+            } else {
+                repository.filterStations(
+                    name = query,
+                    language = state.selectedLanguage?.takeIf { it.isNotBlank() },
+                    tagList = state.selectedTags.joinToString(",").takeIf { it.isNotBlank() },
+                    hasExtendedInfo = state.isVerified.takeIf { it },
+                    order = state.order,
+                    reverse = state.reverse,
+                    limit = pageSize,
+                    offset = currentOffset
+                )
+            }
+
+            result.onSuccess { stations ->
                     _uiState.update {
                         it.copy(
                             stations = stations.distinctBy { it.stationUuid },
                             isLoading = false,
-                            canLoadMore = stations.size >= pageSize
+                            canLoadMore = if (isUrl) false else stations.size >= pageSize
                         )
                     }
                 }

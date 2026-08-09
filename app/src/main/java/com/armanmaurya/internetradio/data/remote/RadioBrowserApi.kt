@@ -87,6 +87,11 @@ interface RadioBrowserApi {
     suspend fun getStationsByUuid(
         @Query("uuids") uuids: String
     ): List<StationDto>
+
+    @GET("json/stations/byurl")
+    suspend fun searchByUrl(
+        @Query("url") url: String
+    ): List<StationDto>
 }
 
 data class StationClickResponse(

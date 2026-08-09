@@ -120,4 +120,9 @@ class StationRepository @Inject constructor(
         runCatching {
             api.getStationsByUuid(uuids.joinToString(",")).map { it.toDomain() }
         }
+
+    suspend fun getStationsByUrl(url: String): Result<List<RadioStation>> =
+        runCatching {
+            api.searchByUrl(url).map { it.toDomain() }
+        }
 }
