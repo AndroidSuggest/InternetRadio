@@ -228,6 +228,7 @@ class LibraryViewModel @Inject constructor(
                 if (contentType.contains("mpegurl") || contentType.contains("x-mpegurl")) isHls = true
                 
                 detectedCodec = when {
+                    isHls -> "unknown"
                     contentType.contains("mpeg") -> "MP3"
                     contentType.contains("aac") -> "AAC"
                     contentType.contains("ogg") -> "OGG"
