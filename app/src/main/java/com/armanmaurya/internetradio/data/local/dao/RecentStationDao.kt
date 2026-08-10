@@ -23,4 +23,7 @@ interface RecentStationDao {
 
     @Query("DELETE FROM recent_stations")
     suspend fun clearAllRecent()
+
+    @Query("UPDATE recent_stations SET stationUuid = :newUuid WHERE stationUuid = :oldUuid")
+    suspend fun updateStationUuid(oldUuid: String, newUuid: String)
 }

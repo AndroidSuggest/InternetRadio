@@ -284,6 +284,55 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
+    fun uploadStationToRadioBrowser(
+        stationUuid: String,
+        name: String,
+        url: String,
+        homepage: String,
+        favicon: String,
+        countryCode: String,
+        languageCodes: List<String>,
+        tags: List<String>,
+        codec: String,
+        bitrate: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val result = if (stationUuid.isEmpty()) {
+                libraryRepository.uploadAndSaveNewStation(
+                    name = name,
+                    url = url,
+                    homepage = homepage,
+                    favicon = favicon,
+                    countryCode = countryCode,
+                    languageCodes = languageCodes,
+                    tags = tags,
+                    codec = codec,
+                    bitrate = bitrate
+                )
+            } else {
+                libraryRepository.uploadExistingCustomStation(
+                    stationUuid = stationUuid,
+                    name = name,
+                    url = url,
+                    homepage = homepage,
+                    favicon = favicon,
+                    countryCode = countryCode,
+                    languageCodes = languageCodes,
+                    tags = tags,
+                    codec = codec,
+                    bitrate = bitrate
+                )
+            }
+            result.onSuccess {
+                onSuccess()
+            }.onFailure { e ->
+                onError(e.message ?: "Failed to upload station")
+            }
+        }
+    }
+
     fun updateStationsOrder(orderedStations: List<RadioStation>) {
         viewModelScope.launch {
             val entities = libraryRepository.getAllStationEntities()

@@ -8,12 +8,18 @@ import com.armanmaurya.internetradio.data.model.RadioStation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
+import com.armanmaurya.internetradio.data.local.dao.RecentStationDao
+import com.armanmaurya.internetradio.data.local.dao.ScheduleDao
+import com.armanmaurya.internetradio.data.remote.RadioBrowserApi
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LibraryRepository @Inject constructor(
-    private val libraryStationDao: LibraryStationDao
+    private val libraryStationDao: LibraryStationDao,
+    private val recentStationDao: RecentStationDao,
+    private val scheduleDao: ScheduleDao,
+    private val radioBrowserApi: RadioBrowserApi
 ) {
     fun getAllStations(): Flow<List<RadioStation>> {
         return libraryStationDao.getAllStations().map { entities ->
@@ -136,6 +142,118 @@ class LibraryRepository @Inject constructor(
 
     suspend fun removeStationFromLibrary(stationUuid: String) {
         libraryStationDao.deleteStationById(stationUuid)
+    }
+
+    suspend fun uploadAndSaveNewStation(
+        name: String,
+        url: String,
+        homepage: String,
+        favicon: String,
+        countryCode: String,
+        languageCodes: List<String>,
+        tags: List<String>,
+        codec: String,
+        bitrate: Int
+    ): Result<String> {
+        return try {
+            val response = radioBrowserApi.addStation(
+                name = name,
+                url = url,
+                homepage = homepage,
+                favicon = favicon,
+                countryCode = countryCode,
+                languageCodes = languageCodes.joinToString(","),
+                tags = tags.joinToString(","),
+            )
+            if (response.ok) {
+                val newUuid = response.uuid
+                addCustomStation(
+                    name = name,
+                    url = url,
+                    favicon = favicon,
+                    tags = tags,
+                    countryCode = countryCode,
+                    languageCodes = languageCodes,
+                    homepage = homepage,
+                    codec = codec,
+                    bitrate = bitrate
+                )
+                // update its UUID manually since addCustomStation randomly generated one
+                // wait, addCustomStation internally uses UUID.randomUUID(). 
+                // Let's just create the entity here
+                val newStation = com.armanmaurya.internetradio.data.local.entity.LibraryStationEntity(
+                    stationUuid = newUuid,
+                    name = name,
+                    url = url,
+                    urlResolved = url,
+                    favicon = favicon,
+                    tags = tags,
+                    countryCode = countryCode,
+                    languageCodes = languageCodes,
+                    homepage = homepage,
+                    codec = codec,
+                    bitrate = bitrate,
+                    isCustom = false
+                )
+                libraryStationDao.insertStation(newStation)
+                Result.success(newUuid)
+            } else {
+                Result.failure(Exception(response.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun uploadExistingCustomStation(
+        stationUuid: String,
+        name: String,
+        url: String,
+        homepage: String,
+        favicon: String,
+        countryCode: String,
+        languageCodes: List<String>,
+        tags: List<String>,
+        codec: String,
+        bitrate: Int
+    ): Result<String> {
+        return try {
+            val response = radioBrowserApi.addStation(
+                name = name,
+                url = url,
+                homepage = homepage,
+                favicon = favicon,
+                countryCode = countryCode,
+                languageCodes = languageCodes.joinToString(","),
+                tags = tags.joinToString(","),
+            )
+            if (response.ok) {
+                val newUuid = response.uuid
+                val oldUuid = stationUuid
+                // Update DAOs to replace old UUID with new UUID, and mark as not custom
+                libraryStationDao.updateStationUuid(oldUuid, newUuid)
+                recentStationDao.updateStationUuid(oldUuid, newUuid)
+                scheduleDao.updateStationUuid(oldUuid, newUuid)
+                // Also update the other metadata to what they are in `station` just in case
+                updateStation(
+                    stationUuid = newUuid,
+                    name = name,
+                    url = url,
+                    favicon = favicon,
+                    tags = tags,
+                    countryCode = countryCode,
+                    languageCodes = languageCodes,
+                    homepage = homepage,
+                    codec = codec,
+                    bitrate = bitrate
+                )
+                Result.success(newUuid)
+            } else {
+                Result.failure(Exception(response.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     // --- Backup & Restore ---

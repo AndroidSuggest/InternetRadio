@@ -197,23 +197,24 @@
     <!-- ========================================== -->
     <string name="edit_station_add_station">Add Station</string>
     <string name="edit_station_title">Edit Station</string>
-    <string name="edit_station_name_field">Name</string>
-    <string name="edit_station_stream_url_field">Stream URL</string>
+    <string name="edit_station_name_field">Name *</string>
+    <string name="edit_station_stream_url_field">Stream URL *</string>
     <string name="edit_station_favicon_url_optional">Favicon URL (Optional)</string>
     <string name="edit_station_favicon_url_field">Favicon URL</string>
-    <string name="edit_station_country_field">Country</string>
-    <string name="edit_station_language_field">Languages</string>
-    <string name="edit_station_add_languages">Add Languages</string>
-    <string name="edit_station_tags_optional">Tags</string>
-    <string name="edit_station_add_tags">Add Tags</string>
+    <string name="edit_station_country_field">Country (Optional)</string>
+    <string name="edit_station_language_field">Languages (Optional)</string>
+    <string name="edit_station_add_languages">Add Languages (Optional)</string>
+    <string name="edit_station_tags_optional">Tags (Optional)</string>
+    <string name="edit_station_add_tags">Add Tags (Optional)</string>
     <string name="edit_station_failed_fetch_original_data">Failed to fetch original data</string>
     <string name="edit_station_unsaved_changes">Unsaved Changes</string>
     <string name="edit_station_unsaved_changes_message_exit">You have unsaved changes. Are you sure you want to discard them and exit?</string>
     <string name="edit_station_reset_title">Reset Station</string>
     <string name="edit_station_reset_message">Are you sure you want to reset this station to its original data? All your edits will be lost.</string>
-    <string name="edit_station_fields_reset_message">Fields reset to original data</string>
+    <string name="edit_station_fields_reset_message">Reset to original data</string>
     <string name="edit_station_saved_message">Saved</string>
     <string name="edit_station_cd_reset_to_original">Reset to Original</string>
+    <string name="edit_station_error_empty_fields">Required fields cannot be empty</string>
 
     <!-- ========================================== -->
     <!-- 12. PLAYER                                 -->

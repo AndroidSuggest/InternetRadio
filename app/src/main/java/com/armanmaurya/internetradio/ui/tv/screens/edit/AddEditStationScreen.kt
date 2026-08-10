@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.ui.tv.screens.edit
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.SwapVert
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -186,60 +189,136 @@ fun AddEditStationScreen(
 
                 Spacer(Modifier.weight(1f))
 
-                // Save button
-                Button(
-                    onClick = {
-                        if (isEditing && station != null) {
-                            val tagList = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                            val langList = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                            viewModel.updateStation(
-                                stationUuid = station.stationUuid,
-                                name = name,
-                                url = url,
-                                favicon = favicon,
-                                tags = tagList,
-                                countryCode = countryCode,
-                                languageCodes = langList,
-                                homepage = homepage,
-                                codec = probedCodec,
-                                bitrate = probedBitrate
-                            )
-                        } else {
-                            viewModel.addStation(
-                                name = name,
-                                url = url,
-                                favicon = favicon,
-                                tags = tags,
-                                countryCode = countryCode,
-                                languageCodes = languageCodes,
-                                homepage = homepage,
-                                codec = probedCodec,
-                                bitrate = probedBitrate
+                val hasUnsavedChanges = if (isEditing && station != null) {
+                    name != station.name ||
+                    url != station.url ||
+                    favicon != station.favicon ||
+                    tags != station.tags.joinToString(", ") ||
+                    countryCode != station.countryCode ||
+                    languageCodes != station.languageCodes.joinToString(", ") ||
+                    homepage != station.homepage
+                } else {
+                    true
+                }
+
+                var isUploading by remember { mutableStateOf(false) }
+                val showUploadMode = true
+                var uploadMode by remember { mutableStateOf(showUploadMode) } // Default to upload mode if possible
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(1.dp)
+                ) {
+                    // Main action button
+                    Button(
+                        onClick = {
+                            if (uploadMode && showUploadMode) {
+                                isUploading = true
+                                val tagList = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                val langList = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                viewModel.uploadStationToRadioBrowser(
+                                    stationUuid = if (isEditing) station!!.stationUuid else "",
+                                    name = name,
+                                    url = url,
+                                    homepage = homepage,
+                                    favicon = favicon,
+                                    countryCode = countryCode,
+                                    languageCodes = langList,
+                                    tags = tagList,
+                                    codec = probedCodec,
+                                    bitrate = probedBitrate,
+                                    onSuccess = {
+                                        isUploading = false
+                                        onNavigateBack()
+                                    },
+                                    onError = { error ->
+                                        isUploading = false
+                                    }
+                                )
+                            } else {
+                                if (isEditing && station != null) {
+                                    val tagList = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                    val langList = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                    viewModel.updateStation(
+                                        stationUuid = station.stationUuid,
+                                        name = name,
+                                        url = url,
+                                        favicon = favicon,
+                                        tags = tagList,
+                                        countryCode = countryCode,
+                                        languageCodes = langList,
+                                        homepage = homepage,
+                                        codec = probedCodec,
+                                        bitrate = probedBitrate
+                                    )
+                                } else {
+                                    viewModel.addStation(
+                                        name = name,
+                                        url = url,
+                                        favicon = favicon,
+                                        tags = tags,
+                                        countryCode = countryCode,
+                                        languageCodes = languageCodes,
+                                        homepage = homepage,
+                                        codec = probedCodec,
+                                        bitrate = probedBitrate
+                                    )
+                                }
+                                onNavigateBack()
+                            }
+                        },
+                        enabled = canSave && (!isEditing || hasUnsavedChanges || (station?.isCustom == true && uploadMode)) && !isUploading,
+                        scale = ButtonDefaults.scale(focusedScale = 1f),
+                        colors = ButtonDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        ),
+                        shape = ButtonDefaults.shape(
+                            shape = if (showUploadMode) RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp, topEnd = 0.dp, bottomEnd = 0.dp) else RoundedCornerShape(12.dp)
+                        ),
+                        modifier = Modifier.weight(1f).fillMaxHeight()
+                    ) {
+                        if (isUploading || isProbing) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp).padding(end = 8.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         }
-                        onNavigateBack()
-                    },
-                    enabled = canSave,
-                    scale = ButtonDefaults.scale(focusedScale = 1f),
-                    colors = ButtonDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                    ),
-                    shape = ButtonDefaults.shape(shape = RoundedCornerShape(12.dp)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (isProbing) {
-                        androidx.compose.material3.CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp).padding(end = 8.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
+                        AnimatedContent(
+                            targetState = uploadMode && showUploadMode,
+                            label = "saveButtonAnimation"
+                        ) { isUpload ->
+                            Text(
+                                text = if (isUpload) "Upload & Save" else "Save",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
                     }
-                    Text(
-                        text = if (isEditing) "Save Changes" else "Add Station",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
+
+                    // Split toggle button
+                    if (showUploadMode) {
+                        Button(
+                            onClick = { uploadMode = !uploadMode },
+                            enabled = canSave && !isUploading,
+                            scale = ButtonDefaults.scale(focusedScale = 1f),
+                            colors = ButtonDefaults.colors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                            ),
+                            shape = ButtonDefaults.shape(
+                                shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 12.dp, bottomEnd = 12.dp)
+                            ),
+                            modifier = Modifier.width(64.dp).fillMaxHeight()
+                        ) {
+                            androidx.compose.material3.Icon(
+                                imageVector = Icons.Filled.SwapVert,
+                                contentDescription = "Toggle save mode",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -356,26 +435,19 @@ fun AddEditStationScreen(
                     )
                 )
 
-                if (probedCodec != "unknown" || probedBitrate > 0) {
-                    val bitrateText = if (probedBitrate > 0) "$probedBitrate kbps" else "Unknown bitrate"
-                    val codecText = if (probedCodec != "unknown") probedCodec.uppercase() else "Unknown Codec"
-                    androidx.compose.material3.Surface(
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant
+                val bitrateText = if (probedBitrate > 0) "$probedBitrate kbps" else "-"
+                val codecText = if (probedCodec != "unknown" && probedCodec.isNotBlank()) probedCodec.uppercase() else "-"
+                androidx.compose.material3.Surface(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Row(
+                        modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                androidx.compose.material3.Text(
-                                    text = "Metadata",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
+                        Column(modifier = Modifier.weight(1f)) {
                                 androidx.compose.material3.Text(
                                     text = "$codecText • $bitrateText",
                                     style = MaterialTheme.typography.bodyLarge,
@@ -409,7 +481,6 @@ fun AddEditStationScreen(
                                     )
                                 }
                             }
-                        }
                     }
                 }
 
@@ -420,6 +491,16 @@ fun AddEditStationScreen(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
+
+                if (isEditing && station?.isCustom == true) {
+                    Text(
+                        text = "Custom",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
             }
         }
     }

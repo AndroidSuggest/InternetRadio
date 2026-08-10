@@ -44,6 +44,9 @@ interface LibraryStationDao {
     @Update
     suspend fun updateStations(stations: List<LibraryStationEntity>)
 
+    @Query("UPDATE library_stations SET stationUuid = :newUuid, isCustom = 0 WHERE stationUuid = :oldUuid")
+    suspend fun updateStationUuid(oldUuid: String, newUuid: String)
+
     @Query("SELECT * FROM library_stations ORDER BY addedAt DESC")
     suspend fun getAllStationEntities(): List<LibraryStationEntity>
 

@@ -3,6 +3,7 @@ package com.armanmaurya.internetradio.ui.mobile.screens.edit
 import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.clickable
@@ -236,51 +239,113 @@ fun EditStationScreen(
                                 }
                             }
                         }
-                        Button(
-                            onClick = {
-                                if (isEditing && station != null) {
-                                    val tagList = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                                    val langList = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                                    viewModel.updateStation(
-                                        stationUuid = station.stationUuid,
-                                        name = name,
-                                        url = url,
-                                        favicon = favicon,
-                                        tags = tagList,
-                                        countryCode = countryCode,
-                                        languageCodes = langList,
-                                        homepage = homepage,
-                                        codec = probedCodec,
-                                        bitrate = probedBitrate
+
+                        var isUploading by remember { mutableStateOf(false) }
+                        val showUploadMode = true
+                        var uploadMode by remember { mutableStateOf(showUploadMode) }
+                        val canSave = name.isNotBlank() && url.isNotBlank() && !isProbing
+
+                        Row(
+                            modifier = Modifier.padding(end = 16.dp).height(IntrinsicSize.Min),
+                            horizontalArrangement = Arrangement.spacedBy(1.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (uploadMode && showUploadMode) {
+                                        isUploading = true
+                                        val tagList = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                        val langList = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                        viewModel.uploadStationToRadioBrowser(
+                                            stationUuid = if (isEditing) station!!.stationUuid else "",
+                                            name = name,
+                                            url = url,
+                                            homepage = homepage,
+                                            favicon = favicon,
+                                            countryCode = countryCode,
+                                            languageCodes = langList,
+                                            tags = tagList,
+                                            codec = probedCodec,
+                                            bitrate = probedBitrate,
+                                            onSuccess = {
+                                                isUploading = false
+                                                Toast.makeText(context, "Station uploaded successfully", Toast.LENGTH_SHORT).show()
+                                                onNavigateBack()
+                                            },
+                                            onError = { error ->
+                                                isUploading = false
+                                                Toast.makeText(context, "Upload failed: $error", Toast.LENGTH_LONG).show()
+                                            }
+                                        )
+                                    } else {
+                                        if (isEditing && station != null) {
+                                            val tagList = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                            val langList = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                            viewModel.updateStation(
+                                                stationUuid = station.stationUuid,
+                                                name = name,
+                                                url = url,
+                                                favicon = favicon,
+                                                tags = tagList,
+                                                countryCode = countryCode,
+                                                languageCodes = langList,
+                                                homepage = homepage,
+                                                codec = probedCodec,
+                                                bitrate = probedBitrate
+                                            )
+                                        } else {
+                                            viewModel.addStation(
+                                                name = name,
+                                                url = url,
+                                                favicon = favicon,
+                                                tags = tags,
+                                                countryCode = countryCode,
+                                                languageCodes = languageCodes,
+                                                homepage = homepage,
+                                                codec = probedCodec,
+                                                bitrate = probedBitrate
+                                            )
+                                        }
+                                        Toast.makeText(context, context.getString(R.string.edit_station_saved_message), Toast.LENGTH_SHORT).show()
+                                        onNavigateBack()
+                                    }
+                                },
+                                enabled = canSave && (!isEditing || hasUnsavedChanges || (station?.isCustom == true && uploadMode)) && !isUploading,
+                                shape = if (showUploadMode) RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 0.dp, bottomEnd = 0.dp) else RoundedCornerShape(24.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                if (isUploading || isProbing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimary
                                     )
-                                } else {
-                                    viewModel.addStation(
-                                        name = name,
-                                        url = url,
-                                        favicon = favicon,
-                                        tags = tags,
-                                        countryCode = countryCode,
-                                        languageCodes = languageCodes,
-                                        homepage = homepage,
-                                        codec = probedCodec,
-                                        bitrate = probedBitrate
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                }
+                                AnimatedContent(
+                                    targetState = uploadMode && showUploadMode,
+                                    label = "saveButtonAnimation"
+                                ) { isUpload ->
+                                    Text(
+                                        text = if (isUpload) "Upload & Save" else "Save"
                                     )
                                 }
-                                Toast.makeText(context, context.getString(R.string.edit_station_saved_message), Toast.LENGTH_SHORT).show()
-                                onNavigateBack()
-                            },
-                            modifier = Modifier.padding(end = 16.dp),
-                            enabled = name.isNotBlank() && url.isNotBlank() && hasUnsavedChanges && !isProbing
-                        ) {
-                            if (isProbing) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
                             }
-                            Text(if (isEditing) stringResource(R.string.general_save) else stringResource(R.string.general_add))
+                            
+                            if (showUploadMode) {
+                                Button(
+                                    onClick = { uploadMode = !uploadMode },
+                                    enabled = canSave && !isUploading,
+                                    shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 24.dp, bottomEnd = 24.dp),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                                    modifier = Modifier.width(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.SwapVert,
+                                        contentDescription = "Toggle save mode",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 )
@@ -615,26 +680,19 @@ fun EditStationScreen(
                     }
                 }
                 
-                if (probedCodec != "unknown" || probedBitrate > 0) {
-                    val bitrateText = if (probedBitrate > 0) "$probedBitrate kbps" else "Unknown bitrate"
-                    val codecText = if (probedCodec != "unknown") probedCodec.uppercase() else "Unknown Codec"
-                    Surface(
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant
+                val bitrateText = if (probedBitrate > 0) "$probedBitrate kbps" else "-"
+                val codecText = if (probedCodec != "unknown" && probedCodec.isNotBlank()) probedCodec.uppercase() else "-"
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Row(
+                        modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Metadata",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
+                        Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "$codecText • $bitrateText",
                                     style = MaterialTheme.typography.bodyLarge,
@@ -665,8 +723,17 @@ fun EditStationScreen(
                                     Icon(Icons.Default.Refresh, contentDescription = "Refresh Metadata")
                                 }
                             }
-                        }
                     }
+                }
+                
+                if (isEditing && station?.isCustom == true) {
+                    Text(
+                        text = "Custom",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
                 }
                 
                 Spacer(modifier = Modifier.height(160.dp))

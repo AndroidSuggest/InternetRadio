@@ -26,6 +26,9 @@ interface ScheduleDao {
     @Delete
     suspend fun deleteSchedule(schedule: ScheduleEntity)
 
+    @Query("UPDATE schedules SET stationUuid = :newUuid WHERE stationUuid = :oldUuid")
+    suspend fun updateStationUuid(oldUuid: String, newUuid: String)
+
     @Query("UPDATE schedules SET isEnabled = :isEnabled WHERE id = :id")
     suspend fun updateScheduleStatus(id: Int, isEnabled: Boolean)
 }
