@@ -6,24 +6,36 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -205,6 +217,27 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
 
+                            val enableSwipToDismiss = progress == 0f && scaffoldState.bottomSheetState.currentValue == SheetValue.PartiallyExpanded && scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded
+                            val dismissState = rememberSwipeToDismissBoxState(
+                                confirmValueChange = { value ->
+                                    if (value == SwipeToDismissBoxValue.Settled) {
+                                        true
+                                    } else { // SwipeToDismissBoxValue.StartToEnd, SwipeToDismissBoxValue.EndToStart
+                                        if (enableSwipToDismiss) {
+                                            true
+                                        } else {
+                                            false
+                                        }
+                                    }
+                                }
+                            )
+
+                            LaunchedEffect(playbackState.currentStation) {
+                                if (playbackState.currentStation != null) {
+                                    dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+                                }
+                            }
+
                             val isFavorite by playerViewModel.isFavorite.collectAsStateWithLifecycle()
                             val trackHistory by playerViewModel.trackHistory.collectAsStateWithLifecycle()
                             val stationRecordings by playerViewModel.stationRecordings.collectAsStateWithLifecycle()
@@ -230,46 +263,81 @@ class MainActivity : AppCompatActivity() {
 
                             val localContext = LocalContext.current
 
-                            PlayerSheetContent(
-                                isWidescreen = isExpanded,
-                                playbackState = effectivePlaybackState,
-                                isFavorite = isFavorite,
-                                trackHistory = trackHistory,
-                                stationRecordings = stationRecordings,
-                                retryCountdown = retryCountdown,
-                                lyricsState = lyricsState,
-                                progress = progress,
-                                onTogglePlayPause = playerViewModel::togglePlayPause,
-                                onToggleFavorite = playerViewModel::toggleFavorite,
-                                onSetSleepTimer = playerViewModel::setSleepTimer,
-                                onCancelSleepTimer = playerViewModel::cancelSleepTimer,
-                                onCollapse = {
-                                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                enableDismissFromStartToEnd = enableSwipToDismiss,
+                                enableDismissFromEndToStart = enableSwipToDismiss,
+                                gesturesEnabled = enableSwipToDismiss,
+                                onDismiss = { direction ->
+                                    scope.launch { scaffoldState.bottomSheetState.hide() }
                                 },
-                                onExpand = {
-                                    scope.launch { scaffoldState.bottomSheetState.expand() }
-                                },
-                                onNext = playerViewModel::next,
-                                onPrevious = playerViewModel::previous,
-                                onPlayIndex = playerViewModel::playIndex,
-                                onEditStation = { station ->
-                                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
-                                    navController.navigate(AppDestination.EditStation.createRoute(station.stationUuid))
-                                },
-                                isRecording = isRecording,
-                                recordingDuration = recordingDuration,
-                                amplitude = amplitude,
-                                onToggleRecording = playerViewModel::toggleRecording,
-                                onSyncOffsetChange = playerViewModel::setLyricsSyncOffset,
-                                discoveredCastDevices = discoveredCastDevices,
-                                volume = castVolume.toFloat(),
-                                onVolumeChange = playerViewModel::setVolume,
-                                connectedCastDevice = connectedCastDevice,
-                                onConnectCastDevice = playerViewModel::connectToCastDevice,
-                                onDisconnectCastDevice = playerViewModel::disconnectCastDevice,
-                                onDeleteRecording = playerViewModel::deleteRecording,
-                                getCurrentPosition = { playerViewModel.currentPosition }
-                            )
+                                backgroundContent = {
+                                    if (dismissState.dismissDirection != SwipeToDismissBoxValue.Settled) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(72.dp)
+                                                .padding(start = 16.dp, end = 16.dp)
+                                                .alpha(1f - (progress * 5f).coerceIn(0f, 1f)),
+                                            // horizontal = 16.dp
+                                            contentAlignment = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
+                                                Alignment.CenterStart
+                                            } else if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+                                                Alignment.CenterEnd
+                                            } else {
+                                                Alignment.Center
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Stop,
+                                                contentDescription = "Stop",
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            ) {
+                                PlayerSheetContent(
+                                    isWidescreen = isExpanded,
+                                    playbackState = effectivePlaybackState,
+                                    isFavorite = isFavorite,
+                                    trackHistory = trackHistory,
+                                    stationRecordings = stationRecordings,
+                                    retryCountdown = retryCountdown,
+                                    lyricsState = lyricsState,
+                                    progress = progress,
+                                    onTogglePlayPause = playerViewModel::togglePlayPause,
+                                    onToggleFavorite = playerViewModel::toggleFavorite,
+                                    onSetSleepTimer = playerViewModel::setSleepTimer,
+                                    onCancelSleepTimer = playerViewModel::cancelSleepTimer,
+                                    onCollapse = {
+                                        scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                                    },
+                                    onExpand = {
+                                        scope.launch { scaffoldState.bottomSheetState.expand() }
+                                    },
+                                    onNext = playerViewModel::next,
+                                    onPrevious = playerViewModel::previous,
+                                    onPlayIndex = playerViewModel::playIndex,
+                                    onEditStation = { station ->
+                                        scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                                        navController.navigate(AppDestination.EditStation.createRoute(station.stationUuid))
+                                    },
+                                    isRecording = isRecording,
+                                    recordingDuration = recordingDuration,
+                                    amplitude = amplitude,
+                                    onToggleRecording = playerViewModel::toggleRecording,
+                                    onSyncOffsetChange = playerViewModel::setLyricsSyncOffset,
+                                    discoveredCastDevices = discoveredCastDevices,
+                                    volume = castVolume.toFloat(),
+                                    onVolumeChange = playerViewModel::setVolume,
+                                    connectedCastDevice = connectedCastDevice,
+                                    onConnectCastDevice = playerViewModel::connectToCastDevice,
+                                    onDisconnectCastDevice = playerViewModel::disconnectCastDevice,
+                                    onDeleteRecording = playerViewModel::deleteRecording,
+                                    getCurrentPosition = { playerViewModel.currentPosition }
+                                )
+                            }
                         }
                     }
                 ) { innerPadding ->

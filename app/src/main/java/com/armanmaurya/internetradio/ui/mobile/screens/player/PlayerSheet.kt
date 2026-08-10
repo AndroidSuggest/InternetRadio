@@ -291,6 +291,7 @@ fun PlayerSheetContent(
         Box(
             modifier = modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
                 .clickable(enabled = progress < 0.1f, onClick = onExpand)
         ) {
             if (MaterialTheme.colorScheme.surfaceContainerLow == androidx.compose.ui.graphics.Color.Black) {
