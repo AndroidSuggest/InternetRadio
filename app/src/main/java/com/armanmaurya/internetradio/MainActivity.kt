@@ -41,6 +41,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -217,13 +218,22 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
 
-                            val enableSwipToDismiss = progress == 0f && scaffoldState.bottomSheetState.currentValue == SheetValue.PartiallyExpanded && scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded
+                            val enableSwipeToDismiss by remember(
+                                progress,
+                                scaffoldState.bottomSheetState.currentValue,
+                                scaffoldState.bottomSheetState.targetValue
+                            ) {
+                                derivedStateOf {
+                                    progress == 0f && scaffoldState.bottomSheetState.currentValue == SheetValue.PartiallyExpanded && scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded
+                                }
+                            }
+                            val currentSwipeAllowed by rememberUpdatedState(enableSwipeToDismiss)
                             val dismissState = rememberSwipeToDismissBoxState(
                                 confirmValueChange = { value ->
                                     if (value == SwipeToDismissBoxValue.Settled) {
                                         true
                                     } else { // SwipeToDismissBoxValue.StartToEnd, SwipeToDismissBoxValue.EndToStart
-                                        if (enableSwipToDismiss) {
+                                        if (currentSwipeAllowed) {
                                             true
                                         } else {
                                             false
@@ -265,9 +275,9 @@ class MainActivity : AppCompatActivity() {
 
                             SwipeToDismissBox(
                                 state = dismissState,
-                                enableDismissFromStartToEnd = enableSwipToDismiss,
-                                enableDismissFromEndToStart = enableSwipToDismiss,
-                                gesturesEnabled = enableSwipToDismiss,
+                                enableDismissFromStartToEnd = enableSwipeToDismiss,
+                                enableDismissFromEndToStart = enableSwipeToDismiss,
+                                gesturesEnabled = enableSwipeToDismiss,
                                 onDismiss = { direction ->
                                     scope.launch { scaffoldState.bottomSheetState.hide() }
                                 },
