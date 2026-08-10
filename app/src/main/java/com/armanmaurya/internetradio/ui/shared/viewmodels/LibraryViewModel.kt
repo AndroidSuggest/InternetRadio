@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 import okhttp3.OkHttpClient
 
@@ -340,6 +342,32 @@ class LibraryViewModel @Inject constructor(
                 entities.find { it.stationUuid == station.stationUuid }?.copy(orderIndex = index)
             }
             libraryRepository.updateStations(updatedEntities)
+        }
+    }
+
+    // --- Similar Stations by URL ---
+    private val _duplicateStations = MutableStateFlow<List<RadioStation>>(emptyList())
+    val duplicateStations = _duplicateStations.asStateFlow()
+
+    private val _isCheckingUrl = MutableStateFlow(false)
+    val isCheckingUrl = _isCheckingUrl.asStateFlow()
+
+    private var urlCheckJob: Job? = null
+
+    fun checkDuplicateUrl(url: String) {
+        urlCheckJob?.cancel()
+        if (url.isBlank()) {
+            _duplicateStations.value = emptyList()
+            _isCheckingUrl.value = false
+            return
+        }
+        urlCheckJob = viewModelScope.launch {
+            delay(500)
+            _isCheckingUrl.value = true
+            stationRepository.getStationsByUrl(url)
+                .onSuccess { _duplicateStations.value = it }
+                .onFailure { _duplicateStations.value = emptyList() }
+            _isCheckingUrl.value = false
         }
     }
 }

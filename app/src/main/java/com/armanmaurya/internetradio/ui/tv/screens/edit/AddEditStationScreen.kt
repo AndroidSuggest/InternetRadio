@@ -29,7 +29,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.*
 import coil3.compose.AsyncImage
 import com.armanmaurya.internetradio.R
+import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.foundation.rememberScrollState
@@ -40,7 +43,8 @@ import androidx.compose.foundation.verticalScroll
 fun AddEditStationScreen(
     stationUuid: String?,
     viewModel: LibraryViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onPlayStation: (RadioStation) -> Unit = {}
 ) {
     val stations by viewModel.stations.collectAsStateWithLifecycle()
     val station = if (stationUuid != null) stations?.find { it.stationUuid == stationUuid } else null
@@ -77,6 +81,13 @@ fun AddEditStationScreen(
             }
         } else {
             isProbing = false
+        }
+    }
+
+    // Auto-check for similar stations when opening a custom station for editing
+    LaunchedEffect(station?.stationUuid) {
+        if (isEditing && station?.isCustom == true && url.isNotBlank()) {
+            viewModel.checkDuplicateUrl(url)
         }
     }
 
@@ -290,7 +301,7 @@ fun AddEditStationScreen(
                             label = "saveButtonAnimation"
                         ) { isUpload ->
                             Text(
-                                text = if (isUpload) "Upload & Save" else "Save",
+                                text = if (isUpload) (if (isEditing) "Upload & Save" else "Upload & Add") else (if (isEditing) "Save" else "Add"),
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.padding(vertical = 4.dp)
                             )
@@ -361,7 +372,10 @@ fun AddEditStationScreen(
 
                 OutlinedTextField(
                     value = url,
-                    onValueChange = { url = it },
+                    onValueChange = {
+                        url = it
+                        viewModel.checkDuplicateUrl(it)
+                    },
                     label = { androidx.compose.material3.Text("Stream URL *") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -500,6 +514,54 @@ fun AddEditStationScreen(
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
+                }
+
+                val duplicateStations by viewModel.duplicateStations.collectAsStateWithLifecycle()
+                val isCheckingUrl by viewModel.isCheckingUrl.collectAsStateWithLifecycle()
+
+                if ((isCheckingUrl || duplicateStations.isNotEmpty()) && (!isEditing || station?.isCustom == true)) {
+                    androidx.compose.material3.Text(
+                        text = "Similar Stations",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    if (isCheckingUrl) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    } else {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp)
+                        ) {
+                            items(duplicateStations) { s ->
+                                androidx.compose.material3.Card(
+                                    modifier = Modifier.width(160.dp),
+                                    onClick = { onPlayStation(s) }
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        androidx.compose.material3.Text(
+                                            text = s.name,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            maxLines = 2
+                                        )
+                                        if (s.country.isNotBlank()) {
+                                            androidx.compose.material3.Text(
+                                                text = s.country,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

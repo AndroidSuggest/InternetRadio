@@ -6,6 +6,10 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.border
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -25,6 +29,8 @@ import android.widget.Toast
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
 import kotlinx.coroutines.launch
 
@@ -33,7 +39,8 @@ import kotlinx.coroutines.launch
 fun EditStationScreen(
     stationUuid: String?,
     viewModel: LibraryViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onPlayStation: (RadioStation) -> Unit = {}
 ) {
     val context = LocalContext.current
     val stations by viewModel.stations.collectAsStateWithLifecycle()
@@ -119,6 +126,13 @@ fun EditStationScreen(
                 }
             } else {
                 isProbing = false
+            }
+        }
+
+        // Auto-check for similar stations when opening a custom station for editing
+        LaunchedEffect(station?.stationUuid) {
+            if (isEditing && station?.isCustom == true && url.isNotBlank()) {
+                viewModel.checkDuplicateUrl(url)
             }
         }
 
@@ -326,7 +340,7 @@ fun EditStationScreen(
                                     label = "saveButtonAnimation"
                                 ) { isUpload ->
                                     Text(
-                                        text = if (isUpload) "Upload & Save" else "Save"
+                                        text = if (isUpload) (if (isEditing) "Upload & Save" else "Upload & Add") else (if (isEditing) "Save" else "Add")
                                     )
                                 }
                             }
@@ -383,7 +397,10 @@ fun EditStationScreen(
                 )
                 TextField(
                     value = url,
-                    onValueChange = { url = it },
+                    onValueChange = {
+                        url = it
+                        viewModel.checkDuplicateUrl(it)
+                    },
                     label = { Text(stringResource(R.string.edit_station_stream_url_field)) },
                     modifier = Modifier.fillMaxWidth().then(
                         if (isPureBlack) Modifier.border(
@@ -735,7 +752,44 @@ fun EditStationScreen(
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
-                
+
+                val duplicateStations by viewModel.duplicateStations.collectAsStateWithLifecycle()
+                val isCheckingUrl by viewModel.isCheckingUrl.collectAsStateWithLifecycle()
+
+                if ((isCheckingUrl || duplicateStations.isNotEmpty()) && (!isEditing || station?.isCustom == true)) {
+                    Text(
+                        text = "Similar Stations",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    if (isCheckingUrl) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                        }
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(150.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 600.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            userScrollEnabled = false
+                        ) {
+                            items(duplicateStations) { s ->
+                                StationCard(
+                                    station = s,
+                                    onClick = { onPlayStation(s) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(160.dp))
             }
         }

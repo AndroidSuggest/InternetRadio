@@ -11,11 +11,14 @@ import com.armanmaurya.internetradio.ui.mobile.screens.home.HomeScreen
 import com.armanmaurya.internetradio.ui.mobile.screens.countries.CountrySelectScreen
 import com.armanmaurya.internetradio.ui.mobile.screens.languages.LanguageSelectScreen
 import com.armanmaurya.internetradio.ui.mobile.screens.tags.TagSelectScreen
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.home.HomeViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.SettingsScreen
 import com.armanmaurya.internetradio.ui.mobile.screens.about.AboutScreen
 import com.armanmaurya.internetradio.ui.mobile.screens.edit.EditStationScreen
+import com.armanmaurya.internetradio.ui.shared.viewmodels.PlayerViewModel
+import com.armanmaurya.internetradio.player.PlaybackSource
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import androidx.compose.animation.core.tween
@@ -23,8 +26,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 
 @Composable
 fun AppNavHost(
@@ -35,6 +36,7 @@ fun AppNavHost(
     onCheckUpdates: () -> Unit = {}
 ) {
     val discoverViewModel: HomeViewModel = hiltViewModel()
+    val playerViewModel: PlayerViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -178,7 +180,10 @@ fun AppNavHost(
             EditStationScreen(
                 stationUuid = stationUuid,
                 viewModel = hiltViewModel(),
-                onNavigateBack = { navController.navigateUp() }
+                onNavigateBack = { navController.navigateUp() },
+                onPlayStation = { station ->
+                    playerViewModel.play(listOf(station), 0, PlaybackSource.None)
+                }
             )
         }
         composable(

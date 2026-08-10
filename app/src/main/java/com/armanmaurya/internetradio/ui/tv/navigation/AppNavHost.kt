@@ -133,7 +133,10 @@ fun AppNavHost(
             AddEditStationScreen(
                 stationUuid = stationUuid,
                 viewModel = libraryViewModel,
-                onNavigateBack = { navController.navigateUp() }
+                onNavigateBack = { navController.navigateUp() },
+                onPlayStation = { station ->
+                    playerViewModel.play(listOf(station), 0, PlaybackSource.None)
+                }
             )
         }
     }
