@@ -82,9 +82,11 @@ class LibraryRepository @Inject constructor(
         url: String,
         favicon: String = "",
         tags: List<String> = emptyList(),
-        country: String = "",
         countryCode: String = "",
-        language: String = ""
+        languageCodes: List<String> = emptyList(),
+        homepage: String = "",
+        codec: String = "unknown",
+        bitrate: Int = 0
     ) {
         val station = LibraryStationEntity(
             stationUuid = UUID.randomUUID().toString(),
@@ -93,9 +95,12 @@ class LibraryRepository @Inject constructor(
             urlResolved = url,
             favicon = favicon,
             tags = tags,
-            country = country,
             countryCode = countryCode,
-            language = language,
+            languageCodes = languageCodes,
+            homepage = homepage,
+            codec = codec,
+            bitrate = bitrate,
+
             isCustom = true
         )
         libraryStationDao.insertStation(station)
@@ -106,7 +111,12 @@ class LibraryRepository @Inject constructor(
         name: String,
         url: String,
         favicon: String,
-        tags: List<String>
+        tags: List<String>,
+        countryCode: String,
+        languageCodes: List<String>,
+        homepage: String,
+        codec: String,
+        bitrate: Int
     ) {
         val existing = libraryStationDao.getStationById(stationUuid) ?: return
         val updated = existing.copy(
@@ -114,7 +124,12 @@ class LibraryRepository @Inject constructor(
             url = url,
             urlResolved = url,
             favicon = favicon,
-            tags = tags
+            tags = tags,
+            countryCode = countryCode,
+            languageCodes = languageCodes,
+            homepage = homepage,
+            codec = codec,
+            bitrate = bitrate
         )
         libraryStationDao.insertStation(updated)
     }

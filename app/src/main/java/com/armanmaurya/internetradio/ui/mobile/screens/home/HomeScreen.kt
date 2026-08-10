@@ -252,6 +252,7 @@ fun HomeScreen(
                     when (page) {
                         0 -> BrowseContent(
                             onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                            onEditStation = onEditStation,
                             onExportStation = onExportStation,
                             contentPadding = contentPadding,
                             viewModel = browseViewModel,
@@ -260,6 +261,7 @@ fun HomeScreen(
                         )
                         1 -> RecentContent(
                             onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                            onEditStation = onEditStation,
                             onExportStation = onExportStation,
                             contentPadding = contentPadding,
                             playingStationUuid = playingStationUuid,

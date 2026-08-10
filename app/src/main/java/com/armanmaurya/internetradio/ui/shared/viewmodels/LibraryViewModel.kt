@@ -17,15 +17,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import okhttp3.OkHttpClient
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     private val libraryRepository: LibraryRepository,
     private val settingsRepository: SettingsRepository,
     private val stationRepository: StationRepository,
-    private val playerController: PlayerController
+    private val playerController: PlayerController,
+    private val okHttpClient: OkHttpClient
 ) : ViewModel() {
 
     // Using useFilterOnFavorites and isGridViewFavorites for now, maybe we can rename these in Settings later
@@ -52,6 +59,28 @@ class LibraryViewModel @Inject constructor(
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
+    }
+
+    private val _tagSearchQuery = MutableStateFlow("")
+    
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.FlowPreview::class)
+    val fetchedTags: StateFlow<List<com.armanmaurya.internetradio.data.model.Tag>> = _tagSearchQuery
+        .debounce(500)
+        .flatMapLatest { query ->
+            flow {
+                if (query.isNotBlank()) {
+                    stationRepository.getTags(query)
+                        .onSuccess { emit(it.take(10)) }
+                        .onFailure { emit(emptyList()) }
+                } else {
+                    emit(emptyList())
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun onTagSearchQueryChange(query: String) {
+        _tagSearchQuery.value = query
     }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -137,14 +166,30 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    fun updateStation(stationUuid: String, name: String, url: String, favicon: String, tags: List<String>) {
+    fun updateStation(
+        stationUuid: String,
+        name: String,
+        url: String,
+        favicon: String,
+        tags: List<String>,
+        countryCode: String,
+        languageCodes: List<String>,
+        homepage: String,
+        codec: String,
+        bitrate: Int
+    ) {
         viewModelScope.launch {
             libraryRepository.updateStation(
                 stationUuid = stationUuid,
                 name = name,
                 url = url,
                 favicon = favicon,
-                tags = tags
+                tags = tags,
+                countryCode = countryCode,
+                languageCodes = languageCodes,
+                homepage = homepage,
+                codec = codec,
+                bitrate = bitrate
             )
             val updatedStation = libraryRepository.getStationById(stationUuid)
             if (updatedStation != null && playerController.playbackState.value.currentStation?.stationUuid == stationUuid) {
@@ -165,25 +210,76 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
+    data class StreamProbeResult(val codec: String, val bitrate: Int)
+
+    suspend fun probeStream(url: String): StreamProbeResult? = withContext(Dispatchers.IO) {
+        if (!url.startsWith("http")) return@withContext null
+        var detectedCodec = "unknown"
+        var detectedBitrate = 0
+        var isHls = url.contains(".m3u8")
+        
+        try {
+            val request = okhttp3.Request.Builder().url(url).header("Icy-MetaData", "1").build()
+            okHttpClient.newCall(request).execute().use { response ->
+                val contentType = response.header("Content-Type")?.lowercase() ?: ""
+                detectedBitrate = response.header("icy-br")?.toIntOrNull() ?: 0
+                if (contentType.contains("mpegurl") || contentType.contains("x-mpegurl")) isHls = true
+                
+                detectedCodec = when {
+                    contentType.contains("mpeg") -> "MP3"
+                    contentType.contains("aac") -> "AAC"
+                    contentType.contains("ogg") -> "OGG"
+                    else -> "unknown"
+                }
+
+                if (isHls && contentType.contains("mpegurl") && response.isSuccessful) {
+                    val bodyString = response.peekBody(10240).string()
+                    val bandwidthMatch = Regex("BANDWIDTH=(\\d+)").find(bodyString)
+                    if (bandwidthMatch != null && detectedBitrate == 0) {
+                        detectedBitrate = (bandwidthMatch.groupValues[1].toIntOrNull() ?: 0) / 1000
+                    }
+                    val codecMatch = Regex("CODECS=\"([^\"]+)\"").find(bodyString)
+                    if (codecMatch != null) {
+                        val codecStr = codecMatch.groupValues[1].lowercase()
+                        detectedCodec = when {
+                            codecStr.contains("mp4a") -> "AAC"
+                            codecStr.contains("mp3") -> "MP3"
+                            else -> detectedCodec
+                        }
+                    }
+                }
+            }
+            StreamProbeResult(detectedCodec, detectedBitrate)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun addStation(
         name: String,
         url: String,
         favicon: String,
         tags: String,
-        country: String,
-        state: String,
-        language: String
+        countryCode: String,
+        languageCodes: String,
+        homepage: String,
+        codec: String = "unknown",
+        bitrate: Int = 0
     ) {
         val tagList = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        val langList = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        
         viewModelScope.launch {
             libraryRepository.addCustomStation(
                 name = name,
                 url = url,
                 favicon = favicon,
                 tags = tagList,
-                country = country,
-                countryCode = state,
-                language = language
+                countryCode = countryCode,
+                languageCodes = langList,
+                homepage = homepage,
+                codec = codec,
+                bitrate = bitrate
             )
         }
     }

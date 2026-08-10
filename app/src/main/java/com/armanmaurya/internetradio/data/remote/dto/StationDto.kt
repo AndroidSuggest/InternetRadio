@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.data.remote.dto
 
 import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.utils.LanguageMapper
 import com.google.gson.annotations.SerializedName
 
 data class StationDto(
@@ -23,7 +24,7 @@ data class StationDto(
     @SerializedName("lastchangetime_iso8601") val lastChangeTimeIso8601: String?,
     @SerializedName("codec") val codec: String,
     @SerializedName("bitrate") val bitrate: Int,
-    @SerializedName("hls") val hls: Int,
+
     @SerializedName("lastcheckok") val lastCheckOk: Int,
     @SerializedName("lastchecktime") val lastCheckTime: String,
     @SerializedName("lastchecktime_iso8601") val lastCheckTimeIso8601: String?,
@@ -42,36 +43,48 @@ data class StationDto(
     @SerializedName("has_extended_info") val hasExtendedInfo: Boolean?
 )
 
-fun StationDto.toDomain(): RadioStation = RadioStation(
-    changeUuid = changeUuid,
-    stationUuid = stationUuid,
-    name = name.trim(),
-    url = url,
-    urlResolved = urlResolved,
-    homepage = homepage,
-    favicon = favicon,
-    tags = tags.split(",").map { it.trim() }.filter { it.isNotBlank() },
-    country = country,
-    countryCode = countryCode,
-    state = state,
-    iso3166_2 = iso3166_2,
-    language = language,
-    languageCodes = languageCodes?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
-    votes = votes,
-    lastChangeTime = lastChangeTime,
-    codec = codec,
-    bitrate = bitrate,
-    hls = hls != 0,
-    lastCheckOk = lastCheckOk != 0,
-    lastCheckTime = lastCheckTime,
-    lastCheckOkTime = lastCheckOkTime,
-    lastLocalCheckTime = lastLocalCheckTime,
-    clickTimestamp = clickTimestamp,
-    clickCount = clickCount,
-    clickTrend = clickTrend,
-    sslError = sslError != 0,
-    geoLat = geoLat,
-    geoLong = geoLong,
-    geoDistance = geoDistance,
-    hasExtendedInfo = hasExtendedInfo == true
-)
+fun StationDto.toDomain(): RadioStation {
+    val apiLanguageCodes = languageCodes?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() }
+    
+    val resolvedLanguageCodes = if (!apiLanguageCodes.isNullOrEmpty()) {
+        apiLanguageCodes
+    } else if (language.isNotBlank()) {
+        LanguageMapper.getCodesFromNameString(language)
+    } else {
+        emptyList()
+    }
+
+    return RadioStation(
+        changeUuid = changeUuid,
+        stationUuid = stationUuid,
+        name = name.trim(),
+        url = url,
+        urlResolved = urlResolved,
+        homepage = homepage,
+        favicon = favicon,
+        tags = tags.split(",").map { it.trim() }.filter { it.isNotBlank() },
+        country = country,
+        countryCode = countryCode,
+        state = state,
+        iso3166_2 = iso3166_2,
+        language = language,
+        languageCodes = resolvedLanguageCodes,
+        votes = votes,
+        lastChangeTime = lastChangeTime,
+        codec = codec,
+        bitrate = bitrate,
+
+        lastCheckOk = lastCheckOk != 0,
+        lastCheckTime = lastCheckTime,
+        lastCheckOkTime = lastCheckOkTime,
+        lastLocalCheckTime = lastLocalCheckTime,
+        clickTimestamp = clickTimestamp,
+        clickCount = clickCount,
+        clickTrend = clickTrend,
+        sslError = sslError != 0,
+        geoLat = geoLat,
+        geoLong = geoLong,
+        geoDistance = geoDistance,
+        hasExtendedInfo = hasExtendedInfo == true
+    )
+}

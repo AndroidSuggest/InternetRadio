@@ -202,8 +202,10 @@
     <string name="edit_station_favicon_url_optional">Favicon URL (Optional)</string>
     <string name="edit_station_favicon_url_field">Favicon URL</string>
     <string name="edit_station_country_field">Country</string>
-    <string name="edit_station_language_field">Language</string>
-    <string name="edit_station_tags_optional">Tags (comma separated)</string>
+    <string name="edit_station_language_field">Languages</string>
+    <string name="edit_station_add_languages">Add Languages</string>
+    <string name="edit_station_tags_optional">Tags</string>
+    <string name="edit_station_add_tags">Add Tags</string>
     <string name="edit_station_failed_fetch_original_data">Failed to fetch original data</string>
     <string name="edit_station_unsaved_changes">Unsaved Changes</string>
     <string name="edit_station_unsaved_changes_message_exit">You have unsaved changes. Are you sure you want to discard them and exit?</string>

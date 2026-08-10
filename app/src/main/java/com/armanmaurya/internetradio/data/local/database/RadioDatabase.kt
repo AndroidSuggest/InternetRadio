@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.DeleteTable
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.DeleteColumn
 import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -31,7 +32,7 @@ import com.armanmaurya.internetradio.data.local.dao.ScheduleDao
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 4, to = 5, spec = RadioDatabase.Migration4To5Spec::class),
         AutoMigration(from = 5, to = 6),
-        AutoMigration(from = 6, to = 7)
+        AutoMigration(from = 6, to = 7, spec = RadioDatabase.Migration6To7Spec::class)
     ]
 )
 @TypeConverters(Converters::class)
@@ -54,6 +55,12 @@ abstract class RadioDatabase : RoomDatabase() {
             cursor.close()
         }
     }
+
+    @DeleteColumn(tableName = "library_stations", columnName = "country")
+    @DeleteColumn(tableName = "library_stations", columnName = "language")
+    @DeleteColumn(tableName = "recent_stations", columnName = "country")
+    @DeleteColumn(tableName = "recent_stations", columnName = "language")
+    class Migration6To7Spec : AutoMigrationSpec
 
     abstract val libraryStationDao: LibraryStationDao
     abstract val recentStationDao: RecentStationDao

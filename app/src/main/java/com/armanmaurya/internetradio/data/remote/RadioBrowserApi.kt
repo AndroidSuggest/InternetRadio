@@ -4,7 +4,10 @@ import com.armanmaurya.internetradio.data.remote.dto.CountryDto
 import com.armanmaurya.internetradio.data.remote.dto.LanguageDto
 import com.armanmaurya.internetradio.data.remote.dto.StationDto
 import com.armanmaurya.internetradio.data.remote.dto.TagDto
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -92,10 +95,31 @@ interface RadioBrowserApi {
     suspend fun searchByUrl(
         @Query("url") url: String
     ): List<StationDto>
+
+    @FormUrlEncoded
+    @POST("json/add")
+    suspend fun addStation(
+        @Field("name") name: String,
+        @Field("url") url: String,
+        @Field("homepage") homepage: String? = null,
+        @Field("favicon") favicon: String? = null,
+        @Field("countrycode") countryCode: String? = null,
+        @Field("iso_3166_2") iso31662: String? = null,
+        @Field("languagecodes") languageCodes: String? = null,
+        @Field("tags") tags: String? = null,
+        @Field("geo_lat") geoLat: Double? = null,
+        @Field("geo_long") geoLong: Double? = null,
+    ): AddStationResponse
 }
 
 data class StationClickResponse(
     val ok: Boolean,
     val message: String,
     val url: String,
+)
+
+data class AddStationResponse(
+    val ok: Boolean,
+    val message: String,
+    val uuid: String
 )

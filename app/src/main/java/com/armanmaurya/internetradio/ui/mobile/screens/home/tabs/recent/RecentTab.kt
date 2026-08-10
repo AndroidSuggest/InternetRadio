@@ -43,6 +43,7 @@ import com.armanmaurya.internetradio.ui.shared.viewmodels.RecentViewModel
 @Composable
 fun RecentContent(
     onStationClick: (List<RadioStation>, Int, PlaybackSource) -> Unit,
+    onEditStation: (String) -> Unit,
     onExportStation: ((RadioStation) -> Unit)? = null,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -173,6 +174,7 @@ fun RecentContent(
                         isFavorite = libraryStationUuids.contains(station.stationUuid),
                         onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
                         onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
+                        onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
                         onExportClick = { onExportStation?.invoke(station) }
                     )
                 } else {
@@ -187,6 +189,7 @@ fun RecentContent(
                         isFavorite = libraryStationUuids.contains(station.stationUuid),
                         onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
                         onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
+                        onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
                         onExportClick = { onExportStation?.invoke(station) }
                     )
                 }

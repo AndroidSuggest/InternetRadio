@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Refresh
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +42,7 @@ fun AddEditStationScreen(
     val stations by viewModel.stations.collectAsStateWithLifecycle()
     val station = if (stationUuid != null) stations?.find { it.stationUuid == stationUuid } else null
     val isEditing = stationUuid != null
+    val coroutineScope = rememberCoroutineScope()
 
     BackHandler { onNavigateBack() }
 
@@ -47,12 +50,36 @@ fun AddEditStationScreen(
     var url by remember(station) { mutableStateOf(station?.url ?: "") }
     var favicon by remember(station) { mutableStateOf(station?.favicon ?: "") }
     var tags by remember(station) { mutableStateOf(station?.tags?.joinToString(", ") ?: "") }
-    var country by remember(station) { mutableStateOf(station?.country ?: "") }
-    var language by remember(station) { mutableStateOf(station?.language ?: "") }
+    var countryCode by remember(station) { mutableStateOf(station?.countryCode ?: "") }
+    var languageCodes by remember(station) { mutableStateOf(station?.languageCodes?.joinToString(", ") ?: "") }
+    var homepage by remember(station) { mutableStateOf(station?.homepage ?: "") }
+
+    var isProbing by remember { mutableStateOf(false) }
+    var probedCodec by remember(station) { mutableStateOf(station?.codec?.takeIf { it.isNotBlank() } ?: "unknown") }
+    var probedBitrate by remember(station) { mutableStateOf(station?.bitrate ?: 0) }
+
+    LaunchedEffect(url) {
+        if (url.startsWith("http")) {
+            if (station != null && url == station.url && (station.codec.isNotBlank() || station.bitrate > 0)) {
+                isProbing = false
+            } else {
+                isProbing = true
+                kotlinx.coroutines.delay(500)
+                val result = viewModel.probeStream(url)
+                if (result != null) {
+                    probedCodec = result.codec
+                    probedBitrate = result.bitrate
+                }
+                isProbing = false
+            }
+        } else {
+            isProbing = false
+        }
+    }
 
     val firstFieldFocusRequester = remember { FocusRequester() }
 
-    val canSave = name.isNotBlank() && url.isNotBlank()
+    val canSave = name.isNotBlank() && url.isNotBlank() && !isProbing
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Blurred background from favicon
@@ -164,12 +191,18 @@ fun AddEditStationScreen(
                     onClick = {
                         if (isEditing && station != null) {
                             val tagList = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                            val langList = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                             viewModel.updateStation(
                                 stationUuid = station.stationUuid,
                                 name = name,
                                 url = url,
                                 favicon = favicon,
-                                tags = tagList
+                                tags = tagList,
+                                countryCode = countryCode,
+                                languageCodes = langList,
+                                homepage = homepage,
+                                codec = probedCodec,
+                                bitrate = probedBitrate
                             )
                         } else {
                             viewModel.addStation(
@@ -177,9 +210,11 @@ fun AddEditStationScreen(
                                 url = url,
                                 favicon = favicon,
                                 tags = tags,
-                                country = country,
-                                state = "",
-                                language = language
+                                countryCode = countryCode,
+                                languageCodes = languageCodes,
+                                homepage = homepage,
+                                codec = probedCodec,
+                                bitrate = probedBitrate
                             )
                         }
                         onNavigateBack()
@@ -193,6 +228,13 @@ fun AddEditStationScreen(
                     shape = ButtonDefaults.shape(shape = RoundedCornerShape(12.dp)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    if (isProbing) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp).padding(end = 8.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     Text(
                         text = if (isEditing) "Save Changes" else "Add Station",
                         style = MaterialTheme.typography.titleMedium,
@@ -267,9 +309,9 @@ fun AddEditStationScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     OutlinedTextField(
-                        value = country,
-                        onValueChange = { country = it },
-                        label = { androidx.compose.material3.Text("Country (Optional)") },
+                        value = countryCode,
+                        onValueChange = { countryCode = it },
+                        label = { androidx.compose.material3.Text("Country Code (Optional)") },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         colors = fieldColors,
@@ -278,9 +320,9 @@ fun AddEditStationScreen(
                         )
                     )
                     OutlinedTextField(
-                        value = language,
-                        onValueChange = { language = it },
-                        label = { androidx.compose.material3.Text("Language (Optional)") },
+                        value = languageCodes,
+                        onValueChange = { languageCodes = it },
+                        label = { androidx.compose.material3.Text("Languages (Optional)") },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         colors = fieldColors,
@@ -289,6 +331,18 @@ fun AddEditStationScreen(
                         )
                     )
                 }
+
+                OutlinedTextField(
+                    value = homepage,
+                    onValueChange = { homepage = it },
+                    label = { androidx.compose.material3.Text("Homepage URL (Optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = fieldColors,
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
+                    )
+                )
 
                 OutlinedTextField(
                     value = tags,
@@ -301,6 +355,63 @@ fun AddEditStationScreen(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
                     )
                 )
+
+                if (probedCodec != "unknown" || probedBitrate > 0) {
+                    val bitrateText = if (probedBitrate > 0) "$probedBitrate kbps" else "Unknown bitrate"
+                    val codecText = if (probedCodec != "unknown") probedCodec.uppercase() else "Unknown Codec"
+                    androidx.compose.material3.Surface(
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                androidx.compose.material3.Text(
+                                    text = "Metadata",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                androidx.compose.material3.Text(
+                                    text = "$codecText • $bitrateText",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            if (isProbing) {
+                                androidx.compose.material3.CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp).padding(4.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                androidx.compose.material3.IconButton(
+                                    onClick = {
+                                        if (url.startsWith("http")) {
+                                            isProbing = true
+                                            coroutineScope.launch {
+                                                val result = viewModel.probeStream(url)
+                                                if (result != null) {
+                                                    probedCodec = result.codec
+                                                    probedBitrate = result.bitrate
+                                                }
+                                                isProbing = false
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    androidx.compose.material3.Icon(
+                                        imageVector = androidx.compose.material.icons.Icons.Filled.Refresh,
+                                        contentDescription = "Refresh Metadata"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
 
                 Spacer(Modifier.height(8.dp))
 

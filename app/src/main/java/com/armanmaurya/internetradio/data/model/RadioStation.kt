@@ -19,7 +19,7 @@ data class RadioStation(
     val lastChangeTime: String,
     val codec: String,
     val bitrate: Int,
-    val hls: Boolean,
+
     val lastCheckOk: Boolean,
     val lastCheckTime: String,
     val lastCheckOkTime: String,

@@ -12,11 +12,17 @@ data class RecentStationEntity(
     val urlResolved: String,
     val favicon: String,
     val tags: List<String>,
-    val country: String,
     val countryCode: String,
-    val language: String,
+    @androidx.room.ColumnInfo(defaultValue = "")
+    val languageCodes: List<String>,
     val codec: String,
     val bitrate: Int,
+
+    @androidx.room.ColumnInfo(defaultValue = "")
+    val homepage: String = "",
+    val iso3166_2: String? = null,
+    val geoLat: Double? = null,
+    val geoLong: Double? = null,
     val lastPlayedAt: Long = System.currentTimeMillis()
 )
 
@@ -26,20 +32,20 @@ fun RecentStationEntity.toDomain() = RadioStation(
     name = name,
     url = url,
     urlResolved = urlResolved,
-    homepage = "",
+    homepage = homepage,
     favicon = favicon,
     tags = tags,
-    country = country,
+    country = "",
     countryCode = countryCode,
     state = "",
-    iso3166_2 = null,
-    language = language,
-    languageCodes = emptyList(),
+    iso3166_2 = iso3166_2,
+    language = "",
+    languageCodes = languageCodes,
     votes = 0,
     lastChangeTime = "",
     codec = codec,
     bitrate = bitrate,
-    hls = false,
+
     lastCheckOk = true,
     lastCheckTime = "",
     lastCheckOkTime = "",
@@ -48,8 +54,8 @@ fun RecentStationEntity.toDomain() = RadioStation(
     clickCount = 0,
     clickTrend = 0,
     sslError = false,
-    geoLat = null,
-    geoLong = null,
+    geoLat = geoLat,
+    geoLong = geoLong,
     geoDistance = null,
     hasExtendedInfo = false
 )
@@ -61,10 +67,14 @@ fun RadioStation.toRecentEntity(timestamp: Long = System.currentTimeMillis()) = 
     urlResolved = urlResolved,
     favicon = favicon,
     tags = tags,
-    country = country,
     countryCode = countryCode,
-    language = language,
+    languageCodes = languageCodes,
     codec = codec,
     bitrate = bitrate,
+
+    homepage = homepage,
+    iso3166_2 = iso3166_2,
+    geoLat = geoLat,
+    geoLong = geoLong,
     lastPlayedAt = timestamp
 )

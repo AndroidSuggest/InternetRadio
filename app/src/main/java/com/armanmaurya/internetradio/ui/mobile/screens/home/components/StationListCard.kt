@@ -59,13 +59,28 @@ fun StationListCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    val subtitleText = remember(station.country, station.language, station.codec, station.bitrate) {
+    val subtitleText = remember(station.country, station.countryCode, station.language, station.languageCodes, station.codec, station.bitrate) {
         buildString {
-            if (station.country.isNotBlank()) append(station.country)
-            if (station.country.isNotBlank() && station.language.isNotBlank()) append(" • ")
-            if (station.language.isNotBlank()) append(station.language)
+            val displayCountry = if (station.countryCode.isNotBlank()) {
+                java.util.Locale("", station.countryCode).getDisplayCountry(java.util.Locale.getDefault())
+            } else {
+                station.country
+            }
+
+            val displayLanguage = if (station.languageCodes.isNotEmpty()) {
+                station.languageCodes.joinToString(", ") { code ->
+                    java.util.Locale(code).getDisplayLanguage(java.util.Locale.getDefault())
+                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString() }
+                }
+            } else {
+                station.language
+            }
+
+            if (displayCountry.isNotBlank()) append(displayCountry)
+            if (displayCountry.isNotBlank() && displayLanguage.isNotBlank()) append(" • ")
+            if (displayLanguage.isNotBlank()) append(displayLanguage)
             
-            val hasPrevious = station.country.isNotBlank() || station.language.isNotBlank()
+            val hasPrevious = displayCountry.isNotBlank() || displayLanguage.isNotBlank()
             if (hasPrevious && (station.codec.isNotBlank() || station.bitrate > 0)) {
                 append(" | ")
             }

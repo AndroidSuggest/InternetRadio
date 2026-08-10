@@ -5,6 +5,7 @@ import com.armanmaurya.internetradio.data.model.Country
 import com.armanmaurya.internetradio.data.model.Language
 import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.data.model.Tag
+import com.armanmaurya.internetradio.data.remote.AddStationResponse
 import com.armanmaurya.internetradio.data.remote.RadioBrowserApi
 import com.armanmaurya.internetradio.data.remote.dto.toDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -125,4 +126,30 @@ class StationRepository @Inject constructor(
         runCatching {
             api.searchByUrl(url).map { it.toDomain() }
         }
+
+    suspend fun addStation(
+        name: String,
+        url: String,
+        homepage: String? = null,
+        favicon: String? = null,
+        countryCode: String? = null,
+        iso31662: String? = null,
+        languageCodes: String? = null,
+        tags: String? = null,
+        geoLat: Double? = null,
+        geoLong: Double? = null,
+    ): Result<AddStationResponse> = runCatching {
+        api.addStation(
+            name = name,
+            url = url,
+            homepage = homepage,
+            favicon = favicon,
+            countryCode = countryCode,
+            iso31662 = iso31662,
+            languageCodes = languageCodes,
+            tags = tags,
+            geoLat = geoLat,
+            geoLong = geoLong
+        )
+    }
 }
