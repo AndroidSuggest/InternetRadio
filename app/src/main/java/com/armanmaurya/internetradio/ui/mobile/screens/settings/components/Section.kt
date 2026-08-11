@@ -38,7 +38,7 @@ fun Section(
             ),
             shape = MaterialTheme.shapes.medium
         ) {
-            Column(modifier = Modifier.padding(vertical = 4.dp)) {
+            Column {
                 content()
             }
         }
