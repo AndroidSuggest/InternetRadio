@@ -292,27 +292,8 @@ fun LibraryContent(
             }
         }
 
-        if (currentStations.isEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 64.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (useFilter) 
-                            stringResource(R.string.home_no_library_stations_filter) 
-                        else 
-                            stringResource(R.string.home_no_library_stations_yet),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(32.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        } else {
+        if (currentStations.isEmpty()) { /* handled below as overlay */ }
+        else {
             itemsIndexed(
                 items = currentStations,
                 key = { _, it -> it.stationUuid }
@@ -350,8 +331,27 @@ fun LibraryContent(
                 }
             }
         }
-        } // LazyVerticalGrid closes
-        
+        } // LazyVerticalGrid
+
+                // Overlay: centered empty state
+                if (currentStations.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (useFilter)
+                                stringResource(R.string.home_no_library_stations_filter)
+                            else
+                                stringResource(R.string.home_no_library_stations_yet),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(32.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
         AnimatedVisibility(
             visible = isAddFabVisible,
             modifier = Modifier

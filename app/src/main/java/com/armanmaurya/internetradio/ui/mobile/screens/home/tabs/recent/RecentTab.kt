@@ -84,118 +84,117 @@ fun RecentContent(
                     state = gridState,
                     columns = if (isGridView) GridCells.Adaptive(150.dp) else GridCells.Fixed(1),
                     modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp + contentPadding.calculateBottomPadding()
-                ),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.small)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .clickable { viewModel.onGridViewChange(!isGridView) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 16.dp + contentPadding.calculateBottomPadding()
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    androidx.compose.animation.AnimatedContent(
-                        targetState = isGridView,
-                        label = "view_toggle"
-                    ) { isGrid ->
-                        Icon(
-                            imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
-                            contentDescription = stringResource(R.string.home_toggle_view),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp, bottom = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(MaterialTheme.shapes.small)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .clickable { viewModel.onGridViewChange(!isGridView) }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                androidx.compose.animation.AnimatedContent(
+                                    targetState = isGridView,
+                                    label = "view_toggle"
+                                ) { isGrid ->
+                                    Icon(
+                                        imageVector = if (isGrid) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.ViewModule,
+                                        contentDescription = stringResource(R.string.home_toggle_view),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
 
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                if (currentStations.isNotEmpty()) {
+                                    ToggleChip(
+                                        text = stringResource(R.string.general_clear),
+                                        onClick = { showClearDialog = true },
+                                        leadingIcon = Icons.Default.DeleteSweep
+                                    )
+                                }
+
+                                ToggleChip(
+                                    text = if (useFilter) stringResource(R.string.home_filters_active) else stringResource(R.string.home_use_filters),
+                                    onClick = { viewModel.toggleFilter() },
+                                    isActive = useFilter,
+                                    leadingIcon = Icons.Default.FilterList,
+                                    trailingIcon = if (useFilter) Icons.Default.Close else null,
+                                    trailingIconContentDescription = if (useFilter) stringResource(R.string.general_clear) else null
+                                )
+                            }
+                        }
+                    }
                     if (currentStations.isNotEmpty()) {
-                        ToggleChip(
-                            text = stringResource(R.string.general_clear),
-                            onClick = { showClearDialog = true },
-                            leadingIcon = Icons.Default.DeleteSweep
+                        itemsIndexed(
+                            items = currentStations,
+                            key = { _, it -> it.stationUuid }
+                        ) { index, station ->
+                            if (isGridView) {
+                                StationCard(
+                                    station = station,
+                                    onClick = { onStationClick(currentStations, index, PlaybackSource.Recent) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .animateItem(),
+                                    isCurrentlyPlaying = playingStationUuid == station.stationUuid,
+                                    isPlaybackActive = isPlaybackActive,
+                                    isFavorite = libraryStationUuids.contains(station.stationUuid),
+                                    onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
+                                    onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
+                                    onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
+                                    onExportClick = { onExportStation?.invoke(station) }
+                                )
+                            } else {
+                                StationListCard(
+                                    station = station,
+                                    onClick = { onStationClick(currentStations, index, PlaybackSource.Recent) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .animateItem(),
+                                    isCurrentlyPlaying = playingStationUuid == station.stationUuid,
+                                    isPlaybackActive = isPlaybackActive,
+                                    isFavorite = libraryStationUuids.contains(station.stationUuid),
+                                    onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
+                                    onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
+                                    onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
+                                    onExportClick = { onExportStation?.invoke(station) }
+                                )
+                            }
+                        }
+                    }
+                } // LazyVerticalGrid
+
+                // Overlay: centered empty state
+                if (currentStations.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (useFilter) stringResource(R.string.home_no_recent_stations_filtered) else stringResource(R.string.home_no_recent_stations),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(32.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-
-                    ToggleChip(
-                        text = if (useFilter) stringResource(R.string.home_filters_active) else stringResource(R.string.home_use_filters),
-                        onClick = { viewModel.toggleFilter() },
-                        isActive = useFilter,
-                        leadingIcon = Icons.Default.FilterList,
-                        trailingIcon = if (useFilter) Icons.Default.Close else null,
-                        trailingIconContentDescription = if (useFilter) stringResource(R.string.general_clear) else null
-                    )
                 }
-            }
-        }
-        if (currentStations.isEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 64.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (useFilter) stringResource(R.string.home_no_recent_stations_filtered) else stringResource(R.string.home_no_recent_stations),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier.padding(32.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        } else {
-            itemsIndexed(
-                items = currentStations,
-                key = { _, it -> it.stationUuid }
-            ) { index, station ->
-                if (isGridView) {
-                    StationCard(
-                        station = station,
-                        onClick = { onStationClick(currentStations, index, PlaybackSource.Recent) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem(),
-                        isCurrentlyPlaying = playingStationUuid == station.stationUuid,
-                        isPlaybackActive = isPlaybackActive,
-                        isFavorite = libraryStationUuids.contains(station.stationUuid),
-                        onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
-                        onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
-                        onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
-                        onExportClick = { onExportStation?.invoke(station) }
-                    )
-                } else {
-                    StationListCard(
-                        station = station,
-                        onClick = { onStationClick(currentStations, index, PlaybackSource.Recent) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem(),
-                        isCurrentlyPlaying = playingStationUuid == station.stationUuid,
-                        isPlaybackActive = isPlaybackActive,
-                        isFavorite = libraryStationUuids.contains(station.stationUuid),
-                        onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
-                        onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
-                        onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
-                        onExportClick = { onExportStation?.invoke(station) }
-                    )
-                }
-            }
-        }
-    }
 
                 androidx.compose.animation.AnimatedVisibility(
                     visible = showScrollToTop,
@@ -220,9 +219,9 @@ fun RecentContent(
                         )
                     }
                 }
-            }
-        }
-    }
+            } // Box
+        } // else (not loading)
+    } // Crossfade
 
     if (showClearDialog) {
         androidx.compose.material3.AlertDialog(
