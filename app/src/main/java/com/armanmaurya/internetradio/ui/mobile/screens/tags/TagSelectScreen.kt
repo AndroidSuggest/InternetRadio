@@ -118,7 +118,9 @@ fun TagSelectScreen(
     }
 
     Scaffold(
-        modifier = Modifier.padding(bottom = contentPadding.calculateBottomPadding()),
+        modifier = Modifier
+            .padding(bottom = contentPadding.calculateBottomPadding())
+            .imePadding(),
         topBar = {
             TopAppBar(
                 title = {
