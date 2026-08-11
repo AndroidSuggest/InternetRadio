@@ -297,6 +297,7 @@ class AutoMediaLibraryCallback @Inject constructor(
                     
                     if (libraryIndex != -1) {
                         playerController.syncAndroidAutoContext(libraryStations, libraryIndex, PlaybackSource.Library)
+                        playerController.applyDefaultVolumeAsync()
                         val resolvedItems = libraryStations.map { it.toMediaItem(context) }
                         future.set(MediaSession.MediaItemsWithStartPosition(resolvedItems, libraryIndex, 0L))
                     } else {
@@ -304,6 +305,7 @@ class AutoMediaLibraryCallback @Inject constructor(
                         val recentIndex = recentStations.indexOfFirst { it.stationUuid == station.stationUuid }.coerceAtLeast(0)
                         
                         playerController.syncAndroidAutoContext(recentStations, recentIndex, PlaybackSource.Recent)
+                        playerController.applyDefaultVolumeAsync()
                         val resolvedItems = recentStations.map { it.toMediaItem(context) }
                         future.set(MediaSession.MediaItemsWithStartPosition(resolvedItems, recentIndex, 0L))
                     }
@@ -382,6 +384,7 @@ class AutoMediaLibraryCallback @Inject constructor(
                         }
                         
                         playerController.syncAndroidAutoContext(stations, index, source)
+                        playerController.applyDefaultVolumeAsync()
                         
                         // Return un-piped media items to the player
                         val resolvedItems = stations.map { it.toMediaItem(context) }
@@ -402,6 +405,7 @@ class AutoMediaLibraryCallback @Inject constructor(
                 if (item.localConfiguration?.uri != null) item
                 else findStationByUuid(item.mediaId.substringAfter("|"))?.toMediaItem(context) ?: item
             }
+            playerController.applyDefaultVolumeAsync()
             future.set(MediaSession.MediaItemsWithStartPosition(resolved, startIndex, startPositionMs))
         }
         return future

@@ -35,6 +35,7 @@ fun ExpandableItem(
     subtitle: String,
     isExpanded: Boolean,
     onToggle: () -> Unit,
+    hasSwitch: Boolean = false,
     icon: ImageVector? = null,
     content: @Composable () -> Unit
 ) {
@@ -73,12 +74,19 @@ fun ExpandableItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Icon(
-                imageVector = Icons.Filled.KeyboardArrowDown,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.rotate(rotation)
-            )
+            if (hasSwitch) {
+                androidx.compose.material3.Switch(
+                    checked = isExpanded,
+                    onCheckedChange = { onToggle() }
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.rotate(rotation)
+                )
+            }
         }
 
         AnimatedVisibility(

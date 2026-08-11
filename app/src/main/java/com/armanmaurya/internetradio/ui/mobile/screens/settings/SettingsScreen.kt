@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -33,8 +35,10 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,6 +57,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -149,6 +154,8 @@ fun SettingsScreen(
             )
             PlayerSection(
                 uiState = uiState,
+                onSetEnableDefaultVolume = viewModel::setEnableDefaultVolume,
+                onSetDefaultVolumeLevel = viewModel::setDefaultVolumeLevel,
                 onSetAutoPlayOnStart = viewModel::setAutoPlayOnStart,
                 onSetStopOnAudioBecomingNoisy = viewModel::setStopOnAudioBecomingNoisy,
                 onSetShowCoverArtInNotification = viewModel::setShowCoverArtInNotification,
@@ -372,6 +379,8 @@ private fun GeneralSection(
 @Composable
 private fun PlayerSection(
     uiState: AppPreferences,
+    onSetEnableDefaultVolume: (Boolean) -> Unit,
+    onSetDefaultVolumeLevel: (Int) -> Unit,
     onSetAutoPlayOnStart: (Boolean) -> Unit,
     onSetStopOnAudioBecomingNoisy: (Boolean) -> Unit,
     onSetShowCoverArtInNotification: (Boolean) -> Unit,
@@ -383,6 +392,41 @@ private fun PlayerSection(
     onSetMaxRetryDuration: (Long) -> Unit
 ) {
     Section(title = stringResource(R.string.settings_player_section)) {
+        ExpandableItem(
+            title = stringResource(R.string.settings_default_volume),
+            subtitle = stringResource(R.string.settings_default_volume_desc),
+            isExpanded = uiState.enableDefaultVolume,
+            onToggle = { onSetEnableDefaultVolume(!uiState.enableDefaultVolume) },
+            hasSwitch = true,
+            icon = Icons.AutoMirrored.Filled.VolumeUp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${uiState.defaultVolumeLevel}%",
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.width(48.dp)
+                )
+                @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+                Slider(
+                    value = uiState.defaultVolumeLevel.toFloat(),
+                    onValueChange = { onSetDefaultVolumeLevel(it.toInt()) },
+                    valueRange = 0f..100f,
+                    modifier = Modifier.weight(1f),
+                    track = { sliderState ->
+                        androidx.compose.material3.SliderDefaults.Track(
+                            sliderState = sliderState,
+                            modifier = Modifier.height(24.dp)
+                        )
+                    }
+                )
+            }
+        }
+
         ToggleItem(
             title = stringResource(R.string.settings_auto_play),
             subtitle = stringResource(R.string.settings_auto_play_desc),

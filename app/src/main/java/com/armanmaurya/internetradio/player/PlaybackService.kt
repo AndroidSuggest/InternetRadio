@@ -430,6 +430,8 @@ class PlaybackService : MediaLibraryService() {
                 // on STATE_READY. This runs synchronously before any coroutine can run.
                 if (volumeLevel >= 0f) {
                     player?.volume = volumeLevel
+                } else {
+                    player?.volume = 1f
                 }
                 player?.playWhenReady = true
                 player?.setMediaItem(mediaItem)
