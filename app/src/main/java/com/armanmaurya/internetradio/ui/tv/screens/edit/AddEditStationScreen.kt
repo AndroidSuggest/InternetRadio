@@ -214,7 +214,7 @@ fun AddEditStationScreen(
 
                 var isUploading by remember { mutableStateOf(false) }
                 val showUploadMode = true
-                var uploadMode by remember { mutableStateOf(showUploadMode) } // Default to upload mode if possible
+                var uploadMode by remember { mutableStateOf(false) } // Default to local save mode
 
                 Row(
                     modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),

@@ -149,6 +149,9 @@ fun EditStationScreen(
         }
 
         var showExitWarningDialog by remember { mutableStateOf(false) }
+        var isUploading by remember { mutableStateOf(false) }
+        val showUploadMode = true
+        var uploadMode by remember { mutableStateOf(false) }
 
         val handleBackPress = {
             if (hasUnsavedChanges) {
@@ -222,6 +225,7 @@ fun EditStationScreen(
                                                         } else ""
                                                         languageCodes = freshStation.languageCodes.joinToString(", ")
                                                         homepage = freshStation.homepage
+                                                        uploadMode = false
                                                         Toast.makeText(context, context.getString(R.string.edit_station_fields_reset_message), Toast.LENGTH_SHORT).show()
                                                     } else {
                                                         Toast.makeText(context, context.getString(R.string.edit_station_failed_fetch_original_data), Toast.LENGTH_SHORT).show()
@@ -254,9 +258,6 @@ fun EditStationScreen(
                             }
                         }
 
-                        var isUploading by remember { mutableStateOf(false) }
-                        val showUploadMode = true
-                        var uploadMode by remember { mutableStateOf(showUploadMode) }
                         val canSave = name.isNotBlank() && url.isNotBlank() && !isProbing
 
                         Row(
