@@ -57,9 +57,7 @@ fun HistoryTab(
         if (trackHistory.isEmpty()) {
             item {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
+                    modifier = Modifier.fillParentMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
