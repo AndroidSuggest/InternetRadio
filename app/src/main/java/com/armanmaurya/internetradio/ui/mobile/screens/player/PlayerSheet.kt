@@ -581,7 +581,6 @@ fun PlayerSheetContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
                         .padding(top = 8.dp)
                         .collapseHeight(historyProgress)
                         .alpha(1f - historyProgress)
