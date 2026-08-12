@@ -2,6 +2,7 @@ package com.armanmaurya.internetradio.ui.tv.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import com.armanmaurya.internetradio.R
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -102,10 +103,12 @@ fun AppNavHost(
             )
         }
         composable(AppDestination.Language.route) {
+            val context = androidx.compose.ui.platform.LocalContext.current
             LanguageSelectScreen(
                 selectedLanguage = homeUiState.selectedLanguage,
-                onLanguageSelected = {
-                    homeViewModel.updateLanguage(it.name)
+                onLanguageSelected = { language ->
+                    val languageCode = if (language.isoCode.isNullOrEmpty()) context.getString(R.string.nav_all_languages) else language.isoCode
+                    homeViewModel.updateLanguage(languageCode)
                     navController.popBackStack()
                 },
                 onBackClick = { navController.popBackStack() }

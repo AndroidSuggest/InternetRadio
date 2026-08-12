@@ -33,16 +33,16 @@ class CountrySelectViewModel @Inject constructor(
     }
 
     private fun loadCountries() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            repository.getCountries()
-                .onSuccess { countries ->
-                    _uiState.update { it.copy(countries = countries, isLoading = false) }
-                }
-                .onFailure { error ->
-                    _uiState.update { it.copy(error = error.message, isLoading = false) }
-                }
-        }
+        val localCountries = java.util.Locale.getISOCountries().map { code ->
+            val locale = java.util.Locale("", code)
+            Country(
+                name = locale.getDisplayCountry(java.util.Locale.getDefault()),
+                isoCode = code,
+                stationCount = 0
+            )
+        }.filter { it.name.isNotBlank() }.sortedBy { it.name }
+        
+        _uiState.update { it.copy(countries = localCountries, isLoading = false, error = null) }
     }
 
     fun onSearchQueryChange(query: String) {

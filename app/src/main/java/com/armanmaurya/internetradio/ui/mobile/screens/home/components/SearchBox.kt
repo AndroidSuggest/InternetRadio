@@ -144,7 +144,7 @@ fun RadioSearchBar(
                                     )
                                     if (!selectedLanguage.isNullOrBlank()) {
                                         Text(
-                                            text = selectedLanguage.take(2).uppercase(),
+                                            text = selectedLanguage.take(3).uppercase(),
                                             style = MaterialTheme.typography.labelSmall.copy(
                                                 fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold

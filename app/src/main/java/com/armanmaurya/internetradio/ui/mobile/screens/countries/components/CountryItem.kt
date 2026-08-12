@@ -30,7 +30,6 @@ fun CountryItem(
                 style = if (isSelected) MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.primary) else MaterialTheme.typography.bodyLarge
             ) 
         },
-        supportingContent = { Text(stringResource(R.string.general_station_count_msg, country.stationCount)) },
         trailingContent = { 
             if (isSelected) {
                 Icon(

@@ -28,7 +28,6 @@ import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.Language
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LanguageSelectViewModel
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,29 +51,11 @@ fun LanguageSelectScreen(
     }
 
     val focusRequester = remember { FocusRequester() }
-    val listState = rememberLazyListState()
-    var hasAutoScrolled by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isSearchActive) {
         if (uiState.isSearchActive) {
             focusRequester.requestFocus()
         }
-    }
-
-    // Scroll to selected language
-    LaunchedEffect(uiState.isLoading, selectedLanguage) {
-        if (!hasAutoScrolled && !uiState.isLoading && selectedLanguage != null && uiState.languages.isNotEmpty()) {
-            val index = filteredLanguages.indexOfFirst { it.name == selectedLanguage }
-            if (index >= 0) {
-                delay(100)
-                listState.animateScrollToItem(index + 1)
-                hasAutoScrolled = true
-            }
-        }
-    }
-
-    val totalStations = remember(uiState.languages) {
-        uiState.languages.sumOf { it.stationCount }
     }
 
     val context = LocalContext.current
@@ -149,25 +130,32 @@ fun LanguageSelectScreen(
                     Text(text = uiState.error ?: stringResource(R.string.error_unknown))
                 }
             } else {
+                val listState = rememberLazyListState(
+                    initialFirstVisibleItemIndex = remember {
+                        val index = filteredLanguages.indexOfFirst { it.isoCode == selectedLanguage }
+                        if (index >= 0) index + 1 else 0
+                    }
+                )
+
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     item(key = "all_languages") {
                         LanguageItem(
-                            language = Language(name = stringResource(R.string.select_language_all), isoCode = "", stationCount = totalStations),
+                            language = Language(name = stringResource(R.string.select_language_all), isoCode = "", stationCount = 0),
                             isSelected = selectedLanguage.isNullOrBlank(),
-                            onClick = { onLanguageSelected(Language(name = context.getString(R.string.select_language_all), isoCode = "", stationCount = totalStations)) },
+                            onClick = { onLanguageSelected(Language(name = context.getString(R.string.select_language_all), isoCode = "", stationCount = 0)) },
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
                     itemsIndexed(filteredLanguages, key = { _, language -> language.name }) { _, language ->
-                        val isSelected = language.name == selectedLanguage
+                        val isSelected = language.isoCode == selectedLanguage
                         LanguageItem(
                             language = language,
                             isSelected = isSelected,
                             onClick = { onLanguageSelected(language) },
-                            modifier = if (hasAutoScrolled) Modifier.animateItem() else Modifier
+                            modifier = Modifier.animateItem()
                         )
                     }
                 }
@@ -191,7 +179,6 @@ private fun LanguageItem(
                 style = if (isSelected) MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.primary) else MaterialTheme.typography.bodyLarge
             ) 
         },
-        supportingContent = { Text(stringResource(R.string.general_station_count_msg, language.stationCount)) },
         trailingContent = { 
             if (isSelected) {
                 Icon(

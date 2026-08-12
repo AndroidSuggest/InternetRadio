@@ -64,8 +64,10 @@ class RecentViewModel @Inject constructor(
                             station.tags.any { tag -> tag.contains(query, ignoreCase = true) }
                     val countryMatch = !hasCountryFilter ||
                             station.countryCode == preferences.selectedCountryCode
-                    val languageMatch = !hasLanguageFilter ||
-                            station.language == preferences.selectedLanguage
+                    val languageMatch = if (!hasLanguageFilter) true else {
+                        val selectedCode = preferences.selectedLanguage!!
+                        station.languageCodes.contains(selectedCode)
+                    }
                     val tagsMatch = !hasTagFilter ||
                             preferences.selectedTags.any { it in station.tags }
 

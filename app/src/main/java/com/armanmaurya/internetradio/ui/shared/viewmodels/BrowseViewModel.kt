@@ -125,9 +125,14 @@ class BrowseViewModel @Inject constructor(
                 )
             }
             val state = _uiState.value
+            
+            val apiLanguageQuery = state.selectedLanguage?.let { code ->
+                com.neovisionaries.i18n.LanguageAlpha3Code.getByCodeIgnoreCase(code)?.getName()?.lowercase() ?: code.lowercase()
+            }?.takeIf { it.isNotBlank() }
+
             repository.filterStations(
                 countryCode = countryCode?.takeIf { it.isNotBlank() },
-                language = language?.takeIf { it.isNotBlank() },
+                language = apiLanguageQuery,
                 tagList = tags.joinToString(",").takeIf { it.isNotBlank() },
                 hasExtendedInfo = state.isVerified.takeIf { it },
                 order = state.order,
@@ -167,11 +172,15 @@ class BrowseViewModel @Inject constructor(
             currentOffset += pageSize
 
             val isUrl = android.util.Patterns.WEB_URL.matcher(state.searchQuery).matches()
+            
+            val apiLanguageQuery = state.selectedLanguage?.let { code ->
+                com.neovisionaries.i18n.LanguageAlpha3Code.getByCodeIgnoreCase(code)?.getName()?.lowercase() ?: code.lowercase()
+            }?.takeIf { it.isNotBlank() }
 
             val result = if (state.searchQuery.isBlank()) {
                 repository.filterStations(
                     countryCode = state.selectedCountryCode?.takeIf { it.isNotBlank() },
-                    language = state.selectedLanguage?.takeIf { it.isNotBlank() },
+                    language = apiLanguageQuery,
                     tagList = state.selectedTags.joinToString(",").takeIf { it.isNotBlank() },
                     hasExtendedInfo = state.isVerified.takeIf { it },
                     order = state.order,
@@ -184,7 +193,8 @@ class BrowseViewModel @Inject constructor(
             } else {
                 repository.filterStations(
                     name = state.searchQuery,
-                    language = state.selectedLanguage?.takeIf { it.isNotBlank() },
+                    countryCode = state.selectedCountryCode?.takeIf { it.isNotBlank() },
+                    language = apiLanguageQuery,
                     tagList = state.selectedTags.joinToString(",").takeIf { it.isNotBlank() },
                     hasExtendedInfo = state.isVerified.takeIf { it },
                     order = state.order,
@@ -233,12 +243,17 @@ class BrowseViewModel @Inject constructor(
             
             val isUrl = android.util.Patterns.WEB_URL.matcher(query).matches()
             
+            val apiLanguageQuery = state.selectedLanguage?.let { code ->
+                com.neovisionaries.i18n.LanguageAlpha3Code.getByCodeIgnoreCase(code)?.getName()?.lowercase() ?: code.lowercase()
+            }?.takeIf { it.isNotBlank() }
+            
             val result = if (isUrl) {
                 repository.getStationsByUrl(query)
             } else {
                 repository.filterStations(
                     name = query,
-                    language = state.selectedLanguage?.takeIf { it.isNotBlank() },
+                    countryCode = state.selectedCountryCode?.takeIf { it.isNotBlank() },
+                    language = apiLanguageQuery,
                     tagList = state.selectedTags.joinToString(",").takeIf { it.isNotBlank() },
                     hasExtendedInfo = state.isVerified.takeIf { it },
                     order = state.order,

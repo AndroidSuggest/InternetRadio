@@ -240,7 +240,7 @@ private fun SidebarFilters(
                 )
                 if (!selectedLanguage.isNullOrBlank()) {
                     Text(
-                        text = selectedLanguage.take(2).uppercase(),
+                        text = selectedLanguage.take(3).uppercase(),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp),
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold

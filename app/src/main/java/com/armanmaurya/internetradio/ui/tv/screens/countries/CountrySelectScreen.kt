@@ -98,11 +98,6 @@ fun CountrySelectScreen(
                                     text = country.name,
                                     style = MaterialTheme.typography.titleMedium
                                 )
-                                Text(
-                                    text = "${country.stationCount} stations",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = androidx.tv.material3.LocalContentColor.current.copy(alpha = 0.7f)
-                                )
                             }
                             if (isSelected) {
                                 Icon(

@@ -57,8 +57,7 @@ fun LanguageSelectScreen(
                 Text(text = uiState.error ?: "Unknown error")
             }
         } else {
-            val totalStations = uiState.languages.sumOf { it.stationCount }
-            val allLanguagesItem = Language(name = "All Languages", isoCode = "", stationCount = totalStations)
+            val allLanguagesItem = Language(name = "All Languages", isoCode = "", stationCount = 0)
             
             val displayList = listOf(allLanguagesItem) + uiState.languages
 
@@ -73,7 +72,7 @@ fun LanguageSelectScreen(
             ) {
                 items(displayList.size, key = { displayList[it].name }) { index ->
                     val language = displayList[index]
-                    val isSelected = if (language.name == "All Languages") selectedLanguage.isNullOrBlank() else language.name == selectedLanguage
+                    val isSelected = language.isoCode == (selectedLanguage ?: "")
                     
                     Surface(
                         onClick = { onLanguageSelected(language) },
@@ -97,11 +96,6 @@ fun LanguageSelectScreen(
                                 Text(
                                     text = language.name,
                                     style = MaterialTheme.typography.titleMedium
-                                )
-                                Text(
-                                    text = "${language.stationCount} stations",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = androidx.tv.material3.LocalContentColor.current.copy(alpha = 0.7f)
                                 )
                             }
                             if (isSelected) {

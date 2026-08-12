@@ -166,7 +166,7 @@ class LibraryRepository @Inject constructor(
                 tags = tags.joinToString(","),
             )
             if (response.ok) {
-                val newUuid = response.uuid
+                val newUuid = response.uuid?.takeIf { it.isNotBlank() } ?: java.util.UUID.randomUUID().toString()
                 addCustomStation(
                     name = name,
                     url = url,
@@ -198,7 +198,7 @@ class LibraryRepository @Inject constructor(
                 libraryStationDao.insertStation(newStation)
                 Result.success(newUuid)
             } else {
-                Result.failure(Exception(response.message))
+                Result.failure(Exception(response.message ?: "Unknown API error"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -228,7 +228,7 @@ class LibraryRepository @Inject constructor(
                 tags = tags.joinToString(","),
             )
             if (response.ok) {
-                val newUuid = response.uuid
+                val newUuid = response.uuid?.takeIf { it.isNotBlank() } ?: java.util.UUID.randomUUID().toString()
                 val oldUuid = stationUuid
                 // Update DAOs to replace old UUID with new UUID, and mark as not custom
                 libraryStationDao.updateStationUuid(oldUuid, newUuid)
@@ -249,7 +249,7 @@ class LibraryRepository @Inject constructor(
                 )
                 Result.success(newUuid)
             } else {
-                Result.failure(Exception(response.message))
+                Result.failure(Exception(response.message ?: "Unknown API error"))
             }
         } catch (e: Exception) {
             Result.failure(e)

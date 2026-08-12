@@ -87,24 +87,20 @@ fun EditStationScreen(
         var countrySearchText by remember(station) {
             mutableStateOf(
                 if (countryCode.isNotBlank()) {
-                    java.util.Locale("", countryCode).getDisplayCountry(java.util.Locale.getDefault())
+                    val disp = java.util.Locale("", countryCode).getDisplayCountry(java.util.Locale.getDefault())
+                    "$disp ($countryCode)"
                 } else ""
             )
         }
         var languageCodes by remember(station) { mutableStateOf(station?.languageCodes?.joinToString(", ") ?: "") }
         
         val allLanguages = remember {
-            java.util.Locale.getISOLanguages().mapNotNull { code ->
-                try {
-                    val locale = java.util.Locale(code)
-                    val iso3 = locale.getISO3Language()
-                    if (iso3.isNotEmpty()) {
-                        iso3 to locale.getDisplayLanguage(java.util.Locale.getDefault())
-                    } else null
-                } catch (e: Exception) {
-                    null
-                }
-            }.sortedBy { it.second }.distinctBy { it.first }
+            com.neovisionaries.i18n.LanguageAlpha3Code.values().mapNotNull { langCode ->
+                val iso3B = langCode.alpha3B?.name
+                if (iso3B != null) {
+                    iso3B to langCode.getName()
+                } else null
+            }.sortedBy { it.second }.distinctBy { it.second }
         }
         var expandedLanguage by remember { mutableStateOf(false) }
         var languageSearchText by remember { mutableStateOf("") }
@@ -509,10 +505,10 @@ fun EditStationScreen(
                             ) {
                                 filteredCountries.forEach { selectionOption ->
                                     DropdownMenuItem(
-                                        text = { Text(selectionOption.second) },
+                                        text = { Text("${selectionOption.second} (${selectionOption.first})") },
                                         onClick = {
                                             countryCode = selectionOption.first
-                                            countrySearchText = selectionOption.second
+                                            countrySearchText = "${selectionOption.second} (${selectionOption.first})"
                                             expandedCountry = false
                                         }
                                     )
@@ -558,7 +554,7 @@ fun EditStationScreen(
                             ) {
                                 filteredLanguages.forEach { selectionOption ->
                                     DropdownMenuItem(
-                                        text = { Text(selectionOption.second) },
+                                        text = { Text("${selectionOption.second} (${selectionOption.first})") },
                                         onClick = {
                                             val currentCodes = languageCodes.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                                             if (!currentCodes.contains(selectionOption.first)) {
@@ -582,11 +578,11 @@ fun EditStationScreen(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         selectedLanguagesList.forEach { code ->
-                            val dispName = java.util.Locale(code).getDisplayLanguage(java.util.Locale.getDefault())
+                            val dispName = com.neovisionaries.i18n.LanguageAlpha3Code.getByCodeIgnoreCase(code)?.getName() ?: java.util.Locale(code).getDisplayLanguage(java.util.Locale.getDefault())
                             InputChip(
                                 selected = true,
                                 onClick = { },
-                                label = { Text(if (dispName.isNotBlank()) dispName else code) },
+                                label = { Text(if (dispName.isNotBlank()) "$dispName ($code)" else code) },
                                 trailingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Close,

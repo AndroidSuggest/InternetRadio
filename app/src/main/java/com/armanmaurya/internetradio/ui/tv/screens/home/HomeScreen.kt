@@ -407,7 +407,7 @@ fun HomeScreen(
                                             )
                                             if (!homeUiState.selectedLanguage.isNullOrBlank()) {
                                                 Text(
-                                                    text = homeUiState.selectedLanguage!!.take(2).uppercase(),
+                                                    text = homeUiState.selectedLanguage!!.take(3).uppercase(),
                                                     style = MaterialTheme.typography.labelSmall.copy(
                                                         fontSize = 10.sp,
                                                         fontWeight = FontWeight.Bold

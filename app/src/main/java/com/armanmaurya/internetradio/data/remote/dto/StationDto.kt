@@ -47,9 +47,17 @@ fun StationDto.toDomain(): RadioStation {
     val apiLanguageCodes = languageCodes?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() }
     
     val resolvedLanguageCodes = if (!apiLanguageCodes.isNullOrEmpty()) {
-        apiLanguageCodes
+        apiLanguageCodes.mapNotNull { code ->
+            com.neovisionaries.i18n.LanguageAlpha3Code.getByCodeIgnoreCase(code)?.alpha3B?.name
+                ?: com.neovisionaries.i18n.LanguageCode.getByCodeIgnoreCase(code)?.alpha3?.alpha3B?.name
+                ?: code
+        }.distinct()
     } else if (language.isNotBlank()) {
-        LanguageMapper.getCodesFromNameString(language)
+        LanguageMapper.getCodesFromNameString(language).mapNotNull { code ->
+            com.neovisionaries.i18n.LanguageAlpha3Code.getByCodeIgnoreCase(code)?.alpha3B?.name
+                ?: com.neovisionaries.i18n.LanguageCode.getByCodeIgnoreCase(code)?.alpha3?.alpha3B?.name
+                ?: code
+        }.distinct()
     } else {
         emptyList()
     }

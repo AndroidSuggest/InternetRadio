@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.neovisionaries.i18n.LanguageAlpha3Code
 
 data class LanguageSelectUiState(
     val languages: List<Language> = emptyList(),
@@ -33,16 +34,18 @@ class LanguageSelectViewModel @Inject constructor(
     }
 
     private fun loadLanguages() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            repository.getLanguages()
-                .onSuccess { languages ->
-                    _uiState.update { it.copy(languages = languages, isLoading = false) }
-                }
-                .onFailure { error ->
-                    _uiState.update { it.copy(error = error.message, isLoading = false) }
-                }
-        }
+        val localLanguages = LanguageAlpha3Code.values().mapNotNull { langCode ->
+            val iso3B = langCode.alpha3B?.name
+            if (iso3B != null) {
+                Language(
+                    name = langCode.getName(),
+                    isoCode = iso3B,
+                    stationCount = 0
+                )
+            } else null
+        }.filter { it.name.isNotBlank() }.sortedBy { it.name }.distinctBy { it.name }
+        
+        _uiState.update { it.copy(languages = localLanguages, isLoading = false, error = null) }
     }
 
     fun onSearchQueryChange(query: String) {

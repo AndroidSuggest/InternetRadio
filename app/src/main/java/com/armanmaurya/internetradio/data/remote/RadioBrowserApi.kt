@@ -1,9 +1,11 @@
 package com.armanmaurya.internetradio.data.remote
 
+import androidx.annotation.Keep
 import com.armanmaurya.internetradio.data.remote.dto.CountryDto
 import com.armanmaurya.internetradio.data.remote.dto.LanguageDto
 import com.armanmaurya.internetradio.data.remote.dto.StationDto
 import com.armanmaurya.internetradio.data.remote.dto.TagDto
+import com.google.gson.annotations.SerializedName
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -112,14 +114,16 @@ interface RadioBrowserApi {
     ): AddStationResponse
 }
 
+@Keep
 data class StationClickResponse(
-    val ok: Boolean,
-    val message: String,
-    val url: String,
+    @SerializedName("ok") val ok: Boolean,
+    @SerializedName("message") val message: String,
+    @SerializedName("url") val url: String,
 )
 
+@Keep
 data class AddStationResponse(
-    val ok: Boolean,
-    val message: String,
-    val uuid: String
+    @SerializedName("ok") val ok: Boolean,
+    @SerializedName("message") val message: String?,
+    @SerializedName("uuid") val uuid: String?
 )

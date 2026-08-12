@@ -29,7 +29,6 @@ import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.Country
 import com.armanmaurya.internetradio.ui.mobile.screens.countries.components.CountryItem
 import com.armanmaurya.internetradio.ui.shared.viewmodels.CountrySelectViewModel
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,25 +53,10 @@ fun CountrySelectScreen(
     }
 
     val focusRequester = remember { FocusRequester() }
-    val listState = rememberLazyListState()
-    var hasAutoScrolled by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isSearchActive) {
         if (uiState.isSearchActive) {
             focusRequester.requestFocus()
-        }
-    }
-
-    // Scroll to selected country
-    LaunchedEffect(uiState.isLoading, selectedCountryCode) {
-        if (!hasAutoScrolled && !uiState.isLoading && selectedCountryCode != null && uiState.countries.isNotEmpty()) {
-            val index = filteredCountries.indexOfFirst { it.isoCode == selectedCountryCode }
-            if (index >= 0) {
-                // Small delay to ensure layout is ready
-                delay(100)
-                listState.animateScrollToItem(index + 1)
-                hasAutoScrolled = true
-            }
         }
     }
 
@@ -151,6 +135,13 @@ fun CountrySelectScreen(
                     Text(text = uiState.error ?: stringResource(R.string.error_unknown))
                 }
             } else {
+                val listState = rememberLazyListState(
+                    initialFirstVisibleItemIndex = remember {
+                        val index = filteredCountries.indexOfFirst { it.isoCode == selectedCountryCode }
+                        if (index >= 0) index + 1 else 0
+                    }
+                )
+
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(0.dp)
@@ -168,7 +159,7 @@ fun CountrySelectScreen(
                             country = country,
                             isSelected = isSelected,
                             onClick = { onCountrySelected(country) },
-                            modifier = if (hasAutoScrolled) Modifier.animateItem() else Modifier
+                            modifier = Modifier.animateItem()
                         )
                     }
                 }
