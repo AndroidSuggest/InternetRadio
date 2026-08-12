@@ -361,12 +361,7 @@ class PlayerController @Inject constructor(
         player.prepare()
         
         scope.launch {
-            val prefs = settingsRepository.appPreferencesFlow.first()
-            if (prefs.enableDefaultVolume) {
-                player.volume = prefs.defaultVolumeLevel / 100f
-            } else {
-                player.volume = 1f
-            }
+            player.volume = 1f
             if (playWhenReady) player.play() else player.pause()
         }
     }
@@ -448,17 +443,6 @@ class PlayerController @Inject constructor(
                 player.prepare()
             }
             player.play()
-        }
-    }
-
-    fun applyDefaultVolumeAsync() {
-        scope.launch {
-            val prefs = settingsRepository.appPreferencesFlow.first()
-            if (prefs.enableDefaultVolume) {
-                controller?.volume = prefs.defaultVolumeLevel / 100f
-            } else {
-                controller?.volume = 1f
-            }
         }
     }
 

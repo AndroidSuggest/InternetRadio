@@ -66,8 +66,7 @@
     <string name="settings_auto_play_desc">Play the last listened station when app starts</string>
     <string name="settings_default_tab">Default Tab on Startup</string>
     <string name="settings_player_section">Player</string>
-    <string name="settings_default_volume">Default volume</string>
-    <string name="settings_default_volume_desc">Set the volume used when starting playback.</string>
+
     <string name="settings_stop_on_audio_noisy">Pause on device disconnect</string>
     <string name="settings_stop_on_audio_noisy_desc">Pause playback when Bluetooth or wired headphones are disconnected</string>
     <string name="settings_show_cover_art">Cover Art in Notification</string>

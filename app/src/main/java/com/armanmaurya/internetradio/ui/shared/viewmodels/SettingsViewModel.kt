@@ -137,18 +137,6 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun setEnableDefaultVolume(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsRepository.setEnableDefaultVolume(enabled)
-        }
-    }
-
-    fun setDefaultVolumeLevel(level: Int) {
-        viewModelScope.launch {
-            settingsRepository.setDefaultVolumeLevel(level)
-        }
-    }
-
     fun exportLibrary(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {

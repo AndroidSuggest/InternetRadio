@@ -61,8 +61,6 @@ class SettingsRepository @Inject constructor(
         val LIBRARY_SORT_OPTION = stringPreferencesKey("library_sort_option")
         val START_OF_WEEK = stringPreferencesKey("start_of_week")
         val SHOW_COVER_ART_IN_NOTIFICATION = booleanPreferencesKey("show_cover_art_in_notification")
-        val ENABLE_DEFAULT_VOLUME = booleanPreferencesKey("enable_default_volume")
-        val DEFAULT_VOLUME_LEVEL = androidx.datastore.preferences.core.intPreferencesKey("default_volume_level")
     }
 
     val appPreferencesFlow: Flow<AppPreferences> = context.dataStore.data
@@ -107,8 +105,6 @@ class SettingsRepository @Inject constructor(
             val startOfWeekName = preferences[PreferencesKeys.START_OF_WEEK]
             val startOfWeek = com.armanmaurya.internetradio.data.model.StartOfWeek.entries.find { it.name == startOfWeekName } ?: com.armanmaurya.internetradio.data.model.StartOfWeek.SUNDAY
             val showCoverArtInNotification = preferences[PreferencesKeys.SHOW_COVER_ART_IN_NOTIFICATION] ?: true
-            val enableDefaultVolume = preferences[PreferencesKeys.ENABLE_DEFAULT_VOLUME] ?: false
-            val defaultVolumeLevel = preferences[PreferencesKeys.DEFAULT_VOLUME_LEVEL] ?: 50
 
             AppPreferences(
                 themeMode = themeMode, 
@@ -138,9 +134,7 @@ class SettingsRepository @Inject constructor(
                 conflictStrategy = conflictStrategy,
                 librarySortOption = librarySortOption,
                 startOfWeek = startOfWeek,
-                showCoverArtInNotification = showCoverArtInNotification,
-                enableDefaultVolume = enableDefaultVolume,
-                defaultVolumeLevel = defaultVolumeLevel
+                showCoverArtInNotification = showCoverArtInNotification
             )
         }
 
@@ -307,18 +301,6 @@ class SettingsRepository @Inject constructor(
     suspend fun setShowCoverArtInNotification(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SHOW_COVER_ART_IN_NOTIFICATION] = enabled
-        }
-    }
-
-    suspend fun setEnableDefaultVolume(enabled: Boolean) {
-        context.dataStore.edit { preferences ->
-            preferences[PreferencesKeys.ENABLE_DEFAULT_VOLUME] = enabled
-        }
-    }
-
-    suspend fun setDefaultVolumeLevel(level: Int) {
-        context.dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DEFAULT_VOLUME_LEVEL] = level
         }
     }
 }

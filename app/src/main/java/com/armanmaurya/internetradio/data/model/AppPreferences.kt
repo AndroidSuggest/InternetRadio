@@ -30,7 +30,5 @@ data class AppPreferences(
     val conflictStrategy: ConflictStrategy = ConflictStrategy.SKIP,
     val librarySortOption: LibrarySortOption = LibrarySortOption.RECENTLY_ADDED,
     val startOfWeek: StartOfWeek = StartOfWeek.SUNDAY,
-    val showCoverArtInNotification: Boolean = true,
-    val enableDefaultVolume: Boolean = false,
-    val defaultVolumeLevel: Int = 50
+    val showCoverArtInNotification: Boolean = true
 )
