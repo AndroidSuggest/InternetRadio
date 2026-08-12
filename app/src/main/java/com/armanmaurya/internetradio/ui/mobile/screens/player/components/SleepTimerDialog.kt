@@ -116,7 +116,7 @@ fun SharedTransitionScope.SleepTimerDialog(
                             R.plurals.player_timer_ends_in_msg,
                             mins,
                             mins
-                        )
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
