@@ -524,7 +524,7 @@ fun PlayerSheetContent(
 
                 IconButton(
                     onClick = onPrevious,
-                    enabled = playbackState.hasPrevious
+                    enabled = playbackState.hasPrevious && playbackState.currentPlaylist.size > 1
                 ) {
                     Icon(
                         imageVector = Icons.Default.SkipPrevious,
@@ -549,7 +549,7 @@ fun PlayerSheetContent(
 
                 IconButton(
                     onClick = onNext,
-                    enabled = playbackState.hasNext
+                    enabled = playbackState.hasNext && playbackState.currentPlaylist.size > 1
                 ) {
                     Icon(
                         imageVector = Icons.Default.SkipNext,
@@ -754,7 +754,7 @@ fun PlayerSheetContent(
 
                             IconButton(
                                 onClick = onPrevious,
-                                enabled = playbackState.hasPrevious
+                                enabled = playbackState.hasPrevious && playbackState.currentPlaylist.size > 1
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.SkipPrevious,
@@ -779,7 +779,7 @@ fun PlayerSheetContent(
 
                             IconButton(
                                 onClick = onNext,
-                                enabled = playbackState.hasNext
+                                enabled = playbackState.hasNext && playbackState.currentPlaylist.size > 1
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.SkipNext,
@@ -1005,8 +1005,8 @@ fun PlayerSheetContent(
                     sleepTimerEndTime = playbackState.sleepTimerEndTime,
                     remainingTime = remainingTime,
                     sleepTimerProgress = sleepTimerProgress,
-                    hasPrevious = playbackState.hasPrevious,
-                    hasNext = playbackState.hasNext,
+                    hasPrevious = playbackState.hasPrevious && playbackState.currentPlaylist.size > 1,
+                    hasNext = playbackState.hasNext && playbackState.currentPlaylist.size > 1,
                     isPlaying = playbackState.isPlaying,
                     isLoading = playbackState.isLoading,
                     isRecording = isRecording,

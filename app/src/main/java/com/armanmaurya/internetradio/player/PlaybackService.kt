@@ -289,6 +289,27 @@ class PlaybackService : MediaLibraryService() {
         registerReceiver(audioNoisyReceiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
 
         player = object : androidx.media3.common.ForwardingPlayer(exoPlayer) {
+            override fun getAvailableCommands(): Player.Commands {
+                val commands = super.getAvailableCommands()
+                if (mediaItemCount <= 1) {
+                    return commands.buildUpon()
+                        .remove(Player.COMMAND_SEEK_TO_NEXT)
+                        .remove(Player.COMMAND_SEEK_TO_PREVIOUS)
+                        .remove(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                        .remove(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                        .build()
+                }
+                return commands
+            }
+
+            override fun hasNextMediaItem(): Boolean {
+                return mediaItemCount > 1 && super.hasNextMediaItem()
+            }
+            
+            override fun hasPreviousMediaItem(): Boolean {
+                return mediaItemCount > 1 && super.hasPreviousMediaItem()
+            }
+
             override fun play() {
                 // Since stop() removes the notification, we let it pause() normally.
                 val item = currentMediaItem
