@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ========================================== -->
     <!-- 1. APP DEFINITION                          -->
@@ -66,7 +67,6 @@
     <string name="settings_auto_play_desc">Play the last listened station when app starts</string>
     <string name="settings_default_tab">Default Tab on Startup</string>
     <string name="settings_player_section">Player</string>
-
     <string name="settings_stop_on_audio_noisy">Pause on device disconnect</string>
     <string name="settings_stop_on_audio_noisy_desc">Pause playback when Bluetooth or wired headphones are disconnected</string>
     <string name="settings_show_cover_art">Cover Art in Notification</string>
@@ -246,7 +246,10 @@
     <string name="player_turn_off_timer">Turn Off Timer</string>
     <string name="player_set_sleep_timer">Set Sleep Timer</string>
     <string name="player_start_button">Start</string>
-    <string name="player_timer_ends_in_msg">Timer ends in %1$s minutes.</string>
+    <plurals name="player_timer_ends_in_msg">
+        <item quantity="one">Timer ends in %1$d minute.</item>
+        <item quantity="other">Timer ends in %1$d minutes.</item>
+    </plurals>
     <string name="player_timer_min">%1$d min</string>
     <string name="player_recording_saved">Recording Saved!</string>
     <string name="player_copied_track_to_clipboard">Copied track to clipboard</string>
@@ -329,8 +332,12 @@
     <string name="schedule_volume">Volume: %1$d%%</string>
     <string name="schedule_select_time">Select Time</string>
     <string name="delete_recording">Delete</string>
-    <string name="recordings_count">%1$d recordings</string>
+    <plurals name="recordings_count">
+        <item quantity="one">%1$d recording</item>
+        <item quantity="other">%1$d recordings</item>
+    </plurals>
     <string name="schedule_keep_playback_subtitle">If off, playback stops when recording ends</string>
+
     <!-- ========================================== -->
     <!-- 15. ANDROID AUTO                           -->
     <!-- ========================================== -->

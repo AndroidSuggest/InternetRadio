@@ -246,7 +246,10 @@
     <string name="player_turn_off_timer">Timer ausschalten</string>
     <string name="player_set_sleep_timer">Sleeptimer einstellen</string>
     <string name="player_start_button">Start</string>
-    <string name="player_timer_ends_in_msg">Der Timer endet in %1$s Minuten.</string>
+    <plurals name="player_timer_ends_in_msg">
+        <item quantity="one">Der Timer endet in %1$d Minute.</item>
+        <item quantity="other">Der Timer endet in %1$d Minuten.</item>
+    </plurals>
     <string name="player_timer_min">%1$d min</string>
     <string name="player_recording_saved">Aufnahme gespeichert!</string>
     <string name="player_copied_track_to_clipboard">Titel in die Zwischenablage kopiert</string>
@@ -329,7 +332,10 @@
     <string name="schedule_volume">Lautstärke: %1$d%%</string>
     <string name="schedule_select_time">Uhrzeit auswählen</string>
     <string name="delete_recording">Löschen</string>
-    <string name="recordings_count">%1$d Aufnahmen</string>
+    <plurals name="recordings_count">
+        <item quantity="one">%1$d Aufnahme</item>
+        <item quantity="other">%1$d Aufnahmen</item>
+    </plurals>
     <string name="schedule_keep_playback_subtitle">Wenn deaktiviert, dann endet die Wiedergabe mit der Aufnahme</string>
 
     <!-- ========================================== -->
