@@ -94,9 +94,17 @@ fun EditStationScreen(
         var languageCodes by remember(station) { mutableStateOf(station?.languageCodes?.joinToString(", ") ?: "") }
         
         val allLanguages = remember {
-            java.util.Locale.getISOLanguages().map { code ->
-                code to java.util.Locale(code).getDisplayLanguage(java.util.Locale.getDefault())
-            }.sortedBy { it.second }
+            java.util.Locale.getISOLanguages().mapNotNull { code ->
+                try {
+                    val locale = java.util.Locale(code)
+                    val iso3 = locale.getISO3Language()
+                    if (iso3.isNotEmpty()) {
+                        iso3 to locale.getDisplayLanguage(java.util.Locale.getDefault())
+                    } else null
+                } catch (e: Exception) {
+                    null
+                }
+            }.sortedBy { it.second }.distinctBy { it.first }
         }
         var expandedLanguage by remember { mutableStateOf(false) }
         var languageSearchText by remember { mutableStateOf("") }
@@ -699,7 +707,8 @@ fun EditStationScreen(
                 }
                 
                 val bitrateText = if (probedBitrate > 0) "$probedBitrate kbps" else "-"
-                val codecText = if (probedCodec != "unknown" && probedCodec.isNotBlank()) probedCodec.uppercase() else "-"
+                val isCodecUnknown = probedCodec.equals("unknown", ignoreCase = true) || probedCodec.isBlank()
+                val codecText = if (!isCodecUnknown) probedCodec.uppercase() else "-"
                 Surface(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     shape = RoundedCornerShape(16.dp),

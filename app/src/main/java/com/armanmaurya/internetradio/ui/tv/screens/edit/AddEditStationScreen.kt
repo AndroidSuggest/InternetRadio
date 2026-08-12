@@ -451,7 +451,8 @@ fun AddEditStationScreen(
                 )
 
                 val bitrateText = if (probedBitrate > 0) "$probedBitrate kbps" else "-"
-                val codecText = if (probedCodec != "unknown" && probedCodec.isNotBlank()) probedCodec.uppercase() else "-"
+                val isCodecUnknown = probedCodec.equals("unknown", ignoreCase = true) || probedCodec.isBlank()
+                val codecText = if (!isCodecUnknown) probedCodec.uppercase() else "-"
                 androidx.compose.material3.Surface(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     shape = RoundedCornerShape(16.dp),
