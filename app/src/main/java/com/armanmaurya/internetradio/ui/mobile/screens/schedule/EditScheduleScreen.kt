@@ -262,13 +262,13 @@ private fun ScheduleConfigurationForm(
                 title = { Text(if (initialSchedule != null) stringResource(R.string.schedule_edit) else stringResource(R.string.schedule_create)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
                 actions = {
                     if (onDelete != null) {
                         IconButton(onClick = onDelete) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                     TextButton(
@@ -350,7 +350,7 @@ private fun ScheduleConfigurationForm(
                             .data(station.favicon.ifBlank { null })
                             .size(coil3.size.Size.ORIGINAL)
                             .build(),
-                        contentDescription = "Station Logo",
+                        contentDescription = stringResource(R.string.schedule_station_logo_cd),
                         contentScale = ContentScale.Crop,
                         filterQuality = FilterQuality.High,
                         modifier = Modifier
@@ -465,7 +465,7 @@ private fun ScheduleConfigurationForm(
                         Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (hasEndTime) formatTime(endHour, endMinute) else "None",
+                            text = if (hasEndTime) formatTime(endHour, endMinute) else stringResource(R.string.schedule_none),
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
@@ -583,7 +583,7 @@ private fun ScheduleConfigurationForm(
                         Column {
                             Text(stringResource(R.string.schedule_keep_playback_after_recording), style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                "If off, playback stops when recording ends",
+                                stringResource(R.string.schedule_keep_playback_subtitle),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -521,7 +522,7 @@ fun AddEditStationScreen(
 
                 if ((isCheckingUrl || duplicateStations.isNotEmpty()) && (!isEditing || station?.isCustom == true)) {
                     androidx.compose.material3.Text(
-                        text = "Similar Stations",
+                        text = stringResource(R.string.edit_station_similar_stations),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )

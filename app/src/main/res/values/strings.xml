@@ -22,6 +22,7 @@
     <string name="cd_close_search">Close search</string>
     <string name="cd_search">Search</string>
     <string name="cd_clear_search">Clear search</string>
+    <string name="cd_delete">Delete</string>
 
     <!-- ========================================== -->
     <!-- 3. GENERAL LABELS                          -->
@@ -168,6 +169,10 @@
     <string name="home_sort_added">Added</string>
     <string name="home_sort_name">Name</string>
     <string name="home_sort_custom">Custom</string>
+    <string name="library_cd_sort_options">Sort Options</string>
+    <string name="library_cd_sort_a_z">A-Z</string>
+    <string name="library_cd_sort_z_a">Z-A</string>
+    <string name="home_cd_in_library">In Library</string>
 
     <!-- ========================================== -->
     <!-- 8. SELECT COUNTRY                          -->
@@ -216,7 +221,19 @@
     <string name="edit_station_fields_reset_message">Reset to original data</string>
     <string name="edit_station_saved_message">Saved</string>
     <string name="edit_station_cd_reset_to_original">Reset to Original</string>
+    <string name="edit_station_similar_stations">Similar Stations</string>
+    <string name="edit_station_custom">Custom</string>
     <string name="edit_station_error_empty_fields">Required fields cannot be empty</string>
+    <string name="edit_station_upload_save">Upload &amp; Save</string>
+    <string name="edit_station_upload_add">Upload &amp; Add</string>
+    <string name="edit_station_homepage_url_optional">Homepage URL (Optional)</string>
+    <string name="edit_station_create_tag">Create Tag: \'%1$s\'</string>
+    <string name="edit_station_uploaded_successfully">Station uploaded successfully</string>
+    <string name="edit_station_upload_failed">Upload failed: %1$s</string>
+    <string name="edit_station_cd_toggle_save_mode">Toggle save mode</string>
+    <string name="edit_station_cd_remove_language">Remove language</string>
+    <string name="edit_station_cd_remove_tag">Remove tag</string>
+    <string name="edit_station_refresh_metadata">Refresh Metadata</string>
 
     <!-- ========================================== -->
     <!-- 12. PLAYER                                 -->
@@ -231,6 +248,7 @@
     <string name="player_set_sleep_timer">Set Sleep Timer</string>
     <string name="player_start_button">Start</string>
     <string name="player_timer_ends_in_msg">Timer ends in %1$s minutes.</string>
+    <string name="player_timer_min">%1$d min</string>
     <string name="player_recording_saved">Recording Saved!</string>
     <string name="player_copied_track_to_clipboard">Copied track to clipboard</string>
     <string name="player_copied_to_clipboard">Copied to clipboard</string>
@@ -258,6 +276,11 @@
     <string name="player_retrying_connection">Retrying connection...</string>
     <string name="player_tab_lyrics">Lyrics</string>
     <string name="player_lyrics_not_available">Lyrics not available</string>
+    <string name="player_cd_cast">Cast</string>
+    <string name="player_cd_volume">Volume</string>
+    <string name="player_cast_connected">Connected</string>
+    <string name="player_cd_delay_lyrics">Delay Lyrics</string>
+    <string name="player_cd_fast_forward_lyrics">Fast Forward Lyrics</string>
 
     <!-- ========================================== -->
     <!-- 13. CAST DIALOG                            -->
@@ -268,6 +291,11 @@
     <string name="cast_no_devices_found">No devices found on the network.</string>
     <string name="cast_disconnect">Disconnect</string>
     <string name="cast_close">Close</string>
+
+    <string name="update_new_available">New Update Available</string>
+    <string name="update_version_available">Version %1$s is now available.</string>
+    <string name="export_success">Exported \'%1$s\' successfully</string>
+    <string name="export_failed">Export failed: %1$s</string>
 
     <string name="action_retry">Retry</string>
 
@@ -292,6 +320,7 @@
     <string name="schedule_saved">Schedule saved</string>
     <string name="schedule_action_save">Save</string>
     <string name="schedule_action_create">Create</string>
+    <string name="schedule_none">None</string>
     <string name="schedule_grant_exact_alarm_permission">Please grant Exact Alarm permission to schedule</string>
     <string name="schedule_indefinite">Indefinite</string>
     <string name="schedule_once">Once</string>
@@ -301,10 +330,14 @@
     <string name="schedule_volume">Volume: %1$d%%</string>
     <string name="schedule_select_time">Select Time</string>
     <string name="delete_recording">Delete</string>
+    <string name="recordings_count">%1$d recordings</string>
+    <string name="schedule_keep_playback_subtitle">If off, playback stops when recording ends</string>
     <!-- ========================================== -->
     <!-- 15. ANDROID AUTO                           -->
     <!-- ========================================== -->
     <string name="auto_for_you">For You</string>
 
     <string name="more_options">More options</string>
+    <string name="nav_all_languages">All Languages</string>
+    <string name="player_cd_stop">Stop</string>
 </resources>

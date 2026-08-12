@@ -56,14 +56,14 @@ fun UpdateBottomSheet(
                     .padding(24.dp)
             ) {
             Text(
-                text = "New Update Available",
+                text = stringResource(id = R.string.update_new_available),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Version ${release.tag_name} is now available.",
+                text = stringResource(id = R.string.update_version_available, release.tag_name),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

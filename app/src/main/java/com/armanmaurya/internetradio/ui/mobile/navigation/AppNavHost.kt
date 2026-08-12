@@ -26,6 +26,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import com.armanmaurya.internetradio.R
 
 @Composable
 fun AppNavHost(
@@ -135,10 +136,11 @@ fun AppNavHost(
             )
         ) { backStackEntry ->
             val selectedLanguage = backStackEntry.arguments?.getString("selectedLanguage")
+            val context = androidx.compose.ui.platform.LocalContext.current
             LanguageSelectScreen(
                 selectedLanguage = selectedLanguage,
                 onLanguageSelected = { language ->
-                    val languageName = if (language.isoCode.isNullOrEmpty()) "All Languages" else language.name
+                    val languageName = if (language.isoCode.isNullOrEmpty()) context.getString(R.string.nav_all_languages) else language.name
                     discoverViewModel.updateLanguage(languageName)
                     navController.popBackStack()
                 },

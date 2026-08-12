@@ -283,12 +283,12 @@ fun EditStationScreen(
                                             bitrate = probedBitrate,
                                             onSuccess = {
                                                 isUploading = false
-                                                Toast.makeText(context, "Station uploaded successfully", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, context.getString(R.string.edit_station_uploaded_successfully), Toast.LENGTH_SHORT).show()
                                                 onNavigateBack()
                                             },
                                             onError = { error ->
                                                 isUploading = false
-                                                Toast.makeText(context, "Upload failed: $error", Toast.LENGTH_LONG).show()
+                                                Toast.makeText(context, context.getString(R.string.edit_station_upload_failed, error), Toast.LENGTH_LONG).show()
                                             }
                                         )
                                     } else {
@@ -341,7 +341,7 @@ fun EditStationScreen(
                                     label = "saveButtonAnimation"
                                 ) { isUpload ->
                                     Text(
-                                        text = if (isUpload) (if (isEditing) "Upload & Save" else "Upload & Add") else (if (isEditing) "Save" else "Add")
+                                        text = if (isUpload) (if (isEditing) stringResource(R.string.edit_station_upload_save) else stringResource(R.string.edit_station_upload_add)) else (if (isEditing) stringResource(R.string.general_save) else stringResource(R.string.general_add))
                                     )
                                 }
                             }
@@ -356,7 +356,7 @@ fun EditStationScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.SwapVert,
-                                        contentDescription = "Toggle save mode",
+                                        contentDescription = stringResource(R.string.edit_station_cd_toggle_save_mode),
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -444,7 +444,7 @@ fun EditStationScreen(
                 TextField(
                     value = homepage,
                     onValueChange = { homepage = it },
-                    label = { Text("Homepage URL (Optional)") },
+                    label = { Text(stringResource(R.string.edit_station_homepage_url_optional)) },
                     modifier = Modifier.fillMaxWidth().then(
                         if (isPureBlack) Modifier.border(
                             1.dp,
@@ -582,7 +582,7 @@ fun EditStationScreen(
                                 trailingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Close,
-                                        contentDescription = "Remove language",
+                                        contentDescription = stringResource(R.string.edit_station_cd_remove_language),
                                         modifier = Modifier
                                             .size(18.dp)
                                             .clickable {
@@ -636,7 +636,7 @@ fun EditStationScreen(
                         ) {
                             if (query.isNotEmpty() && fetchedTags.none { it.name.equals(query, ignoreCase = true) }) {
                                 DropdownMenuItem(
-                                    text = { Text("Create Tag: '$query'") },
+                                    text = { Text(stringResource(R.string.edit_station_create_tag, query)) },
                                     onClick = {
                                         val currentTags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                                         if (!currentTags.any { it.equals(query, ignoreCase = true) }) {
@@ -683,7 +683,7 @@ fun EditStationScreen(
                                 trailingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Close,
-                                        contentDescription = "Remove tag",
+                                        contentDescription = stringResource(R.string.edit_station_cd_remove_tag),
                                         modifier = Modifier
                                             .size(18.dp)
                                             .clickable {
@@ -738,7 +738,7 @@ fun EditStationScreen(
                                         }
                                     }
                                 ) {
-                                    Icon(Icons.Default.Refresh, contentDescription = "Refresh Metadata")
+                                    Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.edit_station_refresh_metadata))
                                 }
                             }
                     }
@@ -746,7 +746,7 @@ fun EditStationScreen(
                 
                 if (isEditing && station?.isCustom == true) {
                     Text(
-                        text = "Custom",
+                        text = stringResource(R.string.edit_station_custom),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.fillMaxWidth(),
@@ -759,7 +759,7 @@ fun EditStationScreen(
 
                 if ((isCheckingUrl || duplicateStations.isNotEmpty()) && (!isEditing || station?.isCustom == true)) {
                     Text(
-                        text = "Similar Stations",
+                        text = stringResource(R.string.edit_station_similar_stations),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )

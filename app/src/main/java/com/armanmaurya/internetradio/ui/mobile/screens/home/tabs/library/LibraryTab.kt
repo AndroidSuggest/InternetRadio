@@ -216,13 +216,13 @@ fun LibraryContent(
                                 if (sortIconRes != null) {
                                     Icon(
                                         painter = androidx.compose.ui.res.painterResource(id = sortIconRes),
-                                        contentDescription = "Sort Options",
+                                        contentDescription = stringResource(R.string.library_cd_sort_options),
                                         modifier = Modifier.size(24.dp)
                                     )
                                 } else {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.Sort,
-                                        contentDescription = "Sort Options",
+                                        contentDescription = stringResource(R.string.library_cd_sort_options),
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
@@ -244,8 +244,8 @@ fun LibraryContent(
                                     showSortMenu = false
                                 },
                                 trailingIcon = {
-                                    if (sortOption == LibrarySortOption.RECENTLY_PLAYED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = "Descending", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-                                    else if (sortOption == LibrarySortOption.LEAST_RECENTLY_PLAYED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = "Ascending", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    if (sortOption == LibrarySortOption.RECENTLY_PLAYED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = stringResource(R.string.home_cd_descending), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    else if (sortOption == LibrarySortOption.LEAST_RECENTLY_PLAYED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = stringResource(R.string.home_cd_ascending), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
                                 }
                             )
                             DropdownMenuItem(
@@ -259,8 +259,8 @@ fun LibraryContent(
                                     showSortMenu = false
                                 },
                                 trailingIcon = {
-                                    if (sortOption == LibrarySortOption.RECENTLY_ADDED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = "Descending", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-                                    else if (sortOption == LibrarySortOption.OLDEST_ADDED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = "Ascending", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    if (sortOption == LibrarySortOption.RECENTLY_ADDED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = stringResource(R.string.home_cd_descending), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    else if (sortOption == LibrarySortOption.OLDEST_ADDED) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = stringResource(R.string.home_cd_ascending), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
                                 }
                             )
                             DropdownMenuItem(
@@ -274,8 +274,8 @@ fun LibraryContent(
                                     showSortMenu = false
                                 },
                                 trailingIcon = {
-                                    if (sortOption == LibrarySortOption.NAME_A_Z) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = "A-Z", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-                                    else if (sortOption == LibrarySortOption.NAME_Z_A) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = "Z-A", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    if (sortOption == LibrarySortOption.NAME_A_Z) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_down), contentDescription = stringResource(R.string.library_cd_sort_a_z), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                                    else if (sortOption == LibrarySortOption.NAME_Z_A) Icon(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_sort_up), contentDescription = stringResource(R.string.library_cd_sort_z_a), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
                                 }
                             )
                             DropdownMenuItem(

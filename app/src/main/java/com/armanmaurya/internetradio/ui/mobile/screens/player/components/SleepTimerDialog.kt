@@ -92,7 +92,7 @@ fun SharedTransitionScope.SleepTimerDialog(
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = "Sleep Timer",
+                        text = stringResource(R.string.player_sleep_timer_title),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -162,7 +162,7 @@ fun SharedTransitionScope.SleepTimerDialog(
                         ) {
                             options.take(3).forEach { mins ->
                                 val isSelected = selectedMinutes == mins
-                                val label = "${mins} min"
+                                val label = stringResource(R.string.player_timer_min, mins)
                                 
                                 val buttonColors = if (isSelected) {
                                     ButtonDefaults.buttonColors(
@@ -193,7 +193,7 @@ fun SharedTransitionScope.SleepTimerDialog(
                         ) {
                             options.drop(3).forEach { mins ->
                                 val isSelected = selectedMinutes == mins
-                                val label = "${mins} min"
+                                val label = stringResource(R.string.player_timer_min, mins)
                                 
                                 val buttonColors = if (isSelected) {
                                     ButtonDefaults.buttonColors(

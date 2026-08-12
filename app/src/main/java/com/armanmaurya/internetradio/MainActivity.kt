@@ -300,7 +300,7 @@ class MainActivity : AppCompatActivity() {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Filled.Stop,
-                                                contentDescription = "Stop",
+                                                contentDescription = getString(R.string.player_cd_stop),
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }

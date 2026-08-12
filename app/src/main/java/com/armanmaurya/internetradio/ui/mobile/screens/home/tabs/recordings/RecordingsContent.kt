@@ -151,7 +151,7 @@ fun RecordingsContent(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = "${folder.recordings.size} recordings",
+                                text = stringResource(R.string.recordings_count, folder.recordings.size),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

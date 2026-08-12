@@ -171,7 +171,7 @@ fun PlayerSheetContent(
     
     LaunchedEffect(connectedCastDevice) {
         if (connectedCastDevice != null) {
-            android.widget.Toast.makeText(context, "Connected", android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(context, context.getString(R.string.player_cast_connected), android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -604,7 +604,7 @@ fun PlayerSheetContent(
                         IconButton(onClick = { showCastDialog = true }) {
                             Icon(
                                 imageVector = if (connectedCastDevice != null) Icons.Default.CastConnected else Icons.Default.Cast,
-                                contentDescription = "Cast",
+                                contentDescription = stringResource(R.string.player_cd_cast),
                                 modifier = Modifier.size(28.dp),
                                 tint = if (connectedCastDevice != null) MaterialTheme.colorScheme.primary else LocalContentColor.current
                             )
@@ -657,30 +657,48 @@ fun PlayerSheetContent(
                             .clip(RoundedCornerShape(16.dp))
                             .clickable(enabled = hasInfo) { showTimer = !showTimer }
                             .animateContentSize()
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .padding(
+                                start = 12.dp,
+                                end = if (hasInfo) 8.dp else 12.dp,
+                                top = 6.dp,
+                                bottom = 6.dp
+                            )
                     ) {
-                        AnimatedContent(
-                            targetState = showTimer,
-                            label = "TimerTransition"
-                        ) { isShowingTimer ->
-                            if (isShowingTimer) {
-                                Text(
-                                    text = timerString,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            } else {
-                                val infoText = if (hasBitrate && hasCodec) {
-                                    stringResource(R.string.player_station_codec_bitrate, station.codec.uppercase(), station.bitrate.toString())
-                                } else if (hasBitrate) {
-                                    stringResource(R.string.player_station_bitrate_only, station.bitrate.toString())
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            AnimatedContent(
+                                targetState = showTimer,
+                                label = "TimerTransition"
+                            ) { isShowingTimer ->
+                                if (isShowingTimer) {
+                                    Text(
+                                        text = timerString,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 } else {
-                                    station.codec.uppercase()
+                                    val infoText = if (hasBitrate && hasCodec) {
+                                        stringResource(R.string.player_station_codec_bitrate, station.codec.uppercase(), station.bitrate.toString())
+                                    } else if (hasBitrate) {
+                                        stringResource(R.string.player_station_bitrate_only, station.bitrate.toString())
+                                    } else {
+                                        station.codec.uppercase()
+                                    }
+                                    Text(
+                                        text = infoText,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
-                                Text(
-                                    text = infoText,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                            if (hasInfo) {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -979,7 +997,7 @@ fun PlayerSheetContent(
                                     ) {
                                         Icon(
                                             imageVector = volumeIcon,
-                                            contentDescription = "Volume",
+                                            contentDescription = stringResource(R.string.player_cd_volume),
                                             tint = MaterialTheme.colorScheme.onSecondaryContainer,
                                             modifier = Modifier
                                                 .sharedElement(

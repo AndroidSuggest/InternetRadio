@@ -182,7 +182,7 @@ fun LyricsTab(
                         ) {
                             Icon(
                                 Icons.Default.Remove, 
-                                contentDescription = "Delay Lyrics",
+                                contentDescription = stringResource(R.string.player_cd_delay_lyrics),
                                 modifier = Modifier.graphicsLayer { rotationZ = -sideRotation }
                             )
                         }
@@ -218,7 +218,7 @@ fun LyricsTab(
                         ) {
                             Icon(
                                 Icons.Default.Add, 
-                                contentDescription = "Fast Forward Lyrics",
+                                contentDescription = stringResource(R.string.player_cd_fast_forward_lyrics),
                                 modifier = Modifier.graphicsLayer { rotationZ = sideRotation }
                             )
                         }
