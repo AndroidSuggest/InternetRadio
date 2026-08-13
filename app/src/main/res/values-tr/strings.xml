@@ -182,7 +182,9 @@
     <string name="player_turn_off_timer">Zamanlayıcıyı Kapat</string>
     <string name="player_set_sleep_timer">Uyku Zamanlayıcısını Ayarla</string>
     <string name="player_start_button">Başlat</string>
-    <string name="player_timer_ends_in_msg">Zamanlayıcı %1$s dakika içinde bitiyor.</string>
+    <plurals name="player_timer_ends_in_msg">
+        <item quantity="one">Zamanlayıcı %1$s dakika içinde bitiyor.</item>
+    </plurals>
     <string name="player_recording_saved">Kayıt Kaydedildi!</string>
     <string name="player_copied_track_to_clipboard">Parça panoya kopyalandı</string>
     <string name="player_copied_to_clipboard">Panoya kopyalandı</string>
