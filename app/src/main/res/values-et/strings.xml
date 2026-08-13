@@ -157,7 +157,9 @@
     <string name="player_turn_off_timer">Lülita taimer välja</string>
     <string name="player_set_sleep_timer">Seadista unetaimer</string>
     <string name="player_start_button">Käivita</string>
-    <string name="player_timer_ends_in_msg">Taimeeri töö lõppeb %1$s minuti möödumisel.</string>
+    <plurals name="player_timer_ends_in_msg">
+        <item quantity="one">Taimeeri töö lõppeb %1$s minuti möödumisel.</item>
+    </plurals>
     <string name="player_recording_saved">Salvestis on talletatud!</string>
     <string name="player_copied_track_to_clipboard">Lugu on kopeeritud lõikelauale</string>
     <string name="player_copied_to_clipboard">Kopeeritud lõikelauale</string>
