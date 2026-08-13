@@ -191,7 +191,9 @@
     <string name="player_turn_off_timer">Időzítő kikapcsolása</string>
     <string name="player_set_sleep_timer">Alvásidőzítő beállítása</string>
     <string name="player_start_button">Indítás</string>
-    <string name="player_timer_ends_in_msg">Az időzítő %1$s perc múlva lejár.</string>
+    <plurals name="player_timer_ends_in_msg">
+        <item quantity="one">Az időzítő %1$s perc múlva lejár.</item>
+    </plurals>
     <string name="player_recording_saved">Felvétel mentve!</string>
     <string name="player_copied_track_to_clipboard">Szám másolva a vágólapra</string>
     <string name="player_copied_to_clipboard">Vágólapra másolva</string>
