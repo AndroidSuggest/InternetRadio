@@ -1,5 +1,6 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings
 
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
 import android.content.Intent
@@ -151,7 +152,11 @@ fun RecordingsContent(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = stringResource(R.string.recordings_count, folder.recordings.size),
+                                text = pluralStringResource(
+                                    R.plurals.recordings_count,
+                                    folder.recordings.size,
+                                    folder.recordings.size
+                                ),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

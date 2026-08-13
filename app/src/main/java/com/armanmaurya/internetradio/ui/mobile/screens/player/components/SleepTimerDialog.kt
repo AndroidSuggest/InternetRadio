@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -111,7 +112,11 @@ fun SharedTransitionScope.SleepTimerDialog(
                     
                     val mins = (remaining / 60000).toInt() + 1
                     Text(
-                        text = stringResource(R.string.player_timer_ends_in_msg, mins.toString()),
+                        text = pluralStringResource(
+                            R.plurals.player_timer_ends_in_msg,
+                            mins,
+                            mins
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
