@@ -156,7 +156,9 @@
     <string name="player_turn_off_timer">Oprește temporizatorul</string>
     <string name="player_set_sleep_timer">Setează temporizatorul</string>
     <string name="player_start_button">Pornește</string>
-    <string name="player_timer_ends_in_msg">Temporizatorul se oprește în %1$s minute.</string>
+    <plurals name="player_timer_ends_in_msg">
+        <item quantity="one">Temporizatorul se oprește în %1$s minute.</item>
+    </plurals>
     <string name="player_recording_saved">Înregistrare salvată!</string>
     <string name="player_copied_track_to_clipboard">Piesă copiată în clipboard</string>
     <string name="player_copied_to_clipboard">Copiat în clipboard</string>
