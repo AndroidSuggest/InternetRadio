@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -29,6 +30,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clip
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,6 +64,7 @@ fun RadioSearchBar(
     onSettingsClick: () -> Unit,
     onSearch: (String) -> Unit = {},
     selectedCountryCode: String?,
+    selectedStateCode: String?,
     selectedLanguage: String?,
     selectedTags: Set<String>,
     modifier: Modifier = Modifier,
@@ -133,52 +141,58 @@ fun RadioSearchBar(
                                 }
                             }
                             IconButton(onClick = onLanguageClick) {
-                                Box {
+                                Box(modifier = Modifier.fillMaxSize()) {
                                     Icon(
                                         imageVector = Icons.Default.Translate,
                                         contentDescription = stringResource(R.string.home_cd_select_language),
                                         tint = if (!selectedLanguage.isNullOrBlank())
                                             MaterialTheme.colorScheme.primary
                                         else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                            MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.align(Alignment.Center)
                                     )
                                     if (!selectedLanguage.isNullOrBlank()) {
                                         Text(
                                             text = selectedLanguage.take(3).uppercase(),
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = 10.sp,
+                                                fontSize = 8.sp,
                                                 fontWeight = FontWeight.Bold
                                             ),
                                             color = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier
                                                 .align(Alignment.TopEnd)
-                                                .offset(x = 6.dp, y = (-4).dp)
+                                                .padding(end = 5.dp)
                                         )
                                     }
                                 }
                             }
                             IconButton(onClick = onCountryClick) {
-                                Box {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Default.Public,
                                         contentDescription = stringResource(R.string.home_cd_select_country),
                                         tint = if (!selectedCountryCode.isNullOrBlank())
                                             MaterialTheme.colorScheme.primary
                                         else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                            MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(32.dp)
                                     )
                                     if (!selectedCountryCode.isNullOrBlank()) {
-                                        Text(
-                                            text = selectedCountryCode,
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold
-                                            ),
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .offset(x = 6.dp, y = (-4).dp)
-                                        )
+                                        val displayCode = if (!selectedStateCode.isNullOrBlank()) selectedStateCode else selectedCountryCode
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            shape = MaterialTheme.shapes.small
+                                        ) {
+                                            Text(
+                                                text = displayCode,
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                ),
+                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }

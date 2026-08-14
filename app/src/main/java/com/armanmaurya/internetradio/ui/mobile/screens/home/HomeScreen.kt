@@ -197,6 +197,7 @@ fun HomeScreen(
                 onSettingsClick = onSettingsClick,
                 onSearch = { if (uiState.autoRouteToBrowseOnSearch) viewModel.onTabSelected(0) },
                 selectedCountryCode = uiState.selectedCountryCode,
+                selectedStateCode = uiState.selectedStateCode,
                 selectedLanguage = uiState.selectedLanguage,
                 selectedTags = uiState.selectedTags
             ) {
@@ -304,6 +305,7 @@ fun HomeScreen(
                 onSettingsClick = onSettingsClick,
                 onSearch = { _ -> if (uiState.autoRouteToBrowseOnSearch) viewModel.onTabSelected(0) },
                 selectedCountryCode = uiState.selectedCountryCode,
+                selectedStateCode = uiState.selectedStateCode,
                 selectedLanguage = uiState.selectedLanguage,
                 selectedTags = uiState.selectedTags,
                 browseStations = browseUiState.stations,

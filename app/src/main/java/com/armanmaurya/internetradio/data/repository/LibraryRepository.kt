@@ -91,6 +91,7 @@ class LibraryRepository @Inject constructor(
         countryCode: String = "",
         languageCodes: List<String> = emptyList(),
         homepage: String = "",
+        iso31662: String? = null,
         codec: String = "unknown",
         bitrate: Int = 0
     ) {
@@ -104,6 +105,7 @@ class LibraryRepository @Inject constructor(
             countryCode = countryCode,
             languageCodes = languageCodes,
             homepage = homepage,
+            iso3166_2 = iso31662,
             codec = codec,
             bitrate = bitrate,
 
@@ -121,6 +123,7 @@ class LibraryRepository @Inject constructor(
         countryCode: String,
         languageCodes: List<String>,
         homepage: String,
+        iso31662: String?,
         codec: String,
         bitrate: Int
     ) {
@@ -134,6 +137,7 @@ class LibraryRepository @Inject constructor(
             countryCode = countryCode,
             languageCodes = languageCodes,
             homepage = homepage,
+            iso3166_2 = iso31662,
             codec = codec,
             bitrate = bitrate
         )
@@ -150,6 +154,7 @@ class LibraryRepository @Inject constructor(
         homepage: String,
         favicon: String,
         countryCode: String,
+        iso31662: String?,
         languageCodes: List<String>,
         tags: List<String>,
         codec: String,
@@ -162,6 +167,7 @@ class LibraryRepository @Inject constructor(
                 homepage = homepage,
                 favicon = favicon,
                 countryCode = countryCode,
+                iso31662 = iso31662,
                 languageCodes = languageCodes.joinToString(","),
                 tags = tags.joinToString(","),
             )
@@ -175,6 +181,7 @@ class LibraryRepository @Inject constructor(
                     countryCode = countryCode,
                     languageCodes = languageCodes,
                     homepage = homepage,
+                    iso31662 = iso31662,
                     codec = codec,
                     bitrate = bitrate
                 )
@@ -191,6 +198,7 @@ class LibraryRepository @Inject constructor(
                     countryCode = countryCode,
                     languageCodes = languageCodes,
                     homepage = homepage,
+                    iso3166_2 = iso31662,
                     codec = codec,
                     bitrate = bitrate,
                     isCustom = false
@@ -212,6 +220,7 @@ class LibraryRepository @Inject constructor(
         homepage: String,
         favicon: String,
         countryCode: String,
+        iso31662: String?,
         languageCodes: List<String>,
         tags: List<String>,
         codec: String,
@@ -224,6 +233,7 @@ class LibraryRepository @Inject constructor(
                 homepage = homepage,
                 favicon = favicon,
                 countryCode = countryCode,
+                iso31662 = iso31662,
                 languageCodes = languageCodes.joinToString(","),
                 tags = tags.joinToString(","),
             )
@@ -244,6 +254,7 @@ class LibraryRepository @Inject constructor(
                     countryCode = countryCode,
                     languageCodes = languageCodes,
                     homepage = homepage,
+                    iso31662 = iso31662,
                     codec = codec,
                     bitrate = bitrate
                 )

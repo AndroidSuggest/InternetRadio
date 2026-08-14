@@ -21,6 +21,7 @@ data class BrowseUiState(
     val isSearchActive: Boolean = false,
     val error: String? = null,
     val selectedCountryCode: String? = null,
+    val selectedStateCode: String? = null,
     val selectedLanguage: String? = null,
     val selectedTags: Set<String> = emptySet(),
     val order: String = "votes",
@@ -33,7 +34,8 @@ data class BrowseUiState(
 class BrowseViewModel @Inject constructor(
     private val repository: StationRepository,
     private val settingsRepository: SettingsRepository,
-    private val libraryRepository: LibraryRepository
+    private val libraryRepository: LibraryRepository,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BrowseUiState())
@@ -56,6 +58,7 @@ class BrowseViewModel @Inject constructor(
             .map { preferences ->
                 BrowseFilterParams(
                     selectedCountryCode = preferences.selectedCountryCode,
+                    selectedStateCode = preferences.selectedStateCode,
                     selectedLanguage = preferences.selectedLanguage,
                     selectedTags = preferences.selectedTags,
                     order = preferences.order,
@@ -68,6 +71,7 @@ class BrowseViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         selectedCountryCode = params.selectedCountryCode,
+                        selectedStateCode = params.selectedStateCode,
                         selectedLanguage = params.selectedLanguage,
                         selectedTags = params.selectedTags,
                         order = params.order,
@@ -83,6 +87,7 @@ class BrowseViewModel @Inject constructor(
                 } else {
                     loadStations(
                         countryCode = params.selectedCountryCode,
+                        stateCode = params.selectedStateCode,
                         language = params.selectedLanguage,
                         tags = params.selectedTags
                     )
@@ -109,6 +114,7 @@ class BrowseViewModel @Inject constructor(
 
     private fun loadStations(
         countryCode: String?,
+        stateCode: String? = _uiState.value.selectedStateCode,
         language: String? = _uiState.value.selectedLanguage,
         tags: Set<String> = _uiState.value.selectedTags
     ) {
@@ -119,6 +125,7 @@ class BrowseViewModel @Inject constructor(
                     isLoading = true,
                     error = null,
                     selectedCountryCode = countryCode,
+                    selectedStateCode = stateCode,
                     selectedLanguage = language,
                     selectedTags = tags,
                     canLoadMore = true
@@ -130,8 +137,16 @@ class BrowseViewModel @Inject constructor(
                 com.neovisionaries.i18n.LanguageAlpha3Code.getByCodeIgnoreCase(code)?.getName()?.lowercase() ?: code.lowercase()
             }?.takeIf { it.isNotBlank() }
 
+            val apiStateQuery = if (countryCode != null && stateCode != null) {
+                com.armanmaurya.internetradio.util.StateUtils.getStateNameByCode(
+                    context,
+                    countryCode, stateCode
+                )
+            } else null
+
             repository.filterStations(
                 countryCode = countryCode?.takeIf { it.isNotBlank() },
+                state = apiStateQuery?.takeIf { it.isNotBlank() },
                 language = apiLanguageQuery,
                 tagList = tags.joinToString(",").takeIf { it.isNotBlank() },
                 hasExtendedInfo = state.isVerified.takeIf { it },
@@ -305,7 +320,7 @@ class BrowseViewModel @Inject constructor(
         if (state.isSearchActive) {
             searchStations(state.searchQuery)
         } else {
-            loadStations(state.selectedCountryCode, state.selectedLanguage, state.selectedTags)
+            loadStations(state.selectedCountryCode, state.selectedStateCode, state.selectedLanguage, state.selectedTags)
         }
     }
 
@@ -331,6 +346,7 @@ class BrowseViewModel @Inject constructor(
 
     private data class BrowseFilterParams(
         val selectedCountryCode: String?,
+        val selectedStateCode: String?,
         val selectedLanguage: String?,
         val selectedTags: Set<String>,
         val order: String,

@@ -38,6 +38,7 @@ class SettingsRepository @Inject constructor(
         val PURE_BLACK = booleanPreferencesKey("pure_black")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val SELECTED_COUNTRY_CODE = stringPreferencesKey("selected_country_code")
+        val SELECTED_STATE_CODE = stringPreferencesKey("selected_state_code")
         val SELECTED_LANGUAGE = stringPreferencesKey("selected_language")
         val SELECTED_TAGS = androidx.datastore.preferences.core.stringSetPreferencesKey("selected_tags")
         val SORT_ORDER = stringPreferencesKey("sort_order")
@@ -79,6 +80,7 @@ class SettingsRepository @Inject constructor(
             val pureBlack = preferences[PreferencesKeys.PURE_BLACK] ?: false
             val appLanguage = preferences[PreferencesKeys.APP_LANGUAGE] ?: "System"
             val selectedCountryCode = preferences[PreferencesKeys.SELECTED_COUNTRY_CODE]
+            val selectedStateCode = preferences[PreferencesKeys.SELECTED_STATE_CODE]
             val selectedLanguage = preferences[PreferencesKeys.SELECTED_LANGUAGE]
             val selectedTags = preferences[PreferencesKeys.SELECTED_TAGS] ?: emptySet()
             val stopOnAudioBecomingNoisy = preferences[PreferencesKeys.STOP_ON_AUDIO_BECOMING_NOISY] ?: true
@@ -112,6 +114,7 @@ class SettingsRepository @Inject constructor(
                 pureBlack = pureBlack, 
                 appLanguage = appLanguage,
                 selectedCountryCode = selectedCountryCode,
+                selectedStateCode = selectedStateCode,
                 selectedLanguage = selectedLanguage,
                 selectedTags = selectedTags,
                 stopOnAudioBecomingNoisy = stopOnAudioBecomingNoisy,
@@ -200,6 +203,16 @@ class SettingsRepository @Inject constructor(
                 preferences.remove(PreferencesKeys.SELECTED_COUNTRY_CODE)
             } else {
                 preferences[PreferencesKeys.SELECTED_COUNTRY_CODE] = countryCode
+            }
+        }
+    }
+
+    suspend fun setSelectedStateCode(stateCode: String?) {
+        context.dataStore.edit { preferences ->
+            if (stateCode == null) {
+                preferences.remove(PreferencesKeys.SELECTED_STATE_CODE)
+            } else {
+                preferences[PreferencesKeys.SELECTED_STATE_CODE] = stateCode
             }
         }
     }

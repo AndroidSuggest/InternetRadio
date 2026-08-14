@@ -64,6 +64,7 @@ internal fun ExpandedHomeLayout(
     onSettingsClick: () -> Unit,
     onSearch: (String) -> Unit,
     selectedCountryCode: String?,
+    selectedStateCode: String?,
     selectedLanguage: String?,
     selectedTags: Set<String>,
     browseStations: List<RadioStation>,
@@ -89,6 +90,7 @@ internal fun ExpandedHomeLayout(
                 selectedTags = selectedTags,
                 selectedLanguage = selectedLanguage,
                 selectedCountryCode = selectedCountryCode,
+                selectedStateCode = selectedStateCode,
                 tabs = tabs,
                 pagerState = pagerState,
                 coroutineScope = coroutineScope,
@@ -112,6 +114,7 @@ internal fun ExpandedHomeLayout(
                 onSettingsClick = onSettingsClick,
                 onSearch = onSearch,
                 selectedCountryCode = selectedCountryCode,
+                selectedStateCode = selectedStateCode,
                 selectedLanguage = selectedLanguage,
                 selectedTags = selectedTags,
                 browseStations = browseStations,
@@ -132,6 +135,7 @@ private fun Sidebar(
     selectedTags: Set<String>,
     selectedLanguage: String?,
     selectedCountryCode: String?,
+    selectedStateCode: String?,
     tabs: List<String>,
     pagerState: androidx.compose.foundation.pager.PagerState,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
@@ -160,7 +164,8 @@ private fun Sidebar(
                 onSettingsClick = onSettingsClick,
                 selectedTags = selectedTags,
                 selectedLanguage = selectedLanguage,
-                selectedCountryCode = selectedCountryCode
+                selectedCountryCode = selectedCountryCode,
+                selectedStateCode = selectedStateCode
             )
             
             SidebarNavigation(
@@ -210,7 +215,8 @@ private fun SidebarFilters(
     onSettingsClick: () -> Unit,
     selectedTags: Set<String>,
     selectedLanguage: String?,
-    selectedCountryCode: String?
+    selectedCountryCode: String?,
+    selectedStateCode: String?
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -265,8 +271,9 @@ private fun SidebarFilters(
                     tint = if (!selectedCountryCode.isNullOrBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (!selectedCountryCode.isNullOrBlank()) {
+                    val displayCode = if (!selectedStateCode.isNullOrBlank()) selectedStateCode else selectedCountryCode
                     Text(
-                        text = selectedCountryCode,
+                        text = displayCode ?: "",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp),
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
@@ -340,6 +347,7 @@ private fun ExpandedSearchOverlay(
     onSettingsClick: () -> Unit,
     onSearch: (String) -> Unit,
     selectedCountryCode: String?,
+    selectedStateCode: String?,
     selectedLanguage: String?,
     selectedTags: Set<String>,
     browseStations: List<RadioStation>,
@@ -360,6 +368,7 @@ private fun ExpandedSearchOverlay(
             onSettingsClick = onSettingsClick,
             onSearch = onSearch,
             selectedCountryCode = selectedCountryCode,
+            selectedStateCode = selectedStateCode,
             selectedLanguage = selectedLanguage,
             selectedTags = selectedTags,
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)

@@ -56,6 +56,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".crash.CrashActivity"
+            android:process=":crash"
+            android:theme="@style/Theme.App.Starting"
+            android:label="Crash Log" />
+
         <provider
             android:name=".player.SvgProxyProvider"
             android:authorities="${applicationId}.svgproxy"

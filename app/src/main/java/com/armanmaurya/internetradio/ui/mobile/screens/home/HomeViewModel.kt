@@ -17,6 +17,7 @@ data class HomeUiState(
     val searchQuery: String = "",
     val selectedTab: Int = 0,
     val selectedCountryCode: String? = null,
+    val selectedStateCode: String? = null,
     val selectedLanguage: String? = null,
     val selectedTags: Set<String> = emptySet(),
     val isPreferencesLoaded: Boolean = false,
@@ -43,6 +44,7 @@ class HomeViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         selectedCountryCode = preferences.selectedCountryCode,
+                        selectedStateCode = preferences.selectedStateCode,
                         selectedLanguage = preferences.selectedLanguage,
                         selectedTags = preferences.selectedTags,
                         selectedTab = if (isFirstLoad) preferences.defaultTab else it.selectedTab,
@@ -55,9 +57,10 @@ class HomeViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun updateCountry(countryCode: String) {
+    fun updateCountry(countryCode: String, stateCode: String? = null) {
         viewModelScope.launch {
             settingsRepository.setSelectedCountryCode(countryCode)
+            settingsRepository.setSelectedStateCode(stateCode)
         }
     }
 

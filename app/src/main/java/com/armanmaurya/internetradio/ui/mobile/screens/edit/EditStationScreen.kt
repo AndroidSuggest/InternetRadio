@@ -92,6 +92,19 @@ fun EditStationScreen(
                 } else ""
             )
         }
+        var iso3166_2 by remember(station) { mutableStateOf(station?.iso3166_2 ?: "") }
+        val statesList = remember(countryCode) {
+            if (countryCode.isNotBlank()) com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, countryCode) else emptyList()
+        }
+        var expandedState by remember { mutableStateOf(false) }
+        var stateSearchText by remember(station, countryCode) {
+            mutableStateOf(
+                if (iso3166_2.isNotBlank()) {
+                    val st = statesList.find { it.code == iso3166_2 }
+                    if (st != null) "${st.getDisplayName(java.util.Locale.getDefault().language)} (${st.code})" else iso3166_2
+                } else ""
+            )
+        }
         var languageCodes by remember(station) { mutableStateOf(station?.languageCodes?.joinToString(", ") ?: "") }
         
         val allLanguages = remember {
@@ -146,10 +159,11 @@ fun EditStationScreen(
             favicon != station.favicon ||
             tags != station.tags.joinToString(", ") ||
             countryCode != station.countryCode ||
+            iso3166_2 != station.iso3166_2 ||
             languageCodes != station.languageCodes.joinToString(", ") ||
             homepage != station.homepage
         } else {
-            name.isNotBlank() || url.isNotBlank() || favicon.isNotBlank() || tags.isNotBlank() || countryCode.isNotBlank() || languageCodes.isNotBlank() || homepage.isNotBlank()
+            name.isNotBlank() || url.isNotBlank() || favicon.isNotBlank() || tags.isNotBlank() || countryCode.isNotBlank() || iso3166_2.isNotBlank() || languageCodes.isNotBlank() || homepage.isNotBlank()
         }
 
         var showExitWarningDialog by remember { mutableStateOf(false) }
@@ -227,6 +241,11 @@ fun EditStationScreen(
                                                         countrySearchText = if (countryCode.isNotBlank()) {
                                                             java.util.Locale("", countryCode).getDisplayCountry(java.util.Locale.getDefault())
                                                         } else ""
+                                                        iso3166_2 = freshStation.iso3166_2 ?: ""
+                                                        stateSearchText = if (iso3166_2.isNotBlank()) {
+                                                            val st = com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, countryCode).find { it.code == iso3166_2 }
+                                                            if (st != null) "${st.getDisplayName(java.util.Locale.getDefault().language)} (${st.code})" else iso3166_2
+                                                        } else ""
                                                         languageCodes = freshStation.languageCodes.joinToString(", ")
                                                         homepage = freshStation.homepage
                                                         uploadMode = false
@@ -281,6 +300,7 @@ fun EditStationScreen(
                                             homepage = homepage,
                                             favicon = favicon,
                                             countryCode = countryCode,
+                                            iso31662 = iso3166_2.ifBlank { null },
                                             languageCodes = langList,
                                             tags = tagList,
                                             codec = probedCodec,
@@ -308,6 +328,7 @@ fun EditStationScreen(
                                                 countryCode = countryCode,
                                                 languageCodes = langList,
                                                 homepage = homepage,
+                                                iso31662 = iso3166_2.ifBlank { null },
                                                 codec = probedCodec,
                                                 bitrate = probedBitrate
                                             )
@@ -320,6 +341,7 @@ fun EditStationScreen(
                                                 countryCode = countryCode,
                                                 languageCodes = languageCodes,
                                                 homepage = homepage,
+                                                iso31662 = iso3166_2.ifBlank { null },
                                                 codec = probedCodec,
                                                 bitrate = probedBitrate
                                             )
@@ -507,6 +529,10 @@ fun EditStationScreen(
                                     DropdownMenuItem(
                                         text = { Text("${selectionOption.second} (${selectionOption.first})") },
                                         onClick = {
+                                            if (countryCode != selectionOption.first) {
+                                                iso3166_2 = ""
+                                                stateSearchText = ""
+                                            }
                                             countryCode = selectionOption.first
                                             countrySearchText = "${selectionOption.second} (${selectionOption.first})"
                                             expandedCountry = false
@@ -515,6 +541,60 @@ fun EditStationScreen(
                                 }
                             }
                         }
+                }
+                androidx.compose.animation.AnimatedVisibility(visible = statesList.isNotEmpty()) {
+                    ExposedDropdownMenuBox(
+                        expanded = expandedState,
+                        onExpandedChange = { expandedState = it },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                            TextField(
+                                value = stateSearchText,
+                                onValueChange = { newValue ->
+                                    stateSearchText = newValue
+                                    expandedState = true
+                                    val matched = statesList.find { st -> st.getDisplayName(java.util.Locale.getDefault().language).equals(newValue, ignoreCase = true) }
+                                    iso3166_2 = matched?.code ?: ""
+                                },
+                                label = { Text(stringResource(R.string.edit_station_state_field)) },
+                                modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
+                                    if (isPureBlack) Modifier.border(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                                        RoundedCornerShape(16.dp)
+                                    ) else Modifier
+                                ),
+                                singleLine = true,
+                                shape = RoundedCornerShape(16.dp),
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState) },
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedContainerColor = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant,
+                                    unfocusedContainerColor = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                            
+                            val filteredStates = statesList.filter { it.getDisplayName(java.util.Locale.getDefault().language).contains(stateSearchText, ignoreCase = true) }
+                            if (filteredStates.isNotEmpty() && expandedState) {
+                                ExposedDropdownMenu(
+                                    expanded = expandedState,
+                                    onDismissRequest = { expandedState = false }
+                                ) {
+                                    filteredStates.forEach { st ->
+                                        val stName = st.getDisplayName(java.util.Locale.getDefault().language)
+                                        DropdownMenuItem(
+                                            text = { Text("$stName (${st.code})") },
+                                            onClick = {
+                                                iso3166_2 = st.code
+                                                stateSearchText = "$stName (${st.code})"
+                                                expandedState = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                    }
                 }
                 ExposedDropdownMenuBox(
                     expanded = expandedLanguage,

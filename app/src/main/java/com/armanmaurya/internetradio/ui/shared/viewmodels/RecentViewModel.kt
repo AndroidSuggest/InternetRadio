@@ -51,11 +51,12 @@ class RecentViewModel @Inject constructor(
         if (preferences.useFilterOnRecent) {
             val hasQuery = query.isNotBlank()
             val hasCountryFilter = !preferences.selectedCountryCode.isNullOrBlank()
+            val hasStateFilter = !preferences.selectedStateCode.isNullOrBlank()
             val hasLanguageFilter = !preferences.selectedLanguage.isNullOrBlank()
             val hasTagFilter = preferences.selectedTags.isNotEmpty()
 
             // If no filter criteria are set at all, show everything
-            if (!hasQuery && !hasCountryFilter && !hasLanguageFilter && !hasTagFilter) {
+            if (!hasQuery && !hasCountryFilter && !hasStateFilter && !hasLanguageFilter && !hasTagFilter) {
                 stations
             } else {
                 stations.filter { station ->
@@ -64,6 +65,8 @@ class RecentViewModel @Inject constructor(
                             station.tags.any { tag -> tag.contains(query, ignoreCase = true) }
                     val countryMatch = !hasCountryFilter ||
                             station.countryCode == preferences.selectedCountryCode
+                    val stateMatch = !hasStateFilter ||
+                            station.iso3166_2 == preferences.selectedStateCode
                     val languageMatch = if (!hasLanguageFilter) true else {
                         val selectedCode = preferences.selectedLanguage!!
                         station.languageCodes.contains(selectedCode)
@@ -71,7 +74,7 @@ class RecentViewModel @Inject constructor(
                     val tagsMatch = !hasTagFilter ||
                             preferences.selectedTags.any { it in station.tags }
 
-                    queryMatch && countryMatch && languageMatch && tagsMatch
+                    queryMatch && countryMatch && stateMatch && languageMatch && tagsMatch
                 }
             }
         } else {

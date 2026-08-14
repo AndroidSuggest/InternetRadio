@@ -8,6 +8,7 @@ data class AppPreferences(
     val pureBlack: Boolean = false,
     val appLanguage: String = "System",
     val selectedCountryCode: String? = null,
+    val selectedStateCode: String? = null,
     val selectedLanguage: String? = null,
     val selectedTags: Set<String> = emptySet(),
     val stopOnAudioBecomingNoisy: Boolean = true,

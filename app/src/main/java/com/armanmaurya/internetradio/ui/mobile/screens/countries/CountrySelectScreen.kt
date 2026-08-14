@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -33,13 +34,14 @@ import com.armanmaurya.internetradio.ui.shared.viewmodels.CountrySelectViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountrySelectScreen(
-    onCountrySelected: (Country) -> Unit,
+    onCountrySelected: (Country, String?) -> Unit,
     onBackClick: () -> Unit,
     selectedCountryCode: String? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: CountrySelectViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var selectedCountryForStates by remember { mutableStateOf<Country?>(null) }
     
     val filteredCountries = remember(uiState.countries, uiState.searchQuery) {
         if (uiState.searchQuery.isBlank()) {
@@ -150,16 +152,162 @@ fun CountrySelectScreen(
                         CountryItem(
                             country = Country(name = stringResource(R.string.select_country_all), isoCode = "", stationCount = totalStations),
                             isSelected = selectedCountryCode.isNullOrBlank(),
-                            onClick = { onCountrySelected(Country(name = context.getString(R.string.select_country_all), isoCode = "", stationCount = totalStations)) }
+                            onClick = { onCountrySelected(Country(name = context.getString(R.string.select_country_all), isoCode = "", stationCount = totalStations), null) }
                         )
                     }
                     itemsIndexed(filteredCountries, key = { _, country -> country.isoCode }) { _, country ->
                         val isSelected = country.isoCode == selectedCountryCode
+                        val statesForCountry = remember(country.isoCode) {
+                            com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, country.isoCode)
+                        }
                         CountryItem(
                             country = country,
                             isSelected = isSelected,
-                            onClick = { onCountrySelected(country) },
+                            hasStates = statesForCountry.isNotEmpty(),
+                            stateCount = statesForCountry.size,
+                            onClick = { 
+                                if (statesForCountry.isNotEmpty()) {
+                                    selectedCountryForStates = country
+                                } else {
+                                    onCountrySelected(country, null) 
+                                }
+                            },
                             modifier = Modifier.animateItem()
+                        )
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    var displayCountryForStates by remember { mutableStateOf<Country?>(null) }
+    LaunchedEffect(selectedCountryForStates) {
+        if (selectedCountryForStates != null) {
+            displayCountryForStates = selectedCountryForStates
+        }
+    }
+    
+    AnimatedVisibility(
+        visible = selectedCountryForStates != null,
+        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        displayCountryForStates?.let { currentCountry ->
+            BackHandler {
+                selectedCountryForStates = null
+            }
+            var stateSearchQuery by remember { mutableStateOf("") }
+            val allStates = remember(currentCountry.isoCode) {
+                com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, currentCountry.isoCode)
+            }
+            val filteredStates = remember(allStates, stateSearchQuery) {
+                if (stateSearchQuery.isBlank()) allStates
+                else allStates.filter { it.getDisplayName(java.util.Locale.getDefault().language).contains(stateSearchQuery, ignoreCase = true) }
+            }
+            
+            var isStateSearchActive by remember { mutableStateOf(false) }
+            val stateFocusRequester = remember { FocusRequester() }
+
+            LaunchedEffect(isStateSearchActive) {
+                if (isStateSearchActive) {
+                    stateFocusRequester.requestFocus()
+                }
+            }
+
+            Scaffold(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .safeDrawingPadding()
+                    .padding(bottom = contentPadding.calculateBottomPadding()),
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            AnimatedContent(
+                                targetState = isStateSearchActive,
+                                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                                label = "StateSearchTransition"
+                            ) { isSearch ->
+                                if (isSearch) {
+                                    TextField(
+                                        value = stateSearchQuery,
+                                        onValueChange = { stateSearchQuery = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .focusRequester(stateFocusRequester),
+                                        placeholder = { Text("Search states...") },
+                                        singleLine = true,
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = Color.Transparent,
+                                            unfocusedContainerColor = Color.Transparent,
+                                            disabledContainerColor = Color.Transparent,
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent,
+                                        )
+                                    )
+                                } else {
+                                    Text("Select State in ${currentCountry.name}")
+                                }
+                            }
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                if (isStateSearchActive) {
+                                    isStateSearchActive = false
+                                    stateSearchQuery = ""
+                                } else {
+                                    selectedCountryForStates = null
+                                }
+                            }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = {
+                                if (isStateSearchActive) {
+                                    isStateSearchActive = false
+                                    stateSearchQuery = ""
+                                } else {
+                                    isStateSearchActive = true
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = if (isStateSearchActive) Icons.Default.Close else Icons.Default.Search,
+                                    contentDescription = "Search"
+                                )
+                            }
+                        }
+                    )
+                }
+            ) { paddingValues ->
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    item(key = "all") {
+                        ListItem(
+                            headlineContent = { Text("All of ${currentCountry.name}") },
+                            modifier = Modifier
+                                .animateItem()
+                                .clickable {
+                                    selectedCountryForStates = null
+                                    onCountrySelected(currentCountry, null)
+                                }
+                        )
+                    }
+                    itemsIndexed(filteredStates, key = { _, st -> st.code }) { _, st ->
+                        ListItem(
+                            headlineContent = { Text(st.getDisplayName(java.util.Locale.getDefault().language)) },
+                            trailingContent = { Text(st.code, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                            modifier = Modifier
+                                .animateItem()
+                                .clickable {
+                                    selectedCountryForStates = null
+                                    onCountrySelected(currentCountry, st.code)
+                                }
                         )
                     }
                 }

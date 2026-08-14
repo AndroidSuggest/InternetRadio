@@ -117,8 +117,8 @@ fun AppNavHost(
             val selectedCode = backStackEntry.arguments?.getString("selectedCode")
             CountrySelectScreen(
                 selectedCountryCode = selectedCode,
-                onCountrySelected = { country ->
-                    discoverViewModel.updateCountry(country.isoCode)
+                onCountrySelected = { country, stateCode ->
+                    discoverViewModel.updateCountry(country.isoCode, stateCode)
                     navController.popBackStack()
                 },
                 onBackClick = { navController.popBackStack() },

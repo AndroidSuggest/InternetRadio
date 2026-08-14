@@ -21,8 +21,8 @@
 
 # Keep local entity and backup model classes used by Gson for export/import
 -keep class com.armanmaurya.internetradio.data.local.entity.LibraryStationEntity { *; }
--keep class com.armanmaurya.internetradio.data.model.LibraryBackup { *; }
--keep class com.armanmaurya.internetradio.data.model.ConflictStrategy { *; }
+-keep class com.armanmaurya.internetradio.data.model.** { *; }
+-keep class com.armanmaurya.internetradio.util.State { *; }
 
 # JNA rules for FCast SDK
 -keep class com.sun.jna.** { *; }

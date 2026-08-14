@@ -208,6 +208,7 @@
     <string name="edit_station_favicon_url_optional">Favicon URL (Optional)</string>
     <string name="edit_station_favicon_url_field">Favicon URL</string>
     <string name="edit_station_country_field">Country (Optional)</string>
+    <string name="edit_station_state_field">State / Region</string>
     <string name="edit_station_language_field">Languages (Optional)</string>
     <string name="edit_station_add_languages">Add Languages (Optional)</string>
     <string name="edit_station_tags_optional">Tags (Optional)</string>

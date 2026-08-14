@@ -107,11 +107,12 @@ class LibraryViewModel @Inject constructor(
         if (preferences.useFilterOnFavorites) {
             val hasQuery = query.isNotBlank()
             val hasCountryFilter = !preferences.selectedCountryCode.isNullOrBlank()
+            val hasStateFilter = !preferences.selectedStateCode.isNullOrBlank()
             val hasLanguageFilter = !preferences.selectedLanguage.isNullOrBlank()
             val hasTagFilter = preferences.selectedTags.isNotEmpty()
 
             // If no filter criteria are set at all, show everything
-            if (!hasQuery && !hasCountryFilter && !hasLanguageFilter && !hasTagFilter) {
+            if (!hasQuery && !hasCountryFilter && !hasStateFilter && !hasLanguageFilter && !hasTagFilter) {
                 stationsList
             } else {
                 stationsList.filter { station ->
@@ -120,6 +121,8 @@ class LibraryViewModel @Inject constructor(
                             station.tags.any { tag -> tag.contains(query, ignoreCase = true) }
                     val countryMatch = !hasCountryFilter ||
                             station.countryCode == preferences.selectedCountryCode
+                    val stateMatch = !hasStateFilter ||
+                            station.iso3166_2 == preferences.selectedStateCode
                     val languageMatch = if (!hasLanguageFilter) true else {
                         val selectedCode = preferences.selectedLanguage!!
                         station.languageCodes.contains(selectedCode)
@@ -127,7 +130,7 @@ class LibraryViewModel @Inject constructor(
                     val tagsMatch = !hasTagFilter ||
                             preferences.selectedTags.any { it in station.tags }
 
-                    queryMatch && countryMatch && languageMatch && tagsMatch
+                    queryMatch && countryMatch && stateMatch && languageMatch && tagsMatch
                 }
             }
         } else {
@@ -179,6 +182,7 @@ class LibraryViewModel @Inject constructor(
         countryCode: String,
         languageCodes: List<String>,
         homepage: String,
+        iso31662: String? = null,
         codec: String,
         bitrate: Int
     ) {
@@ -192,6 +196,7 @@ class LibraryViewModel @Inject constructor(
                 countryCode = countryCode,
                 languageCodes = languageCodes,
                 homepage = homepage,
+                iso31662 = iso31662,
                 codec = codec,
                 bitrate = bitrate
             )
@@ -268,6 +273,7 @@ class LibraryViewModel @Inject constructor(
         countryCode: String,
         languageCodes: String,
         homepage: String,
+        iso31662: String? = null,
         codec: String = "unknown",
         bitrate: Int = 0
     ) {
@@ -283,6 +289,7 @@ class LibraryViewModel @Inject constructor(
                 countryCode = countryCode,
                 languageCodes = langList,
                 homepage = homepage,
+                iso31662 = iso31662,
                 codec = codec,
                 bitrate = bitrate
             )
@@ -296,6 +303,7 @@ class LibraryViewModel @Inject constructor(
         homepage: String,
         favicon: String,
         countryCode: String,
+        iso31662: String? = null,
         languageCodes: List<String>,
         tags: List<String>,
         codec: String,
@@ -311,6 +319,7 @@ class LibraryViewModel @Inject constructor(
                     homepage = homepage,
                     favicon = favicon,
                     countryCode = countryCode,
+                    iso31662 = iso31662,
                     languageCodes = languageCodes,
                     tags = tags,
                     codec = codec,
@@ -324,6 +333,7 @@ class LibraryViewModel @Inject constructor(
                     homepage = homepage,
                     favicon = favicon,
                     countryCode = countryCode,
+                    iso31662 = iso31662,
                     languageCodes = languageCodes,
                     tags = tags,
                     codec = codec,
