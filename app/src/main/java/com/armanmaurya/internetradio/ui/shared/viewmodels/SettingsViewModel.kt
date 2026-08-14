@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.armanmaurya.internetradio.data.model.AppPreferences
 import com.armanmaurya.internetradio.data.model.ConflictStrategy
 import com.armanmaurya.internetradio.data.model.LibraryBackup
+import com.armanmaurya.internetradio.data.model.toBackupStation
 import com.armanmaurya.internetradio.data.repository.LibraryRepository
 import com.armanmaurya.internetradio.data.repository.SettingsRepository
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
@@ -157,7 +158,7 @@ class SettingsViewModel @Inject constructor(
                 val backup = LibraryBackup(
                     exportedAt = exportedAt,
                     appVersion = versionName ?: "unknown",
-                    stations = entities
+                    stations = entities.map { it.toBackupStation() }
                 )
                 val json = Gson().toJson(backup)
                 context.contentResolver.openOutputStream(uri)?.use { stream ->
@@ -213,7 +214,8 @@ class SettingsViewModel @Inject constructor(
                         continue
                     }
 
-                    backup.stations.forEach { entity ->
+                    backup.stations.forEach { backupStation ->
+                        val entity = backupStation.toLibraryStationEntity()
                         try {
                             val existing = libraryRepository.getEntityById(entity.stationUuid)
                             when {

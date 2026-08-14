@@ -5,6 +5,7 @@ import android.net.Uri
 import com.armanmaurya.internetradio.data.local.entity.toLibraryEntity
 import com.armanmaurya.internetradio.data.model.LibraryBackup
 import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.data.model.toBackupStation
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -22,12 +23,12 @@ object ExportUtils {
             val exportedAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
                 .format(Date())
 
-            val entity = station.toLibraryEntity(isCustom = station.isCustom)
+            val backupStation = station.toLibraryEntity(isCustom = station.isCustom).toBackupStation()
 
             val backup = LibraryBackup(
                 exportedAt = exportedAt,
                 appVersion = versionName ?: "unknown",
-                stations = listOf(entity)
+                stations = listOf(backupStation)
             )
             val json = Gson().toJson(backup)
             context.contentResolver.openOutputStream(uri)?.use { stream ->
