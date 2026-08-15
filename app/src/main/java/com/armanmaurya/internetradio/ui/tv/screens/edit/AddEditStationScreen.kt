@@ -57,7 +57,7 @@ fun AddEditStationScreen(
     var name by remember(station) { mutableStateOf(station?.name ?: "") }
     var url by remember(station) { mutableStateOf(station?.url ?: "") }
     var favicon by remember(station) { mutableStateOf(station?.favicon ?: "") }
-    var tags by remember(station) { mutableStateOf(station?.tags?.joinToString(", ") ?: "") }
+    var tags by remember(station) { mutableStateOf(station?.tags?.joinToString(", ")?.lowercase() ?: "") }
     var countryCode by remember(station) { mutableStateOf(station?.countryCode ?: "") }
     var languageCodes by remember(station) { mutableStateOf(station?.languageCodes?.joinToString(", ") ?: "") }
     var homepage by remember(station) { mutableStateOf(station?.homepage ?: "") }
@@ -440,7 +440,7 @@ fun AddEditStationScreen(
 
                 OutlinedTextField(
                     value = tags,
-                    onValueChange = { tags = it },
+                    onValueChange = { tags = it.lowercase() },
                     label = { androidx.compose.material3.Text("Tags (comma separated, Optional)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,

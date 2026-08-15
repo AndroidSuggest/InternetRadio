@@ -51,7 +51,7 @@ data class BackupStation(
             url = url,
             urlResolved = urlResolved ?: "",
             favicon = favicon ?: "",
-            tags = tags ?: emptyList(),
+            tags = tags?.map { it.lowercase() } ?: emptyList(),
             countryCode = countryCode ?: "",
             languageCodes = mappedLanguageCodes,
             codec = codec ?: "unknown",

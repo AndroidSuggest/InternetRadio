@@ -75,7 +75,7 @@ fun EditStationScreen(
         var name by remember(station) { mutableStateOf(station?.name ?: "") }
         var url by remember(station) { mutableStateOf(station?.url ?: "") }
         var favicon by remember(station) { mutableStateOf(station?.favicon ?: "") }
-        var tags by remember(station) { mutableStateOf(station?.tags?.joinToString(", ") ?: "") }
+        var tags by remember(station) { mutableStateOf(station?.tags?.joinToString(", ")?.lowercase() ?: "") }
         var countryCode by remember(station) { mutableStateOf(station?.countryCode ?: "") }
         
         val countries = remember {
@@ -690,7 +690,7 @@ fun EditStationScreen(
                     TextField(
                         value = tagsSearchText,
                         onValueChange = { 
-                            tagsSearchText = it
+                            tagsSearchText = it.lowercase()
                             expandedTags = true
                             viewModel.onTagSearchQueryChange(it)
                         },
@@ -726,7 +726,7 @@ fun EditStationScreen(
                                         val currentTags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                                         if (!currentTags.any { it.equals(query, ignoreCase = true) }) {
                                             val sep = if (currentTags.isEmpty()) "" else ", "
-                                            tags = tags.trimEnd(',', ' ') + sep + query
+                                            tags = tags.trimEnd(',', ' ') + sep + query.lowercase()
                                         }
                                         tagsSearchText = ""
                                         expandedTags = false
@@ -741,7 +741,7 @@ fun EditStationScreen(
                                         val currentTags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                                         if (!currentTags.any { it.equals(tag.name, ignoreCase = true) }) {
                                             val sep = if (currentTags.isEmpty()) "" else ", "
-                                            tags = tags.trimEnd(',', ' ') + sep + tag.name
+                                            tags = tags.trimEnd(',', ' ') + sep + tag.name.lowercase()
                                         }
                                         tagsSearchText = ""
                                         expandedTags = false

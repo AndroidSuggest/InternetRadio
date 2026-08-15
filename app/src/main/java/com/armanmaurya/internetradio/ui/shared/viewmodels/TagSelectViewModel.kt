@@ -51,11 +51,12 @@ class TagSelectViewModel @Inject constructor(
     }
 
     fun toggleTagSelection(tagName: String) {
+        val lowerTag = tagName.lowercase()
         _uiState.update { state ->
-            val newSelected = if (state.selectedTags.contains(tagName)) {
-                state.selectedTags - tagName
+            val newSelected = if (state.selectedTags.contains(lowerTag)) {
+                state.selectedTags - lowerTag
             } else {
-                state.selectedTags + tagName
+                state.selectedTags + lowerTag
             }
             state.copy(selectedTags = newSelected)
         }
@@ -65,7 +66,7 @@ class TagSelectViewModel @Inject constructor(
         if (tagName.isBlank()) return
         _uiState.update { state ->
             state.copy(
-                selectedTags = state.selectedTags + tagName.trim(),
+                selectedTags = state.selectedTags + tagName.trim().lowercase(),
                 searchQuery = ""
             )
         }
