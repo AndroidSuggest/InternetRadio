@@ -58,4 +58,7 @@ interface LibraryStationDao {
 
     @Query("SELECT * FROM library_stations WHERE stationUuid = :stationUuid")
     suspend fun getStationById(stationUuid: String): LibraryStationEntity?
+
+    @Query("SELECT * FROM library_stations WHERE isCustom = 1")
+    suspend fun getCustomStations(): List<LibraryStationEntity>
 }

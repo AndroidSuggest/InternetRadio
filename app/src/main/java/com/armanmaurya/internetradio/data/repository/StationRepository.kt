@@ -11,11 +11,13 @@ import com.armanmaurya.internetradio.data.remote.dto.toDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.armanmaurya.internetradio.data.local.dao.LibraryStationDao
 
 @Singleton
 class StationRepository @Inject constructor(
     private val api: RadioBrowserApi,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val libraryStationDao: LibraryStationDao
 ) {
 
     suspend fun filterStations(
@@ -90,13 +92,25 @@ class StationRepository @Inject constructor(
 
     suspend fun getTags(filter: String? = null): Result<List<Tag>> =
         runCatching {
-            if (filter.isNullOrBlank()) {
+            val apiTags = if (filter.isNullOrBlank()) {
                 api.getTags(order = "stationcount", reverse = true)
                     .map { it.toDomain() }
             } else {
                 api.getTagsFiltered(filter = filter, order = "stationcount", reverse = true)
                     .map { it.toDomain() }
             }
+
+            val customStations = libraryStationDao.getCustomStations()
+            val customTags = customStations.flatMap { it.tags }
+                .filter { it.isNotBlank() }
+                .filter { if (!filter.isNullOrBlank()) it.contains(filter, ignoreCase = true) else true }
+                .distinct()
+                .map { Tag(name = it, stationCount = 1) }
+
+            val apiTagNames = apiTags.map { it.name.lowercase() }.toSet()
+            val uniqueCustomTags = customTags.filter { it.name.lowercase() !in apiTagNames }
+
+            apiTags + uniqueCustomTags
         }
 
     suspend fun getCurrentCountryCode(): Result<String> =
