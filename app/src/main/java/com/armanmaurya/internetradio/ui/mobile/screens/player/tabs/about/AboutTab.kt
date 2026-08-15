@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -48,21 +48,22 @@ fun AboutTab(
     ) {
         item {
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(R.string.player_station_info),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
         }
 
-        if (station.country.isNotBlank() || station.language.isNotBlank()) {
+        val countryName = station.countryCode.takeIf { it.isNotBlank() }?.let { java.util.Locale("", it).getDisplayCountry(java.util.Locale.getDefault()) }
+        val stateName = station.iso3166_2?.takeIf { it.isNotBlank() }?.let { iso3166_2 ->
+            if (station.countryCode.isNotBlank()) {
+                com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, station.countryCode).find { it.code == iso3166_2 }?.getDisplayName(java.util.Locale.getDefault().language) ?: iso3166_2
+            } else iso3166_2
+        }
+
+        if (!countryName.isNullOrBlank() || !stateName.isNullOrBlank()) {
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (station.country.isNotBlank()) {
+                    if (!countryName.isNullOrBlank()) {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -75,10 +76,13 @@ fun AboutTab(
                                         RoundedCornerShape(12.dp)
                                     ) else Modifier
                                 )
-                                .padding(vertical = 12.dp),
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.basicMarquee()
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.Public,
                                     contentDescription = stringResource(R.string.edit_station_country_field),
@@ -87,27 +91,29 @@ fun AboutTab(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = station.country,
+                                    text = countryName,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    modifier = Modifier.basicMarquee()
+                                    maxLines = 1
                                 )
                             }
                         }
                     }
 
-                    if (station.country.isNotBlank() && station.language.isNotBlank()) {
+                    if (!countryName.isNullOrBlank() && !stateName.isNullOrBlank()) {
                         Box(
                             modifier = Modifier
-                                .width(20.dp)
-                                .height(if (isPureBlack) 1.dp else 4.dp)
-                                .background(if (isPureBlack) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primaryContainer)
+                                .width(16.dp)
+                                .height(6.dp)
+                                .background(
+                                    if (isPureBlack) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                                    else MaterialTheme.colorScheme.primaryContainer
+                                )
                         )
                     }
 
-                    if (station.language.isNotBlank()) {
+                    if (!stateName.isNullOrBlank()) {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -120,27 +126,73 @@ fun AboutTab(
                                         RoundedCornerShape(12.dp)
                                     ) else Modifier
                                 )
-                                .padding(vertical = 12.dp),
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.basicMarquee()
+                            ) {
                                 Icon(
-                                    imageVector = Icons.Default.Language,
-                                    contentDescription = stringResource(R.string.edit_station_language_field),
+                                    imageVector = Icons.Default.Public,
+                                    contentDescription = stringResource(R.string.edit_station_state_field),
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = station.language,
+                                    text = stateName,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    modifier = Modifier.basicMarquee()
+                                    maxLines = 1
                                 )
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        val languageText = station.languageCodes.takeIf { it.isNotEmpty() }?.joinToString(", ") { code ->
+            com.neovisionaries.i18n.LanguageAlpha3Code.getByCodeIgnoreCase(code)?.getName() ?: java.util.Locale(code).getDisplayLanguage(java.util.Locale.getDefault())
+        }
+
+        if (!languageText.isNullOrBlank()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (isPureBlack) androidx.compose.ui.graphics.Color.Black else MaterialTheme.colorScheme.primaryContainer)
+                        .then(
+                            if (isPureBlack) Modifier.border(
+                                1.dp,
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                                RoundedCornerShape(12.dp)
+                            ) else Modifier
+                        )
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.basicMarquee()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Translate,
+                            contentDescription = stringResource(R.string.edit_station_language_field),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = languageText,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1
+                        )
                     }
                 }
             }
