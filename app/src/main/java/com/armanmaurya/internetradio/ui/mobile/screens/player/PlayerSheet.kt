@@ -143,6 +143,7 @@ fun PlayerSheetContent(
     var showSleepTimerDialog by remember { mutableStateOf(false) }
     var searchDialogTrack by remember { mutableStateOf<String?>(null) }
     var showCastDialog by remember { mutableStateOf(false) }
+    var showCoverArt by remember { mutableStateOf(false) }
 
     if (showCastDialog) {
         com.armanmaurya.internetradio.ui.shared.components.CastDeviceDialog(
@@ -413,15 +414,25 @@ fun PlayerSheetContent(
                 userScrollEnabled = progress > 0.5f // Only allow swiping when expanded
             ) { page ->
             val pageStation = if (isInfinite && playlistSize > 0) playlist.getOrNull(page % playlistSize) ?: station else playlist.getOrNull(page) ?: station
+            val isCurrentPlayingStation = pageStation.stationUuid == station.stationUuid
+            
+            val artToShow = if (isCurrentPlayingStation && showCoverArt && !playbackState.trackCoverArtUri.isNullOrBlank()) {
+                playbackState.trackCoverArtUri
+            } else {
+                pageStation.favicon.ifBlank { null }
+            }
+
             SubcomposeAsyncImage(
                 model = coil3.request.ImageRequest.Builder(LocalContext.current)
-                    .data(pageStation.favicon.ifBlank { null })
+                    .data(artToShow)
                     .size(coil3.size.Size.ORIGINAL)
                     .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 filterQuality = FilterQuality.High,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable { showCoverArt = !showCoverArt },
                 error = {
                     Box(
                         contentAlignment = Alignment.Center,
