@@ -449,8 +449,23 @@ class PlaybackService : MediaLibraryService() {
 
                 // Set playWhenReady=true BEFORE setMediaItem so ExoPlayer auto-starts
                 // on STATE_READY. This runs synchronously before any coroutine can run.
+                // We must change the system volume ONLY after the player requests audio focus 
+                // and the foreground service is fully registered, otherwise Android ignores it 
+                // for fully closed background apps.
                 if (volumeLevel >= 0f) {
-                    player?.volume = volumeLevel
+                    val listener = object : androidx.media3.common.Player.Listener {
+                        override fun onPlaybackStateChanged(playbackState: Int) {
+                            if (playbackState == androidx.media3.common.Player.STATE_READY) {
+                                val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                                val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+                                val targetVolume = (volumeLevel * maxVolume).toInt()
+                                audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVolume, 0)
+                                player?.removeListener(this)
+                            }
+                        }
+                    }
+                    player?.addListener(listener)
+                    player?.volume = 1f
                 } else {
                     player?.volume = 1f
                 }
