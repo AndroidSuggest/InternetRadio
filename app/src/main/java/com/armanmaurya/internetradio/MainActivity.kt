@@ -79,6 +79,9 @@ class MainActivity : AppCompatActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+        super.onCreate(savedInstanceState)
+
         val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         if (uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
             startActivity(Intent(this, TvActivity::class.java))
@@ -86,8 +89,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        installSplashScreen()
-        super.onCreate(savedInstanceState)
         // Sync whatever locale is currently active (set by our settings or system App Info)
         // back to DataStore so our UI always reflects the real current language.
         val currentLocales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
