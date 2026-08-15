@@ -64,6 +64,8 @@ class PlaybackService : MediaLibraryService() {
     
     private var stopOnAudioBecomingNoisy: Boolean = true
     private var showCoverArtInNotification: Boolean = true
+    private var alarmFadeInSeconds: Int = 0
+    private var volumeFadeJob: kotlinx.coroutines.Job? = null
     
     private val audioNoisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -242,6 +244,7 @@ class PlaybackService : MediaLibraryService() {
                 loadErrorHandlingPolicy.maxRetryDurationMs = prefs.maxRetryDuration
                 stopOnAudioBecomingNoisy = prefs.stopOnAudioBecomingNoisy
                 showCoverArtInNotification = prefs.showCoverArtInNotification
+                alarmFadeInSeconds = prefs.alarmVolumeTransitionSeconds
             }
         }
 
@@ -452,6 +455,7 @@ class PlaybackService : MediaLibraryService() {
                 // We must change the system volume ONLY after the player requests audio focus 
                 // and the foreground service is fully registered, otherwise Android ignores it 
                 // for fully closed background apps.
+                volumeFadeJob?.cancel()
                 if (volumeLevel >= 0f) {
                     val listener = object : androidx.media3.common.Player.Listener {
                         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -465,7 +469,22 @@ class PlaybackService : MediaLibraryService() {
                         }
                     }
                     player?.addListener(listener)
-                    player?.volume = 1f
+                    
+                    val transitionSeconds = intent.getIntExtra("ALARM_TRANSITION_SECONDS", alarmFadeInSeconds)
+                    if (transitionSeconds > 0) {
+                        player?.volume = 0f
+                        volumeFadeJob = serviceScope.launch {
+                            val steps = transitionSeconds * 10
+                            val volumeStep = 1.0f / steps
+                            for (i in 1..steps) {
+                                kotlinx.coroutines.delay(100)
+                                player?.volume = (volumeStep * i).coerceIn(0f, 1f)
+                            }
+                            player?.volume = 1.0f
+                        }
+                    } else {
+                        player?.volume = 1f
+                    }
                 } else {
                     player?.volume = 1f
                 }
@@ -500,6 +519,7 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
         } else if (action == "com.armanmaurya.internetradio.ACTION_STOP_PLAYBACK") {
+            volumeFadeJob?.cancel()
             player?.volume = 1f
             player?.stop()
             recordingManager.stopRecording()

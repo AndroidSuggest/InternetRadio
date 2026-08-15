@@ -13,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,6 +22,9 @@ class ScheduleReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var scheduleRepository: ScheduleRepository
+
+    @Inject
+    lateinit var settingsRepository: com.armanmaurya.internetradio.data.repository.SettingsRepository
 
     @Inject
     lateinit var libraryRepository: LibraryRepository
@@ -61,6 +65,7 @@ class ScheduleReceiver : BroadcastReceiver() {
                 // Resolve the station from the library so PlaybackService can
                 // build the MediaItem synchronously without any DB lookup.
                 val libraryStation = libraryRepository.getStationById(schedule.stationUuid)
+                val prefs = settingsRepository.appPreferencesFlow.first()
     
                 val playIntent = Intent(context, PlaybackService::class.java).apply {
                     this.action = "com.armanmaurya.internetradio.ACTION_PLAY_STATION"
@@ -72,6 +77,7 @@ class ScheduleReceiver : BroadcastReceiver() {
                     putExtra("RECORDING_DURATION", schedule.durationMinutes)
                     putExtra("KEEP_PLAYBACK", schedule.keepPlayback)
                     putExtra("VOLUME_LEVEL", schedule.volumeLevel)
+                    putExtra("ALARM_TRANSITION_SECONDS", prefs.alarmVolumeTransitionSeconds)
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(playIntent)

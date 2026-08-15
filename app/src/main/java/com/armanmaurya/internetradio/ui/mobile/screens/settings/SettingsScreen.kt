@@ -181,6 +181,11 @@ fun SettingsScreen(
                 topShape = topShape,
                 bottomShape = bottomShape
             )
+            ScheduleSection(
+                uiState = uiState,
+                onSetAlarmVolumeTransitionSeconds = viewModel::setAlarmVolumeTransitionSeconds,
+                singleShape = singleShape
+            )
             AboutSection(
                 onAboutClick = onAboutClick,
                 onCheckUpdatesClick = onCheckUpdatesClick,
@@ -643,6 +648,51 @@ private fun BackupSection(
             icon = Icons.Default.FileDownload,
             shape = bottomShape
         )
+    }
+}
+
+@Composable
+private fun ScheduleSection(
+    uiState: AppPreferences,
+    onSetAlarmVolumeTransitionSeconds: (Int) -> Unit,
+    singleShape: RoundedCornerShape
+) {
+    Section(title = stringResource(R.string.settings_schedule_section)) {
+        val isEnabled = uiState.alarmVolumeTransitionSeconds > 0
+        
+        ExpandableItem(
+            title = stringResource(R.string.settings_gradual_volume),
+            subtitle = if (isEnabled) stringResource(R.string.settings_gradual_volume_enabled, uiState.alarmVolumeTransitionSeconds) 
+                       else stringResource(R.string.settings_gradual_volume_disabled),
+            isExpanded = isEnabled,
+            hasSwitch = true,
+            onToggle = { 
+                if (isEnabled) {
+                    onSetAlarmVolumeTransitionSeconds(0) 
+                } else {
+                    onSetAlarmVolumeTransitionSeconds(15)
+                }
+            },
+            icon = Icons.AutoMirrored.Filled.VolumeUp,
+            shape = singleShape
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "${uiState.alarmVolumeTransitionSeconds} seconds",
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Slider(
+                    value = uiState.alarmVolumeTransitionSeconds.toFloat(),
+                    onValueChange = { onSetAlarmVolumeTransitionSeconds(it.toInt()) },
+                    valueRange = 1f..60f
+                )
+            }
+        }
     }
 }
 

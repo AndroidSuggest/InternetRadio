@@ -62,6 +62,7 @@ class SettingsRepository @Inject constructor(
         val LIBRARY_SORT_OPTION = stringPreferencesKey("library_sort_option")
         val START_OF_WEEK = stringPreferencesKey("start_of_week")
         val SHOW_COVER_ART_IN_NOTIFICATION = booleanPreferencesKey("show_cover_art_in_notification")
+        val ALARM_VOLUME_TRANSITION_SECONDS = androidx.datastore.preferences.core.intPreferencesKey("alarm_volume_transition_seconds")
     }
 
     val appPreferencesFlow: Flow<AppPreferences> = context.dataStore.data
@@ -107,6 +108,7 @@ class SettingsRepository @Inject constructor(
             val startOfWeekName = preferences[PreferencesKeys.START_OF_WEEK]
             val startOfWeek = com.armanmaurya.internetradio.data.model.StartOfWeek.entries.find { it.name == startOfWeekName } ?: com.armanmaurya.internetradio.data.model.StartOfWeek.SUNDAY
             val showCoverArtInNotification = preferences[PreferencesKeys.SHOW_COVER_ART_IN_NOTIFICATION] ?: true
+            val alarmVolumeTransitionSeconds = preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] ?: 0
 
             AppPreferences(
                 themeMode = themeMode, 
@@ -137,7 +139,8 @@ class SettingsRepository @Inject constructor(
                 conflictStrategy = conflictStrategy,
                 librarySortOption = librarySortOption,
                 startOfWeek = startOfWeek,
-                showCoverArtInNotification = showCoverArtInNotification
+                showCoverArtInNotification = showCoverArtInNotification,
+                alarmVolumeTransitionSeconds = alarmVolumeTransitionSeconds
             )
         }
 
@@ -314,6 +317,12 @@ class SettingsRepository @Inject constructor(
     suspend fun setShowCoverArtInNotification(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SHOW_COVER_ART_IN_NOTIFICATION] = enabled
+        }
+    }
+
+    suspend fun setAlarmVolumeTransitionSeconds(seconds: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] = seconds
         }
     }
 }

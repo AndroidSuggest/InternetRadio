@@ -138,6 +138,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setAlarmVolumeTransitionSeconds(seconds: Int) {
+        viewModelScope.launch {
+            settingsRepository.setAlarmVolumeTransitionSeconds(seconds)
+        }
+    }
+
     fun exportLibrary(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
