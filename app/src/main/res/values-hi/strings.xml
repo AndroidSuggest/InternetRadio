@@ -97,14 +97,14 @@
     <string name="settings_conflict_overwrite_desc">हमेशा बैकअप संस्करण का उपयोग करें</string>
     <string name="settings_conflict_keep_newer">नया रखें</string>
     <string name="settings_conflict_keep_newer_desc">जो हाल ही में जोड़ा गया हो उसे रखें</string>
-    <string name="settings_export_title">लाइब्रेरी निर्यात करें</string>
+    <string name="settings_export_title">स्टेशन निर्यात करें</string>
     <string name="settings_export_subtitle">अपने स्टेशन फ़ाइल में सहेजें</string>
-    <string name="settings_import_title">लाइब्रेरी आयात करें</string>
+    <string name="settings_import_title">स्टेशन आयात करें</string>
     <string name="settings_import_subtitle">बैकअप फ़ाइल से स्टेशन पुनर्स्थापित करें</string>
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
     <!-- ========================================== -->
-    <string name="about_title">हमारे बारे बारे में</string>
+    <string name="about_title">हमारे बारे में</string>
     <string name="about_us">हमारे बारे में</string>
     <string name="about_app_description">एक सरल इंटरनेट रेडियो प्लेयर जो आपको दुनिया भर के हजारों रेडियो स्टेशनों को खोजने और सुनने की सुविधा देता है।</string>
     <string name="about_view_contributors">योगदानकर्ताओं को देखें</string>
@@ -209,7 +209,7 @@
     <string name="edit_station_unsaved_changes">सहेजे न गए परिवर्तन</string>
     <string name="edit_station_unsaved_changes_message_exit">आपके पास सहेजे न गए परिवर्तन हैं। क्या आप वाकई उन्हें रद्द करके बाहर निकलना चाहते हैं?</string>
     <string name="edit_station_reset_title">स्टेशन रीसेट करें</string>
-    <string name="edit_station_reset_message">क्या आप वाकई इस स्टेशन को इसके मूल डेटा पर रीसेट करना चाहते हैं? आपके सभी संपादन नष्ट जाएँगे।</string>
+    <string name="edit_station_reset_message">क्या आप वाकई इस स्टेशन को इसके मूल डेटा पर रीसेट करना चाहते हैं? आपके सभी संपादन नष्ट हो जाएँगे।</string>
     <string name="edit_station_fields_reset_message">फ़ील्ड्स को मूल डेटा पर रीसेट कर दिया गया है</string>
     <string name="edit_station_error_empty_fields">आवश्यक फ़ील्ड खाली नहीं हो सकते</string>
     <string name="edit_station_upload_save">अपलोड और सहेजें</string>
@@ -239,7 +239,8 @@
     <string name="player_set_sleep_timer">स्लीप टाइमर सेट करें</string>
     <string name="player_start_button">शुरू करें</string>
     <plurals name="player_timer_ends_in_msg">
-        <item quantity="one">टाइमर %1$s मिनट में समाप्त होगा।</item>
+        <item quantity="one">टाइमर %1$d मिनट में समाप्त होगा।</item>
+        <item quantity="other">टाइमर %1$d मिनटों में समाप्त होगा।</item>
     </plurals>
     <string name="player_timer_min">%1$d मिनट</string>
     <string name="player_recording_saved">रिकॉर्डिंग सहेजी गई!</string>
@@ -322,6 +323,7 @@
     <string name="delete_recording">हटाएँ</string>
     <plurals name="recordings_count">
         <item quantity="one">%1$d रिकॉर्डिंग</item>
+        <item quantity="other">%1$d रिकॉर्डिंग</item>
     </plurals>
     <string name="schedule_keep_playback_subtitle">बंद होने पर, रिकॉर्डिंग समाप्त होने पर प्लेबैक बंद हो जाता है</string>
     <!-- ========================================== -->
