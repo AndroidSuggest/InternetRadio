@@ -1,5 +1,6 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armanmaurya.internetradio.R
+import com.armanmaurya.internetradio.data.local.entity.ScheduleType
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.components.ScheduleItem
 
 @Composable
@@ -58,19 +60,68 @@ fun SchedulesTabContent(
                 )
             }
         } else {
+            val playbackSchedules = schedules.filter { it.type == ScheduleType.PLAYBACK }
+            val recordSchedules = schedules.filter { it.type == ScheduleType.RECORD }
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(schedules, key = { it.id }) { schedule ->
-                    val stationFavicon = libraryStations.find { it.stationUuid == schedule.stationUuid }?.favicon
-                    ScheduleItem(
-                        modifier = Modifier.clickable { onEditSchedule(schedule.id) },
-                        schedule = schedule,
-                        stationFavicon = stationFavicon,
-                        startOfWeek = appPreferences.startOfWeek,
-                        onToggle = { isEnabled -> viewModel.toggleSchedule(schedule, isEnabled) }
-                    )
+                if (playbackSchedules.isNotEmpty()) {
+                    item {
+                        androidx.compose.material3.Card(
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.schedule_playback),
+                                style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                    items(playbackSchedules, key = { it.id }) { schedule ->
+                        val stationFavicon = libraryStations.find { it.stationUuid == schedule.stationUuid }?.favicon
+                        ScheduleItem(
+                            modifier = Modifier.clickable { onEditSchedule(schedule.id) },
+                            schedule = schedule,
+                            stationFavicon = stationFavicon,
+                            startOfWeek = appPreferences.startOfWeek,
+                            onToggle = { isEnabled -> viewModel.toggleSchedule(schedule, isEnabled) }
+                        )
+                    }
+                }
+
+                if (playbackSchedules.isNotEmpty() && recordSchedules.isNotEmpty()) {
+                    // Separator removed per user request
+                }
+
+                if (recordSchedules.isNotEmpty()) {
+                    item {
+                        androidx.compose.material3.Card(
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.schedule_record),
+                                style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                    items(recordSchedules, key = { it.id }) { schedule ->
+                        val stationFavicon = libraryStations.find { it.stationUuid == schedule.stationUuid }?.favicon
+                        ScheduleItem(
+                            modifier = Modifier.clickable { onEditSchedule(schedule.id) },
+                            schedule = schedule,
+                            stationFavicon = stationFavicon,
+                            startOfWeek = appPreferences.startOfWeek,
+                            onToggle = { isEnabled -> viewModel.toggleSchedule(schedule, isEnabled) }
+                        )
+                    }
                 }
             }
         }

@@ -69,16 +69,11 @@ fun ScheduleItem(
         stringResource(R.string.schedule_once)
     }
 
-    val typeText = if (schedule.type == ScheduleType.PLAYBACK) stringResource(R.string.schedule_playback) else stringResource(R.string.schedule_record)
-
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Column {
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,7 +110,7 @@ fun ScheduleItem(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = if (repeatText != null) "$timeRangeString • $typeText • $repeatText" else "$timeRangeString • $typeText",
+                        text = if (repeatText != null) "$timeRangeString • $repeatText" else timeRangeString,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
