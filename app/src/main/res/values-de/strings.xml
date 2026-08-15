@@ -186,6 +186,9 @@
     <string name="select_language_search">Sprache suchen</string>
     <string name="select_language_title">Sprache auswählen</string>
     <string name="select_language_all">Alle Sprachen</string>
+    <string name="select_country_search_states">Staaten suchen...</string>
+    <string name="select_country_select_state_in">Suche Staat in %1$s</string>
+    <string name="select_country_all_of">Alle von %1$s</string>
 
     <!-- ========================================== -->
     <!-- 10. SELECT TAGS                            -->
@@ -208,6 +211,7 @@
     <string name="edit_station_favicon_url_optional">Favicon-URL (Optional)</string>
     <string name="edit_station_favicon_url_field">Favicon-URL</string>
     <string name="edit_station_country_field">Land (Optional)</string>
+    <string name="edit_station_state_field">Staat / Region (Optional)</string>
     <string name="edit_station_language_field">Sprachen (Optional)</string>
     <string name="edit_station_add_languages">Sprachen hinzufügen (Optional)</string>
     <string name="edit_station_tags_optional">Tags (Optional)</string>
@@ -259,6 +263,7 @@
     <string name="player_favicon_url_copied">Favicon-URL kopiert</string>
     <string name="player_station_codec_bitrate">%1$s • %2$s kbps</string>
     <string name="player_station_bitrate_only">%1$s kbps</string>
+    <string name="unit_kbps">kbps</string>
     <string name="player_cd_pause">Pause</string>
     <string name="player_cd_play">Play</string>
     <string name="player_cd_previous">Vorheriger Sender</string>
