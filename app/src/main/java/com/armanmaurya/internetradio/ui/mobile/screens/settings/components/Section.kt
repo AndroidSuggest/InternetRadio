@@ -27,20 +27,8 @@ fun Section(
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
         )
-        val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth().then(
-                if (isPureBlack) Modifier.border(
-                    1.dp,
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                    MaterialTheme.shapes.medium
-                ) else Modifier
-            ),
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Column {
-                content()
-            }
+        Column {
+            content()
         }
     }
 }

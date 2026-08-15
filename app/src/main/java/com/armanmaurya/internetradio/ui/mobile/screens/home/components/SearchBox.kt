@@ -48,6 +48,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.ui.text.style.TextAlign
 import com.armanmaurya.internetradio.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -174,8 +176,7 @@ fun RadioSearchBar(
                                         tint = if (!selectedCountryCode.isNullOrBlank())
                                             MaterialTheme.colorScheme.primary
                                         else
-                                            MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(32.dp)
+                                            MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     if (!selectedCountryCode.isNullOrBlank()) {
                                         val displayCode = if (!selectedStateCode.isNullOrBlank()) selectedStateCode else selectedCountryCode
@@ -187,10 +188,13 @@ fun RadioSearchBar(
                                             Text(
                                                 text = displayCode,
                                                 style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontSize = 10.sp,
+                                                    lineHeight = 8.sp,
                                                     fontWeight = FontWeight.Bold
                                                 ),
-                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier
+                                                    .defaultMinSize(minWidth = 32.dp)
+                                                    .padding(horizontal = 4.dp, vertical = 0.dp)
                                             )
                                         }
                                     }

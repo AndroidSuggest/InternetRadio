@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -87,13 +88,8 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     // UI-only state for expand/collapse
-    var themeExpanded by remember { mutableStateOf(false) }
-    var languageExpanded by remember { mutableStateOf(false) }
-    var startWeekExpanded by remember { mutableStateOf(false) }
+    var expandedItem by remember { mutableStateOf<String?>(null) }
     var showHistoryLimitDialog by remember { mutableStateOf(false) }
-    var defaultTabExpanded by remember { mutableStateOf(false) }
-    var maxRetryDurationExpanded by remember { mutableStateOf(false) }
-    var backupConflictExpanded by remember { mutableStateOf(false) }
 
     // Toast feedback for backup/restore operations
     val context = LocalContext.current
@@ -117,6 +113,11 @@ fun SettingsScreen(
         }
     }
 
+    val topShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
+    val middleShape = RoundedCornerShape(4.dp)
+    val bottomShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+    val singleShape = RoundedCornerShape(24.dp)
+
     Scaffold(
         modifier = Modifier.padding(bottom = contentPadding.calculateBottomPadding()),
         topBar = { SettingsTopBar(onBackClick) }
@@ -131,53 +132,63 @@ fun SettingsScreen(
             AppearanceSection(
                 uiState = uiState,
                 availableThemes = listOf(AppTheme.LIGHT, AppTheme.DARK, AppTheme.SYSTEM),
-                themeExpanded = themeExpanded,
-                onToggleThemeExpanded = { themeExpanded = !themeExpanded },
+                expandedItem = expandedItem,
+                onExpandedItemChange = { expandedItem = it },
                 onSetDynamicTheme = viewModel::setDynamicTheme,
                 onSetTheme = viewModel::setAppTheme,
-                onSetPureBlack = viewModel::setPureBlack
+                onSetPureBlack = viewModel::setPureBlack,
+                topShape = topShape,
+                middleShape = middleShape,
+                bottomShape = bottomShape
             )
             GeneralSection(
                 uiState = uiState,
                 languages = rememberAvailableLanguages(),
-                languageExpanded = languageExpanded,
-                onToggleLanguageExpanded = { languageExpanded = !languageExpanded },
+                expandedItem = expandedItem,
+                onExpandedItemChange = { expandedItem = it },
                 onSetLanguage = viewModel::setAppLanguage,
-                startWeekExpanded = startWeekExpanded,
-                onToggleStartWeekExpanded = { startWeekExpanded = !startWeekExpanded },
                 onSetStartOfWeek = viewModel::setStartOfWeek,
-                defaultTabExpanded = defaultTabExpanded,
-                onToggleDefaultTabExpanded = { defaultTabExpanded = !defaultTabExpanded },
                 onSetDefaultTab = viewModel::setDefaultTab,
                 onSetAutoRouteToBrowseOnSearch = viewModel::setAutoRouteToBrowseOnSearch,
-                onSetDisableUpdateCheck = viewModel::setDisableUpdateCheck
+                onSetDisableUpdateCheck = viewModel::setDisableUpdateCheck,
+                topShape = topShape,
+                middleShape = middleShape,
+                bottomShape = bottomShape
             )
             PlayerSection(
                 uiState = uiState,
+                expandedItem = expandedItem,
+                onExpandedItemChange = { expandedItem = it },
                 onSetAutoPlayOnStart = viewModel::setAutoPlayOnStart,
                 onSetStopOnAudioBecomingNoisy = viewModel::setStopOnAudioBecomingNoisy,
                 onSetShowCoverArtInNotification = viewModel::setShowCoverArtInNotification,
                 showHistoryLimitDialog = showHistoryLimitDialog,
                 onToggleHistoryLimitDialog = { showHistoryLimitDialog = !showHistoryLimitDialog },
                 onSetHistoryLimit = viewModel::setTrackHistoryLimit,
-                maxRetryDurationExpanded = maxRetryDurationExpanded,
-                onToggleMaxRetryDurationExpanded = { maxRetryDurationExpanded = !maxRetryDurationExpanded },
-                onSetMaxRetryDuration = viewModel::setMaxRetryDuration
+                onSetMaxRetryDuration = viewModel::setMaxRetryDuration,
+                topShape = topShape,
+                middleShape = middleShape,
+                bottomShape = bottomShape,
+                singleShape = singleShape
             )
             BackupSection(
                 uiState = uiState,
-                conflictExpanded = backupConflictExpanded,
-                onToggleConflictExpanded = { backupConflictExpanded = !backupConflictExpanded },
+                expandedItem = expandedItem,
+                onExpandedItemChange = { expandedItem = it },
                 onSetConflictStrategy = viewModel::setConflictStrategy,
                 onExport = { exportLauncher.launch("stations.json") },
-                onImport = { importLauncher.launch(arrayOf("application/json")) }
+                onImport = { importLauncher.launch(arrayOf("application/json")) },
+                topShape = topShape,
+                bottomShape = bottomShape
             )
             AboutSection(
                 onAboutClick = onAboutClick,
-                onCheckUpdatesClick = onCheckUpdatesClick
+                onCheckUpdatesClick = onCheckUpdatesClick,
+                topShape = topShape,
+                middleShape = middleShape,
+                bottomShape = bottomShape
             )
 
-            val context = LocalContext.current
             val packageInfo = remember {
                 try {
                     context.packageManager.getPackageInfo(context.packageName, 0)
@@ -226,11 +237,14 @@ private fun SettingsTopBar(onBackClick: () -> Unit) {
 private fun AppearanceSection(
     uiState: AppPreferences,
     availableThemes: List<AppTheme>,
-    themeExpanded: Boolean,
-    onToggleThemeExpanded: () -> Unit,
+    expandedItem: String?,
+    onExpandedItemChange: (String?) -> Unit,
     onSetDynamicTheme: (Boolean) -> Unit,
     onSetTheme: (AppTheme) -> Unit,
-    onSetPureBlack: (Boolean) -> Unit
+    onSetPureBlack: (Boolean) -> Unit,
+    topShape: RoundedCornerShape,
+    middleShape: RoundedCornerShape,
+    bottomShape: RoundedCornerShape
 ) {
     Section(title = stringResource(R.string.settings_appearance_section)) {
         ToggleItem(
@@ -238,15 +252,19 @@ private fun AppearanceSection(
             subtitle = stringResource(R.string.settings_dynamic_theme_subtitle),
             isEnabled = uiState.useDynamicColor,
             onToggle = onSetDynamicTheme,
-            icon = Icons.Default.AutoAwesome
+            icon = Icons.Default.AutoAwesome,
+            shape = topShape
         )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
         ExpandableItem(
             title = stringResource(R.string.settings_theme_title),
             subtitle = uiState.themeMode.toDisplayString(),
-            isExpanded = themeExpanded,
-            onToggle = onToggleThemeExpanded,
-            icon = Icons.Default.Brightness4
+            isExpanded = expandedItem == "Theme",
+            onToggle = { onExpandedItemChange(if (expandedItem == "Theme") null else "Theme") },
+            icon = Icons.Default.Brightness4,
+            shape = middleShape
         ) {
             availableThemes.forEach { theme ->
                 OptionItem(
@@ -257,12 +275,15 @@ private fun AppearanceSection(
             }
         }
 
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
         ToggleItem(
             title = stringResource(R.string.settings_pure_black_title),
             subtitle = stringResource(R.string.settings_pure_black_subtitle),
             isEnabled = uiState.pureBlack,
             onToggle = onSetPureBlack,
-            icon = Icons.Default.Contrast
+            icon = Icons.Default.Contrast,
+            shape = bottomShape
         )
     }
 }
@@ -286,17 +307,16 @@ private fun StartOfWeek.toDisplayString(): String = when (this) {
 private fun GeneralSection(
     uiState: AppPreferences,
     languages: List<Pair<String, String>>,
-    languageExpanded: Boolean,
-    onToggleLanguageExpanded: () -> Unit,
+    expandedItem: String?,
+    onExpandedItemChange: (String?) -> Unit,
     onSetLanguage: (String) -> Unit,
-    startWeekExpanded: Boolean,
-    onToggleStartWeekExpanded: () -> Unit,
     onSetStartOfWeek: (StartOfWeek) -> Unit,
-    defaultTabExpanded: Boolean,
-    onToggleDefaultTabExpanded: () -> Unit,
     onSetDefaultTab: (Int) -> Unit,
     onSetAutoRouteToBrowseOnSearch: (Boolean) -> Unit,
-    onSetDisableUpdateCheck: (Boolean) -> Unit
+    onSetDisableUpdateCheck: (Boolean) -> Unit,
+    topShape: RoundedCornerShape,
+    middleShape: RoundedCornerShape,
+    bottomShape: RoundedCornerShape
 ) {
     val currentLocales = AppCompatDelegate.getApplicationLocales()
     val activeLanguageCode = if (currentLocales.isEmpty) {
@@ -309,9 +329,10 @@ private fun GeneralSection(
         ExpandableItem(
             title = stringResource(R.string.settings_language_title),
             subtitle = activeLanguageCode.getLanguageDisplayName(languages),
-            isExpanded = languageExpanded,
-            onToggle = onToggleLanguageExpanded,
-            icon = Icons.Default.Translate
+            isExpanded = expandedItem == "Language",
+            onToggle = { onExpandedItemChange(if (expandedItem == "Language") null else "Language") },
+            icon = Icons.Default.Translate,
+            shape = topShape
         ) {
             languages.forEach { (code, name) ->
                 OptionItem(
@@ -322,12 +343,15 @@ private fun GeneralSection(
             }
         }
 
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
         ExpandableItem(
             title = stringResource(R.string.settings_start_week_title),
             subtitle = uiState.startOfWeek.toDisplayString(),
-            isExpanded = startWeekExpanded,
-            onToggle = onToggleStartWeekExpanded,
-            icon = Icons.Default.CalendarMonth
+            isExpanded = expandedItem == "StartWeek",
+            onToggle = { onExpandedItemChange(if (expandedItem == "StartWeek") null else "StartWeek") },
+            icon = Icons.Default.CalendarMonth,
+            shape = middleShape
         ) {
             StartOfWeek.entries.forEach { startOfWeek ->
                 OptionItem(
@@ -338,14 +362,17 @@ private fun GeneralSection(
             }
         }
 
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
         val tabs = listOf(stringResource(R.string.home_tab_browse), stringResource(R.string.home_tab_recent), stringResource(R.string.home_tab_library))
 
         ExpandableItem(
             title = stringResource(R.string.settings_default_tab),
             subtitle = tabs.getOrNull(uiState.defaultTab) ?: stringResource(R.string.home_tab_browse),
-            isExpanded = defaultTabExpanded,
-            onToggle = onToggleDefaultTabExpanded,
-            icon = Icons.Default.StarRate
+            isExpanded = expandedItem == "DefaultTab",
+            onToggle = { onExpandedItemChange(if (expandedItem == "DefaultTab") null else "DefaultTab") },
+            icon = Icons.Default.StarRate,
+            shape = middleShape
         ) {
             tabs.forEachIndexed { index, name ->
                 OptionItem(
@@ -356,20 +383,26 @@ private fun GeneralSection(
             }
         }
 
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
         ToggleItem(
             title = stringResource(R.string.settings_auto_route_search_title),
             subtitle = stringResource(R.string.settings_auto_route_search_subtitle),
             isEnabled = uiState.autoRouteToBrowseOnSearch,
             onToggle = onSetAutoRouteToBrowseOnSearch,
-            icon = Icons.Default.Search
+            icon = Icons.Default.Search,
+            shape = middleShape
         )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
         ToggleItem(
             title = stringResource(R.string.settings_disable_update_check),
             subtitle = stringResource(R.string.settings_disable_update_check_desc),
             isEnabled = uiState.disableUpdateCheck,
             onToggle = onSetDisableUpdateCheck,
-            icon = Icons.Default.Update
+            icon = Icons.Default.Update,
+            shape = bottomShape
         )
     }
 }
@@ -377,15 +410,19 @@ private fun GeneralSection(
 @Composable
 private fun PlayerSection(
     uiState: AppPreferences,
+    expandedItem: String?,
+    onExpandedItemChange: (String?) -> Unit,
     onSetAutoPlayOnStart: (Boolean) -> Unit,
     onSetStopOnAudioBecomingNoisy: (Boolean) -> Unit,
     onSetShowCoverArtInNotification: (Boolean) -> Unit,
     showHistoryLimitDialog: Boolean,
     onToggleHistoryLimitDialog: () -> Unit,
     onSetHistoryLimit: (Int) -> Unit,
-    maxRetryDurationExpanded: Boolean,
-    onToggleMaxRetryDurationExpanded: () -> Unit,
-    onSetMaxRetryDuration: (Long) -> Unit
+    onSetMaxRetryDuration: (Long) -> Unit,
+    topShape: RoundedCornerShape,
+    middleShape: RoundedCornerShape,
+    bottomShape: RoundedCornerShape,
+    singleShape: RoundedCornerShape
 ) {
     Section(title = stringResource(R.string.settings_player_section)) {
         ToggleItem(
@@ -393,24 +430,33 @@ private fun PlayerSection(
             subtitle = stringResource(R.string.settings_auto_play_desc),
             isEnabled = uiState.autoPlayOnStart,
             onToggle = onSetAutoPlayOnStart,
-            icon = Icons.Default.PlayArrow
+            icon = Icons.Default.PlayArrow,
+            shape = topShape
         )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
         ToggleItem(
             title = stringResource(R.string.settings_stop_on_audio_noisy),
             subtitle = stringResource(R.string.settings_stop_on_audio_noisy_desc),
             isEnabled = uiState.stopOnAudioBecomingNoisy,
             onToggle = onSetStopOnAudioBecomingNoisy,
-            icon = Icons.Default.Headphones
+            icon = Icons.Default.Headphones,
+            shape = middleShape
         )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
         ToggleItem(
             title = stringResource(R.string.settings_show_cover_art),
             subtitle = stringResource(R.string.settings_show_cover_art_desc),
             isEnabled = uiState.showCoverArtInNotification,
             onToggle = onSetShowCoverArtInNotification,
-            icon = Icons.Default.Image
+            icon = Icons.Default.Image,
+            shape = middleShape
         )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
         val retryOptions = listOf(
             60_000L to stringResource(R.string.settings_retry_1_min),
@@ -424,9 +470,10 @@ private fun PlayerSection(
         ExpandableItem(
             title = stringResource(R.string.settings_max_retry_duration),
             subtitle = currentRetryOption,
-            isExpanded = maxRetryDurationExpanded,
-            onToggle = onToggleMaxRetryDurationExpanded,
-            icon = Icons.Default.Update
+            isExpanded = expandedItem == "RetryDuration",
+            onToggle = { onExpandedItemChange(if (expandedItem == "RetryDuration") null else "RetryDuration") },
+            icon = Icons.Default.Update,
+            shape = middleShape
         ) {
             retryOptions.forEach { (duration, label) ->
                 OptionItem(
@@ -437,11 +484,14 @@ private fun PlayerSection(
             }
         }
 
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
         Item(
             title = stringResource(R.string.settings_track_history_limit),
             subtitle = "${uiState.trackHistoryLimit} tracks",
             onClick = onToggleHistoryLimitDialog,
-            icon = Icons.Default.History
+            icon = Icons.Default.History,
+            shape = bottomShape
         )
 
         if (showHistoryLimitDialog) {
@@ -486,7 +536,10 @@ private fun PlayerSection(
 @Composable
 private fun AboutSection(
     onAboutClick: () -> Unit,
-    onCheckUpdatesClick: () -> Unit
+    onCheckUpdatesClick: () -> Unit,
+    topShape: RoundedCornerShape,
+    middleShape: RoundedCornerShape,
+    bottomShape: RoundedCornerShape
 ) {
     val context = LocalContext.current
 
@@ -496,25 +549,29 @@ private fun AboutSection(
             onClick = {
                 try {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data =
-                            Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
+                        data = Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
                     }
                     context.startActivity(intent)
                 } catch (_: Exception) {
                     // Handle error silently
                 }
             },
-            icon = Icons.Default.StarRate
+            icon = Icons.Default.StarRate,
+            shape = topShape
         )
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
         Item(
             title = stringResource(R.string.about_us),
             onClick = onAboutClick,
-            icon = Icons.Default.Info
+            icon = Icons.Default.Info,
+            shape = middleShape
         )
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
         Item(
             title = stringResource(R.string.settings_check_updates),
             onClick = onCheckUpdatesClick,
-            icon = Icons.Default.Update
+            icon = Icons.Default.Update,
+            shape = bottomShape
         )
     }
 }
@@ -522,11 +579,13 @@ private fun AboutSection(
 @Composable
 private fun BackupSection(
     uiState: AppPreferences,
-    conflictExpanded: Boolean,
-    onToggleConflictExpanded: () -> Unit,
+    expandedItem: String?,
+    onExpandedItemChange: (String?) -> Unit,
     onSetConflictStrategy: (ConflictStrategy) -> Unit,
     onExport: () -> Unit,
-    onImport: () -> Unit
+    onImport: () -> Unit,
+    topShape: RoundedCornerShape,
+    bottomShape: RoundedCornerShape
 ) {
     val conflictOptions = listOf(
         ConflictStrategy.SKIP to stringResource(R.string.settings_conflict_skip),
@@ -540,9 +599,10 @@ private fun BackupSection(
         ExpandableItem(
             title = stringResource(R.string.settings_conflict_title),
             subtitle = currentLabel,
-            isExpanded = conflictExpanded,
-            onToggle = onToggleConflictExpanded,
-            icon = Icons.AutoMirrored.Filled.CallMerge
+            isExpanded = expandedItem == "Conflict",
+            onToggle = { onExpandedItemChange(if (expandedItem == "Conflict") null else "Conflict") },
+            icon = Icons.AutoMirrored.Filled.CallMerge,
+            shape = topShape
         ) {
             conflictOptions.forEach { (strategy, label) ->
                 OptionItem(
@@ -558,18 +618,24 @@ private fun BackupSection(
             }
         }
 
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
         Item(
             title = stringResource(R.string.settings_export_title),
             subtitle = stringResource(R.string.settings_export_subtitle),
             onClick = onExport,
-            icon = Icons.Default.FileUpload
+            icon = Icons.Default.FileUpload,
+            shape = RoundedCornerShape(0.dp)
         )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
         Item(
             title = stringResource(R.string.settings_import_title),
             subtitle = stringResource(R.string.settings_import_subtitle),
             onClick = onImport,
-            icon = Icons.Default.FileDownload
+            icon = Icons.Default.FileDownload,
+            shape = bottomShape
         )
     }
 }

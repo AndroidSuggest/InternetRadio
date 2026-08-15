@@ -28,6 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun ExpandableItem(
@@ -35,8 +39,9 @@ fun ExpandableItem(
     subtitle: String,
     isExpanded: Boolean,
     onToggle: () -> Unit,
-    hasSwitch: Boolean = false,
     icon: ImageVector? = null,
+    hasSwitch: Boolean = false,
+    shape: Shape = RectangleShape,
     content: @Composable () -> Unit
 ) {
     val rotation by animateFloatAsState(
@@ -44,50 +49,30 @@ fun ExpandableItem(
         label = "rotation"
     )
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onToggle)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-            }
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            if (hasSwitch) {
-                androidx.compose.material3.Switch(
-                    checked = isExpanded,
-                    onCheckedChange = { onToggle() }
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.rotate(rotation)
-                )
-            }
-        }
+    Column(modifier = Modifier.fillMaxWidth().clip(shape).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+        androidx.compose.material3.ListItem(
+            modifier = Modifier.clickable(onClick = onToggle),
+            colors = androidx.compose.material3.ListItemDefaults.colors(
+                containerColor = androidx.compose.ui.graphics.Color.Transparent
+            ),
+            supportingContent = { Text(text = subtitle) },
+            leadingContent = icon?.let { { Icon(it, contentDescription = null) } },
+            trailingContent = {
+                if (hasSwitch) {
+                    androidx.compose.material3.Switch(
+                        checked = isExpanded,
+                        onCheckedChange = { onToggle() }
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null,
+                        modifier = Modifier.rotate(rotation)
+                    )
+                }
+            },
+            headlineContent = { Text(text = title) }
+        )
 
         AnimatedVisibility(
             visible = isExpanded,

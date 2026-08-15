@@ -18,41 +18,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clip
+
 @Composable
 fun ToggleItem(
     title: String,
     subtitle: String,
     isEnabled: Boolean,
     onToggle: (Boolean) -> Unit,
-    icon: ImageVector? = null
+    icon: ImageVector? = null,
+    shape: Shape = RectangleShape
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onToggle(!isEnabled) }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (icon != null) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+    androidx.compose.material3.ListItem(
+        modifier = Modifier.clip(shape).clickable { onToggle(!isEnabled) },
+        colors = androidx.compose.material3.ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        supportingContent = { Text(text = subtitle) },
+        leadingContent = icon?.let { { Icon(it, contentDescription = null) } },
+        trailingContent = {
+            Switch(
+                checked = isEnabled,
+                onCheckedChange = onToggle
             )
-            Spacer(modifier = Modifier.width(16.dp))
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Switch(
-            checked = isEnabled,
-            onCheckedChange = onToggle
-        )
-    }
+        },
+        headlineContent = { Text(text = title) }
+    )
 }

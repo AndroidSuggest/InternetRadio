@@ -17,38 +17,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clip
+
 @Composable
 fun Item(
     title: String,
     onClick: () -> Unit,
     icon: ImageVector? = null,
-    subtitle: String? = null
+    subtitle: String? = null,
+    shape: Shape = RectangleShape
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (icon != null) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge)
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
+    androidx.compose.material3.ListItem(
+        modifier = Modifier.clip(shape).clickable(onClick = onClick),
+        colors = androidx.compose.material3.ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        supportingContent = subtitle?.let { { Text(text = it) } },
+        leadingContent = icon?.let { { Icon(it, contentDescription = null) } },
+        headlineContent = { Text(text = title) }
+    )
 }

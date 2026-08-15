@@ -102,7 +102,10 @@ fun StationListCard(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(12.dp),
-        border = if (isPureBlack) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant) else null
+        border = if (isPureBlack) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant) else null,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCurrentlyPlaying) MaterialTheme.colorScheme.secondaryContainer else CardDefaults.cardColors().containerColor
+        )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -181,7 +184,7 @@ fun StationListCard(
                 Text(
                     text = station.name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (isCurrentlyPlaying) MaterialTheme.colorScheme.primary else Color.Unspecified,
+                    color = if (isCurrentlyPlaying) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified,
                     maxLines = 1,
                     modifier = Modifier.basicMarquee()
                 )
@@ -189,7 +192,7 @@ fun StationListCard(
                 Text(
                     text = subtitleText,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isCurrentlyPlaying) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     modifier = Modifier.basicMarquee()
                 )
