@@ -237,7 +237,7 @@ fun CountrySelectScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .focusRequester(stateFocusRequester),
-                                        placeholder = { Text("Search states...") },
+                                        placeholder = { Text(stringResource(R.string.select_country_search_states)) },
                                         singleLine = true,
                                         colors = TextFieldDefaults.colors(
                                             focusedContainerColor = Color.Transparent,
@@ -248,7 +248,7 @@ fun CountrySelectScreen(
                                         )
                                     )
                                 } else {
-                                    Text("Select State in ${currentCountry.name}")
+                                    Text(stringResource(R.string.select_country_select_state_in, currentCountry.name))
                                 }
                             }
                         },
@@ -261,7 +261,7 @@ fun CountrySelectScreen(
                                     selectedCountryForStates = null
                                 }
                             }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                             }
                         },
                         actions = {
@@ -275,7 +275,7 @@ fun CountrySelectScreen(
                             }) {
                                 Icon(
                                     imageVector = if (isStateSearchActive) Icons.Default.Close else Icons.Default.Search,
-                                    contentDescription = "Search"
+                                    contentDescription = stringResource(R.string.cd_search)
                                 )
                             }
                         }
@@ -289,7 +289,7 @@ fun CountrySelectScreen(
                 ) {
                     item(key = "all") {
                         ListItem(
-                            headlineContent = { Text("All of ${currentCountry.name}") },
+                            headlineContent = { Text(stringResource(R.string.select_country_all_of, currentCountry.name)) },
                             modifier = Modifier
                                 .animateItem()
                                 .clickable {

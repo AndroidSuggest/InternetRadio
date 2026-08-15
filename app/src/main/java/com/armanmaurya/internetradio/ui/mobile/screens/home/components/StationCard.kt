@@ -76,7 +76,8 @@ fun StationCard(
         )
     }
 
-    val subtitleText = remember(station.country, station.countryCode, station.language, station.languageCodes, station.codec, station.bitrate) {
+    val kbpsUnit = stringResource(R.string.unit_kbps)
+    val subtitleText = remember(station.country, station.countryCode, station.language, station.languageCodes, station.codec, station.bitrate, kbpsUnit) {
         buildString {
             val displayCountry = if (station.countryCode.isNotBlank()) {
                 java.util.Locale("", station.countryCode).getDisplayCountry(java.util.Locale.getDefault())
@@ -103,7 +104,7 @@ fun StationCard(
             }
             if (station.codec.isNotBlank()) append(station.codec)
             if (station.codec.isNotBlank() && station.bitrate > 0) append(" ")
-            if (station.bitrate > 0) append("${station.bitrate} kbps")
+            if (station.bitrate > 0) append("${station.bitrate} $kbpsUnit")
         }
     }
 

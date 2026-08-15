@@ -159,7 +159,7 @@ fun EditStationScreen(
             favicon != station.favicon ||
             tags != station.tags.joinToString(", ") ||
             countryCode != station.countryCode ||
-            iso3166_2 != station.iso3166_2 ||
+            iso3166_2 != (station.iso3166_2 ?: "") ||
             languageCodes != station.languageCodes.joinToString(", ") ||
             homepage != station.homepage
         } else {
@@ -239,7 +239,8 @@ fun EditStationScreen(
                                                         tags = freshStation.tags.joinToString(", ")
                                                         countryCode = freshStation.countryCode
                                                         countrySearchText = if (countryCode.isNotBlank()) {
-                                                            java.util.Locale("", countryCode).getDisplayCountry(java.util.Locale.getDefault())
+                                                            val disp = java.util.Locale("", countryCode).getDisplayCountry(java.util.Locale.getDefault())
+                                                            "$disp ($countryCode)"
                                                         } else ""
                                                         iso3166_2 = freshStation.iso3166_2 ?: ""
                                                         stateSearchText = if (iso3166_2.isNotBlank()) {
@@ -782,7 +783,8 @@ fun EditStationScreen(
                     }
                 }
                 
-                val bitrateText = if (probedBitrate > 0) "$probedBitrate kbps" else "-"
+                val kbpsUnit = stringResource(R.string.unit_kbps)
+                val bitrateText = if (probedBitrate > 0) "$probedBitrate $kbpsUnit" else "-"
                 val isCodecUnknown = probedCodec.equals("unknown", ignoreCase = true) || probedCodec.isBlank()
                 val codecText = if (!isCodecUnknown) probedCodec.uppercase() else "-"
                 Surface(

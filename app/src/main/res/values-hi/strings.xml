@@ -171,6 +171,9 @@
     <string name="select_country_search">देश खोजें...</string>
     <string name="select_country_title">देश चुनें</string>
     <string name="select_country_all">सभी देश</string>
+    <string name="select_country_search_states">राज्य खोजें...</string>
+    <string name="select_country_select_state_in">%1$s में राज्य चुनें</string>
+    <string name="select_country_all_of">%1$s के सभी</string>
     <!-- ========================================== -->
     <!-- 9. SELECT LANGUAGE                         -->
     <!-- ========================================== -->
@@ -192,13 +195,16 @@
     <!-- ========================================== -->
     <string name="edit_station_add_station">स्टेशन जोड़ें</string>
     <string name="edit_station_title">स्टेशन संपादित करें</string>
-    <string name="edit_station_name_field">नाम</string>
-    <string name="edit_station_stream_url_field">स्ट्रीम URL</string>
+    <string name="edit_station_name_field">नाम *</string>
+    <string name="edit_station_stream_url_field">स्ट्रीम URL *</string>
     <string name="edit_station_favicon_url_optional">फेविकॉन URL (वैकल्पिक)</string>
     <string name="edit_station_favicon_url_field">फेविकॉन URL</string>
-    <string name="edit_station_country_field">देश</string>
-    <string name="edit_station_language_field">भाषा</string>
-    <string name="edit_station_tags_optional">टैग (अल्पविराम से अलग)</string>
+    <string name="edit_station_country_field">देश (वैकल्पिक)</string>
+    <string name="edit_station_state_field">राज्य / क्षेत्र (वैकल्पिक)</string>
+    <string name="edit_station_language_field">भाषा (वैकल्पिक)</string>
+    <string name="edit_station_add_languages">भाषाएँ जोड़ें (वैकल्पिक)</string>
+    <string name="edit_station_tags_optional">टैग (वैकल्पिक)</string>
+    <string name="edit_station_add_tags">टैग जोड़ें (वैकल्पिक)</string>
     <string name="edit_station_failed_fetch_original_data">मूल डेटा प्राप्त करने में विफल</string>
     <string name="edit_station_unsaved_changes">सहेजे न गए परिवर्तन</string>
     <string name="edit_station_unsaved_changes_message_exit">आपके पास सहेजे न गए परिवर्तन हैं। क्या आप वाकई उन्हें रद्द करके बाहर निकलना चाहते हैं?</string>
@@ -244,6 +250,7 @@
     <string name="player_favicon_url_copied">फेविकॉन URL कॉपी किया गया</string>
     <string name="player_station_codec_bitrate">%1$s • %2$s kbps</string>
     <string name="player_station_bitrate_only">%1$s kbps</string>
+    <string name="unit_kbps">kbps</string>
     <string name="player_cd_pause">रोकें</string>
     <string name="player_cd_play">चलाएँ</string>
     <string name="player_cd_previous">पिछला</string>
