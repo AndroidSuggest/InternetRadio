@@ -86,7 +86,9 @@ import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationDrawerItem
+import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.SchedulesTabContent
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.layout.ExpandedHomeLayout
 import com.armanmaurya.internetradio.ui.mobile.screens.home.layout.CompactHomeLayout
 
@@ -104,10 +106,17 @@ fun HomeScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: HomeViewModel = hiltViewModel(),
     browseViewModel: BrowseViewModel = hiltViewModel(),
-    playerViewModel: PlayerViewModel = hiltViewModel()
+    playerViewModel: PlayerViewModel = hiltViewModel(),
+    libraryViewModel: LibraryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val browseUiState by browseViewModel.uiState.collectAsStateWithLifecycle()
+    val libraryStations by libraryViewModel.stations.collectAsStateWithLifecycle(initialValue = emptyList())
+    val filteredLibraryStations = remember(libraryStations, uiState.searchQuery) {
+        libraryStations?.filter {
+            it.name.contains(uiState.searchQuery, ignoreCase = true)
+        } ?: emptyList()
+    }
     val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
     val playingStationUuid = playbackState.currentStation?.stationUuid
     val isPlaybackActive = playbackState.isPlaying
@@ -167,6 +176,7 @@ fun HomeScreen(
     // Forward search query from HomeViewModel → ViewModels
     LaunchedEffect(uiState.searchQuery) {
         browseViewModel.onSearchQueryChange(uiState.searchQuery)
+        libraryViewModel.onSearchQueryChange(uiState.searchQuery)
     }
 
     // Keep pager in sync with tab state from HomeViewModel (tab click)
@@ -201,25 +211,78 @@ fun HomeScreen(
                 selectedLanguage = uiState.selectedLanguage,
                 selectedTags = uiState.selectedTags
             ) {
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(
-                        items = browseUiState.stations,
-                        key = { it.stationUuid }
-                    ) { station ->
-                        ListItem(
-                            headlineContent = { Text(station.name) },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateItem()
-                                .clickable {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    if (filteredLibraryStations.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.home_tab_library),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
+                        items(
+                            items = filteredLibraryStations.take(5),
+                            key = { "lib_${it.stationUuid}" }
+                        ) { station ->
+                            StationListCard(
+                                station = station,
+                                isCurrentlyPlaying = playingStationUuid == station.stationUuid,
+                                isPlaybackActive = isPlaybackActive,
+                                onClick = {
+                                    viewModel.onSearchQueryChange(station.name)
+                                    isSearchExpanded = false
+                                    if (uiState.autoRouteToBrowseOnSearch) {
+                                        viewModel.onTabSelected(2)
+                                        libraryViewModel.setFilterEnabled(true)
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .animateItem()
+                            )
+                        }
+                    }
+
+                    if (browseUiState.stations.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.home_tab_browse),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
+                        items(
+                            items = browseUiState.stations.take(10),
+                            key = { "browse_${it.stationUuid}" }
+                        ) { station ->
+                            StationListCard(
+                                station = station,
+                                isCurrentlyPlaying = playingStationUuid == station.stationUuid,
+                                isPlaybackActive = isPlaybackActive,
+                                onClick = {
                                     viewModel.onSearchQueryChange(station.name)
                                     isSearchExpanded = false
                                     if (uiState.autoRouteToBrowseOnSearch) {
                                         viewModel.onTabSelected(0)
                                     }
-                                }
-                        )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .animateItem()
+                            )
+                        }
                     }
                 }
                 }
@@ -309,7 +372,16 @@ fun HomeScreen(
                 selectedLanguage = uiState.selectedLanguage,
                 selectedTags = uiState.selectedTags,
                 browseStations = browseUiState.stations,
-                onStationClick = { station ->
+                libraryStations = filteredLibraryStations,
+                onLibraryStationClick = { station ->
+                    viewModel.onSearchQueryChange(station.name)
+                    isSearchExpanded = false
+                    if (uiState.autoRouteToBrowseOnSearch) {
+                        viewModel.onTabSelected(2)
+                        libraryViewModel.setFilterEnabled(true)
+                    }
+                },
+                onBrowseStationClick = { station ->
                     viewModel.onSearchQueryChange(station.name)
                     isSearchExpanded = false
                     if (uiState.autoRouteToBrowseOnSearch) {

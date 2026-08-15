@@ -153,6 +153,12 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
+    fun setFilterEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setUseFilterOnFavorites(enabled)
+        }
+    }
+
     fun onGridViewChange(isGrid: Boolean) {
         viewModelScope.launch { settingsRepository.setGridViewFavorites(isGrid) }
     }

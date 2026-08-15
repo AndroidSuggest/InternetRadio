@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.RadioSearchBar
@@ -68,7 +69,9 @@ internal fun ExpandedHomeLayout(
     selectedLanguage: String?,
     selectedTags: Set<String>,
     browseStations: List<RadioStation>,
-    onStationClick: (RadioStation) -> Unit,
+    libraryStations: List<RadioStation>? = null,
+    onLibraryStationClick: (RadioStation) -> Unit,
+    onBrowseStationClick: (RadioStation) -> Unit,
     tabs: List<String>,
     pagerState: androidx.compose.foundation.pager.PagerState,
     coroutineScope: kotlinx.coroutines.CoroutineScope
@@ -118,7 +121,9 @@ internal fun ExpandedHomeLayout(
                 selectedLanguage = selectedLanguage,
                 selectedTags = selectedTags,
                 browseStations = browseStations,
-                onStationClick = onStationClick
+                libraryStations = libraryStations,
+                onLibraryStationClick = onLibraryStationClick,
+                onBrowseStationClick = onBrowseStationClick
             )
         }
     }
@@ -351,10 +356,13 @@ private fun ExpandedSearchOverlay(
     selectedLanguage: String?,
     selectedTags: Set<String>,
     browseStations: List<RadioStation>,
-    onStationClick: (RadioStation) -> Unit
+    libraryStations: List<RadioStation>? = null,
+    onLibraryStationClick: (RadioStation) -> Unit,
+    onBrowseStationClick: (RadioStation) -> Unit,
+    modifier: Modifier = Modifier.fillMaxSize()
 ) {
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         RadioSearchBar(
             query = searchQuery,
@@ -373,19 +381,60 @@ private fun ExpandedSearchOverlay(
             selectedTags = selectedTags,
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
         ) {
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                items(
-                    items = browseStations,
-                    key = { it.stationUuid }
-                ) { station ->
-                    ListItem(
-                        headlineContent = { Text(station.name) },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem()
-                            .clickable { onStationClick(station) }
-                    )
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                if (!libraryStations.isNullOrEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(R.string.home_tab_library),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                    items(
+                        items = libraryStations.take(5),
+                        key = { "lib_${it.stationUuid}" }
+                    ) { station ->
+                        StationListCard(
+                            station = station,
+                            onClick = { onLibraryStationClick(station) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .animateItem()
+                        )
+                    }
+                }
+                if (browseStations.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(R.string.home_tab_browse),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                    items(
+                        items = browseStations.take(10),
+                        key = { "browse_${it.stationUuid}" }
+                    ) { station ->
+                        StationListCard(
+                            station = station,
+                            onClick = { onBrowseStationClick(station) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .animateItem()
+                        )
+                    }
                 }
             }
         }
