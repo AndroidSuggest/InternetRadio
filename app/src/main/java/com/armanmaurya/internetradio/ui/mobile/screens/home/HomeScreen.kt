@@ -112,11 +112,8 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val browseUiState by browseViewModel.uiState.collectAsStateWithLifecycle()
     val libraryStations by libraryViewModel.stations.collectAsStateWithLifecycle(initialValue = emptyList())
-    val filteredLibraryStations = remember(libraryStations, uiState.searchQuery) {
-        libraryStations?.filter {
-            it.name.contains(uiState.searchQuery, ignoreCase = true)
-        } ?: emptyList()
-    }
+    val searchLibraryStations by libraryViewModel.searchStations.collectAsStateWithLifecycle(initialValue = emptyList())
+    val filteredLibraryStations = searchLibraryStations ?: emptyList()
     val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
     val playingStationUuid = playbackState.currentStation?.stationUuid
     val isPlaybackActive = playbackState.isPlaying

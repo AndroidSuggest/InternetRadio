@@ -86,56 +86,77 @@ class LibraryViewModel @Inject constructor(
     }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    private val sortedStationsFlow = settingsRepository.appPreferencesFlow
+        .map { it.librarySortOption }
+        .distinctUntilChanged()
+        .flatMapLatest { sortOpt ->
+            when (sortOpt) {
+                com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName()
+                com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending()
+                com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed()
+                com.armanmaurya.internetradio.data.model.LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed()
+                com.armanmaurya.internetradio.data.model.LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder()
+                com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations()
+                com.armanmaurya.internetradio.data.model.LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded()
+            }
+        }
+
+    private fun filterStations(
+        stationsList: List<RadioStation>,
+        preferences: com.armanmaurya.internetradio.data.model.AppPreferences,
+        query: String
+    ): List<RadioStation> {
+        val hasQuery = query.isNotBlank()
+        val hasCountryFilter = !preferences.selectedCountryCode.isNullOrBlank()
+        val hasStateFilter = !preferences.selectedStateCode.isNullOrBlank()
+        val hasLanguageFilter = !preferences.selectedLanguage.isNullOrBlank()
+        val hasTagFilter = preferences.selectedTags.isNotEmpty()
+
+        if (!hasQuery && !hasCountryFilter && !hasStateFilter && !hasLanguageFilter && !hasTagFilter) {
+            return stationsList
+        }
+
+        return stationsList.filter { station ->
+            val queryMatch = !hasQuery ||
+                    station.name.contains(query, ignoreCase = true) ||
+                    station.tags.any { tag -> tag.contains(query, ignoreCase = true) }
+            val countryMatch = !hasCountryFilter ||
+                    station.countryCode == preferences.selectedCountryCode
+            val stateMatch = !hasStateFilter ||
+                    station.iso3166_2 == preferences.selectedStateCode
+            val languageMatch = if (!hasLanguageFilter) true else {
+                val selectedCode = preferences.selectedLanguage!!
+                station.languageCodes.contains(selectedCode)
+            }
+            val tagsMatch = !hasTagFilter ||
+                    preferences.selectedTags.any { it in station.tags }
+
+            queryMatch && countryMatch && stateMatch && languageMatch && tagsMatch
+        }
+    }
+
     val stations: StateFlow<List<RadioStation>?> = combine(
-        settingsRepository.appPreferencesFlow
-            .map { it.librarySortOption }
-            .distinctUntilChanged()
-            .flatMapLatest { sortOpt ->
-                when (sortOpt) {
-                    com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName()
-                    com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending()
-                    com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed()
-                    com.armanmaurya.internetradio.data.model.LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed()
-                    com.armanmaurya.internetradio.data.model.LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder()
-                    com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations()
-                    com.armanmaurya.internetradio.data.model.LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded()
-                }
-            },
+        sortedStationsFlow,
         settingsRepository.appPreferencesFlow,
         _searchQuery
-    ) { stationsList: List<RadioStation>, preferences: com.armanmaurya.internetradio.data.model.AppPreferences, query: String ->
+    ) { stationsList, preferences, query ->
         if (preferences.useFilterOnFavorites) {
-            val hasQuery = query.isNotBlank()
-            val hasCountryFilter = !preferences.selectedCountryCode.isNullOrBlank()
-            val hasStateFilter = !preferences.selectedStateCode.isNullOrBlank()
-            val hasLanguageFilter = !preferences.selectedLanguage.isNullOrBlank()
-            val hasTagFilter = preferences.selectedTags.isNotEmpty()
-
-            // If no filter criteria are set at all, show everything
-            if (!hasQuery && !hasCountryFilter && !hasStateFilter && !hasLanguageFilter && !hasTagFilter) {
-                stationsList
-            } else {
-                stationsList.filter { station ->
-                    val queryMatch = !hasQuery ||
-                            station.name.contains(query, ignoreCase = true) ||
-                            station.tags.any { tag -> tag.contains(query, ignoreCase = true) }
-                    val countryMatch = !hasCountryFilter ||
-                            station.countryCode == preferences.selectedCountryCode
-                    val stateMatch = !hasStateFilter ||
-                            station.iso3166_2 == preferences.selectedStateCode
-                    val languageMatch = if (!hasLanguageFilter) true else {
-                        val selectedCode = preferences.selectedLanguage!!
-                        station.languageCodes.contains(selectedCode)
-                    }
-                    val tagsMatch = !hasTagFilter ||
-                            preferences.selectedTags.any { it in station.tags }
-
-                    queryMatch && countryMatch && stateMatch && languageMatch && tagsMatch
-                }
-            }
+            filterStations(stationsList, preferences, query)
         } else {
             stationsList
         }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = null
+    )
+
+    val searchStations: StateFlow<List<RadioStation>?> = combine(
+        sortedStationsFlow,
+        settingsRepository.appPreferencesFlow,
+        _searchQuery
+    ) { stationsList, preferences, query ->
+        filterStations(stationsList, preferences, query)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
