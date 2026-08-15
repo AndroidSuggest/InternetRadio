@@ -364,7 +364,13 @@ private fun GeneralSection(
 
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
-        val tabs = listOf(stringResource(R.string.home_tab_browse), stringResource(R.string.home_tab_recent), stringResource(R.string.home_tab_library))
+        val tabs = listOf(
+            stringResource(R.string.home_tab_browse),
+            stringResource(R.string.home_tab_recent),
+            stringResource(R.string.home_tab_library),
+            stringResource(R.string.home_tab_recordings),
+            stringResource(R.string.home_tab_schedules)
+        )
 
         ExpandableItem(
             title = stringResource(R.string.settings_default_tab),
@@ -488,7 +494,7 @@ private fun PlayerSection(
 
         Item(
             title = stringResource(R.string.settings_track_history_limit),
-            subtitle = "${uiState.trackHistoryLimit} tracks",
+            subtitle = androidx.compose.ui.res.pluralStringResource(R.plurals.tracks_count, uiState.trackHistoryLimit, uiState.trackHistoryLimit),
             onClick = onToggleHistoryLimitDialog,
             icon = Icons.Default.History,
             shape = bottomShape

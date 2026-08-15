@@ -43,6 +43,10 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import com.armanmaurya.internetradio.ui.shared.viewmodels.SettingsViewModel
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.armanmaurya.internetradio.R
+
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
@@ -58,7 +62,7 @@ fun SettingsScreen(
             .padding(horizontal = 48.dp, vertical = 32.dp)
     ) {
         Text(
-            text = "Settings",
+            text = stringResource(id = R.string.settings_title),
             style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 32.dp)
         )
@@ -70,11 +74,17 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             // ── General Section ──────────────────────────────────────────
-        TvSettingsSection(title = "General") {
+        TvSettingsSection(title = stringResource(id = R.string.settings_general_section)) {
 
             // Default Tab on Startup
-            TvSettingsSectionHeader(title = "Default Tab on Startup")
-            val tabs = listOf("Browse", "Recent", "Library")
+            TvSettingsSectionHeader(title = stringResource(id = R.string.settings_default_tab))
+            val tabs = listOf(
+                stringResource(id = R.string.home_tab_browse),
+                stringResource(id = R.string.home_tab_recent),
+                stringResource(id = R.string.home_tab_library),
+                stringResource(id = R.string.home_tab_recordings),
+                stringResource(id = R.string.home_tab_schedules)
+            )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -93,17 +103,17 @@ fun SettingsScreen(
 
             // Track History Limit
             TvSettingsClickItem(
-                title = "Track History Limit",
-                subtitle = "${uiState.trackHistoryLimit} tracks",
+                title = stringResource(id = R.string.settings_track_history_limit),
+                subtitle = pluralStringResource(id = R.plurals.tracks_count, uiState.trackHistoryLimit, uiState.trackHistoryLimit),
                 icon = Icons.Default.History,
                 onClick = { showHistoryLimitDialog = true }
             )
         }
 
         // ── About Section ────────────────────────────────────────────
-        TvSettingsSection(title = "About") {
+        TvSettingsSection(title = stringResource(id = R.string.about_title)) {
             TvSettingsClickItem(
-                title = "About Us",
+                title = stringResource(id = R.string.about_us),
                 subtitle = "App info, author, contributors",
                 icon = Icons.Default.Info,
                 onClick = onAboutClick
@@ -117,14 +127,14 @@ fun SettingsScreen(
         var inputLimit by remember { mutableStateOf(uiState.trackHistoryLimit.toString()) }
         AlertDialog(
             onDismissRequest = { showHistoryLimitDialog = false },
-            title = { androidx.compose.material3.Text("Track History Limit") },
+            title = { androidx.compose.material3.Text(stringResource(id = R.string.settings_track_history_limit)) },
             text = {
                 OutlinedTextField(
                     value = inputLimit,
                     onValueChange = { newValue ->
                         if (newValue.all { it.isDigit() }) inputLimit = newValue
                     },
-                    label = { androidx.compose.material3.Text("Number of tracks") },
+                    label = { androidx.compose.material3.Text(stringResource(id = R.string.settings_number_of_tracks)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true
                 )
@@ -136,11 +146,11 @@ fun SettingsScreen(
                         viewModel.setTrackHistoryLimit(limitInt.coerceIn(1, 500))
                         showHistoryLimitDialog = false
                     }
-                ) { androidx.compose.material3.Text("OK") }
+                ) { androidx.compose.material3.Text(stringResource(id = R.string.general_ok)) }
             },
             dismissButton = {
                 TextButton(onClick = { showHistoryLimitDialog = false }) {
-                    androidx.compose.material3.Text("Cancel")
+                    androidx.compose.material3.Text(stringResource(id = R.string.general_cancel))
                 }
             }
         )

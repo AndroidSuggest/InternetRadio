@@ -341,6 +341,10 @@
         <item quantity="one">%1$d recording</item>
         <item quantity="other">%1$d recordings</item>
     </plurals>
+    <plurals name="tracks_count">
+        <item quantity="one">%1$d track</item>
+        <item quantity="other">%1$d tracks</item>
+    </plurals>
     <string name="schedule_keep_playback_subtitle">If off, playback stops when recording ends</string>
 
     <!-- ========================================== -->

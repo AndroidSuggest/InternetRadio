@@ -325,6 +325,10 @@
         <item quantity="one">%1$d रिकॉर्डिंग</item>
         <item quantity="other">%1$d रिकॉर्डिंग</item>
     </plurals>
+    <plurals name="tracks_count">
+        <item quantity="one">%1$d ट्रैक</item>
+        <item quantity="other">%1$d ट्रैक</item>
+    </plurals>
     <string name="schedule_keep_playback_subtitle">बंद होने पर, रिकॉर्डिंग समाप्त होने पर प्लेबैक बंद हो जाता है</string>
     <!-- ========================================== -->
     <!-- 15. ANDROID AUTO                           -->
