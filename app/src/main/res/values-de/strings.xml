@@ -341,6 +341,9 @@
         <item quantity="one">%1$d Aufnahme</item>
         <item quantity="other">%1$d Aufnahmen</item>
     </plurals>
+    <plurals name="tracks_count">
+        <item quantity="other">%1$d Titel</item>
+    </plurals>
     <string name="schedule_keep_playback_subtitle">Wenn deaktiviert, dann endet die Wiedergabe mit der Aufnahme</string>
 
     <!-- ========================================== -->
