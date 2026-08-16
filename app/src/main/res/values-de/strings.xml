@@ -227,8 +227,8 @@
     <string name="edit_station_similar_stations">Ähnliche Sender</string>
     <string name="edit_station_custom">Individuell</string>
     <string name="edit_station_error_empty_fields">Benötigte Felder können nicht leer sein</string>
-    <string name="edit_station_upload_save">Hochladen &amp; Speichern</string>
-    <string name="edit_station_upload_add">Hochladen &amp;Hinzufügen</string>
+    <string name="edit_station_upload_save">Speichern &amp; Hochladen</string>
+    <string name="edit_station_upload_add">Hinzufügen &amp; Hochladen</string>
     <string name="edit_station_homepage_url_optional">Homepage-URL (Optional)</string>
     <string name="edit_station_create_tag">Tag hinzufügen: \'%1$s\'</string>
     <string name="edit_station_uploaded_successfully">Sender erfolgreich hochgeladen</string>
@@ -278,6 +278,7 @@
     <string name="player_cd_search_google">Suche auf Google</string>
     <string name="player_no_tracks_played">Bisher wurden keine Titel abgespielt.</string>
     <string name="player_tab_about">Über</string>
+    <string name="player_tab_about_stream_url">Stream-URL</string>
     <string name="player_tab_tracks">Titel</string>
     <string name="player_retrying_in">Wiederholungsversuch in %1$ds...</string>
     <string name="player_retrying_connection">Verbindung wird erneut versucht...</string>

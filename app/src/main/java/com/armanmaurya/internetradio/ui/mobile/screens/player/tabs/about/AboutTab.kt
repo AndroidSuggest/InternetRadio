@@ -270,7 +270,7 @@ fun AboutTab(
         if (station.url.isNotBlank()) {
             item {
                 Text(
-                    text = stringResource(R.string.edit_station_stream_url_field),
+                    text = stringResource(R.string.player_tab_about_stream_url),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,

@@ -278,6 +278,7 @@
     <string name="player_cd_search_google">Search on Google</string>
     <string name="player_no_tracks_played">No tracks played yet</string>
     <string name="player_tab_about">About</string>
+    <string name="player_tab_about_stream_url">Stream URL</string>
     <string name="player_tab_tracks">Tracks</string>
     <string name="player_retrying_in">Retrying in %1$ds...</string>
     <string name="player_retrying_connection">Retrying connection...</string>
