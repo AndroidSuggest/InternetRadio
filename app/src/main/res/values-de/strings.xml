@@ -354,4 +354,9 @@
     <string name="more_options">Mehr Optionen</string>
     <string name="nav_all_languages">Alle Sprachen</string>
     <string name="player_cd_stop">Stop</string>
+
+    <string name="settings_schedule_section">Zeitpläne</string>
+    <string name="settings_gradual_volume">Schrittweise Zeitplanlautstärke</string>
+    <string name="settings_gradual_volume_enabled">%1$d Sekunden Fade-in</string>
+    <string name="settings_gradual_volume_disabled">Aus</string>
 </resources>
