@@ -66,6 +66,7 @@ class PlaybackService : MediaLibraryService() {
     private var showCoverArtInNotification: Boolean = true
     private var alarmFadeInSeconds: Int = 0
     private var volumeFadeJob: kotlinx.coroutines.Job? = null
+    private var activeTrackTitle: String? = null
     
     private val audioNoisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -158,6 +159,8 @@ class PlaybackService : MediaLibraryService() {
                 
                 if (previousRawTitle == trackTitle) return
                 
+                activeTrackTitle = trackTitle
+                
                 val stationName = currentExtras?.getString("stationName")
                 val stationFaviconStr = currentExtras?.getString("stationFavicon")
                 val stationFaviconUri = when {
@@ -207,27 +210,25 @@ class PlaybackService : MediaLibraryService() {
                         trackHistoryRepository.updateCoverArt(stationUuid, trackTitle, coverArtUrl)
                     }
                     
-                    val latestPlayer = player ?: return@launch
-                    val latestMediaItem = latestPlayer.currentMediaItem ?: return@launch
-                    val latestRawTitle = latestMediaItem.mediaMetadata.extras?.getString("icy_raw_title")
-                    
                     // Ensure track hasn't changed while fetching
-                    if (latestRawTitle == trackTitle) {
-                        val latestExtras = latestMediaItem.mediaMetadata.extras
-                        val updatedExtras = android.os.Bundle(latestExtras ?: android.os.Bundle.EMPTY).apply {
+                    if (activeTrackTitle == trackTitle) {
+                        val updatedExtras = android.os.Bundle(newExtras).apply {
                             putString("is_fetching_artwork", "false")
                             if (coverArtUrl != null) {
                                 putString("track_cover_art_url", coverArtUrl) // Make cover art available to internal UI
                             }
                         }
-                        val metadataWithArt = latestMediaItem.mediaMetadata.buildUpon()
+                        val metadataWithArt = newMetadataBuilder
                             .setArtworkUri(if (showCoverArtInNotification && coverArtUrl != null) android.net.Uri.parse(coverArtUrl) else stationFaviconUri)
                             .setExtras(updatedExtras)
                             .build()
-                        val itemWithArt = latestMediaItem.buildUpon()
+                        val itemWithArt = newMediaItem.buildUpon()
                             .setMediaMetadata(metadataWithArt)
                             .build()
-                        latestPlayer.replaceMediaItem(latestPlayer.currentMediaItemIndex, itemWithArt)
+                            
+                        player?.let { p ->
+                            p.replaceMediaItem(p.currentMediaItemIndex, itemWithArt)
+                        }
                     }
                 }
             }

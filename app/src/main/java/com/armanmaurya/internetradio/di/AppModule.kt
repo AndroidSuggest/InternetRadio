@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import com.armanmaurya.internetradio.data.local.database.RadioDatabase
 import com.armanmaurya.internetradio.data.remote.RadioBrowserApi
-import com.armanmaurya.internetradio.data.remote.MusicBrainzApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -115,18 +114,18 @@ object AppModule {
 
     @Provides
     @Singleton
-    @Named("MusicBrainzRetrofit")
-    fun provideMusicBrainzRetrofit(okHttpClient: OkHttpClient): Retrofit =
+    @Named("ITunesRetrofit")
+    fun provideITunesRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit.Builder()
-            .baseUrl("https://musicbrainz.org/ws/2/")
+            .baseUrl("https://itunes.apple.com/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
     @Provides
     @Singleton
-    fun provideMusicBrainzApiService(@Named("MusicBrainzRetrofit") retrofit: Retrofit): MusicBrainzApiService =
-        retrofit.create(MusicBrainzApiService::class.java)
+    fun provideITunesApiService(@Named("ITunesRetrofit") retrofit: Retrofit): com.armanmaurya.internetradio.data.remote.ITunesApiService =
+        retrofit.create(com.armanmaurya.internetradio.data.remote.ITunesApiService::class.java)
 
     @Provides
     @Singleton
