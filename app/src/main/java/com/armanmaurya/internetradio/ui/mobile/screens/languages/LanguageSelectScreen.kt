@@ -106,6 +106,11 @@ fun LanguageSelectScreen(
                     }
                 },
                 actions = {
+                    if (!uiState.isSearchActive && !selectedLanguage.isNullOrBlank()) {
+                        TextButton(onClick = { onLanguageSelected(Language(name = context.getString(R.string.select_language_all), isoCode = "", stationCount = 0)) }) {
+                            Text(stringResource(R.string.general_clear))
+                        }
+                    }
                     IconButton(onClick = viewModel::toggleSearch) {
                         Icon(
                             imageVector = if (uiState.isSearchActive) Icons.Default.Close else Icons.Default.Search,

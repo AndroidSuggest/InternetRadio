@@ -113,6 +113,11 @@ fun CountrySelectScreen(
                     }
                 },
                 actions = {
+                    if (!uiState.isSearchActive && !selectedCountryCode.isNullOrBlank()) {
+                        TextButton(onClick = { onCountrySelected(Country(name = context.getString(R.string.select_country_all), isoCode = "", stationCount = totalStations), null) }) {
+                            Text(stringResource(R.string.general_clear))
+                        }
+                    }
                     IconButton(onClick = viewModel::toggleSearch) {
                         Icon(
                             imageVector = if (uiState.isSearchActive) Icons.Default.Close else Icons.Default.Search,
