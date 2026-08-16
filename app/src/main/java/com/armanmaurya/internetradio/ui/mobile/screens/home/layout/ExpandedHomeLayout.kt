@@ -70,6 +70,7 @@ internal fun ExpandedHomeLayout(
     selectedTags: Set<String>,
     browseStations: List<RadioStation>,
     libraryStations: List<RadioStation>? = null,
+    libraryUuids: Set<String>,
     onLibraryStationClick: (RadioStation) -> Unit,
     onBrowseStationClick: (RadioStation) -> Unit,
     tabs: List<String>,
@@ -122,6 +123,7 @@ internal fun ExpandedHomeLayout(
                 selectedTags = selectedTags,
                 browseStations = browseStations,
                 libraryStations = libraryStations,
+                libraryUuids = libraryUuids,
                 onLibraryStationClick = onLibraryStationClick,
                 onBrowseStationClick = onBrowseStationClick
             )
@@ -357,6 +359,7 @@ private fun ExpandedSearchOverlay(
     selectedTags: Set<String>,
     browseStations: List<RadioStation>,
     libraryStations: List<RadioStation>? = null,
+    libraryUuids: Set<String>,
     onLibraryStationClick: (RadioStation) -> Unit,
     onBrowseStationClick: (RadioStation) -> Unit,
     modifier: Modifier = Modifier.fillMaxSize()
@@ -404,6 +407,7 @@ private fun ExpandedSearchOverlay(
                         StationListCard(
                             station = station,
                             onClick = { onLibraryStationClick(station) },
+                            isFavorite = true,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
@@ -429,6 +433,7 @@ private fun ExpandedSearchOverlay(
                         StationListCard(
                             station = station,
                             onClick = { onBrowseStationClick(station) },
+                            isFavorite = libraryUuids.contains(station.stationUuid),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)

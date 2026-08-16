@@ -112,6 +112,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val browseUiState by browseViewModel.uiState.collectAsStateWithLifecycle()
     val libraryStations by libraryViewModel.stations.collectAsStateWithLifecycle(initialValue = emptyList())
+    val libraryUuids by libraryViewModel.stationUuids.collectAsStateWithLifecycle(initialValue = emptySet())
     val searchLibraryStations by libraryViewModel.searchStations.collectAsStateWithLifecycle(initialValue = emptyList())
     val filteredLibraryStations = searchLibraryStations ?: emptyList()
     val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
@@ -232,6 +233,7 @@ fun HomeScreen(
                                 station = station,
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                                 isPlaybackActive = isPlaybackActive,
+                                isFavorite = true,
                                 onClick = {
                                     viewModel.onSearchQueryChange(station.name)
                                     isSearchExpanded = false
@@ -267,6 +269,7 @@ fun HomeScreen(
                                 station = station,
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                                 isPlaybackActive = isPlaybackActive,
+                                isFavorite = libraryUuids.contains(station.stationUuid),
                                 onClick = {
                                     viewModel.onSearchQueryChange(station.name)
                                     isSearchExpanded = false
@@ -370,6 +373,7 @@ fun HomeScreen(
                 selectedTags = uiState.selectedTags,
                 browseStations = browseUiState.stations,
                 libraryStations = filteredLibraryStations,
+                libraryUuids = libraryUuids,
                 onLibraryStationClick = { station ->
                     viewModel.onSearchQueryChange(station.name)
                     isSearchExpanded = false
