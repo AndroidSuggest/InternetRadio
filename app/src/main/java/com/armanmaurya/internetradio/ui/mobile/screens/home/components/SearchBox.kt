@@ -113,104 +113,95 @@ fun RadioSearchBar(
                     }
                 },
                 trailingIcon = {
-                    if (isSearchActive) {
-                        IconButton(onClick = {
-                            onSearchCleared()
-                            onExpandedChange(false)
-                        }) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_clear_search))
-                        }
-                    } else {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = onTagClick) {
-                                BadgedBox(
-                                    badge = {
-                                        if (selectedTags.isNotEmpty()) {
-                                            Badge {
-                                                Text(selectedTags.size.toString())
-                                            }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onTagClick) {
+                            BadgedBox(
+                                badge = {
+                                    if (selectedTags.isNotEmpty()) {
+                                        Badge {
+                                            Text(selectedTags.size.toString())
                                         }
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.LocalOffer,
-                                        contentDescription = stringResource(R.string.home_cd_select_tags),
-                                        tint = if (selectedTags.isNotEmpty())
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocalOffer,
+                                    contentDescription = stringResource(R.string.home_cd_select_tags),
+                                    tint = if (selectedTags.isNotEmpty())
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        IconButton(onClick = onLanguageClick) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Icon(
+                                    imageVector = Icons.Default.Translate,
+                                    contentDescription = stringResource(R.string.home_cd_select_language),
+                                    tint = if (!selectedLanguage.isNullOrBlank())
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+                                if (!selectedLanguage.isNullOrBlank()) {
+                                    Text(
+                                        text = selectedLanguage.take(3).uppercase(),
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(end = 5.dp)
                                     )
                                 }
                             }
-                            IconButton(onClick = onLanguageClick) {
-                                Box(modifier = Modifier.fillMaxSize()) {
-                                    Icon(
-                                        imageVector = Icons.Default.Translate,
-                                        contentDescription = stringResource(R.string.home_cd_select_language),
-                                        tint = if (!selectedLanguage.isNullOrBlank())
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
-                                    if (!selectedLanguage.isNullOrBlank()) {
+                        }
+                        IconButton(onClick = onCountryClick) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Public,
+                                    contentDescription = stringResource(R.string.home_cd_select_country),
+                                    tint = if (!selectedCountryCode.isNullOrBlank())
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                if (!selectedCountryCode.isNullOrBlank()) {
+                                    val displayCode = if (!selectedStateCode.isNullOrBlank()) selectedStateCode else selectedCountryCode
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        shape = MaterialTheme.shapes.small
+                                    ) {
                                         Text(
-                                            text = selectedLanguage.take(3).uppercase(),
+                                            text = displayCode,
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = 8.sp,
+                                                fontSize = 7.sp,
+                                                lineHeight = 8.sp,
                                                 fontWeight = FontWeight.Bold
                                             ),
-                                            color = MaterialTheme.colorScheme.primary,
+                                            maxLines = 1,
+                                            textAlign = TextAlign.Center,
                                             modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .padding(end = 5.dp)
+                                                .defaultMinSize(minWidth = 32.dp)
+                                                .padding(horizontal = 4.dp, vertical = 0.dp)
                                         )
                                     }
                                 }
                             }
-                            IconButton(onClick = onCountryClick) {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.Public,
-                                        contentDescription = stringResource(R.string.home_cd_select_country),
-                                        tint = if (!selectedCountryCode.isNullOrBlank())
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    if (!selectedCountryCode.isNullOrBlank()) {
-                                        val displayCode = if (!selectedStateCode.isNullOrBlank()) selectedStateCode else selectedCountryCode
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.primaryContainer,
-                                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                            shape = MaterialTheme.shapes.small
-                                        ) {
-                                            Text(
-                                                text = displayCode,
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontSize = 7.sp,
-                                                    lineHeight = 8.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                ),
-                                                maxLines = 1,
-                                                textAlign = TextAlign.Center,
-                                                modifier = Modifier
-                                                    .defaultMinSize(minWidth = 32.dp)
-                                                    .padding(horizontal = 4.dp, vertical = 0.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                        }
 
-                            AnimatedVisibility(
-                                visible = !isSearchExpanded,
-                                enter = expandHorizontally() + fadeIn(),
-                                exit = shrinkHorizontally() + fadeOut()
-                            ) {
-                                IconButton(onClick = onSettingsClick) {
-                                    Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.home_cd_settings))
-                                }
+                        AnimatedVisibility(
+                            visible = !isSearchExpanded,
+                            enter = expandHorizontally() + fadeIn(),
+                            exit = shrinkHorizontally() + fadeOut()
+                        ) {
+                            IconButton(onClick = onSettingsClick) {
+                                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.home_cd_settings))
                             }
                         }
                     }

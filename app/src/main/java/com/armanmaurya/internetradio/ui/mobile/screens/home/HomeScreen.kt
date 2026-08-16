@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -216,14 +217,29 @@ fun HomeScreen(
                 ) {
                     if (filteredLibraryStations.isNotEmpty()) {
                         item {
-                            Text(
-                                text = stringResource(R.string.home_tab_library),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
+                                    .clickable {
+                                        isSearchExpanded = false
+                                        viewModel.onTabSelected(2)
+                                        libraryViewModel.setFilterEnabled(true)
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.home_tab_library),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                         items(
                             items = filteredLibraryStations.take(5),
@@ -235,12 +251,8 @@ fun HomeScreen(
                                 isPlaybackActive = isPlaybackActive,
                                 isFavorite = true,
                                 onClick = {
-                                    viewModel.onSearchQueryChange(station.name)
                                     isSearchExpanded = false
-                                    if (uiState.autoRouteToBrowseOnSearch) {
-                                        viewModel.onTabSelected(2)
-                                        libraryViewModel.setFilterEnabled(true)
-                                    }
+                                    playerViewModel.play(listOf(station), 0, com.armanmaurya.internetradio.player.PlaybackSource.None)
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -252,14 +264,28 @@ fun HomeScreen(
 
                     if (browseUiState.stations.isNotEmpty()) {
                         item {
-                            Text(
-                                text = stringResource(R.string.home_tab_browse),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
+                                    .clickable {
+                                        isSearchExpanded = false
+                                        viewModel.onTabSelected(0)
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.home_tab_browse),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                         items(
                             items = browseUiState.stations.take(10),
@@ -271,11 +297,8 @@ fun HomeScreen(
                                 isPlaybackActive = isPlaybackActive,
                                 isFavorite = libraryUuids.contains(station.stationUuid),
                                 onClick = {
-                                    viewModel.onSearchQueryChange(station.name)
                                     isSearchExpanded = false
-                                    if (uiState.autoRouteToBrowseOnSearch) {
-                                        viewModel.onTabSelected(0)
-                                    }
+                                    playerViewModel.play(listOf(station), 0, com.armanmaurya.internetradio.player.PlaybackSource.None)
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -375,19 +398,21 @@ fun HomeScreen(
                 libraryStations = filteredLibraryStations,
                 libraryUuids = libraryUuids,
                 onLibraryStationClick = { station ->
-                    viewModel.onSearchQueryChange(station.name)
                     isSearchExpanded = false
-                    if (uiState.autoRouteToBrowseOnSearch) {
-                        viewModel.onTabSelected(2)
-                        libraryViewModel.setFilterEnabled(true)
-                    }
+                    playerViewModel.play(listOf(station), 0, com.armanmaurya.internetradio.player.PlaybackSource.None)
                 },
                 onBrowseStationClick = { station ->
-                    viewModel.onSearchQueryChange(station.name)
                     isSearchExpanded = false
-                    if (uiState.autoRouteToBrowseOnSearch) {
-                        viewModel.onTabSelected(0)
-                    }
+                    playerViewModel.play(listOf(station), 0, com.armanmaurya.internetradio.player.PlaybackSource.None)
+                },
+                onLibraryHeaderClick = {
+                    isSearchExpanded = false
+                    viewModel.onTabSelected(2)
+                    libraryViewModel.setFilterEnabled(true)
+                },
+                onBrowseHeaderClick = {
+                    isSearchExpanded = false
+                    viewModel.onTabSelected(0)
                 },
                 tabs = tabs,
                 pagerState = pagerState,

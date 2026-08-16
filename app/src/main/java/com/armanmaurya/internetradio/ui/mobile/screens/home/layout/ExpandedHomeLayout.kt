@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.History
@@ -73,6 +74,8 @@ internal fun ExpandedHomeLayout(
     libraryUuids: Set<String>,
     onLibraryStationClick: (RadioStation) -> Unit,
     onBrowseStationClick: (RadioStation) -> Unit,
+    onLibraryHeaderClick: () -> Unit = {},
+    onBrowseHeaderClick: () -> Unit = {},
     tabs: List<String>,
     pagerState: androidx.compose.foundation.pager.PagerState,
     coroutineScope: kotlinx.coroutines.CoroutineScope
@@ -125,7 +128,9 @@ internal fun ExpandedHomeLayout(
                 libraryStations = libraryStations,
                 libraryUuids = libraryUuids,
                 onLibraryStationClick = onLibraryStationClick,
-                onBrowseStationClick = onBrowseStationClick
+                onBrowseStationClick = onBrowseStationClick,
+                onLibraryHeaderClick = onLibraryHeaderClick,
+                onBrowseHeaderClick = onBrowseHeaderClick
             )
         }
     }
@@ -362,6 +367,8 @@ private fun ExpandedSearchOverlay(
     libraryUuids: Set<String>,
     onLibraryStationClick: (RadioStation) -> Unit,
     onBrowseStationClick: (RadioStation) -> Unit,
+    onLibraryHeaderClick: () -> Unit = {},
+    onBrowseHeaderClick: () -> Unit = {},
     modifier: Modifier = Modifier.fillMaxSize()
 ) {
     Box(
@@ -391,14 +398,25 @@ private fun ExpandedSearchOverlay(
             ) {
                 if (!libraryStations.isNullOrEmpty()) {
                     item {
-                        Text(
-                            text = stringResource(R.string.home_tab_library),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary,
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
+                                .clickable { onLibraryHeaderClick() }
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.home_tab_library),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                     items(
                         items = libraryStations.take(5),
@@ -417,14 +435,25 @@ private fun ExpandedSearchOverlay(
                 }
                 if (browseStations.isNotEmpty()) {
                     item {
-                        Text(
-                            text = stringResource(R.string.home_tab_browse),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary,
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
+                                .clickable { onBrowseHeaderClick() }
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.home_tab_browse),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                     items(
                         items = browseStations.take(10),
