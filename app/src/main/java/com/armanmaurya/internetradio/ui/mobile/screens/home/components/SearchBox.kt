@@ -37,6 +37,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,22 +88,46 @@ fun RadioSearchBar(
                 targetValue = if (isSearchExpanded) 0f else 0.3f,
                 label = "SearchBarBorderAlpha"
             )
-            SearchBarDefaults.InputField(
-                modifier = if (isPureBlack) {
-                    Modifier.border(
-                        1.dp,
-                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = borderAlpha),
-                        androidx.compose.foundation.shape.RoundedCornerShape(100)
+            var textFieldValue by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(text = query)) }
+
+            androidx.compose.runtime.LaunchedEffect(query) {
+                if (query != textFieldValue.text) {
+                    textFieldValue = textFieldValue.copy(text = query)
+                }
+            }
+
+            val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+
+            androidx.compose.runtime.LaunchedEffect(isSearchExpanded) {
+                if (isSearchExpanded && textFieldValue.text.isNotEmpty()) {
+                    textFieldValue = textFieldValue.copy(
+                        selection = androidx.compose.ui.text.TextRange(0, textFieldValue.text.length)
                     )
-                } else Modifier,
-                query = query,
-                onQueryChange = onQueryChange,
-                onSearch = { 
-                    onSearch(it)
-                    onExpandedChange(false)
+                } else if (!isSearchExpanded) {
+                    focusManager.clearFocus()
+                }
+            }
+
+            TextField(
+                value = textFieldValue,
+                onValueChange = { 
+                    textFieldValue = it
+                    onQueryChange(it.text) 
                 },
-                expanded = isSearchExpanded,
-                onExpandedChange = onExpandedChange,
+                modifier = (if (isPureBlack) {
+                    Modifier
+                        .fillMaxWidth()
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = borderAlpha),
+                            androidx.compose.foundation.shape.RoundedCornerShape(100)
+                        )
+                } else Modifier.fillMaxWidth())
+                .onFocusChanged { focusState ->
+                    if (focusState.isFocused) {
+                        onExpandedChange(true)
+                    }
+                },
                 placeholder = { Text(stringResource(R.string.general_search)) },
                 leadingIcon = {
                     if (isSearchExpanded) {
@@ -205,7 +231,20 @@ fun RadioSearchBar(
                             }
                         }
                     }
-                }
+                },
+                singleLine = true,
+                colors = androidx.compose.material3.TextFieldDefaults.colors(
+                    focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                    unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                    focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                    unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                    disabledIndicatorColor = androidx.compose.ui.graphics.Color.Transparent
+                ),
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { 
+                    onSearch(textFieldValue.text)
+                    onExpandedChange(false)
+                })
             )
         },
         expanded = isSearchExpanded,
