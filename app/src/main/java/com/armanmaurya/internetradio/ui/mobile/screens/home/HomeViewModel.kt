@@ -65,7 +65,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun updateLanguage(language: String) {
-        val normalizedLanguage = if (language == "All Languages") null else language
+        val normalizedLanguage = if (language == "All Languages" || language.isBlank()) null else language
         viewModelScope.launch {
             settingsRepository.setSelectedLanguage(normalizedLanguage)
         }
