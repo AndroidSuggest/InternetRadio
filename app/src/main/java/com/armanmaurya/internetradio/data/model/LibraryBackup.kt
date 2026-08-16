@@ -33,8 +33,7 @@ data class BackupStation(
     val homepage: String? = null,
     val iso3166_2: String? = null,
     val geoLat: Double? = null,
-    val geoLong: Double? = null,
-    val orderIndex: Int? = null
+    val geoLong: Double? = null
 ) {
     fun toLibraryStationEntity(): LibraryStationEntity {
         val mappedLanguageCodes = languageCodes ?: language?.takeIf { it.isNotBlank() }?.let { langString ->
@@ -62,7 +61,7 @@ data class BackupStation(
             iso3166_2 = iso3166_2,
             geoLat = geoLat,
             geoLong = geoLong,
-            orderIndex = orderIndex ?: 0
+            orderIndex = 0
         )
     }
 }
@@ -84,7 +83,6 @@ fun LibraryStationEntity.toBackupStation(): BackupStation {
         homepage = homepage,
         iso3166_2 = iso3166_2,
         geoLat = geoLat,
-        geoLong = geoLong,
-        orderIndex = orderIndex
+        geoLong = geoLong
     )
 }

@@ -147,7 +147,6 @@ fun SettingsScreen(
                 expandedItem = expandedItem,
                 onExpandedItemChange = { expandedItem = it },
                 onSetLanguage = viewModel::setAppLanguage,
-                onSetStartOfWeek = viewModel::setStartOfWeek,
                 onSetDefaultTab = viewModel::setDefaultTab,
                 onSetAutoRouteToBrowseOnSearch = viewModel::setAutoRouteToBrowseOnSearch,
                 onSetDisableUpdateCheck = viewModel::setDisableUpdateCheck,
@@ -183,8 +182,12 @@ fun SettingsScreen(
             )
             ScheduleSection(
                 uiState = uiState,
+                expandedItem = expandedItem,
+                onExpandedItemChange = { expandedItem = it },
+                onSetStartOfWeek = viewModel::setStartOfWeek,
                 onSetAlarmVolumeTransitionSeconds = viewModel::setAlarmVolumeTransitionSeconds,
-                singleShape = singleShape
+                topShape = topShape,
+                bottomShape = bottomShape
             )
             AboutSection(
                 onAboutClick = onAboutClick,
@@ -315,7 +318,6 @@ private fun GeneralSection(
     expandedItem: String?,
     onExpandedItemChange: (String?) -> Unit,
     onSetLanguage: (String) -> Unit,
-    onSetStartOfWeek: (StartOfWeek) -> Unit,
     onSetDefaultTab: (Int) -> Unit,
     onSetAutoRouteToBrowseOnSearch: (Boolean) -> Unit,
     onSetDisableUpdateCheck: (Boolean) -> Unit,
@@ -344,25 +346,6 @@ private fun GeneralSection(
                     label = name,
                     isSelected = activeLanguageCode == code,
                     onClick = { onSetLanguage(code) }
-                )
-            }
-        }
-
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
-
-        ExpandableItem(
-            title = stringResource(R.string.settings_start_week_title),
-            subtitle = uiState.startOfWeek.toDisplayString(),
-            isExpanded = expandedItem == "StartWeek",
-            onToggle = { onExpandedItemChange(if (expandedItem == "StartWeek") null else "StartWeek") },
-            icon = Icons.Default.CalendarMonth,
-            shape = middleShape
-        ) {
-            StartOfWeek.entries.forEach { startOfWeek ->
-                OptionItem(
-                    label = startOfWeek.toDisplayString(),
-                    isSelected = uiState.startOfWeek == startOfWeek,
-                    onClick = { onSetStartOfWeek(startOfWeek) }
                 )
             }
         }
@@ -654,17 +637,40 @@ private fun BackupSection(
 @Composable
 private fun ScheduleSection(
     uiState: AppPreferences,
+    expandedItem: String?,
+    onExpandedItemChange: (String?) -> Unit,
+    onSetStartOfWeek: (StartOfWeek) -> Unit,
     onSetAlarmVolumeTransitionSeconds: (Int) -> Unit,
-    singleShape: RoundedCornerShape
+    topShape: RoundedCornerShape,
+    bottomShape: RoundedCornerShape
 ) {
     Section(title = stringResource(R.string.settings_schedule_section)) {
+        ExpandableItem(
+            title = stringResource(R.string.settings_start_week_title),
+            subtitle = uiState.startOfWeek.toDisplayString(),
+            isExpanded = expandedItem == "StartWeek",
+            onToggle = { onExpandedItemChange(if (expandedItem == "StartWeek") null else "StartWeek") },
+            icon = Icons.Default.CalendarMonth,
+            shape = topShape
+        ) {
+            StartOfWeek.entries.forEach { startOfWeek ->
+                OptionItem(
+                    label = startOfWeek.toDisplayString(),
+                    isSelected = uiState.startOfWeek == startOfWeek,
+                    onClick = { onSetStartOfWeek(startOfWeek) }
+                )
+            }
+        }
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
         val isEnabled = uiState.alarmVolumeTransitionSeconds > 0
         
         ExpandableItem(
             title = stringResource(R.string.settings_gradual_volume),
             subtitle = if (isEnabled) stringResource(R.string.settings_gradual_volume_enabled, uiState.alarmVolumeTransitionSeconds) 
                        else stringResource(R.string.settings_gradual_volume_disabled),
-            isExpanded = isEnabled,
+            isExpanded = expandedItem == "GradualVolume",
             hasSwitch = true,
             onToggle = { 
                 if (isEnabled) {
@@ -672,9 +678,15 @@ private fun ScheduleSection(
                 } else {
                     onSetAlarmVolumeTransitionSeconds(15)
                 }
+                // also toggle expand state if it wasn't already to avoid keeping it open when disabled
+                if (!isEnabled) {
+                   onExpandedItemChange("GradualVolume")
+                } else {
+                   onExpandedItemChange(null)
+                }
             },
             icon = Icons.AutoMirrored.Filled.VolumeUp,
-            shape = singleShape
+            shape = bottomShape
         ) {
             Column(
                 modifier = Modifier

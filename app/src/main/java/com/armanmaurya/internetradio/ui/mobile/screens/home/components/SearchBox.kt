@@ -181,16 +181,18 @@ fun RadioSearchBar(
                                     if (!selectedCountryCode.isNullOrBlank()) {
                                         val displayCode = if (!selectedStateCode.isNullOrBlank()) selectedStateCode else selectedCountryCode
                                         Surface(
-                                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                                            color = MaterialTheme.colorScheme.primaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                             shape = MaterialTheme.shapes.small
                                         ) {
                                             Text(
                                                 text = displayCode,
                                                 style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 7.sp,
                                                     lineHeight = 8.sp,
                                                     fontWeight = FontWeight.Bold
                                                 ),
+                                                maxLines = 1,
                                                 textAlign = TextAlign.Center,
                                                 modifier = Modifier
                                                     .defaultMinSize(minWidth = 32.dp)
