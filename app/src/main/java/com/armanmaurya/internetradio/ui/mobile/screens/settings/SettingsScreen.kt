@@ -90,6 +90,15 @@ fun SettingsScreen(
 
     // UI-only state for expand/collapse
     var expandedItem by remember { mutableStateOf<String?>(null) }
+    var hasInitializedGradualVolume by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.alarmVolumeTransitionSeconds) {
+        if (!hasInitializedGradualVolume && uiState.alarmVolumeTransitionSeconds > 0) {
+            expandedItem = "GradualVolume"
+            hasInitializedGradualVolume = true
+        }
+    }
+
     var showHistoryLimitDialog by remember { mutableStateOf(false) }
 
     // Toast feedback for backup/restore operations
@@ -669,28 +678,33 @@ private fun ScheduleSection(
         
         ExpandableItem(
             title = stringResource(
-                    R.string.settings_gradual_volume,
-                    pluralStringResource(
-                        R.plurals.select_country_states_count,
-                        uiState.alarmVolumeTransitionSeconds,
-                        uiState.alarmVolumeTransitionSeconds
-                    )                    
-                ),
+                        R.string.settings_gradual_volume,
+                        pluralStringResource(
+                            R.plurals.select_country_states_count,
+                            uiState.alarmVolumeTransitionSeconds,
+                            uiState.alarmVolumeTransitionSeconds
+                        )                    
+                    ),
             subtitle = if (isEnabled) stringResource(R.string.settings_gradual_volume_enabled, uiState.alarmVolumeTransitionSeconds) 
                        else stringResource(R.string.settings_gradual_volume_disabled),
             isExpanded = expandedItem == "GradualVolume",
             hasSwitch = true,
-            onToggle = { 
-                if (isEnabled) {
-                    onSetAlarmVolumeTransitionSeconds(0) 
-                } else {
+            switchChecked = isEnabled,
+            onSwitchChange = { checked ->
+                if (checked) {
                     onSetAlarmVolumeTransitionSeconds(15)
-                }
-                // also toggle expand state if it wasn't already to avoid keeping it open when disabled
-                if (!isEnabled) {
-                   onExpandedItemChange("GradualVolume")
+                    onExpandedItemChange("GradualVolume")
                 } else {
-                   onExpandedItemChange(null)
+                    onSetAlarmVolumeTransitionSeconds(0)
+                    onExpandedItemChange(null)
+                }
+            },
+            onToggle = { 
+                if (!isEnabled) {
+                    onSetAlarmVolumeTransitionSeconds(15)
+                    onExpandedItemChange("GradualVolume")
+                } else {
+                    onExpandedItemChange(if (expandedItem == "GradualVolume") null else "GradualVolume")
                 }
             },
             icon = Icons.AutoMirrored.Filled.VolumeUp,
