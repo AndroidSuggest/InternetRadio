@@ -680,7 +680,7 @@ private fun ScheduleSection(
             title = stringResource(
                         R.string.settings_gradual_volume,
                         pluralStringResource(
-                            R.plurals.select_country_states_count,
+                            R.plurals.settings_gradual_volume_seconds,
                             uiState.alarmVolumeTransitionSeconds,
                             uiState.alarmVolumeTransitionSeconds
                         )                    
