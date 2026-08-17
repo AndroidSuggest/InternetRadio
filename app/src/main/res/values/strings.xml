@@ -346,6 +346,8 @@
         <item quantity="one">Are you sure you want to delete %1$d item?</item>
         <item quantity="other">Are you sure you want to delete %1$d items?</item>
     </plurals>
+    <string name="notification_recording">Recording: %1$s</string>
+    <string name="notification_recording_duration">Duration: %1$s</string>
     <plurals name="recordings_count">
         <item quantity="one">%1$d recording</item>
         <item quantity="other">%1$d recordings</item>
