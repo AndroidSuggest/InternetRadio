@@ -80,7 +80,13 @@ fun RecordingsContent(
         AlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
             title = { Text(stringResource(R.string.delete_recording)) },
-            text = { Text("Are you sure you want to delete $deleteCount item(s)?") },
+            text = { Text(
+                pluralStringResource(
+                    R.plurals.delete_recordings_message,
+                    deleteCount,
+                    deleteCount
+                )
+            ) },
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteConfirmDialog = false
@@ -128,7 +134,7 @@ fun RecordingsContent(
                 }
                 
                 Text(
-                    text = "${if (selectedStationName == null) selectedFolders.size else selectedFiles.size} selected",
+                    text = stringResource(R.string.recordings_selected, if (selectedStationName == null) selectedFolders.size else selectedFiles.size),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
                 )

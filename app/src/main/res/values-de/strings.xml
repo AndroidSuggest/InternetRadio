@@ -342,10 +342,15 @@
     <string name="schedule_volume">Lautstärke: %1$d%%</string>
     <string name="schedule_select_time">Uhrzeit auswählen</string>
     <string name="delete_recording">Löschen</string>
+    <plurals name="delete_recordings_message">
+        <item quantity="one">Soll %1$d Element wirklich gelöscht werden?</item>
+        <item quantity="other">Sollen %1$d Elemente wirklich gelöscht werden?</item>
+    </plurals>
     <plurals name="recordings_count">
         <item quantity="one">%1$d Aufnahme</item>
         <item quantity="other">%1$d Aufnahmen</item>
     </plurals>
+    <string name="recordings_selected">%1$d ausgewählt</string>
     <plurals name="tracks_count">
         <item quantity="other">%1$d Titel</item>
     </plurals>
