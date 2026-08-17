@@ -251,7 +251,6 @@ fun HomeScreen(
                                 isPlaybackActive = isPlaybackActive,
                                 isFavorite = true,
                                 onClick = {
-                                    isSearchExpanded = false
                                     playerViewModel.play(listOf(station), 0, com.armanmaurya.internetradio.player.PlaybackSource.None)
                                 },
                                 modifier = Modifier
@@ -297,7 +296,6 @@ fun HomeScreen(
                                 isPlaybackActive = isPlaybackActive,
                                 isFavorite = libraryUuids.contains(station.stationUuid),
                                 onClick = {
-                                    isSearchExpanded = false
                                     playerViewModel.play(listOf(station), 0, com.armanmaurya.internetradio.player.PlaybackSource.None)
                                 },
                                 modifier = Modifier
@@ -398,11 +396,9 @@ fun HomeScreen(
                 libraryStations = filteredLibraryStations,
                 libraryUuids = libraryUuids,
                 onLibraryStationClick = { station ->
-                    isSearchExpanded = false
                     playerViewModel.play(listOf(station), 0, com.armanmaurya.internetradio.player.PlaybackSource.None)
                 },
                 onBrowseStationClick = { station ->
-                    isSearchExpanded = false
                     playerViewModel.play(listOf(station), 0, com.armanmaurya.internetradio.player.PlaybackSource.None)
                 },
                 onLibraryHeaderClick = {

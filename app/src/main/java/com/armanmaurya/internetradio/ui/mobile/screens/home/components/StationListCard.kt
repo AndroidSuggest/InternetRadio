@@ -168,7 +168,7 @@ fun StationListCard(
                         contentDescription = stringResource(R.string.home_cd_favorite),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
+                            .align(Alignment.TopStart)
                             .padding(2.dp)
                             .size(16.dp)
                     )

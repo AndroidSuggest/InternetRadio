@@ -68,6 +68,7 @@ class BrowseViewModel @Inject constructor(
             }
             .distinctUntilChanged()
             .onEach { params ->
+                val oldState = _uiState.value
                 _uiState.update {
                     it.copy(
                         selectedCountryCode = params.selectedCountryCode,
@@ -79,10 +80,19 @@ class BrowseViewModel @Inject constructor(
                         isGridView = params.isGridView
                     )
                 }
-                // If a search is active, don't reload stations — the search results
-                // should be preserved (e.g. when toggling grid/list view).
-                if (_uiState.value.isSearchActive) return@onEach
-                if (params.selectedCountryCode == null) {
+
+                val filtersChanged = oldState.selectedCountryCode != params.selectedCountryCode ||
+                        oldState.selectedStateCode != params.selectedStateCode ||
+                        oldState.selectedLanguage != params.selectedLanguage ||
+                        oldState.selectedTags != params.selectedTags ||
+                        oldState.order != params.order ||
+                        oldState.reverse != params.reverse
+
+                if (!filtersChanged) return@onEach
+
+                if (_uiState.value.isSearchActive) {
+                    searchStations(_uiState.value.searchQuery)
+                } else if (params.selectedCountryCode == null) {
                     detectCountryIfNeeded()
                 } else {
                     loadStations(
