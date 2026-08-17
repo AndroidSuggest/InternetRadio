@@ -41,6 +41,8 @@ fun ExpandableItem(
     onToggle: () -> Unit,
     icon: ImageVector? = null,
     hasSwitch: Boolean = false,
+    switchChecked: Boolean = isExpanded,
+    onSwitchChange: ((Boolean) -> Unit)? = null,
     shape: Shape = RectangleShape,
     content: @Composable () -> Unit
 ) {
@@ -60,8 +62,8 @@ fun ExpandableItem(
             trailingContent = {
                 if (hasSwitch) {
                     androidx.compose.material3.Switch(
-                        checked = isExpanded,
-                        onCheckedChange = { onToggle() }
+                        checked = switchChecked,
+                        onCheckedChange = { onSwitchChange?.invoke(it) ?: onToggle() }
                     )
                 } else {
                     Icon(

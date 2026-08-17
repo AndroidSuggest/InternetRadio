@@ -89,6 +89,15 @@ fun SettingsScreen(
 
     // UI-only state for expand/collapse
     var expandedItem by remember { mutableStateOf<String?>(null) }
+    var hasInitializedGradualVolume by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.alarmVolumeTransitionSeconds) {
+        if (!hasInitializedGradualVolume && uiState.alarmVolumeTransitionSeconds > 0) {
+            expandedItem = "GradualVolume"
+            hasInitializedGradualVolume = true
+        }
+    }
+
     var showHistoryLimitDialog by remember { mutableStateOf(false) }
 
     // Toast feedback for backup/restore operations
@@ -672,17 +681,22 @@ private fun ScheduleSection(
                        else stringResource(R.string.settings_gradual_volume_disabled),
             isExpanded = expandedItem == "GradualVolume",
             hasSwitch = true,
-            onToggle = { 
-                if (isEnabled) {
-                    onSetAlarmVolumeTransitionSeconds(0) 
-                } else {
+            switchChecked = isEnabled,
+            onSwitchChange = { checked ->
+                if (checked) {
                     onSetAlarmVolumeTransitionSeconds(15)
-                }
-                // also toggle expand state if it wasn't already to avoid keeping it open when disabled
-                if (!isEnabled) {
-                   onExpandedItemChange("GradualVolume")
+                    onExpandedItemChange("GradualVolume")
                 } else {
-                   onExpandedItemChange(null)
+                    onSetAlarmVolumeTransitionSeconds(0)
+                    onExpandedItemChange(null)
+                }
+            },
+            onToggle = { 
+                if (!isEnabled) {
+                    onSetAlarmVolumeTransitionSeconds(15)
+                    onExpandedItemChange("GradualVolume")
+                } else {
+                    onExpandedItemChange(if (expandedItem == "GradualVolume") null else "GradualVolume")
                 }
             },
             icon = Icons.AutoMirrored.Filled.VolumeUp,
@@ -694,7 +708,7 @@ private fun ScheduleSection(
                     .padding(horizontal = 24.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = "${uiState.alarmVolumeTransitionSeconds} seconds",
+                    text = stringResource(R.string.settings_gradual_volume_seconds, uiState.alarmVolumeTransitionSeconds),
                     style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
                     color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
                 )

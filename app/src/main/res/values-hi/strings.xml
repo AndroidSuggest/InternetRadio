@@ -337,4 +337,9 @@
     <string name="more_options">अधिक विकल्प</string>
     <string name="nav_all_languages">सभी भाषाएँ</string>
     <string name="player_cd_stop">रोकें</string>
+    <string name="settings_schedule_section">शेड्यूल</string>
+    <string name="settings_gradual_volume">क्रमिक शेड्यूल वॉल्यूम</string>
+    <string name="settings_gradual_volume_enabled">%1$d सेकंड फ़ेड-इन</string>
+    <string name="settings_gradual_volume_disabled">बंद</string>
+    <string name="settings_gradual_volume_seconds">%1$d सेकंड</string>
 </resources>
