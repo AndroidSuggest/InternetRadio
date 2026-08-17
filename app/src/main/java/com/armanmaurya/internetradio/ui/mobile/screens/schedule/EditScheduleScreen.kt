@@ -580,7 +580,7 @@ private fun ScheduleConfigurationForm(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                             Text(stringResource(R.string.schedule_keep_playback_after_recording), style = MaterialTheme.typography.bodyLarge)
                             Text(
                                 stringResource(R.string.schedule_keep_playback_subtitle),
