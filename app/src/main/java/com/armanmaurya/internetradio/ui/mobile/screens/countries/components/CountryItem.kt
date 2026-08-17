@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
@@ -38,7 +39,11 @@ fun CountryItem(
         supportingContent = if (stateCount > 0) {
             {
                 Text(
-                    text = if (stateCount == 1) "1 state" else "$stateCount states",
+                    text = pluralStringResource(
+                        R.plurals.select_country_states_count,
+                        stateCount,
+                        stateCount
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

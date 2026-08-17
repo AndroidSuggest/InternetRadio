@@ -60,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -89,15 +90,6 @@ fun SettingsScreen(
 
     // UI-only state for expand/collapse
     var expandedItem by remember { mutableStateOf<String?>(null) }
-    var hasInitializedGradualVolume by remember { mutableStateOf(false) }
-
-    LaunchedEffect(uiState.alarmVolumeTransitionSeconds) {
-        if (!hasInitializedGradualVolume && uiState.alarmVolumeTransitionSeconds > 0) {
-            expandedItem = "GradualVolume"
-            hasInitializedGradualVolume = true
-        }
-    }
-
     var showHistoryLimitDialog by remember { mutableStateOf(false) }
 
     // Toast feedback for backup/restore operations
@@ -676,27 +668,29 @@ private fun ScheduleSection(
         val isEnabled = uiState.alarmVolumeTransitionSeconds > 0
         
         ExpandableItem(
-            title = stringResource(R.string.settings_gradual_volume),
+            title = stringResource(
+                    R.string.settings_gradual_volume,
+                    pluralStringResource(
+                        R.plurals.select_country_states_count,
+                        uiState.alarmVolumeTransitionSeconds,
+                        uiState.alarmVolumeTransitionSeconds
+                    )                    
+                ),
             subtitle = if (isEnabled) stringResource(R.string.settings_gradual_volume_enabled, uiState.alarmVolumeTransitionSeconds) 
                        else stringResource(R.string.settings_gradual_volume_disabled),
             isExpanded = expandedItem == "GradualVolume",
             hasSwitch = true,
-            switchChecked = isEnabled,
-            onSwitchChange = { checked ->
-                if (checked) {
-                    onSetAlarmVolumeTransitionSeconds(15)
-                    onExpandedItemChange("GradualVolume")
-                } else {
-                    onSetAlarmVolumeTransitionSeconds(0)
-                    onExpandedItemChange(null)
-                }
-            },
             onToggle = { 
-                if (!isEnabled) {
-                    onSetAlarmVolumeTransitionSeconds(15)
-                    onExpandedItemChange("GradualVolume")
+                if (isEnabled) {
+                    onSetAlarmVolumeTransitionSeconds(0) 
                 } else {
-                    onExpandedItemChange(if (expandedItem == "GradualVolume") null else "GradualVolume")
+                    onSetAlarmVolumeTransitionSeconds(15)
+                }
+                // also toggle expand state if it wasn't already to avoid keeping it open when disabled
+                if (!isEnabled) {
+                   onExpandedItemChange("GradualVolume")
+                } else {
+                   onExpandedItemChange(null)
                 }
             },
             icon = Icons.AutoMirrored.Filled.VolumeUp,
@@ -708,7 +702,11 @@ private fun ScheduleSection(
                     .padding(horizontal = 24.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.settings_gradual_volume_seconds, uiState.alarmVolumeTransitionSeconds),
+                    text = pluralStringResource(
+                        R.plurals.settings_gradual_volume_seconds,
+                        uiState.alarmVolumeTransitionSeconds,
+                        uiState.alarmVolumeTransitionSeconds
+                    ),
                     style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
                     color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
                 )
