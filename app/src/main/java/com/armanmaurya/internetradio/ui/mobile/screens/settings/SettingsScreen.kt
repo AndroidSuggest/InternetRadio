@@ -60,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -676,7 +677,14 @@ private fun ScheduleSection(
         val isEnabled = uiState.alarmVolumeTransitionSeconds > 0
         
         ExpandableItem(
-            title = stringResource(R.string.settings_gradual_volume),
+            title = stringResource(
+                        R.string.settings_gradual_volume,
+                        pluralStringResource(
+                            R.plurals.settings_gradual_volume_seconds,
+                            uiState.alarmVolumeTransitionSeconds,
+                            uiState.alarmVolumeTransitionSeconds
+                        )                    
+                    ),
             subtitle = if (isEnabled) stringResource(R.string.settings_gradual_volume_enabled, uiState.alarmVolumeTransitionSeconds) 
                        else stringResource(R.string.settings_gradual_volume_disabled),
             isExpanded = expandedItem == "GradualVolume",
@@ -708,7 +716,11 @@ private fun ScheduleSection(
                     .padding(horizontal = 24.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.settings_gradual_volume_seconds, uiState.alarmVolumeTransitionSeconds),
+                    text = pluralStringResource(
+                        R.plurals.settings_gradual_volume_seconds,
+                        uiState.alarmVolumeTransitionSeconds,
+                        uiState.alarmVolumeTransitionSeconds
+                    ),
                     style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
                     color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
                 )
