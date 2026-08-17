@@ -208,7 +208,9 @@ fun AddEditStationScreen(
                     tags != station.tags.joinToString(", ") ||
                     countryCode != station.countryCode ||
                     languageCodes != station.languageCodes.joinToString(", ") ||
-                    homepage != station.homepage
+                    homepage != station.homepage ||
+                    probedCodec != station.codec ||
+                    probedBitrate != station.bitrate
                 } else {
                     true
                 }

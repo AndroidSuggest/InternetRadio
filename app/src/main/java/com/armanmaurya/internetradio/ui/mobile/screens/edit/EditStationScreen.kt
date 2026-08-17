@@ -161,9 +161,11 @@ fun EditStationScreen(
             countryCode != station.countryCode ||
             iso3166_2 != (station.iso3166_2 ?: "") ||
             languageCodes != station.languageCodes.joinToString(", ") ||
-            homepage != station.homepage
+            homepage != station.homepage ||
+            probedCodec != station.codec ||
+            probedBitrate != station.bitrate
         } else {
-            name.isNotBlank() || url.isNotBlank() || favicon.isNotBlank() || tags.isNotBlank() || countryCode.isNotBlank() || iso3166_2.isNotBlank() || languageCodes.isNotBlank() || homepage.isNotBlank()
+            name.isNotBlank() || url.isNotBlank() || favicon.isNotBlank() || tags.isNotBlank() || countryCode.isNotBlank() || iso3166_2.isNotBlank() || languageCodes.isNotBlank() || homepage.isNotBlank() || probedCodec != "unknown" || probedBitrate != 0
         }
 
         var showExitWarningDialog by remember { mutableStateOf(false) }
