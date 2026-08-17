@@ -85,6 +85,11 @@ import kotlin.math.roundToInt
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import android.Manifest
+import android.os.Build
 
 fun Modifier.collapseHeight(progress: Float) = this.layout { measurable, constraints ->
     val placeable = measurable.measure(constraints)
@@ -161,6 +166,26 @@ fun PlayerSheetContent(
         )
     }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        onToggleRecording()
+    }
+
+    val handleToggleRecording = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permissionStatus = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            )
+            if (permissionStatus == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                onToggleRecording()
+            } else {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            onToggleRecording()
+        }
+    }
     
     var wasRecording by remember { mutableStateOf(false) }
     LaunchedEffect(isRecording) {
@@ -422,52 +447,67 @@ fun PlayerSheetContent(
                 pageStation.favicon.ifBlank { null }
             }
 
-            SubcomposeAsyncImage(
-                model = coil3.request.ImageRequest.Builder(LocalContext.current)
-                    .data(artToShow)
-                    .size(coil3.size.Size.ORIGINAL)
-                    .build(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                filterQuality = FilterQuality.High,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable { showCoverArt = !showCoverArt },
-                error = {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        androidx.compose.foundation.Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+            Box(modifier = Modifier.fillMaxSize()) {
+                SubcomposeAsyncImage(
+                    model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                        .data(artToShow)
+                        .size(coil3.size.Size.ORIGINAL)
+                        .build(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    filterQuality = FilterQuality.High,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { showCoverArt = !showCoverArt },
+                    error = {
+                        Box(
+                            contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
-                        )
-                    }
-                },
-                loading = {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        androidx.compose.foundation.Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            androidx.compose.foundation.Image(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = null,
+                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                            )
+                        }
+                    },
+                    loading = {
+                        Box(
+                            contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
-                        )
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            androidx.compose.foundation.Image(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = null,
+                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                            )
+                        }
                     }
+                )
+
+                if (isRecording && isCurrentPlayingStation) {
+                    Icon(
+                        imageVector = Icons.Default.RadioButtonChecked,
+                        contentDescription = stringResource(R.string.player_cd_record),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp)
+                            .size(16.dp)
+                            .alpha(1f - (progress * 5f).coerceIn(0f, 1f))
+                    )
                 }
-            )
+            }
         }
         }
 
@@ -1042,7 +1082,7 @@ fun PlayerSheetContent(
                     onPrevious = onPrevious,
                     onTogglePlayPause = onTogglePlayPause,
                     onNext = onNext,
-                    onToggleRecording = onToggleRecording
+                    onToggleRecording = handleToggleRecording
                 )
                 } // End of Player UI wrapper
 

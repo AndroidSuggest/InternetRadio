@@ -1,5 +1,8 @@
 package com.armanmaurya.internetradio.player
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
@@ -36,6 +39,46 @@ class RecordingManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val recordingRepository: com.armanmaurya.internetradio.data.repository.RecordingRepository
 ) {
+    private val notificationManager by lazy {
+        context.getSystemService(NotificationManager::class.java)
+    }
+
+    private val RECORDING_NOTIFICATION_ID = 2002
+    private val CHANNEL_ID = "recording_channel"
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Active Recording",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Shows ongoing radio recordings"
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun updateRecordingNotification(durationSeconds: Long, stationName: String) {
+        createNotificationChannel()
+        val minutes = durationSeconds / 60
+        val seconds = durationSeconds % 60
+        val timeString = String.format(Locale.US, "%02d:%02d", minutes, seconds)
+
+        val notification = Notification.Builder(context, CHANNEL_ID)
+            .setSmallIcon(com.armanmaurya.internetradio.R.drawable.media3_notification_small_icon)
+            .setContentTitle("Recording: $stationName")
+            .setContentText("Duration: $timeString")
+            .setOngoing(true)
+            .build()
+
+        notificationManager.notify(RECORDING_NOTIFICATION_ID, notification)
+    }
+
+    private fun cancelRecordingNotification() {
+        notificationManager.cancel(RECORDING_NOTIFICATION_ID)
+    }
+
     private val _isRecording = MutableStateFlow(false)
     val isRecording: StateFlow<Boolean> = _isRecording.asStateFlow()
 
@@ -143,6 +186,7 @@ class RecordingManager @Inject constructor(
         if (!_isRecording.value) return
         
         _isRecording.value = false
+        cancelRecordingNotification()
         timerJob?.cancel()
         timerJob = null
         
@@ -210,6 +254,7 @@ class RecordingManager @Inject constructor(
                 if (isPlaying) {
                     _recordingDuration.update { it + 1 }
                 }
+                updateRecordingNotification(_recordingDuration.value, currentStation?.name ?: "Unknown Station")
             }
         }
     }
