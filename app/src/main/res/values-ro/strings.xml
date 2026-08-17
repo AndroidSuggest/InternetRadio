@@ -296,4 +296,5 @@
     <string name="settings_gradual_volume_disabled">Oprit</string>
     <string name="settings_gradual_volume">Volum gradual program</string>
     <string name="settings_gradual_volume_enabled">Estompare %1$d (de) secunde</string>
+    <string name="player_tab_about_stream_url">Adresa URL a fluxului</string>
 </resources>
