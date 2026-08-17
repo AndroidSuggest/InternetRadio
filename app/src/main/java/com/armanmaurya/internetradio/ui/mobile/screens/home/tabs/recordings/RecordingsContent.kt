@@ -7,6 +7,8 @@ import android.content.Intent
 import android.text.format.DateUtils
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
@@ -14,9 +16,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Deselect
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,6 +43,7 @@ import androidx.compose.material.icons.filled.Pause
 import android.media.MediaPlayer
 import com.armanmaurya.internetradio.ui.mobile.components.RecordingFileItem
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun RecordingsContent(
     viewModel: RecordingsViewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel(),
@@ -46,6 +53,11 @@ fun RecordingsContent(
     var selectedStationName by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
+
+    var selectionMode by remember { mutableStateOf(false) }
+    var selectedFolders by remember { mutableStateOf(emptySet<String>()) }
+    var selectedFiles by remember { mutableStateOf(emptySet<String>()) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadFolders()
@@ -57,21 +69,127 @@ fun RecordingsContent(
         }
     }
 
-    if (folders.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize().padding(contentPadding),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.general_no_recordings),
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier.padding(32.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+    LaunchedEffect(selectedStationName) {
+        selectionMode = false
+        selectedFolders = emptySet()
+        selectedFiles = emptySet()
+    }
+
+    if (showDeleteConfirmDialog) {
+        val deleteCount = if (selectedStationName == null) selectedFolders.size else selectedFiles.size
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text(stringResource(R.string.delete_recording)) },
+            text = { Text("Are you sure you want to delete $deleteCount item(s)?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirmDialog = false
+                    if (selectedStationName == null) {
+                        viewModel.deleteFolders(selectedFolders.toList())
+                    } else {
+                        val currentFolder = folders.find { it.stationName == selectedStationName }
+                        if (currentFolder != null) {
+                            val filesToDelete = currentFolder.recordings.filter { it.uri.toString() in selectedFiles }
+                            viewModel.deleteRecordings(filesToDelete)
+                        }
+                    }
+                    selectionMode = false
+                    selectedFolders = emptySet()
+                    selectedFiles = emptySet()
+                }) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            }
+        )
+    }
+
+    Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+        AnimatedVisibility(visible = selectionMode) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 0.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilledTonalIconButton(
+                    onClick = { 
+                        selectionMode = false
+                        selectedFolders = emptySet()
+                        selectedFiles = emptySet()
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = "Cancel")
+                }
+                
+                Text(
+                    text = "${if (selectedStationName == null) selectedFolders.size else selectedFiles.size} selected",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
+                )
+                
+                val isAllSelected = if (selectedStationName == null) {
+                    selectedFolders.size == folders.size && folders.isNotEmpty()
+                } else {
+                    val currentFolder = folders.find { it.stationName == selectedStationName }
+                    currentFolder != null && selectedFiles.size == currentFolder.recordings.size && currentFolder.recordings.isNotEmpty()
+                }
+                
+                FilledTonalIconButton(
+                    onClick = {
+                        if (isAllSelected) {
+                            selectedFolders = emptySet()
+                            selectedFiles = emptySet()
+                        } else {
+                            if (selectedStationName == null) {
+                                selectedFolders = folders.map { it.stationName }.toSet()
+                            } else {
+                                val currentFolder = folders.find { it.stationName == selectedStationName }
+                                if (currentFolder != null) {
+                                    selectedFiles = currentFolder.recordings.map { it.uri.toString() }.toSet()
+                                }
+                            }
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        if (isAllSelected) Icons.Default.Deselect else Icons.Default.SelectAll, 
+                        contentDescription = "Select All"
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                FilledTonalIconButton(
+                    onClick = { showDeleteConfirmDialog = true },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+                }
+            }
         }
-    } else {
-        AnimatedContent(
+
+        if (folders.isEmpty()) {
+            Box(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.general_no_recordings),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.padding(32.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            AnimatedContent(
             targetState = selectedStationName,
             transitionSpec = {
                 if (targetState != null) {
@@ -93,13 +211,14 @@ fun RecordingsContent(
             if (stationName == null || currentFolder == null) {
                 // Show Folders
                 LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(contentPadding),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp)
             ) {
                 items(
                     items = folders,
                     key = { it.stationName }
                 ) { folder ->
+                    val isSelected = folder.stationName in selectedFolders
                     Row(
                         modifier = Modifier
                             .animateItem()
@@ -107,17 +226,33 @@ fun RecordingsContent(
                             .padding(vertical = 4.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (isPureBlack) androidx.compose.ui.graphics.Color.Black 
+                                if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                else if (isPureBlack) androidx.compose.ui.graphics.Color.Black 
                                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                             )
                             .then(
                                 if (isPureBlack) Modifier.border(
                                     1.dp,
-                                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                                    if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                                     RoundedCornerShape(12.dp)
                                 ) else Modifier
                             )
-                            .clickable { selectedStationName = folder.stationName },
+                            .combinedClickable(
+                                onClick = { 
+                                    if (selectionMode) {
+                                        if (isSelected) selectedFolders -= folder.stationName else selectedFolders += folder.stationName
+                                        if (selectedFolders.isEmpty()) selectionMode = false
+                                    } else {
+                                        selectedStationName = folder.stationName 
+                                    }
+                                },
+                                onLongClick = {
+                                    if (!selectionMode) {
+                                        selectionMode = true
+                                        selectedFolders += folder.stationName
+                                    }
+                                }
+                            ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
@@ -161,31 +296,48 @@ fun RecordingsContent(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
+                        if (selectionMode) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = null,
+                                modifier = Modifier.padding(end = 16.dp)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.width(16.dp))
+                        }
                     }
                 }
             }
         } else {
             // Show Files in Folder
-            Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+            Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { selectedStationName = null }) {
+                    FilledTonalIconButton(
+                        onClick = { selectedStationName = null },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.home_cd_back_to_folders),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = currentFolder.stationName,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = currentFolder.stationName,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 
                 var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
@@ -199,11 +351,25 @@ fun RecordingsContent(
                         key = { it.uri.toString() }
                     ) { recording ->
                         val isExpanded = expandedRecording?.uri == recording.uri
+                        val isSelected = recording.uri.toString() in selectedFiles
                         RecordingFileItem(
                             recording = recording,
                             isExpanded = isExpanded,
+                            isSelected = isSelected,
+                            selectionMode = selectionMode,
                             onClick = {
-                                expandedRecording = if (isExpanded) null else recording
+                                if (selectionMode) {
+                                    if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
+                                    if (selectedFiles.isEmpty()) selectionMode = false
+                                } else {
+                                    expandedRecording = if (isExpanded) null else recording
+                                }
+                            },
+                            onLongClick = {
+                                if (!selectionMode) {
+                                    selectionMode = true
+                                    selectedFiles += recording.uri.toString()
+                                }
                             },
                             onDelete = {
                                 viewModel.deleteRecording(recording)
@@ -215,5 +381,6 @@ fun RecordingsContent(
             }
         }
     }
+}
 }
 }

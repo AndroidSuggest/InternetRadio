@@ -38,4 +38,16 @@ class RecordingsViewModel @Inject constructor(
             recordingRepository.deleteRecording(recording)
         }
     }
+
+    fun deleteRecordings(recordings: List<com.armanmaurya.internetradio.data.repository.RecordingFile>) {
+        viewModelScope.launch {
+            recordingRepository.deleteRecordings(recordings)
+        }
+    }
+
+    fun deleteFolders(stationNames: List<String>) {
+        viewModelScope.launch {
+            recordingRepository.deleteRecordingFolders(stationNames)
+        }
+    }
 }

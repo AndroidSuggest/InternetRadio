@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,11 +30,15 @@ import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.data.repository.RecordingFile
 import java.util.Locale
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun RecordingFileItem(
     recording: RecordingFile,
     isExpanded: Boolean,
+    isSelected: Boolean = false,
+    selectionMode: Boolean = false,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -60,19 +65,24 @@ fun RecordingFileItem(
             .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(
-                if (isPureBlack) androidx.compose.ui.graphics.Color.Black 
+                if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                else if (isPureBlack) androidx.compose.ui.graphics.Color.Black 
                 else if (isExpanded) MaterialTheme.colorScheme.surfaceVariant 
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
             .then(
                 if (isPureBlack) Modifier.border(
                     1.dp,
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                    if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                     RoundedCornerShape(12.dp)
                 ) else Modifier
             )
             .animateContentSize()
-            .clickable(enabled = !isDeleting, onClick = onClick)
+            .combinedClickable(
+                enabled = !isDeleting,
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
     ) {
         ListItem(
             headlineContent = {
@@ -90,28 +100,36 @@ fun RecordingFileItem(
                 )
             },
             trailingContent = {
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = stringResource(R.string.more_options)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete_recording)) },
-                            onClick = {
-                                showMenu = false
-                                isDeleting = true
-                                onDelete()
-                            },
-                            leadingIcon = {
-                                Icon(Icons.Default.Delete, contentDescription = null)
-                            }
-                        )
+                if (selectionMode) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = null, // handled by the row click
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                } else {
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.more_options)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.delete_recording)) },
+                                onClick = {
+                                    showMenu = false
+                                    isDeleting = true
+                                    onDelete()
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Delete, contentDescription = null)
+                                }
+                            )
+                        }
                     }
                 }
             },
@@ -119,7 +137,7 @@ fun RecordingFileItem(
                 Icon(
                     imageVector = Icons.Default.Mic,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             colors = ListItemDefaults.colors(
@@ -127,7 +145,7 @@ fun RecordingFileItem(
             )
         )
         
-        if (isExpanded) {
+        if (isExpanded && !selectionMode) {
             InlineMediaPlayer(uri = recording.uri)
         }
     }

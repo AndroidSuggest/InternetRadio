@@ -93,4 +93,39 @@ class RecordingRepository @Inject constructor(
         }
         deleted
     }
+
+    suspend fun deleteRecordings(recordings: List<RecordingFile>): Boolean = withContext(Dispatchers.IO) {
+        var allDeleted = true
+        recordings.forEach { recording ->
+            val deleted = recording.file.delete()
+            if (deleted) {
+                val parent = recording.file.parentFile
+                if (parent != null && parent.isDirectory) {
+                    val files = parent.listFiles()
+                    if (files != null && files.isEmpty()) {
+                        parent.delete()
+                    }
+                }
+            } else {
+                allDeleted = false
+            }
+        }
+        notifyRecordingsChanged()
+        allDeleted
+    }
+
+    suspend fun deleteRecordingFolders(stationNames: List<String>): Boolean = withContext(Dispatchers.IO) {
+        var allDeleted = true
+        stationNames.forEach { stationName ->
+            val safeStationName = stationName.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
+            val stationDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "InternetRadio/$safeStationName")
+            if (stationDir.exists() && stationDir.isDirectory) {
+                if (!stationDir.deleteRecursively()) {
+                    allDeleted = false
+                }
+            }
+        }
+        notifyRecordingsChanged()
+        allDeleted
+    }
 }
