@@ -439,6 +439,7 @@ class PlaybackService : MediaLibraryService() {
                 val mediaItem = androidx.media3.common.MediaItem.Builder()
                     .setMediaId(stationUuid)
                     .setUri(stationUrl)
+                    .setLiveConfiguration(androidx.media3.common.MediaItem.LiveConfiguration.Builder().build())
                     .setMediaMetadata(
                         androidx.media3.common.MediaMetadata.Builder()
                             .setTitle(stationName)

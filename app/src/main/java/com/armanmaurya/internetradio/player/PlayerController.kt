@@ -492,6 +492,7 @@ class PlayerController @Inject constructor(
         return MediaItem.Builder()
             .setMediaId(this.stationUuid)
             .setUri(this.urlResolved)
+            .setLiveConfiguration(androidx.media3.common.MediaItem.LiveConfiguration.Builder().build())
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(this.name)
