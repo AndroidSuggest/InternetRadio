@@ -12,6 +12,7 @@ import android.provider.MediaStore
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
+import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.RadioStation
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -67,8 +68,8 @@ class RecordingManager @Inject constructor(
 
         val notification = Notification.Builder(context, CHANNEL_ID)
             .setSmallIcon(com.armanmaurya.internetradio.R.drawable.media3_notification_small_icon)
-            .setContentTitle("Recording: $stationName")
-            .setContentText("Duration: $timeString")
+            .setContentTitle(context.getString(R.string.notification_recording, stationName))
+            .setContentText(context.getString(R.string.notification_recording_duration, timeString))
             .setOngoing(true)
             .build()
 
@@ -259,7 +260,3 @@ class RecordingManager @Inject constructor(
         }
     }
 }
-
-
-
-

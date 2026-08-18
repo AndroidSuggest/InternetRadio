@@ -677,16 +677,19 @@ private fun ScheduleSection(
         val isEnabled = uiState.alarmVolumeTransitionSeconds > 0
         
         ExpandableItem(
-            title = stringResource(
-                        R.string.settings_gradual_volume,
-                        pluralStringResource(
-                            R.plurals.settings_gradual_volume_seconds,
-                            uiState.alarmVolumeTransitionSeconds,
-                            uiState.alarmVolumeTransitionSeconds
-                        )                    
-                    ),
-            subtitle = if (isEnabled) stringResource(R.string.settings_gradual_volume_enabled, uiState.alarmVolumeTransitionSeconds) 
-                       else stringResource(R.string.settings_gradual_volume_disabled),
+            title = stringResource(R.string.settings_gradual_volume),
+            subtitle = if (isEnabled) {
+                stringResource(
+                    R.string.settings_gradual_volume_enabled,
+                    pluralStringResource(
+                        R.plurals.settings_gradual_volume_seconds,
+                        uiState.alarmVolumeTransitionSeconds,
+                        uiState.alarmVolumeTransitionSeconds
+                    )
+                )
+            } else {
+                stringResource(R.string.settings_gradual_volume_disabled)
+            },
             isExpanded = expandedItem == "GradualVolume",
             hasSwitch = true,
             switchChecked = isEnabled,
