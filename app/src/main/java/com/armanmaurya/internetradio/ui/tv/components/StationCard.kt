@@ -18,6 +18,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -109,10 +110,13 @@ fun StationCard(
             }
 
             if (isFavorite) {
+                val isLight = androidx.compose.material3.MaterialTheme.colorScheme.surface.luminance() > 0.5f
+                val playingColor = if (isLight) androidx.compose.material3.MaterialTheme.colorScheme.inversePrimary else androidx.compose.material3.MaterialTheme.colorScheme.primary
+
                 Icon(
                     imageVector = Icons.Default.Bookmark,
                     contentDescription = "In Library",
-                    tint = Color.White,
+                    tint = if (isCurrentlyPlaying) playingColor else Color.White,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
