@@ -305,13 +305,11 @@ class BrowseViewModel @Inject constructor(
 
     fun onOrderChange(order: String) {
         if (_uiState.value.order == order) return
-        _uiState.update { it.copy(order = order) }
         viewModelScope.launch { settingsRepository.setSortOrder(order) }
     }
 
     fun onReverseChange(reverse: Boolean) {
         if (_uiState.value.reverse == reverse) return
-        _uiState.update { it.copy(reverse = reverse) }
         viewModelScope.launch { settingsRepository.setSortReverse(reverse) }
     }
 
