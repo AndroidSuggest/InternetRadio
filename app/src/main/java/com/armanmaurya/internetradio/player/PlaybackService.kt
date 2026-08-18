@@ -10,7 +10,6 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink
@@ -57,6 +56,9 @@ class PlaybackService : MediaLibraryService() {
 
     @Inject
     lateinit var coverArtRepository: com.armanmaurya.internetradio.data.repository.CoverArtRepository
+
+    @Inject
+    lateinit var okHttpClient: okhttp3.OkHttpClient
 
     private var player: Player? = null
     private var mediaLibrarySession: MediaLibrarySession? = null
@@ -262,8 +264,7 @@ class PlaybackService : MediaLibraryService() {
             }
         }
 
-        val dataSourceFactory = DefaultHttpDataSource.Factory()
-            .setAllowCrossProtocolRedirects(true)
+        val dataSourceFactory = androidx.media3.datasource.okhttp.OkHttpDataSource.Factory(okHttpClient)
             .setDefaultRequestProperties(mapOf("Icy-MetaData" to "1"))
 
         val mediaSourceFactory = DefaultMediaSourceFactory(this)
