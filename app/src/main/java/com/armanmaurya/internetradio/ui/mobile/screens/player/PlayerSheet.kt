@@ -447,7 +447,21 @@ fun PlayerSheetContent(
                 pageStation.favicon.ifBlank { null }
             }
 
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (isRecording && isCurrentPlayingStation) {
+                            Modifier.border(
+                                width = 2.dp,
+                                color = androidx.compose.ui.graphics.Color(0xFFCC0000).copy(alpha = 1f - (progress * 5f).coerceIn(0f, 1f)),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
+            ) {
                 SubcomposeAsyncImage(
                     model = coil3.request.ImageRequest.Builder(LocalContext.current)
                         .data(artToShow)
@@ -494,19 +508,6 @@ fun PlayerSheetContent(
                         }
                     }
                 )
-
-                if (isRecording && isCurrentPlayingStation) {
-                    Icon(
-                        imageVector = Icons.Default.RadioButtonChecked,
-                        contentDescription = stringResource(R.string.player_cd_record),
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(4.dp)
-                            .size(16.dp)
-                            .alpha(1f - (progress * 5f).coerceIn(0f, 1f))
-                    )
-                }
             }
         }
         }
