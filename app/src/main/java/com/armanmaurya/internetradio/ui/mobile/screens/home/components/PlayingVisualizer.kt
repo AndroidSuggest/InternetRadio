@@ -12,17 +12,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.luminance
 
 @Composable
 fun PlayingVisualizer(
     modifier: Modifier = Modifier,
     isPlaybackActive: Boolean = true,
-    barColor: Color = MaterialTheme.colorScheme.primary,
+    barColor: Color? = null,
     barWidth: Dp = 4.dp,
     maxBarHeight: Dp = 24.dp,
     minBarHeight: Dp = 4.dp,
     barCount: Int = 4
 ) {
+    val isLight = MaterialTheme.colorScheme.surface.luminance() > 0.5f
+    val resolvedBarColor = barColor ?: if (isLight) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
     val infiniteTransition = rememberInfiniteTransition(label = "visualizer_transition")
 
     @Composable
@@ -41,7 +44,7 @@ fun PlayingVisualizer(
                 .width(barWidth)
                 .height(height.dp)
                 .clip(RoundedCornerShape(100))
-                .background(barColor)
+                .background(resolvedBarColor)
         )
     }
 
