@@ -69,6 +69,7 @@ internal fun ExpandedHomeLayout(
     selectedStateCode: String?,
     selectedLanguage: String?,
     selectedTags: Set<String>,
+    selectAllTextOnFocus: Boolean,
     browseStations: List<RadioStation>,
     libraryStations: List<RadioStation>? = null,
     libraryUuids: Set<String>,
@@ -124,6 +125,7 @@ internal fun ExpandedHomeLayout(
                 selectedStateCode = selectedStateCode,
                 selectedLanguage = selectedLanguage,
                 selectedTags = selectedTags,
+                selectAllTextOnFocus = selectAllTextOnFocus,
                 browseStations = browseStations,
                 libraryStations = libraryStations,
                 libraryUuids = libraryUuids,
@@ -362,6 +364,7 @@ private fun ExpandedSearchOverlay(
     selectedStateCode: String?,
     selectedLanguage: String?,
     selectedTags: Set<String>,
+    selectAllTextOnFocus: Boolean,
     browseStations: List<RadioStation>,
     libraryStations: List<RadioStation>? = null,
     libraryUuids: Set<String>,
@@ -389,6 +392,7 @@ private fun ExpandedSearchOverlay(
             selectedStateCode = selectedStateCode,
             selectedLanguage = selectedLanguage,
             selectedTags = selectedTags,
+            selectAllTextOnFocus = selectAllTextOnFocus,
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
         ) {
             LazyColumn(

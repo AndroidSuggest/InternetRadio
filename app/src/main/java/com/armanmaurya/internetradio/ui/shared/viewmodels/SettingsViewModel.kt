@@ -78,6 +78,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setSelectAllTextOnFocus(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setSelectAllTextOnFocus(enabled)
+        }
+    }
+
     fun setDisableUpdateCheck(disabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setDisableUpdateCheck(disabled)

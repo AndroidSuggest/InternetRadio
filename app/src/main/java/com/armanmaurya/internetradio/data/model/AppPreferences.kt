@@ -23,6 +23,7 @@ data class AppPreferences(
     val autoPlayOnStart: Boolean = false,
     val isGridViewFavorites: Boolean = true,
     val isGridViewAdded: Boolean = true,
+    val selectAllTextOnFocus: Boolean = true,
     val trackHistoryLimit: Int = 50,
     val defaultTab: Int = 0,
     val disableUpdateCheck: Boolean = false,

@@ -208,7 +208,8 @@ fun HomeScreen(
                 selectedCountryCode = uiState.selectedCountryCode,
                 selectedStateCode = uiState.selectedStateCode,
                 selectedLanguage = uiState.selectedLanguage,
-                selectedTags = uiState.selectedTags
+                selectedTags = uiState.selectedTags,
+                selectAllTextOnFocus = uiState.selectAllTextOnFocus
             ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
@@ -392,6 +393,7 @@ fun HomeScreen(
                 selectedStateCode = uiState.selectedStateCode,
                 selectedLanguage = uiState.selectedLanguage,
                 selectedTags = uiState.selectedTags,
+                selectAllTextOnFocus = uiState.selectAllTextOnFocus,
                 browseStations = browseUiState.stations,
                 libraryStations = filteredLibraryStations,
                 libraryUuids = libraryUuids,

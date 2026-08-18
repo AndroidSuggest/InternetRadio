@@ -21,7 +21,8 @@ data class HomeUiState(
     val selectedLanguage: String? = null,
     val selectedTags: Set<String> = emptySet(),
     val isPreferencesLoaded: Boolean = false,
-    val autoRouteToBrowseOnSearch: Boolean = true
+    val autoRouteToBrowseOnSearch: Boolean = true,
+    val selectAllTextOnFocus: Boolean = true
 )
 
 @HiltViewModel
@@ -49,7 +50,8 @@ class HomeViewModel @Inject constructor(
                         selectedTags = preferences.selectedTags,
                         selectedTab = if (isFirstLoad) preferences.defaultTab else it.selectedTab,
                         isPreferencesLoaded = true,
-                        autoRouteToBrowseOnSearch = preferences.autoRouteToBrowseOnSearch
+                        autoRouteToBrowseOnSearch = preferences.autoRouteToBrowseOnSearch,
+                        selectAllTextOnFocus = preferences.selectAllTextOnFocus
                     )
                 }
                 isFirstLoad = false

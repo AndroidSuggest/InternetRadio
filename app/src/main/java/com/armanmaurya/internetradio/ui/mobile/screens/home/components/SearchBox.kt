@@ -71,6 +71,7 @@ fun RadioSearchBar(
     selectedStateCode: String?,
     selectedLanguage: String?,
     selectedTags: Set<String>,
+    selectAllTextOnFocus: Boolean,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit = {}
 ) {
@@ -100,9 +101,11 @@ fun RadioSearchBar(
 
             androidx.compose.runtime.LaunchedEffect(isSearchExpanded) {
                 if (isSearchExpanded && textFieldValue.text.isNotEmpty()) {
-                    textFieldValue = textFieldValue.copy(
-                        selection = androidx.compose.ui.text.TextRange(0, textFieldValue.text.length)
-                    )
+                    if (selectAllTextOnFocus) {
+                        textFieldValue = textFieldValue.copy(
+                            selection = androidx.compose.ui.text.TextRange(0, textFieldValue.text.length)
+                        )
+                    }
                 } else if (!isSearchExpanded) {
                     focusManager.clearFocus()
                 }

@@ -159,6 +159,7 @@ fun SettingsScreen(
                 onSetLanguage = viewModel::setAppLanguage,
                 onSetDefaultTab = viewModel::setDefaultTab,
                 onSetAutoRouteToBrowseOnSearch = viewModel::setAutoRouteToBrowseOnSearch,
+                onSetSelectAllTextOnFocus = viewModel::setSelectAllTextOnFocus,
                 onSetDisableUpdateCheck = viewModel::setDisableUpdateCheck,
                 topShape = topShape,
                 middleShape = middleShape,
@@ -330,6 +331,7 @@ private fun GeneralSection(
     onSetLanguage: (String) -> Unit,
     onSetDefaultTab: (Int) -> Unit,
     onSetAutoRouteToBrowseOnSearch: (Boolean) -> Unit,
+    onSetSelectAllTextOnFocus: (Boolean) -> Unit,
     onSetDisableUpdateCheck: (Boolean) -> Unit,
     topShape: RoundedCornerShape,
     middleShape: RoundedCornerShape,
@@ -394,6 +396,17 @@ private fun GeneralSection(
             subtitle = stringResource(R.string.settings_auto_route_search_subtitle),
             isEnabled = uiState.autoRouteToBrowseOnSearch,
             onToggle = onSetAutoRouteToBrowseOnSearch,
+            icon = Icons.Default.Search,
+            shape = middleShape
+        )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
+        ToggleItem(
+            title = stringResource(R.string.settings_select_all_text_on_focus_title),
+            subtitle = stringResource(R.string.settings_select_all_text_on_focus_subtitle),
+            isEnabled = uiState.selectAllTextOnFocus,
+            onToggle = onSetSelectAllTextOnFocus,
             icon = Icons.Default.Search,
             shape = middleShape
         )

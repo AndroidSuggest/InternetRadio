@@ -63,6 +63,7 @@ class SettingsRepository @Inject constructor(
         val START_OF_WEEK = stringPreferencesKey("start_of_week")
         val SHOW_COVER_ART_IN_NOTIFICATION = booleanPreferencesKey("show_cover_art_in_notification")
         val ALARM_VOLUME_TRANSITION_SECONDS = androidx.datastore.preferences.core.intPreferencesKey("alarm_volume_transition_seconds")
+        val SELECT_ALL_TEXT_ON_FOCUS = booleanPreferencesKey("select_all_text_on_focus")
     }
 
     val appPreferencesFlow: Flow<AppPreferences> = context.dataStore.data
@@ -109,6 +110,7 @@ class SettingsRepository @Inject constructor(
             val startOfWeek = com.armanmaurya.internetradio.data.model.StartOfWeek.entries.find { it.name == startOfWeekName } ?: com.armanmaurya.internetradio.data.model.StartOfWeek.SUNDAY
             val showCoverArtInNotification = preferences[PreferencesKeys.SHOW_COVER_ART_IN_NOTIFICATION] ?: true
             val alarmVolumeTransitionSeconds = preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] ?: 0
+            val selectAllTextOnFocus = preferences[PreferencesKeys.SELECT_ALL_TEXT_ON_FOCUS] ?: true
 
             AppPreferences(
                 themeMode = themeMode, 
@@ -130,6 +132,7 @@ class SettingsRepository @Inject constructor(
                 isGridViewRecent = isGridViewRecent,
                 isGridViewFavorites = isGridViewFavorites,
                 isGridViewAdded = isGridViewAdded,
+                selectAllTextOnFocus = selectAllTextOnFocus,
                 trackHistoryLimit = trackHistoryLimit,
                 defaultTab = defaultTab,
                 autoPlayOnStart = autoPlayOnStart,
@@ -150,6 +153,10 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setAutoRouteToBrowseOnSearch(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.AUTO_ROUTE_TO_BROWSE_ON_SEARCH] = enabled }
+    }
+
+    suspend fun setSelectAllTextOnFocus(enabled: Boolean) {
+        context.dataStore.edit { it[PreferencesKeys.SELECT_ALL_TEXT_ON_FOCUS] = enabled }
     }
 
     suspend fun setAutoPlayOnStart(enabled: Boolean) {
