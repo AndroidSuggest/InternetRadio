@@ -61,6 +61,8 @@
     <string name="settings_language_title">Sprache</string>
     <string name="settings_auto_route_search_title">Umschalten beim Suchen</string>
     <string name="settings_auto_route_search_subtitle">Beim Suchen automatisch zum Tab „Entdecken“ wechseln</string>
+    <string name="settings_select_all_text_on_focus_title">Gesamten Text bei der Suche auswählen</string>
+    <string name="settings_select_all_text_on_focus_subtitle">Wähle automatisch den gesamten Suchtext aus, wenn die Suchleiste keine Fokus hatte und wieder den Fokus erhält</string>
     <string name="settings_disable_update_check">Deaktiviere automatische Updatesuche</string>
     <string name="settings_disable_update_check_desc">Suche beim Start nicht automatisch nach App-Updates</string>
     <string name="settings_auto_play">Automatisches Abspielen beim Start</string>
