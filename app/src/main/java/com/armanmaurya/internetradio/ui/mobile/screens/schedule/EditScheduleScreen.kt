@@ -485,22 +485,30 @@ private fun ScheduleConfigurationForm(
                 val javaTimeDay = if (dayValue == 1) java.time.DayOfWeek.SUNDAY else java.time.DayOfWeek.of(dayValue - 1)
                 val dayName = javaTimeDay.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).take(2)
                 
-                Surface(
-                    shape = androidx.compose.foundation.shape.CircleShape,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clickable {
-                            if (isSelected) selectedDays.remove(dayValue)
-                            else selectedDays.add(dayValue)
-                        }
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = dayName,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Surface(
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier
+                            .padding(horizontal = 2.dp)
+                            .sizeIn(maxWidth = 44.dp, maxHeight = 44.dp)
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clickable {
+                                if (isSelected) selectedDays.remove(dayValue)
+                                else selectedDays.add(dayValue)
+                            }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = dayName,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
