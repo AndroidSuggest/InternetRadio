@@ -537,31 +537,81 @@ private fun ScheduleConfigurationForm(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             val isPlayback = scheduleType == ScheduleType.PLAYBACK
-            val colors = SegmentedButtonDefaults.colors(
-                activeContainerColor = MaterialTheme.colorScheme.primary,
-                activeContentColor = MaterialTheme.colorScheme.onPrimary,
-                inactiveContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                activeBorderColor = Color.Transparent,
-                inactiveBorderColor = Color.Transparent
+            
+            val playbackInnerCorner by androidx.compose.animation.core.animateDpAsState(
+                targetValue = if (isPlayback) 20.dp else 8.dp, 
+                label = "playbackInnerCorner"
             )
-            SegmentedButton(
-                selected = isPlayback,
-                onClick = { scheduleType = ScheduleType.PLAYBACK },
-                shape = if (isPlayback) androidx.compose.foundation.shape.CircleShape else SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                colors = colors
+            val recordInnerCorner by androidx.compose.animation.core.animateDpAsState(
+                targetValue = if (!isPlayback) 20.dp else 8.dp, 
+                label = "recordInnerCorner"
+            )
+
+            val leftShape = RoundedCornerShape(
+                topStart = 20.dp,
+                bottomStart = 20.dp,
+                topEnd = playbackInnerCorner,
+                bottomEnd = playbackInnerCorner
+            )
+
+            val rightShape = RoundedCornerShape(
+                topStart = recordInnerCorner,
+                bottomStart = recordInnerCorner,
+                topEnd = 20.dp,
+                bottomEnd = 20.dp
+            )
+            
+            val playbackColor by androidx.compose.animation.animateColorAsState(
+                targetValue = if (isPlayback) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                label = "playbackColor"
+            )
+            val playbackContentColor by androidx.compose.animation.animateColorAsState(
+                targetValue = if (isPlayback) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                label = "playbackContentColor"
+            )
+            
+            val recordColor by androidx.compose.animation.animateColorAsState(
+                targetValue = if (!isPlayback) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                label = "recordColor"
+            )
+            val recordContentColor by androidx.compose.animation.animateColorAsState(
+                targetValue = if (!isPlayback) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                label = "recordContentColor"
+            )
+
+            Surface(
+                modifier = Modifier.weight(1f).height(40.dp),
+                shape = leftShape,
+                color = playbackColor,
+                contentColor = playbackContentColor,
+                onClick = { scheduleType = ScheduleType.PLAYBACK }
             ) {
-                Text(stringResource(R.string.schedule_playback))
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = stringResource(R.string.schedule_playback),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
-            SegmentedButton(
-                selected = !isPlayback,
-                onClick = { scheduleType = ScheduleType.RECORD },
-                shape = if (!isPlayback) androidx.compose.foundation.shape.CircleShape else SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                colors = colors
+            
+            Surface(
+                modifier = Modifier.weight(1f).height(40.dp),
+                shape = rightShape,
+                color = recordColor,
+                contentColor = recordContentColor,
+                onClick = { scheduleType = ScheduleType.RECORD }
             ) {
-                Text(stringResource(R.string.schedule_record))
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = stringResource(R.string.schedule_record),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
         }
 
