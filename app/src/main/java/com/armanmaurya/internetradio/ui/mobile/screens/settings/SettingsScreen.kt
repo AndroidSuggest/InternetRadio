@@ -720,7 +720,8 @@ private fun ScheduleSection(
                     onSetAlarmVolumeTransitionSeconds(15)
                     onExpandedItemChange("GradualVolume")
                 } else {
-                    onExpandedItemChange(if (expandedItem == "GradualVolume") null else "GradualVolume")
+                    onSetAlarmVolumeTransitionSeconds(0)
+                    onExpandedItemChange(null)
                 }
             },
             icon = Icons.AutoMirrored.Filled.VolumeUp,
