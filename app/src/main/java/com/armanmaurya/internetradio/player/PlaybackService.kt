@@ -65,6 +65,9 @@ class PlaybackService : MediaLibraryService() {
     private lateinit var loadErrorHandlingPolicy: ExponentialBackoffLoadErrorHandlingPolicy
     
     private var stopOnAudioBecomingNoisy: Boolean = true
+    private var pauseOnVolumeZero: Boolean = false
+    private var previousVolume: Int = -1
+    private var ignoreNextVolumeZero: Boolean = false
     private var showCoverArtInNotification: Boolean = true
     private var alarmFadeInSeconds: Int = 0
     private var volumeFadeJob: kotlinx.coroutines.Job? = null
@@ -246,6 +249,7 @@ class PlaybackService : MediaLibraryService() {
             settingsRepository.appPreferencesFlow.collect { prefs ->
                 loadErrorHandlingPolicy.maxRetryDurationMs = prefs.maxRetryDuration
                 stopOnAudioBecomingNoisy = prefs.stopOnAudioBecomingNoisy
+                pauseOnVolumeZero = prefs.pauseOnVolumeZero
                 showCoverArtInNotification = prefs.showCoverArtInNotification
                 alarmFadeInSeconds = prefs.alarmVolumeTransitionSeconds
             }
@@ -264,8 +268,22 @@ class PlaybackService : MediaLibraryService() {
             }
         }
 
-        val dataSourceFactory = androidx.media3.datasource.okhttp.OkHttpDataSource.Factory(okHttpClient)
-            .setDefaultRequestProperties(mapOf("Icy-MetaData" to "1"))
+        // A *network* interceptor fires on every hop including after redirects,
+        // so "Icy-MetaData: 1" reaches the final streaming server even when the
+        // station URL is a redirect (e.g. ondacero.es → streamtheworld.com).
+        // OkHttp strips application-level headers / setDefaultRequestProperties
+        // on cross-domain redirects, which is why ICY metadata was missing for
+        // stations served through redirect endpoints.
+        val streamingOkHttpClient = okHttpClient.newBuilder()
+            .addNetworkInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header("Icy-MetaData", "1")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
+
+        val dataSourceFactory = androidx.media3.datasource.okhttp.OkHttpDataSource.Factory(streamingOkHttpClient)
 
         val mediaSourceFactory = DefaultMediaSourceFactory(this)
             .setDataSourceFactory(dataSourceFactory)
@@ -287,6 +305,7 @@ class PlaybackService : MediaLibraryService() {
             .setRenderersFactory(renderersFactory)
             .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(audioAttributes, true)
+            .setDeviceVolumeControlEnabled(true)
             .build()
             
         exoPlayer.repeatMode = Player.REPEAT_MODE_ALL
@@ -340,6 +359,23 @@ class PlaybackService : MediaLibraryService() {
             it.addListener(object : androidx.media3.common.Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     recordingManager.setPlaying(isPlaying)
+                }
+
+                override fun onDeviceVolumeChanged(volume: Int, muted: Boolean) {
+                    val isZero = volume == 0 || muted
+                    val wasNonZero = previousVolume > 0
+                    
+                    if (isZero && wasNonZero) {
+                        if (ignoreNextVolumeZero) {
+                            ignoreNextVolumeZero = false
+                        } else if (pauseOnVolumeZero && !recordingManager.isRecording.value) {
+                            player?.pause()
+                        }
+                    } else if (!isZero) {
+                        ignoreNextVolumeZero = false
+                    }
+                    
+                    previousVolume = if (muted) 0 else volume
                 }
             })
 
@@ -466,6 +502,10 @@ class PlaybackService : MediaLibraryService() {
                                 val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
                                 val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
                                 val targetVolume = (volumeLevel * maxVolume).toInt()
+                                
+                                if (targetVolume == 0) {
+                                    ignoreNextVolumeZero = true
+                                }
                                 audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVolume, 0)
                                 player?.removeListener(this)
                             }

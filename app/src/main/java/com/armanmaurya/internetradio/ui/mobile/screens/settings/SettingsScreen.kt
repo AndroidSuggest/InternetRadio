@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.CallMerge
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.StarRate
@@ -171,6 +172,7 @@ fun SettingsScreen(
                 onExpandedItemChange = { expandedItem = it },
                 onSetAutoPlayOnStart = viewModel::setAutoPlayOnStart,
                 onSetStopOnAudioBecomingNoisy = viewModel::setStopOnAudioBecomingNoisy,
+                onSetPauseOnVolumeZero = viewModel::setPauseOnVolumeZero,
                 onSetShowCoverArtInNotification = viewModel::setShowCoverArtInNotification,
                 showHistoryLimitDialog = showHistoryLimitDialog,
                 onToggleHistoryLimitDialog = { showHistoryLimitDialog = !showHistoryLimitDialog },
@@ -431,6 +433,7 @@ private fun PlayerSection(
     onExpandedItemChange: (String?) -> Unit,
     onSetAutoPlayOnStart: (Boolean) -> Unit,
     onSetStopOnAudioBecomingNoisy: (Boolean) -> Unit,
+    onSetPauseOnVolumeZero: (Boolean) -> Unit,
     onSetShowCoverArtInNotification: (Boolean) -> Unit,
     showHistoryLimitDialog: Boolean,
     onToggleHistoryLimitDialog: () -> Unit,
@@ -459,6 +462,17 @@ private fun PlayerSection(
             isEnabled = uiState.stopOnAudioBecomingNoisy,
             onToggle = onSetStopOnAudioBecomingNoisy,
             icon = Icons.Default.Headphones,
+            shape = middleShape
+        )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
+        ToggleItem(
+            title = stringResource(R.string.settings_pause_on_volume_zero),
+            subtitle = stringResource(R.string.settings_pause_on_volume_zero_desc),
+            isEnabled = uiState.pauseOnVolumeZero,
+            onToggle = onSetPauseOnVolumeZero,
+            icon = Icons.AutoMirrored.Filled.VolumeOff,
             shape = middleShape
         )
 

@@ -12,6 +12,7 @@ data class AppPreferences(
     val selectedLanguage: String? = null,
     val selectedTags: Set<String> = emptySet(),
     val stopOnAudioBecomingNoisy: Boolean = true,
+    val pauseOnVolumeZero: Boolean = false,
     val order: String = "votes",
     val reverse: Boolean = true,
     val useFilterOnRecent: Boolean = false,

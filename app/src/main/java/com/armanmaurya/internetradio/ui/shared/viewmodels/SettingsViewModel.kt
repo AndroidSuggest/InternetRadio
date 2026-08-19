@@ -96,6 +96,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setPauseOnVolumeZero(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setPauseOnVolumeZero(enabled)
+        }
+    }
+
     fun setAppLanguage(language: String) {
         viewModelScope.launch {
             settingsRepository.setAppLanguage(language)
