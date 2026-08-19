@@ -71,6 +71,8 @@
     <string name="settings_player_section">Wiedergabe</string>
     <string name="settings_stop_on_audio_noisy">Pause bei Gerätetrennung</string>
     <string name="settings_stop_on_audio_noisy_desc">Wiedergabe pausieren, wenn Bluetooth- oder kabelgebundene Kopfhörer getrennt werden</string>
+    <string name="settings_pause_on_volume_zero">Anhalten bei keiner Lautstärke</string>
+    <string name="settings_pause_on_volume_zero_desc">Die Wiedergabe anhalten, wenn das Gerät stumm ist (Gilt nicht für Aufnahmen)</string>
     <string name="settings_show_cover_art">Titelbild des Songs</string>
     <string name="settings_show_cover_art_desc">Zeige im Sperrbildschirm und in Benachrichtigungen das Titelbild des Songs anstatt des Senderlogos an</string>
     <string name="settings_max_retry_duration">Maximale Wiederholungsdauer</string>
@@ -329,7 +331,7 @@
     <string name="schedule_hold_to_clear">(Für Keine gedrückt halten)</string>
     <string name="schedule_playback">Wiedergabe</string>
     <string name="schedule_record">Aufzeichnen</string>
-    <string name="schedule_keep_playback_after_recording">Wiedergabe nach Aufnahme beibehalten</string>
+    <string name="schedule_keep_playback_after_recording">Wiedergabe nach Aufnahme</string>
     <string name="schedule_deleted">Zeitplan gelöscht</string>
     <string name="schedule_saved">Zeitplan gespeichert</string>
     <string name="schedule_action_save">Speichern</string>
