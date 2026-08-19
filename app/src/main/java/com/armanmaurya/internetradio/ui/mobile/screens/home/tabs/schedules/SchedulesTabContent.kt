@@ -85,11 +85,11 @@ fun SchedulesTabContent(
                     items(playbackSchedules, key = { it.id }) { schedule ->
                         val stationFavicon = libraryStations.find { it.stationUuid == schedule.stationUuid }?.favicon
                         ScheduleItem(
-                            modifier = Modifier.clickable { onEditSchedule(schedule.id) },
                             schedule = schedule,
                             stationFavicon = stationFavicon,
                             startOfWeek = appPreferences.startOfWeek,
-                            onToggle = { isEnabled -> viewModel.toggleSchedule(schedule, isEnabled) }
+                            onToggle = { isEnabled -> viewModel.toggleSchedule(schedule, isEnabled) },
+                            onClick = { onEditSchedule(schedule.id) }
                         )
                     }
                 }
@@ -115,11 +115,11 @@ fun SchedulesTabContent(
                     items(recordSchedules, key = { it.id }) { schedule ->
                         val stationFavicon = libraryStations.find { it.stationUuid == schedule.stationUuid }?.favicon
                         ScheduleItem(
-                            modifier = Modifier.clickable { onEditSchedule(schedule.id) },
                             schedule = schedule,
                             stationFavicon = stationFavicon,
                             startOfWeek = appPreferences.startOfWeek,
-                            onToggle = { isEnabled -> viewModel.toggleSchedule(schedule, isEnabled) }
+                            onToggle = { isEnabled -> viewModel.toggleSchedule(schedule, isEnabled) },
+                            onClick = { onEditSchedule(schedule.id) }
                         )
                     }
                 }

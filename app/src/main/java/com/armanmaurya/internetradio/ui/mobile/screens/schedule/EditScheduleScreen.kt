@@ -337,10 +337,10 @@ private fun ScheduleConfigurationForm(
         Spacer(modifier = Modifier.height(16.dp))
         
         Card(
+            onClick = onStationClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(16f / 9f)
-                .clickable { onStationClick() },
+                .aspectRatio(16f / 9f),
             shape = RoundedCornerShape(12.dp)
         ) {
             if (station != null) {
@@ -433,7 +433,8 @@ private fun ScheduleConfigurationForm(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Card(
-                modifier = Modifier.weight(1f).clickable { showStartTimePicker = true }
+                onClick = { showStartTimePicker = true },
+                modifier = Modifier.weight(1f)
             ) {
                 Column(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(stringResource(R.string.schedule_start_time), style = MaterialTheme.typography.labelMedium)
@@ -452,6 +453,7 @@ private fun ScheduleConfigurationForm(
             Card(
                 modifier = Modifier
                     .weight(1f)
+                    .clip(CardDefaults.shape)
                     .combinedClickable(
                         onClick = { showEndTimePicker = true },
                         onLongClick = { hasEndTime = false }
@@ -484,23 +486,27 @@ private fun ScheduleConfigurationForm(
                 val isSelected = selectedDays.contains(dayValue)
                 val javaTimeDay = if (dayValue == 1) java.time.DayOfWeek.SUNDAY else java.time.DayOfWeek.of(dayValue - 1)
                 val dayName = javaTimeDay.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).take(2)
+                val cornerPercent by androidx.compose.animation.core.animateIntAsState(
+                    targetValue = if (isSelected) 25 else 50,
+                    label = "cornerPercent"
+                )
                 
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     Surface(
-                        shape = androidx.compose.foundation.shape.CircleShape,
+                        onClick = {
+                            if (isSelected) selectedDays.remove(dayValue)
+                            else selectedDays.add(dayValue)
+                        },
+                        shape = RoundedCornerShape(percent = cornerPercent),
                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier
                             .padding(horizontal = 2.dp)
                             .sizeIn(maxWidth = 44.dp, maxHeight = 44.dp)
                             .fillMaxWidth()
                             .aspectRatio(1f)
-                            .clickable {
-                                if (isSelected) selectedDays.remove(dayValue)
-                                else selectedDays.add(dayValue)
-                            }
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(

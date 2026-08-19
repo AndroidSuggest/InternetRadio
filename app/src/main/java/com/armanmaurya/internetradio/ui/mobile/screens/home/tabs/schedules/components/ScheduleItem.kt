@@ -36,6 +36,7 @@ fun ScheduleItem(
     stationFavicon: String?,
     startOfWeek: StartOfWeek,
     onToggle: (Boolean) -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -70,6 +71,7 @@ fun ScheduleItem(
     }
 
     Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -151,7 +153,7 @@ fun ScheduleItem(
                                     .sizeIn(maxWidth = 44.dp, maxHeight = 44.dp)
                                     .fillMaxWidth()
                                     .aspectRatio(1f)
-                                    .clip(androidx.compose.foundation.shape.CircleShape)
+                                    .clip(RoundedCornerShape(percent = if (isSelected) 25 else 50))
                                     .background(
                                         if (isSelected) MaterialTheme.colorScheme.primary
                                         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
