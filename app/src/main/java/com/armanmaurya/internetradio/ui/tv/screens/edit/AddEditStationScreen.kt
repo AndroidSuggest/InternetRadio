@@ -315,7 +315,7 @@ fun AddEditStationScreen(
                     if (showUploadMode) {
                         Button(
                             onClick = { uploadMode = !uploadMode },
-                            enabled = canSave && !isUploading,
+                            enabled = true,
                             scale = ButtonDefaults.scale(focusedScale = 1f),
                             colors = ButtonDefaults.colors(
                                 containerColor = MaterialTheme.colorScheme.primary,

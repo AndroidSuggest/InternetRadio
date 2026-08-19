@@ -378,7 +378,7 @@ fun EditStationScreen(
                             if (showUploadMode) {
                                 Button(
                                     onClick = { uploadMode = !uploadMode },
-                                    enabled = canSave && !isUploading,
+                                    enabled = true,
                                     shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 24.dp, bottomEnd = 24.dp),
                                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                                     modifier = Modifier.width(36.dp)
