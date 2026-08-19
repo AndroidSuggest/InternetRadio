@@ -702,7 +702,14 @@ private fun ScheduleSection(
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
         val isEnabled = uiState.alarmVolumeTransitionSeconds > 0
+        var lastSliderValue by remember { mutableStateOf(if (uiState.alarmVolumeTransitionSeconds > 0) uiState.alarmVolumeTransitionSeconds.toFloat() else 15f) }
         
+        LaunchedEffect(uiState.alarmVolumeTransitionSeconds) {
+            if (uiState.alarmVolumeTransitionSeconds > 0) {
+                lastSliderValue = uiState.alarmVolumeTransitionSeconds.toFloat()
+            }
+        }
+
         ExpandableItem(
             title = stringResource(R.string.settings_gradual_volume),
             subtitle = if (isEnabled) {
@@ -710,8 +717,8 @@ private fun ScheduleSection(
                     R.string.settings_gradual_volume_enabled,
                     pluralStringResource(
                         R.plurals.settings_gradual_volume_seconds,
-                        uiState.alarmVolumeTransitionSeconds,
-                        uiState.alarmVolumeTransitionSeconds
+                        lastSliderValue.toInt(),
+                        lastSliderValue.toInt()
                     )
                 )
             } else {
@@ -746,18 +753,10 @@ private fun ScheduleSection(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 8.dp)
             ) {
-                Text(
-                    text = pluralStringResource(
-                        R.plurals.settings_gradual_volume_seconds,
-                        uiState.alarmVolumeTransitionSeconds,
-                        uiState.alarmVolumeTransitionSeconds
-                    ),
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
-                )
                 Slider(
-                    value = uiState.alarmVolumeTransitionSeconds.toFloat(),
-                    onValueChange = { onSetAlarmVolumeTransitionSeconds(it.toInt()) },
+                    value = lastSliderValue,
+                    onValueChange = { lastSliderValue = it },
+                    onValueChangeFinished = { onSetAlarmVolumeTransitionSeconds(lastSliderValue.toInt()) },
                     valueRange = 1f..60f
                 )
             }
