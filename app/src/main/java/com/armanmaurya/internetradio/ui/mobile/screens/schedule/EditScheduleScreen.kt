@@ -195,8 +195,6 @@ private fun ScheduleConfigurationForm(
     var showEndTimePicker by remember { mutableStateOf(false) }
     
     val is24HourFormat = android.text.format.DateFormat.is24HourFormat(context)
-    val startTimePickerState = rememberTimePickerState(initialHour = startHour, initialMinute = startMinute, is24Hour = is24HourFormat)
-    val endTimePickerState = rememberTimePickerState(initialHour = endHour, initialMinute = endMinute, is24Hour = is24HourFormat)
 
     val currentConfig = androidx.compose.ui.platform.LocalConfiguration.current
     val timePickerConfiguration = remember(is24HourFormat, currentConfig) {
@@ -211,6 +209,7 @@ private fun ScheduleConfigurationForm(
     }
 
     if (showStartTimePicker) {
+        val startTimePickerState = rememberTimePickerState(initialHour = startHour, initialMinute = startMinute, is24Hour = is24HourFormat)
         TimePickerDialog(
             onDismissRequest = { showStartTimePicker = false },
             onConfirm = {
@@ -229,6 +228,7 @@ private fun ScheduleConfigurationForm(
     }
 
     if (showEndTimePicker) {
+        val endTimePickerState = rememberTimePickerState(initialHour = endHour, initialMinute = endMinute, is24Hour = is24HourFormat)
         TimePickerDialog(
             onDismissRequest = { showEndTimePicker = false },
             onConfirm = {
