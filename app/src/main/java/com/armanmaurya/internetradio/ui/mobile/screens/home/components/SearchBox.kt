@@ -143,6 +143,19 @@ fun RadioSearchBar(
                 },
                 trailingIcon = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        AnimatedVisibility(
+                            visible = isSearchExpanded && textFieldValue.text.isNotEmpty(),
+                            enter = expandHorizontally() + fadeIn(),
+                            exit = shrinkHorizontally() + fadeOut()
+                        ) {
+                            IconButton(onClick = { 
+                                textFieldValue = textFieldValue.copy(text = "")
+                                onQueryChange("")
+                                onSearchCleared() 
+                            }) {
+                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_clear_search))
+                            }
+                        }
                         IconButton(onClick = onTagClick) {
                             BadgedBox(
                                 badge = {
