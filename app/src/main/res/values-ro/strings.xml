@@ -295,6 +295,26 @@
     <string name="settings_schedule_section">Programe</string>
     <string name="settings_gradual_volume_disabled">Oprit</string>
     <string name="settings_gradual_volume">Volum gradual program</string>
-    <string name="settings_gradual_volume_enabled">Estompare %1$d (de) secunde</string>
+    <string name="settings_gradual_volume_enabled">Estompare %1$s (de) secunde</string>
     <string name="player_tab_about_stream_url">Adresa URL a fluxului</string>
+    <string name="settings_select_all_text_on_focus_title">Selectează tot textul la căutare</string>
+    <string name="settings_select_all_text_on_focus_subtitle">Selectează automat textul din bara de căutare</string>
+    <plurals name="select_country_states_count">
+        <item quantity="one">%1$d stat</item>
+        <item quantity="few">%1$d state</item>
+        <item quantity="other">%1$d de state</item>
+    </plurals>
+    <plurals name="delete_recordings_message">
+        <item quantity="one">Sigur dorești să ștergi %1$d articol?</item>
+        <item quantity="few">Sigur dorești să ștergi %1$d articole?</item>
+        <item quantity="other">Sigur dorești să ștergi %1$d de articole?</item>
+    </plurals>
+    <string name="notification_recording">Înregistrare: %1$s</string>
+    <string name="notification_recording_duration">Durată: %1$s</string>
+    <string name="recordings_selected">%1$d selectate</string>
+    <plurals name="settings_gradual_volume_seconds">
+        <item quantity="one">%1$d secundă</item>
+        <item quantity="few">%1$d secunde</item>
+        <item quantity="other">%1$d de secunde</item>
+    </plurals>
 </resources>
