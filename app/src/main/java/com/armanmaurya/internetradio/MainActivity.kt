@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -160,8 +161,15 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+                val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+                LaunchedEffect(scaffoldState.bottomSheetState.targetValue) {
+                    if (scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded) {
+                        keyboardController?.hide()
+                    }
+                }
+
                 val density = LocalDensity.current
-                val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                val bottomInset = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
                 val sheetPeekHeight = if (playbackState.currentStation != null) 72.dp + bottomInset else 0.dp
 
                 val onCheckUpdates: () -> Unit = {
