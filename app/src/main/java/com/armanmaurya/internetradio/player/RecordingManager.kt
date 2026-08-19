@@ -21,8 +21,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -88,6 +91,10 @@ class RecordingManager @Inject constructor(
 
     private val _amplitude = MutableStateFlow(0f)
     val amplitude: StateFlow<Float> = _amplitude.asStateFlow()
+
+    /** Emits once each time a recording is successfully saved (has non-zero bytes written). */
+    private val _recordingSavedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val recordingSavedEvent: SharedFlow<Unit> = _recordingSavedEvent.asSharedFlow()
 
     fun updateAmplitude(rms: Float) {
         _amplitude.value = rms
@@ -203,6 +210,10 @@ class RecordingManager @Inject constructor(
             if (bytesWritten == 0L) {
                 currentUri?.let { context.contentResolver.delete(it, null, null) }
                 currentFile?.let { if (it.exists()) it.delete() }
+            } else {
+                // Recording has real data — notify listeners so they can show a "saved" toast
+                // even if the miniplayer sheet is no longer visible.
+                _recordingSavedEvent.tryEmit(Unit)
             }
         } catch (e: Exception) {
             e.printStackTrace()

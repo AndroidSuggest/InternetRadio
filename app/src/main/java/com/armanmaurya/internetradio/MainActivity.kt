@@ -152,6 +152,19 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+                // Show "Recording saved" toast at Activity level so it appears even when the
+                // miniplayer sheet is dismissed (the sheet's composable would already be gone).
+                val localContext = LocalContext.current
+                LaunchedEffect(Unit) {
+                    playerViewModel.recordingSavedEvent.collect {
+                        android.widget.Toast.makeText(
+                            localContext,
+                            localContext.getString(R.string.player_recording_saved),
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
                 // Handle Re-appearing (Show player when a station starts playing) and Hiding (when playback stops)
                 LaunchedEffect(playbackState.currentStation) {
                     if (playbackState.currentStation != null && scaffoldState.bottomSheetState.currentValue == SheetValue.Hidden) {

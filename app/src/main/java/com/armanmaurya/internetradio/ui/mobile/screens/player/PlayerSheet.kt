@@ -187,14 +187,8 @@ fun PlayerSheetContent(
         }
     }
     
-    var wasRecording by remember { mutableStateOf(false) }
-    LaunchedEffect(isRecording) {
-        if (wasRecording && !isRecording) {
-            android.widget.Toast.makeText(context, context.getString(R.string.player_recording_saved), android.widget.Toast.LENGTH_SHORT).show()
-        }
-        wasRecording = isRecording
-    }
-    
+
+
     LaunchedEffect(connectedCastDevice) {
         if (connectedCastDevice != null) {
             android.widget.Toast.makeText(context, context.getString(R.string.player_cast_connected), android.widget.Toast.LENGTH_SHORT).show()

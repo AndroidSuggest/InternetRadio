@@ -67,6 +67,8 @@ class PlayerViewModel @Inject constructor(
     val isRecording = recordingManager.isRecording
     val recordingDuration = recordingManager.recordingDuration
     val amplitude = recordingManager.amplitude
+    /** Fires once per saved recording — observed at Activity level so toast shows even when sheet is dismissed. */
+    val recordingSavedEvent = recordingManager.recordingSavedEvent
 
     val discoveredCastDevices = castController.discoveredDevices
     val connectedCastDevice = castController.connectedDevice
@@ -279,6 +281,9 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun stop() {
+        // Stop and save any active recording before stopping playback,
+        // so the file is properly finalized when the miniplayer is closed.
+        recordingManager.stopRecording()
         if (connectedCastDevice.value != null) {
             castController.stop()
         }
