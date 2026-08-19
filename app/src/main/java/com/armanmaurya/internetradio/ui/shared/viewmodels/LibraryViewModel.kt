@@ -250,7 +250,7 @@ class LibraryViewModel @Inject constructor(
 
     suspend fun probeStream(url: String): StreamProbeResult? = withContext(Dispatchers.IO) {
         if (!url.startsWith("http")) return@withContext null
-        var detectedCodec = "unknown"
+        var detectedCodec = ""
         var detectedBitrate = 0
         var isHls = url.contains(".m3u8")
         
@@ -262,11 +262,54 @@ class LibraryViewModel @Inject constructor(
                 if (contentType.contains("mpegurl") || contentType.contains("x-mpegurl")) isHls = true
                 
                 detectedCodec = when {
-                    isHls -> "unknown"
+                    isHls -> ""
+                    contentType.contains("flac") -> "FLAC"
                     contentType.contains("mpeg") -> "MP3"
+                    contentType.contains("aacp") || contentType.contains("aac+") -> "AAC+"
                     contentType.contains("aac") -> "AAC"
                     contentType.contains("ogg") -> "OGG"
-                    else -> "unknown"
+                    else -> ""
+                }
+
+                if (!isHls && response.isSuccessful) {
+                    try {
+                        val bodyBytes = response.peekBody(2048).bytes()
+                        val bodyString = String(bodyBytes, Charsets.ISO_8859_1)
+                        
+                        if (bodyString.contains("\u007FFLAC") || bodyString.contains("fLaC")) {
+                            detectedCodec = "FLAC"
+                        } else if (bodyString.contains("OpusHead")) {
+                            detectedCodec = "OPUS"
+                        } else if (bodyString.contains("\u0001vorbis")) {
+                            detectedCodec = "VORBIS"
+                        } else if (bodyString.contains("OggS")) {
+                            if (detectedCodec == "") detectedCodec = "OGG"
+                        } else {
+                            var foundSync = false
+                            for (i in 0 until bodyBytes.size - 1) {
+                                val b1 = bodyBytes[i].toInt() and 0xFF
+                                val b2 = bodyBytes[i + 1].toInt() and 0xFF
+                                if (b1 == 0xFF && (b2 and 0xE0) == 0xE0) {
+                                    if ((b2 and 0xF6) == 0xF0) {
+                                        if (detectedCodec != "AAC+") {
+                                            detectedCodec = "AAC"
+                                        }
+                                        foundSync = true
+                                        break
+                                    } else if ((b2 and 0x06) == 0x02 || (b2 and 0x06) == 0x04) {
+                                        detectedCodec = "MP3"
+                                        foundSync = true
+                                        break
+                                    }
+                                }
+                            }
+                            if (!foundSync && bodyString.startsWith("ID3") && detectedCodec == "") {
+                                detectedCodec = "MP3"
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // ignore and use content-type detection
+                    }
                 }
 
                 if (isHls && contentType.contains("mpegurl") && response.isSuccessful) {
