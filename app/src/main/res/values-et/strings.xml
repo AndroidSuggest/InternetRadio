@@ -103,11 +103,11 @@
     <string name="select_tags_discard_changes_message">Sul on salvestamata siltide valikuid. Kas oled kindel, et soovid minna tagasi ja neist loobuda?</string>
     <string name="edit_station_add_station">Lisa raadiojaam</string>
     <string name="edit_station_title">Muuda raadiojaama</string>
-    <string name="edit_station_name_field">Nimi</string>
-    <string name="edit_station_stream_url_field">Voogedastuse võrguaadress</string>
+    <string name="edit_station_name_field">Nimi *</string>
+    <string name="edit_station_stream_url_field">Voogedastuse võrguaadress *</string>
     <string name="edit_station_favicon_url_optional">Favikoni võrguaadress (kui tahad lisada)</string>
     <string name="edit_station_favicon_url_field">Favikoni võrguaadress</string>
-    <string name="edit_station_country_field">Riik</string>
+    <string name="edit_station_country_field">Riik (kui soovid lisada)</string>
     <string name="settings_auto_play_desc">Rakenduse avamisel asu kuulama viimatikuulatud jaama</string>
     <string name="settings_auto_play">Automaatne esitus käivitamisel</string>
     <string name="settings_player_section">Pleier</string>
@@ -138,8 +138,8 @@
     <string name="home_cd_descending">Kahanevalt</string>
     <string name="home_cd_ascending">Kasvavalt</string>
     <string name="home_no_stations_found_for">„%1$s“ otsingu alusel ei leidunud raadiojaamu</string>
-    <string name="edit_station_language_field">Keel</string>
-    <string name="edit_station_tags_optional">Sildid (eraldatud komadega)</string>
+    <string name="edit_station_language_field">Keel (kui soovid lisada)</string>
+    <string name="edit_station_tags_optional">Sildid (kui soovid lisada)</string>
     <string name="edit_station_failed_fetch_original_data">Algsete andmete laadimine ei õnenstunud</string>
     <string name="edit_station_unsaved_changes">Salvestamata muudatused</string>
     <string name="edit_station_unsaved_changes_message_exit">Sul on salvestamata muudatusi. Kas tahaksid neist loobuda ja väljuda?</string>
@@ -147,7 +147,7 @@
     <string name="edit_station_reset_message">Kas oled kindel, et soovid selle raadiojaama andmed lähtestada? Kõik muudatused lähevad kaotsi ja kuvame algandmeid.</string>
     <string name="edit_station_saved_message">Salvestatud</string>
     <string name="edit_station_cd_reset_to_original">Lähtesta algandmeteks</string>
-    <string name="edit_station_fields_reset_message">Väljade väärtused on lähtestatud algandmeteks</string>
+    <string name="edit_station_fields_reset_message">Lähtesta algandmeteks</string>
     <string name="player_buffering">Puhverdan andmeid</string>
     <string name="player_no_track_data">Loo kohta pole andmeid</string>
     <string name="player_station_info">Veebiraadiojaama teave</string>
@@ -158,7 +158,8 @@
     <string name="player_set_sleep_timer">Seadista unetaimer</string>
     <string name="player_start_button">Käivita</string>
     <plurals name="player_timer_ends_in_msg">
-        <item quantity="one">Taimeeri töö lõppeb %1$s minuti möödumisel.</item>
+        <item quantity="one">Taimeeri töö lõppeb %1$d minuti möödumisel.</item>
+        <item quantity="other">Taimeeri töö lõppeb %1$d minuti möödumisel.</item>
     </plurals>
     <string name="player_recording_saved">Salvestis on talletatud!</string>
     <string name="player_copied_track_to_clipboard">Lugu on kopeeritud lõikelauale</string>
@@ -196,7 +197,7 @@
     <string name="player_cd_search_spotify">Otsi Spotify\'st</string>
     <string name="player_cd_search_google">Otsi Google\'st</string>
     <string name="player_no_tracks_played">Sa pole veel ühtegi lugu kuulanud</string>
-    <string name="player_tab_about">Rakenduse teave</string>
+    <string name="player_tab_about">Teave</string>
     <string name="player_tab_tracks">Lood</string>
     <string name="player_retrying_in">Proovin uuesti %1$d sekundi pärast…</string>
     <string name="player_retrying_connection">Proovin uuesti ühendada…</string>
@@ -241,4 +242,73 @@
     <string name="settings_show_cover_art_desc">Näita lukustusvaates ja teavitustes raadiojaama logo asemel esitamisel loo kaanepilti</string>
     <string name="home_verified">Verifitseeritud</string>
     <string name="auto_for_you">Sinu jaoks</string>
+    <string name="cd_delete">Kustuta</string>
+    <string name="library_cd_sort_a_z">A-Z</string>
+    <string name="select_country_search_states">Otsi olekuid…</string>
+    <plurals name="select_country_states_count">
+        <item quantity="one">%1$d riik</item>
+        <item quantity="other">%1$d riiki</item>
+    </plurals>
+    <string name="edit_station_add_languages">Lisa keeli (kui soovid)</string>
+    <string name="edit_station_add_tags">Lisa silte (kui soovid)</string>
+    <string name="edit_station_similar_stations">Sarnased raadiojaamad</string>
+    <string name="edit_station_error_empty_fields">Nõutavad väljad ei saa jääda tühjaks</string>
+    <string name="edit_station_upload_save">Laadi üles ja salvesta</string>
+    <string name="edit_station_upload_add">Laadi üles ja lisa</string>
+    <string name="edit_station_homepage_url_optional">Avalehe võrguaadress (kui tahad lisada)</string>
+    <string name="edit_station_cd_remove_tag">Eemalda silt</string>
+    <string name="edit_station_cd_remove_language">Eemalda keel</string>
+    <string name="edit_station_refresh_metadata">Laadi metaandmed uuesti</string>
+    <string name="player_timer_min">%1$d min</string>
+    <string name="unit_kbps">kbps</string>
+    <string name="player_tab_about_stream_url">Voogedastuse võrguaadress</string>
+    <string name="player_cd_volume">Helivaljus</string>
+    <string name="player_cast_connected">Ühendatud</string>
+    <string name="notification_recording">Salvestamisel: %1$s</string>
+    <string name="notification_recording_duration">Kestus: %1$s</string>
+    <plurals name="recordings_count">
+        <item quantity="one">%1$d salvestus</item>
+        <item quantity="other">%1$d salvestust</item>
+    </plurals>
+    <string name="recordings_selected">%1$d on valitud</string>
+    <plurals name="tracks_count">
+        <item quantity="one">%1$d lugu</item>
+        <item quantity="other">%1$d lugu</item>
+    </plurals>
+    <string name="nav_all_languages">Kõik keeled</string>
+    <string name="player_cd_stop">Lõpeta</string>
+    <string name="settings_schedule_section">Ajastamised</string>
+    <plurals name="settings_gradual_volume_seconds">
+        <item quantity="one">%1$d sekund</item>
+        <item quantity="other">%1$d sekundit</item>
+    </plurals>
+    <string name="settings_gradual_volume_disabled">Väljas</string>
+    <string name="settings_select_all_text_on_focus_title">Otsingul vali kogu tekst</string>
+    <string name="settings_select_all_text_on_focus_subtitle">Fookuse puhul vali otsinguriba tekst</string>
+    <string name="library_cd_sort_options">Järjestuse valikud</string>
+    <string name="library_cd_sort_z_a">Z-A</string>
+    <string name="home_cd_in_library">Meediakogus</string>
+    <string name="select_country_select_state_in">Vali osariik riigis %1$s</string>
+    <string name="select_country_all_of">Kogu %1$s</string>
+    <string name="edit_station_state_field">Osariik / piirkond (kui soovid)</string>
+    <string name="edit_station_custom">Sinu seadistatud</string>
+    <string name="edit_station_create_tag">Lisa silt: %1$s</string>
+    <string name="edit_station_uploaded_successfully">Raadiojaama üleslaadimine õnnestus</string>
+    <string name="edit_station_upload_failed">Üleslaadimine ei õnnestunud: %1$s</string>
+    <string name="edit_station_cd_toggle_save_mode">Lülita salvestusrežiim sisse/välja</string>
+    <string name="player_cd_cast">Peegelda välisseadmesse</string>
+    <string name="player_cd_delay_lyrics">Viivitus laulusõnade kuvamisel</string>
+    <string name="player_cd_fast_forward_lyrics">Keri laulusõnade edasi</string>
+    <string name="update_new_available">Saadaval on rakenduse uuendus</string>
+    <string name="update_version_available">Saadaval on versioon %1$s.</string>
+    <string name="export_success">Eksportimine õnnestus: %1$s</string>
+    <string name="export_failed">Eksportimine ei õnnestunud: %1$s</string>
+    <string name="schedule_none">Määratlemata</string>
+    <plurals name="delete_recordings_message">
+        <item quantity="one">Kas sa oled kindel, et soovid %1$d kirje kustutada?</item>
+        <item quantity="other">Kas sa oled kindel, et soovid %1$d kirjet kustutada?</item>
+    </plurals>
+    <string name="schedule_keep_playback_subtitle">Kui eelistus pole kasutusel, siis taasesitus lõppeb koos salvestusega</string>
+    <string name="settings_gradual_volume_enabled">Sissehajutamine: %1$s</string>
+    <string name="settings_gradual_volume">Heli järkjärguline muutmine</string>
 </resources>
