@@ -366,9 +366,10 @@ class PlayerController @Inject constructor(
         }
     }
     
-    fun updateCurrentStation(updatedStation: RadioStation) {
+    fun updateCurrentStation(updatedStation: RadioStation, oldUuid: String? = null) {
         val player = controller ?: return
-        if (activeStation?.stationUuid != updatedStation.stationUuid) return
+        val targetUuid = oldUuid ?: updatedStation.stationUuid
+        if (activeStation?.stationUuid != targetUuid) return
 
         val urlChanged = activeStation?.url != updatedStation.url || activeStation?.urlResolved != updatedStation.urlResolved
 
@@ -376,7 +377,7 @@ class PlayerController @Inject constructor(
         _playbackState.update { it.copy(currentStation = updatedStation) }
         
         currentPlaylist = currentPlaylist.map { 
-            if (it.stationUuid == updatedStation.stationUuid) updatedStation else it 
+            if (it.stationUuid == targetUuid) updatedStation else it 
         }
         _playbackState.update { it.copy(currentPlaylist = currentPlaylist) }
 

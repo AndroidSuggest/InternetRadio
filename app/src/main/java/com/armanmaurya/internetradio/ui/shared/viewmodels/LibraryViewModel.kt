@@ -367,7 +367,15 @@ class LibraryViewModel @Inject constructor(
                     bitrate = bitrate
                 )
             }
-            result.onSuccess {
+            result.onSuccess { newUuid ->
+                // Update player state if the uploaded station is currently playing
+                val currentPlayingId = playerController.playbackState.value.currentStation?.stationUuid
+                if (currentPlayingId == stationUuid || currentPlayingId == newUuid) {
+                    val updatedStation = libraryRepository.getStationById(newUuid)
+                    if (updatedStation != null) {
+                        playerController.updateCurrentStation(updatedStation, oldUuid = stationUuid)
+                    }
+                }
                 onSuccess()
             }.onFailure { e ->
                 onError(e.message ?: "Failed to upload station")

@@ -173,21 +173,6 @@ class LibraryRepository @Inject constructor(
             )
             if (response.ok) {
                 val newUuid = response.uuid?.takeIf { it.isNotBlank() } ?: java.util.UUID.randomUUID().toString()
-                addCustomStation(
-                    name = name,
-                    url = url,
-                    favicon = favicon,
-                    tags = tags,
-                    countryCode = countryCode,
-                    languageCodes = languageCodes,
-                    homepage = homepage,
-                    iso31662 = iso31662,
-                    codec = codec,
-                    bitrate = bitrate
-                )
-                // update its UUID manually since addCustomStation randomly generated one
-                // wait, addCustomStation internally uses UUID.randomUUID(). 
-                // Let's just create the entity here
                 val newStation = com.armanmaurya.internetradio.data.local.entity.LibraryStationEntity(
                     stationUuid = newUuid,
                     name = name,
