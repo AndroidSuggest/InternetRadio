@@ -66,6 +66,34 @@ fun AddEditStationScreen(
     var probedCodec by remember(station) { mutableStateOf(station?.codec?.takeIf { it.isNotBlank() } ?: "unknown") }
     var probedBitrate by remember(station) { mutableStateOf(station?.bitrate ?: 0) }
 
+    var showOverwriteDialog by remember { mutableStateOf(false) }
+    var pendingProbeResult by remember { mutableStateOf<LibraryViewModel.StreamProbeResult?>(null) }
+
+    val handleProbeResult: (LibraryViewModel.StreamProbeResult) -> Unit = { result ->
+        probedCodec = result.codec
+        probedBitrate = result.bitrate
+        
+        val hasNewMetadata = !result.name.isNullOrBlank() || !result.homepage.isNullOrBlank() || !result.genre.isNullOrBlank()
+        val fieldsAlreadyFilled = name.isNotBlank() || homepage.isNotBlank() || tags.isNotBlank()
+        
+        if (hasNewMetadata) {
+            if (fieldsAlreadyFilled) {
+                val nameDiffers = !result.name.isNullOrBlank() && result.name != name
+                val homepageDiffers = !result.homepage.isNullOrBlank() && result.homepage != homepage
+                val tagsDiffer = !result.genre.isNullOrBlank() && result.genre != tags
+                
+                if (nameDiffers || homepageDiffers || tagsDiffer) {
+                    pendingProbeResult = result
+                    showOverwriteDialog = true
+                }
+            } else {
+                if (!result.name.isNullOrBlank()) name = result.name!!
+                if (!result.homepage.isNullOrBlank()) homepage = result.homepage!!
+                if (!result.genre.isNullOrBlank()) tags = result.genre!!
+            }
+        }
+    }
+
     LaunchedEffect(url) {
         if (url.startsWith("http")) {
             if (station != null && url == station.url && (station.codec.isNotBlank() || station.bitrate > 0)) {
@@ -75,8 +103,7 @@ fun AddEditStationScreen(
                 kotlinx.coroutines.delay(500)
                 val result = viewModel.probeStream(url)
                 if (result != null) {
-                    probedCodec = result.codec
-                    probedBitrate = result.bitrate
+                    handleProbeResult(result)
                 }
                 isProbing = false
             }
@@ -95,6 +122,35 @@ fun AddEditStationScreen(
     val firstFieldFocusRequester = remember { FocusRequester() }
 
     val canSave = name.isNotBlank() && url.isNotBlank() && !isProbing
+
+    if (showOverwriteDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { 
+                showOverwriteDialog = false 
+                pendingProbeResult = null
+            },
+            title = { androidx.compose.material3.Text(stringResource(R.string.edit_station_overwrite_title)) },
+            text = { androidx.compose.material3.Text(stringResource(R.string.edit_station_overwrite_message)) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    val result = pendingProbeResult
+                    if (result != null) {
+                        if (!result.name.isNullOrBlank()) name = result.name
+                        if (!result.homepage.isNullOrBlank()) homepage = result.homepage
+                        if (!result.genre.isNullOrBlank()) tags = result.genre
+                    }
+                    showOverwriteDialog = false
+                    pendingProbeResult = null
+                }) { androidx.compose.material3.Text(stringResource(R.string.settings_conflict_overwrite)) }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { 
+                    showOverwriteDialog = false 
+                    pendingProbeResult = null
+                }) { androidx.compose.material3.Text(stringResource(R.string.general_cancel)) }
+            }
+        )
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Blurred background from favicon
@@ -485,8 +541,7 @@ fun AddEditStationScreen(
                                             coroutineScope.launch {
                                                 val result = viewModel.probeStream(url)
                                                 if (result != null) {
-                                                    probedCodec = result.codec
-                                                    probedBitrate = result.bitrate
+                                                    handleProbeResult(result)
                                                 }
                                                 isProbing = false
                                             }

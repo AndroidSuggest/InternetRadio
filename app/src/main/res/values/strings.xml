@@ -228,8 +228,11 @@
     <string name="edit_station_unsaved_changes">Unsaved Changes</string>
     <string name="edit_station_unsaved_changes_message_exit">You have unsaved changes. Are you sure you want to discard them and exit?</string>
     <string name="edit_station_reset_title">Reset Station</string>
-    <string name="edit_station_reset_message">Are you sure you want to reset this station to its original data? All your edits will be lost.</string>
+    <string name="edit_station_reset_message">Are you sure you want to reset this station to its original state? This will discard all your custom edits.</string>
     <string name="edit_station_fields_reset_message">Reset to original data</string>
+    <string name="edit_station_overwrite_title">Overwrite metadata?</string>
+    <string name="edit_station_overwrite_message">Do you want to replace your current station details with the fetched metadata?</string>
+    <string name="edit_station_error_empty_url">Stream URL cannot be empty</string>
     <string name="edit_station_saved_message">Saved</string>
     <string name="edit_station_cd_reset_to_original">Reset to Original</string>
     <string name="edit_station_similar_stations">Similar Stations</string>

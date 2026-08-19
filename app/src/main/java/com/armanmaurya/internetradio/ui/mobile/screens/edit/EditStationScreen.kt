@@ -124,26 +124,58 @@ fun EditStationScreen(
         var expandedTags by remember { mutableStateOf(false) }
         var tagsSearchText by remember { mutableStateOf("") }
 
-        var isProbing by remember { mutableStateOf(false) }
+        var isProbingMetadata by remember { mutableStateOf(false) }
+        var isProbingCodec by remember { mutableStateOf(false) }
+        val isProbing = isProbingMetadata || isProbingCodec
+        
         var probedCodec by remember(station) { mutableStateOf(station?.codec?.takeIf { it.isNotBlank() } ?: "unknown") }
         var probedBitrate by remember(station) { mutableStateOf(station?.bitrate ?: 0) }
+        
+        var showOverwriteDialog by remember { mutableStateOf(false) }
+        var pendingProbeResult by remember { mutableStateOf<LibraryViewModel.StreamProbeResult?>(null) }
+
+        val handleProbeResult: (LibraryViewModel.StreamProbeResult) -> Unit = { result ->
+            probedCodec = result.codec
+            probedBitrate = result.bitrate
+            
+            val hasNewMetadata = !result.name.isNullOrBlank() || !result.homepage.isNullOrBlank() || !result.genre.isNullOrBlank()
+            val fieldsAlreadyFilled = name.isNotBlank() || homepage.isNotBlank() || tags.isNotBlank()
+            
+            if (hasNewMetadata) {
+                if (fieldsAlreadyFilled) {
+                    val nameDiffers = !result.name.isNullOrBlank() && result.name != name
+                    val homepageDiffers = !result.homepage.isNullOrBlank() && result.homepage != homepage
+                    val tagsDiffer = !result.genre.isNullOrBlank() && result.genre != tags
+                    
+                    if (nameDiffers || homepageDiffers || tagsDiffer) {
+                        pendingProbeResult = result
+                        showOverwriteDialog = true
+                    }
+                } else {
+                    if (!result.name.isNullOrBlank()) name = result.name!!
+                    if (!result.homepage.isNullOrBlank()) homepage = result.homepage!!
+                    if (!result.genre.isNullOrBlank()) {
+                        tags = result.genre!!.split(",").map { it.trim() }.filter { it.isNotBlank() }.joinToString(", ")
+                    }
+                }
+            }
+        }
 
         LaunchedEffect(url) {
             if (url.startsWith("http")) {
                 if (station != null && url == station.url && (station.codec.isNotBlank() || station.bitrate > 0)) {
-                    isProbing = false
+                    isProbingMetadata = false
                 } else {
-                    isProbing = true
+                    isProbingMetadata = true
                     kotlinx.coroutines.delay(500) // Debounce
                     val result = viewModel.probeStream(url)
                     if (result != null) {
-                        probedCodec = result.codec
-                        probedBitrate = result.bitrate
+                        handleProbeResult(result)
                     }
-                    isProbing = false
+                    isProbingMetadata = false
                 }
             } else {
-                isProbing = false
+                isProbingMetadata = false
             }
         }
 
@@ -167,6 +199,37 @@ fun EditStationScreen(
             probedBitrate != station.bitrate
         } else {
             name.isNotBlank() || url.isNotBlank() || favicon.isNotBlank() || tags.isNotBlank() || countryCode.isNotBlank() || iso3166_2.isNotBlank() || languageCodes.isNotBlank() || homepage.isNotBlank() || probedCodec != "unknown" || probedBitrate != 0
+        }
+
+        if (showOverwriteDialog) {
+            AlertDialog(
+                onDismissRequest = { 
+                    showOverwriteDialog = false 
+                    pendingProbeResult = null
+                },
+                title = { Text(stringResource(R.string.edit_station_overwrite_title)) },
+                text = { Text(stringResource(R.string.edit_station_overwrite_message)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val result = pendingProbeResult
+                        if (result != null) {
+                            if (!result.name.isNullOrBlank()) name = result.name
+                            if (!result.homepage.isNullOrBlank()) homepage = result.homepage
+                            if (!result.genre.isNullOrBlank()) {
+                                tags = result.genre.split(",").map { it.trim() }.filter { it.isNotBlank() }.joinToString(", ")
+                            }
+                        }
+                        showOverwriteDialog = false
+                        pendingProbeResult = null
+                    }) { Text(stringResource(R.string.settings_conflict_overwrite)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { 
+                        showOverwriteDialog = false 
+                        pendingProbeResult = null
+                    }) { Text(stringResource(R.string.general_cancel)) }
+                }
+            )
         }
 
         var showExitWarningDialog by remember { mutableStateOf(false) }
@@ -425,29 +488,69 @@ fun EditStationScreen(
                         unfocusedContainerColor = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
-                TextField(
-                    value = url,
-                    onValueChange = {
-                        url = it
-                        viewModel.checkDuplicateUrl(it)
-                    },
-                    label = { Text(stringResource(R.string.edit_station_stream_url_field)) },
-                    modifier = Modifier.fillMaxWidth().then(
-                        if (isPureBlack) Modifier.border(
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TextField(
+                        value = url,
+                        onValueChange = {
+                            url = it
+                            viewModel.checkDuplicateUrl(it)
+                        },
+                        label = { Text(stringResource(R.string.edit_station_stream_url_field)) },
+                        modifier = Modifier.weight(1f).then(
+                            if (isPureBlack) Modifier.border(
+                                1.dp,
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                                RoundedCornerShape(16.dp)
+                            ) else Modifier
+                        ),
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedContainerColor = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = if (isPureBlack) Modifier.border(
                             1.dp,
                             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                             RoundedCornerShape(16.dp)
                         ) else Modifier
-                    ),
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedContainerColor = if (isPureBlack) Color.Black else MaterialTheme.colorScheme.surfaceVariant
-                    )
-                )
+                    ) {
+                        if (isProbingMetadata) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(56.dp).padding(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            IconButton(
+                                modifier = Modifier.size(56.dp),
+                                onClick = {
+                                    if (url.startsWith("http")) {
+                                        isProbingMetadata = true
+                                        coroutineScope.launch {
+                                            val result = viewModel.probeStream(url)
+                                            if (result != null) {
+                                                handleProbeResult(result)
+                                            }
+                                            isProbingMetadata = false
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.edit_station_refresh_metadata))
+                            }
+                        }
+                    }
+                }
 
 
                 TextField(
@@ -806,7 +909,7 @@ fun EditStationScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
-                            if (isProbing) {
+                            if (isProbingCodec) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp).padding(4.dp),
                                     strokeWidth = 2.dp
@@ -815,14 +918,14 @@ fun EditStationScreen(
                                 IconButton(
                                     onClick = {
                                         if (url.startsWith("http")) {
-                                            isProbing = true
+                                            isProbingCodec = true
                                             coroutineScope.launch {
                                                 val result = viewModel.probeStream(url)
                                                 if (result != null) {
                                                     probedCodec = result.codec
                                                     probedBitrate = result.bitrate
                                                 }
-                                                isProbing = false
+                                                isProbingCodec = false
                                             }
                                         }
                                     }

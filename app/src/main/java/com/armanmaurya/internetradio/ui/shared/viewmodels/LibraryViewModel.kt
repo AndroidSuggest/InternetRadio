@@ -246,7 +246,14 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    data class StreamProbeResult(val codec: String, val bitrate: Int)
+    data class StreamProbeResult(
+        val codec: String, 
+        val bitrate: Int,
+        val name: String?,
+        val description: String?,
+        val genre: String?,
+        val homepage: String?
+    )
 
     suspend fun probeStream(url: String): StreamProbeResult? = withContext(Dispatchers.IO) {
         if (!url.startsWith("http")) return@withContext null
@@ -254,11 +261,21 @@ class LibraryViewModel @Inject constructor(
         var detectedBitrate = 0
         var isHls = url.contains(".m3u8")
         
+        var icyName: String? = null
+        var icyDescription: String? = null
+        var icyGenre: String? = null
+        var icyUrl: String? = null
+        
         try {
             val request = okhttp3.Request.Builder().url(url).header("Icy-MetaData", "1").build()
             okHttpClient.newCall(request).execute().use { response ->
                 val contentType = response.header("Content-Type")?.lowercase() ?: ""
                 detectedBitrate = response.header("icy-br")?.toIntOrNull() ?: 0
+                icyName = response.header("icy-name")
+                icyDescription = response.header("icy-description")
+                icyGenre = response.header("icy-genre")
+                icyUrl = response.header("icy-url")
+                
                 if (contentType.contains("mpegurl") || contentType.contains("x-mpegurl")) isHls = true
                 
                 detectedCodec = when {
@@ -329,7 +346,7 @@ class LibraryViewModel @Inject constructor(
                     }
                 }
             }
-            StreamProbeResult(detectedCodec, detectedBitrate)
+            StreamProbeResult(detectedCodec, detectedBitrate, icyName, icyDescription, icyGenre, icyUrl)
         } catch (e: Exception) {
             null
         }
