@@ -6,6 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,6 +57,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun ExpandedHomeLayout(
     innerPadding: PaddingValues,
+    contentPadding: PaddingValues,
     pagerContent: @Composable () -> Unit,
     searchQuery: String,
     isSearchExpanded: Boolean,
@@ -112,6 +116,7 @@ internal fun ExpandedHomeLayout(
 
         if (isSearchExpanded) {
             ExpandedSearchOverlay(
+                contentPadding = contentPadding,
                 searchQuery = searchQuery,
                 onQueryChange = onSearchQueryChange,
                 onExpandedChange = onSearchExpandedChange,
@@ -351,6 +356,7 @@ private fun SidebarNavigation(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExpandedSearchOverlay(
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     searchQuery: String,
     onQueryChange: (String) -> Unit,
     onExpandedChange: (Boolean) -> Unit,
@@ -395,10 +401,15 @@ private fun ExpandedSearchOverlay(
             selectAllTextOnFocus = selectAllTextOnFocus,
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
         ) {
+            val safeDrawingBottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+            val bottomPadding = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), safeDrawingBottom)
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = PaddingValues(
+                    top = 8.dp,
+                    bottom = 8.dp + bottomPadding
+                )
             ) {
                 if (!libraryStations.isNullOrEmpty()) {
                     item {

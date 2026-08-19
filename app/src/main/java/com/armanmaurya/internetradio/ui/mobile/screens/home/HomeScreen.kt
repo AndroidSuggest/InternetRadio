@@ -7,6 +7,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -211,10 +214,15 @@ fun HomeScreen(
                 selectedTags = uiState.selectedTags,
                 selectAllTextOnFocus = uiState.selectAllTextOnFocus
             ) {
+                val safeDrawingBottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+                val bottomPadding = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), safeDrawingBottom)
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp)
+                    contentPadding = PaddingValues(
+                        top = 8.dp,
+                        bottom = 8.dp + bottomPadding
+                    )
                 ) {
                     if (filteredLibraryStations.isNotEmpty()) {
                         item {
@@ -380,6 +388,7 @@ fun HomeScreen(
         if (widthSizeClass == WindowWidthSizeClass.Expanded) {
             ExpandedHomeLayout(
                 innerPadding = innerPadding,
+                contentPadding = contentPadding,
                 pagerContent = pagerContent,
                 searchQuery = uiState.searchQuery,
                 isSearchExpanded = isSearchExpanded,

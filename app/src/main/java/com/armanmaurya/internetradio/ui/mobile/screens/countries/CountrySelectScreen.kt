@@ -68,7 +68,7 @@ fun CountrySelectScreen(
     val context = LocalContext.current
 
     Scaffold(
-        modifier = Modifier.padding(bottom = contentPadding.calculateBottomPadding()),
+        modifier = Modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -151,7 +151,9 @@ fun CountrySelectScreen(
 
                 LazyColumn(
                     state = listState,
-                    contentPadding = PaddingValues(0.dp)
+                    contentPadding = PaddingValues(
+                        bottom = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding())
+                    )
                 ) {
                     item {
                         CountryItem(
@@ -224,9 +226,7 @@ fun CountrySelectScreen(
             Scaffold(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .safeDrawingPadding()
-                    .padding(bottom = contentPadding.calculateBottomPadding()),
+                    .background(MaterialTheme.colorScheme.background),
                 topBar = {
                     TopAppBar(
                         title = {
@@ -290,7 +290,10 @@ fun CountrySelectScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
+                        .padding(paddingValues),
+                    contentPadding = PaddingValues(
+                        bottom = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding())
+                    )
                 ) {
                     item(key = "all") {
                         ListItem(

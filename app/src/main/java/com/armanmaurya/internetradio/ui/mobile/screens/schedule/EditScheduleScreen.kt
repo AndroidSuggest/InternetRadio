@@ -54,7 +54,8 @@ import java.util.Calendar
 fun EditScheduleScreen(
     scheduleId: Int? = null,
     viewModel: SchedulesViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val libraryStations by viewModel.libraryStations.collectAsState()
     val schedules by viewModel.schedules.collectAsState()
@@ -144,7 +145,8 @@ fun EditScheduleScreen(
             viewModel.deleteSchedule(scheduleToEdit)
             Toast.makeText(context, context.getString(R.string.schedule_deleted), Toast.LENGTH_SHORT).show()
             onNavigateBack()
-        } } else null
+        } } else null,
+        contentPadding = contentPadding
     )
 }
 
@@ -158,7 +160,8 @@ private fun ScheduleConfigurationForm(
     onStationClick: () -> Unit,
     onSave: (ScheduleEntity) -> Unit,
     onNavigateBack: () -> Unit,
-    onDelete: (() -> Unit)? = null
+    onDelete: (() -> Unit)? = null,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val context = LocalContext.current
     val alarmManager = remember { context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager }
@@ -661,7 +664,9 @@ private fun ScheduleConfigurationForm(
             }
         }
 
-        Spacer(modifier = Modifier.height(160.dp))
+        val safeDrawingBottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+        val bottomPadding = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), safeDrawingBottom)
+        Spacer(modifier = Modifier.height(16.dp + bottomPadding))
         }
     }
 }

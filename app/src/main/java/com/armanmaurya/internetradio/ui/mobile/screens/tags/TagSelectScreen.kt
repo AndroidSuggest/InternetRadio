@@ -117,10 +117,11 @@ fun TagSelectScreen(
         uiState.selectedTags.toList()
     }
 
+    val safeDrawingBottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+    val bottomPadding = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), safeDrawingBottom)
+
     Scaffold(
-        modifier = Modifier
-            .padding(bottom = contentPadding.calculateBottomPadding())
-            .imePadding(),
+        modifier = Modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -179,7 +180,8 @@ fun TagSelectScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onTagsSelected(uiState.selectedTags) }
+                onClick = { onTagsSelected(uiState.selectedTags) },
+                modifier = Modifier.padding(bottom = bottomPadding)
             ) {
                 Icon(Icons.Default.Done, contentDescription = stringResource(R.string.select_tags_cd_apply))
             }
@@ -233,7 +235,10 @@ fun TagSelectScreen(
                         Text(text = uiState.error ?: stringResource(R.string.error_unknown))
                     }
                 } else {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = bottomPadding)
+                    ) {
                         items(filteredTags, key = { it.name }) { tag ->
                             val isSelected = uiState.selectedTags.contains(tag.name)
                             Box(modifier = Modifier.animateItem()) {

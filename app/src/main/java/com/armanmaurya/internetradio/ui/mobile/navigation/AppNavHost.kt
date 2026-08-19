@@ -185,7 +185,8 @@ fun AppNavHost(
                 onNavigateBack = { navController.navigateUp() },
                 onPlayStation = { station ->
                     playerViewModel.play(listOf(station), 0, PlaybackSource.None)
-                }
+                },
+                contentPadding = contentPadding
             )
         }
         composable(
@@ -203,7 +204,8 @@ fun AppNavHost(
             com.armanmaurya.internetradio.ui.mobile.screens.schedule.EditScheduleScreen(
                 scheduleId = scheduleId,
                 viewModel = hiltViewModel(),
-                onNavigateBack = { navController.navigateUp() }
+                onNavigateBack = { navController.navigateUp() },
+                contentPadding = contentPadding
             )
         }
     }

@@ -61,7 +61,7 @@ fun LanguageSelectScreen(
     val context = LocalContext.current
 
     Scaffold(
-        modifier = Modifier.padding(bottom = contentPadding.calculateBottomPadding()),
+        modifier = Modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -144,7 +144,9 @@ fun LanguageSelectScreen(
 
                 LazyColumn(
                     state = listState,
-                    contentPadding = PaddingValues(0.dp)
+                    contentPadding = PaddingValues(
+                        bottom = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding())
+                    )
                 ) {
                     item(key = "all_languages") {
                         LanguageItem(

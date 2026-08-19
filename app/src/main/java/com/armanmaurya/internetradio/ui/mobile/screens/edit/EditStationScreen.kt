@@ -40,7 +40,8 @@ fun EditStationScreen(
     stationUuid: String?,
     viewModel: LibraryViewModel,
     onNavigateBack: () -> Unit,
-    onPlayStation: (RadioStation) -> Unit = {}
+    onPlayStation: (RadioStation) -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val context = LocalContext.current
     val stations by viewModel.stations.collectAsStateWithLifecycle()
@@ -401,7 +402,6 @@ fun EditStationScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp)
-                    .imePadding()
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -880,7 +880,9 @@ fun EditStationScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(160.dp))
+                val safeDrawingBottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+                val bottomPadding = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), safeDrawingBottom)
+                Spacer(modifier = Modifier.height(16.dp + bottomPadding))
             }
         }
     }
