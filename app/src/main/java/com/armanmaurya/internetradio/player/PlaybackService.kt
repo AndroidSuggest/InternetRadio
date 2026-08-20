@@ -85,6 +85,7 @@ class PlaybackService : MediaLibraryService() {
 
     
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var libraryStatusJob: kotlinx.coroutines.Job? = null
 
     /**
      * Watches for station changes so the ❤️ button on Android Auto's now-playing
@@ -92,9 +93,19 @@ class PlaybackService : MediaLibraryService() {
      */
     private val stationChangeListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            autoCallback.updateLibraryButton(mediaItem?.mediaId)
+            libraryStatusJob?.cancel()
+            val stationUuid = mediaItem?.mediaId
+            if (stationUuid != null) {
+                libraryStatusJob = serviceScope.launch {
+                    libraryRepository.isStationInLibrary(stationUuid).collect {
+                        autoCallback.updateLibraryButton(stationUuid)
+                    }
+                }
+            } else {
+                autoCallback.updateLibraryButton(null)
+            }
             
-            val stationUuid = mediaItem?.mediaId ?: return
+            if (stationUuid == null) return
             
             val tagStation = mediaItem.localConfiguration?.tag as? RadioStation
             if (tagStation != null) {
