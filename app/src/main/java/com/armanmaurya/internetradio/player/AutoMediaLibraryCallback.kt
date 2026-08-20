@@ -189,11 +189,14 @@ class AutoMediaLibraryCallback @Inject constructor(
         if (customCommand.customAction != COMMAND_TOGGLE_LIBRARY.customAction) {
             return super.onCustomCommand(session, controller, customCommand, args)
         }
-        val uuid = session.player.currentMediaItem?.mediaId
+        val mediaItem = session.player.currentMediaItem
+        val uuid = mediaItem?.mediaId
             ?: return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))
 
         searchScope.launch {
-            val station = findStationByUuid(uuid) ?: return@launch
+            val station = (mediaItem.localConfiguration?.tag as? RadioStation) 
+                ?: findStationByUuid(uuid.substringAfter("|")) 
+                ?: return@launch
             val wasFav = libraryRepository.isStationInLibraryDirect(station.stationUuid)
             if (wasFav) libraryRepository.removeStationFromLibrary(station.stationUuid)
             else libraryRepository.addStationToLibrary(station)
@@ -221,8 +224,8 @@ class AutoMediaLibraryCallback @Inject constructor(
         CommandButton.Builder()
             .setDisplayName(if (isFavorite) getLocalizedString(R.string.home_remove_from_library) else getLocalizedString(R.string.home_add_to_library))
             .setIconResId(
-                if (isFavorite) R.drawable.ic_auto_favorite
-                else R.drawable.ic_auto_favorite_border
+                if (isFavorite) R.drawable.ic_auto_bookmark
+                else R.drawable.ic_auto_bookmark_border
             )
             .setSessionCommand(COMMAND_TOGGLE_LIBRARY)
             .build()

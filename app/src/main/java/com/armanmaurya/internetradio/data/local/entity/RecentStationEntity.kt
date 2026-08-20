@@ -23,7 +23,10 @@ data class RecentStationEntity(
     val iso3166_2: String? = null,
     val geoLat: Double? = null,
     val geoLong: Double? = null,
-    val lastPlayedAt: Long = System.currentTimeMillis()
+    val lastPlayedAt: Long = System.currentTimeMillis(),
+    
+    @androidx.room.ColumnInfo(defaultValue = "0")
+    val isCustom: Boolean = false
 )
 
 fun RecentStationEntity.toDomain() = RadioStation(
@@ -57,7 +60,8 @@ fun RecentStationEntity.toDomain() = RadioStation(
     geoLat = geoLat,
     geoLong = geoLong,
     geoDistance = null,
-    hasExtendedInfo = false
+    hasExtendedInfo = false,
+    isCustom = isCustom
 )
 
 fun RadioStation.toRecentEntity(timestamp: Long = System.currentTimeMillis()) = RecentStationEntity(
@@ -76,5 +80,6 @@ fun RadioStation.toRecentEntity(timestamp: Long = System.currentTimeMillis()) = 
     iso3166_2 = iso3166_2,
     geoLat = geoLat,
     geoLong = geoLong,
-    lastPlayedAt = timestamp
+    lastPlayedAt = timestamp,
+    isCustom = isCustom
 )

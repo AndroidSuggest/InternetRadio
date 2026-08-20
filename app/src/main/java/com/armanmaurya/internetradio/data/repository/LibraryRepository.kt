@@ -80,7 +80,7 @@ class LibraryRepository @Inject constructor(
     }
 
     suspend fun addStationToLibrary(station: RadioStation) {
-        libraryStationDao.insertStation(station.toLibraryEntity(isCustom = false))
+        libraryStationDao.insertStation(station.toLibraryEntity())
     }
 
     suspend fun addCustomStation(
