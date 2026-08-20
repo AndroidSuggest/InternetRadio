@@ -228,7 +228,10 @@
     <string name="edit_station_unsaved_changes">Nicht gespeicherte Änderungen</string>
     <string name="edit_station_unsaved_changes_message_exit">Die Änderungen sind noch nicht gespeichert. Sollen diese wirklich verworfen und das Programm beendet werden?</string>
     <string name="edit_station_reset_title">Sender zurücksetzen</string>
-    <string name="edit_station_reset_message">Soll dieser Sender wirklich auf die ursprünglichen Daten zurückgesetzt werden? Alle Änderungen gehen dabei verloren.</string>
+    <string name="edit_station_reset_message">Soll dieser Sender wirklich auf seinen ursprünglichen Zustand zurückgesetzt werden? Alle Änderungen gehen dabei verloren.</string>
+    <string name="edit_station_overwrite_title">Überschreibe Metadaten?</string>
+    <string name="edit_station_overwrite_message">Sollen die aktuellen Senderdetails mit den abgerufenen Metadaten ersetzt werden?</string>
+    <string name="edit_station_error_empty_url">Stream-URL kann nicht leer sein</string>
     <string name="edit_station_fields_reset_message">Felder auf Originaldaten zurückgesetzt</string>
     <string name="edit_station_saved_message">Gespeichert</string>
     <string name="edit_station_cd_reset_to_original">Auf Originalzustand zurückgesetzt</string>
