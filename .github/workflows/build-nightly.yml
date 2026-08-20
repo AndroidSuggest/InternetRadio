@@ -33,6 +33,9 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
         
+      - name: Rename APK
+        run: mv app/build/outputs/apk/nightly/*.apk app/build/outputs/apk/nightly/internetradio-nightly-${{ env.date }}.apk
+        
       - name: Create Nightly Release
         uses: ncipollo/release-action@v1
         with:
