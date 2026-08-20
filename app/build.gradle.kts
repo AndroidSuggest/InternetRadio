@@ -19,6 +19,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("nightly") {
+            storeFile = file("internetradio-nightly.jks")
+            storePassword = System.getenv("NIGHTLY_STORE_PASSWORD") ?: ""
+            keyAlias = System.getenv("NIGHTLY_KEY_ALIAS") ?: ""
+            keyPassword = System.getenv("NIGHTLY_KEY_PASSWORD") ?: ""
+        }
+    }
+
     androidResources {
         localeFilters += listOf("en", "hi", "tr", "hu", "de", "fr", "ro", "et")
     }
@@ -26,6 +35,13 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+        }
+        create("nightly") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".nightly"
+            versionNameSuffix = "-nightly"
+            signingConfig = signingConfigs.getByName("nightly")
+            matchingFallbacks += listOf("release")
         }
         release {
             isMinifyEnabled = true

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Overrides the default app name for the nightly build -->
+    <string name="app_name">Internet Radio Nightly</string>
+</resources>

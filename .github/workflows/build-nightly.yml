@@ -1,0 +1,42 @@
+name: Nightly Build
+
+on:
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Decode Keystore
+        env:
+          ENCODED_KEYSTORE: ${{ secrets.NIGHTLY_KEYSTORE_BASE64 }}
+        run: echo $ENCODED_KEYSTORE | base64 -di > app/internetradio-nightly.jks
+          
+      - name: Build nightly APK
+        env:
+          NIGHTLY_STORE_PASSWORD: ${{ secrets.NIGHTLY_STORE_PASSWORD }}
+          NIGHTLY_KEY_PASSWORD: ${{ secrets.NIGHTLY_KEY_PASSWORD }}
+          NIGHTLY_KEY_ALIAS: ${{ secrets.NIGHTLY_KEY_ALIAS }}
+        run: ./gradlew assembleNightly
+        
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        
+      - name: Create Nightly Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "app/build/outputs/apk/nightly/*.apk"
+          tag: "nightly-build"
+          name: "Nightly Build - ${{ env.date }}"
+          body: "This is the latest nightly build. It includes the newest features but may be unstable."
+          prerelease: true
+          allowUpdates: true
+          replacesArtifacts: true
