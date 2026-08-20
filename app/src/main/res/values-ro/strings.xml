@@ -143,7 +143,7 @@
     <string name="edit_station_unsaved_changes">Modificări nesalvate</string>
     <string name="edit_station_unsaved_changes_message_exit">Ai modificări nesalvate. Sigur vrei să renunți și să ieși?</string>
     <string name="edit_station_reset_title">Resetează postul</string>
-    <string name="edit_station_reset_message">Sigur dorești să resetezi aceast post la datele sale originale? Toate editările tale vor fi pierdute.</string>
+    <string name="edit_station_reset_message">Sigur dorești să resetezi această stație la statutul original? Această acțiune îți va șterge toate editurile personalizate.</string>
     <string name="edit_station_fields_reset_message">Resetează la datele originale</string>
     <string name="edit_station_saved_message">Salvat</string>
     <string name="edit_station_cd_reset_to_original">Resetează la valorile originale</string>
@@ -317,4 +317,9 @@
         <item quantity="few">%1$d secunde</item>
         <item quantity="other">%1$d de secunde</item>
     </plurals>
+    <string name="settings_pause_on_volume_zero">Pune pe pauză dacă volumul este zero</string>
+    <string name="settings_pause_on_volume_zero_desc">Pune pe pauză când dispozitivul este pe mut (Nu se pune dacă înregistrezi)</string>
+    <string name="edit_station_overwrite_title">Suprascrieți metadatele?</string>
+    <string name="edit_station_overwrite_message">Doriți să înlocuiți detaliile stației curente cu metadatele preluate din server?</string>
+    <string name="edit_station_error_empty_url">URL-ul fluxului nu poate fi gol</string>
 </resources>
