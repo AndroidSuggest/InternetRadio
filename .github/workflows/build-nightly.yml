@@ -20,7 +20,7 @@ jobs:
       - name: Decode Keystore
         env:
           ENCODED_KEYSTORE: ${{ secrets.NIGHTLY_KEYSTORE_BASE64 }}
-        run: echo $ENCODED_KEYSTORE | base64 -di > app/internetradio-nightly.jks
+        run: echo $ENCODED_KEYSTORE | base64 -di > app/radio-nightly.jks
           
       - name: Build nightly APK
         env:

@@ -21,7 +21,7 @@ android {
 
     signingConfigs {
         create("nightly") {
-            storeFile = file("internetradio-nightly.jks")
+            storeFile = file("radio-nightly.jks")
             storePassword = System.getenv("NIGHTLY_STORE_PASSWORD") ?: ""
             keyAlias = System.getenv("NIGHTLY_KEY_ALIAS") ?: ""
             keyPassword = System.getenv("NIGHTLY_KEY_PASSWORD") ?: ""
