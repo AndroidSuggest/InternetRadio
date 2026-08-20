@@ -359,7 +359,7 @@ fun PlayerSheetContent(
             val availableHeight = screenHeight - statusBarPadding
             statusBarPadding + (availableHeight - baseExpandedSize) / 2
         } else {
-            84.dp + statusBarPadding
+            68.dp + statusBarPadding
         }
         val historyExpandedY = if (isWidescreen) baseExpandedY else 22.dp + statusBarPadding // Shifted further down
         val actualExpandedY = lerp(baseExpandedY, historyExpandedY, historyProgress)
@@ -771,7 +771,7 @@ fun PlayerSheetContent(
                                 .fillMaxWidth()
                                 .height(
                                     lerp(
-                                        52.dp + baseExpandedSize, // 84dp (Thumbnail Y) + size + 24dp (gap) - 56dp (Header Box) = 52dp + size
+                                        28.dp + baseExpandedSize, // 68dp (Thumbnail Y) + size + 16dp (gap) - 56dp (Header Box) = 28dp + size
                                         72.dp, // Matches Row height
                                         historyProgress
                                     )
