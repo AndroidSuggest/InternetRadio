@@ -348,13 +348,6 @@ fun AddEditStationScreen(
                         ),
                         modifier = Modifier.weight(1f).fillMaxHeight()
                     ) {
-                        if (isUploading || isProbing) {
-                            androidx.compose.material3.CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp).padding(end = 8.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
                         AnimatedContent(
                             targetState = uploadMode && showUploadMode,
                             label = "saveButtonAnimation"

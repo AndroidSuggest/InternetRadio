@@ -54,7 +54,7 @@ fun SharedTransitionScope.TrackPill(
             modifier = Modifier
                 .fillMaxWidth()
                 .alpha(0f)
-                .padding(start = 12.dp, end = 6.dp, top = 2.dp, bottom = 2.dp),
+                .padding(start = 12.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(

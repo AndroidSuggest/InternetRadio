@@ -165,17 +165,21 @@ fun EditStationScreen(
             if (url.startsWith("http")) {
                 if (station != null && url == station.url && (station.codec.isNotBlank() || station.bitrate > 0)) {
                     isProbingMetadata = false
+                    isProbingCodec = false
                 } else {
                     isProbingMetadata = true
+                    isProbingCodec = true
                     kotlinx.coroutines.delay(500) // Debounce
                     val result = viewModel.probeStream(url)
                     if (result != null) {
                         handleProbeResult(result)
                     }
                     isProbingMetadata = false
+                    isProbingCodec = false
                 }
             } else {
                 isProbingMetadata = false
+                isProbingCodec = false
             }
         }
 
@@ -421,14 +425,6 @@ fun EditStationScreen(
                                 shape = if (showUploadMode) RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 0.dp, bottomEnd = 0.dp) else RoundedCornerShape(24.dp),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                             ) {
-                                if (isUploading || isProbing) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                }
                                 AnimatedContent(
                                     targetState = uploadMode && showUploadMode,
                                     label = "saveButtonAnimation"
@@ -892,47 +888,57 @@ fun EditStationScreen(
                 val bitrateText = if (probedBitrate > 0) "$probedBitrate $kbpsUnit" else "-"
                 val isCodecUnknown = probedCodec.equals("unknown", ignoreCase = true) || probedCodec.isBlank()
                 val codecText = if (!isCodecUnknown) probedCodec.uppercase() else "-"
-                Surface(
+                Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    Surface(
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "$codecText • $bitrateText",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            if (isProbingCodec) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp).padding(4.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                IconButton(
-                                    onClick = {
-                                        if (url.startsWith("http")) {
-                                            isProbingCodec = true
-                                            coroutineScope.launch {
-                                                val result = viewModel.probeStream(url)
-                                                if (result != null) {
-                                                    probedCodec = result.codec
-                                                    probedBitrate = result.bitrate
-                                                }
-                                                isProbingCodec = false
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp).fillMaxHeight(),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "$codecText • $bitrateText",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        if (isProbingCodec) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(56.dp).padding(16.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            IconButton(
+                                modifier = Modifier.size(56.dp),
+                                onClick = {
+                                    if (url.startsWith("http")) {
+                                        isProbingCodec = true
+                                        coroutineScope.launch {
+                                            val result = viewModel.probeStream(url)
+                                            if (result != null) {
+                                                probedCodec = result.codec
+                                                probedBitrate = result.bitrate
                                             }
+                                            isProbingCodec = false
                                         }
                                     }
-                                ) {
-                                    Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.edit_station_refresh_metadata))
                                 }
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.edit_station_refresh_metadata))
                             }
+                        }
                     }
                 }
                 
