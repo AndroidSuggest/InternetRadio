@@ -129,7 +129,7 @@ fun EditStationScreen(
         var isProbingCodec by remember { mutableStateOf(false) }
         val isProbing = isProbingMetadata || isProbingCodec
         
-        var probedCodec by remember(station) { mutableStateOf(station?.codec?.takeIf { it.isNotBlank() } ?: "unknown") }
+        var probedCodec by remember(station) { mutableStateOf(station?.codec ?: "") }
         var probedBitrate by remember(station) { mutableStateOf(station?.bitrate ?: 0) }
         
         var showOverwriteDialog by remember { mutableStateOf(false) }
@@ -203,7 +203,7 @@ fun EditStationScreen(
             probedCodec != station.codec ||
             probedBitrate != station.bitrate
         } else {
-            name.isNotBlank() || url.isNotBlank() || favicon.isNotBlank() || tags.isNotBlank() || countryCode.isNotBlank() || iso3166_2.isNotBlank() || languageCodes.isNotBlank() || homepage.isNotBlank() || probedCodec != "unknown" || probedBitrate != 0
+            name.isNotBlank() || url.isNotBlank() || favicon.isNotBlank() || tags.isNotBlank() || countryCode.isNotBlank() || iso3166_2.isNotBlank() || languageCodes.isNotBlank() || homepage.isNotBlank() || probedCodec.isNotBlank() || probedBitrate != 0
         }
 
         if (showOverwriteDialog) {
@@ -525,7 +525,7 @@ fun EditStationScreen(
                         Box(
                             modifier = Modifier
                                 .size(56.dp)
-                                .gclip(RoundedCornerShape(16.dp))
+                                .clip(RoundedCornerShape(16.dp))
                                 .clickable(enabled = !isProbingMetadata) {
                                     if (url.startsWith("http")) {
                                         isProbingMetadata = true

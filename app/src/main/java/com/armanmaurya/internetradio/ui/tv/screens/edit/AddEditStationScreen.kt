@@ -63,7 +63,7 @@ fun AddEditStationScreen(
     var homepage by remember(station) { mutableStateOf(station?.homepage ?: "") }
 
     var isProbing by remember { mutableStateOf(false) }
-    var probedCodec by remember(station) { mutableStateOf(station?.codec?.takeIf { it.isNotBlank() } ?: "unknown") }
+    var probedCodec by remember(station) { mutableStateOf(station?.codec ?: "") }
     var probedBitrate by remember(station) { mutableStateOf(station?.bitrate ?: 0) }
 
     var showOverwriteDialog by remember { mutableStateOf(false) }
