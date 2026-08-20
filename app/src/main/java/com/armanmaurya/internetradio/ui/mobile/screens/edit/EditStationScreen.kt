@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -521,15 +522,11 @@ fun EditStationScreen(
                             RoundedCornerShape(16.dp)
                         ) else Modifier
                     ) {
-                        if (isProbingMetadata) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(56.dp).padding(16.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            IconButton(
-                                modifier = Modifier.size(56.dp),
-                                onClick = {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .gclip(RoundedCornerShape(16.dp))
+                                .clickable(enabled = !isProbingMetadata) {
                                     if (url.startsWith("http")) {
                                         isProbingMetadata = true
                                         coroutineScope.launch {
@@ -540,8 +537,15 @@ fun EditStationScreen(
                                             isProbingMetadata = false
                                         }
                                     }
-                                }
-                            ) {
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isProbingMetadata) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
                                 Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.edit_station_refresh_metadata))
                             }
                         }
@@ -914,15 +918,11 @@ fun EditStationScreen(
                         shape = RoundedCornerShape(16.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        if (isProbingCodec) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(56.dp).padding(16.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            IconButton(
-                                modifier = Modifier.size(56.dp),
-                                onClick = {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable(enabled = !isProbingCodec) {
                                     if (url.startsWith("http")) {
                                         isProbingCodec = true
                                         coroutineScope.launch {
@@ -934,8 +934,15 @@ fun EditStationScreen(
                                             isProbingCodec = false
                                         }
                                     }
-                                }
-                            ) {
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isProbingCodec) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
                                 Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.edit_station_refresh_metadata))
                             }
                         }
