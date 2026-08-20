@@ -144,7 +144,7 @@
     <string name="edit_station_unsaved_changes">Salvestamata muudatused</string>
     <string name="edit_station_unsaved_changes_message_exit">Sul on salvestamata muudatusi. Kas tahaksid neist loobuda ja väljuda?</string>
     <string name="edit_station_reset_title">Lähtesta jaama andmed</string>
-    <string name="edit_station_reset_message">Kas oled kindel, et soovid selle raadiojaama andmed lähtestada? Kõik muudatused lähevad kaotsi ja kuvame algandmeid.</string>
+    <string name="edit_station_reset_message">Kas oled kindel, et soovid selle raadiojaama andmed lähtestada? Kõik sinu tehtud muudatused lähevad kaotsi.</string>
     <string name="edit_station_saved_message">Salvestatud</string>
     <string name="edit_station_cd_reset_to_original">Lähtesta algandmeteks</string>
     <string name="edit_station_fields_reset_message">Lähtesta algandmeteks</string>
@@ -311,4 +311,9 @@
     <string name="schedule_keep_playback_subtitle">Kui eelistus pole kasutusel, siis taasesitus lõppeb koos salvestusega</string>
     <string name="settings_gradual_volume_enabled">Sissehajutamine: %1$s</string>
     <string name="settings_gradual_volume">Heli järkjärguline muutmine</string>
+    <string name="settings_pause_on_volume_zero">Kui helivaljus on nullis, siis peata esitus</string>
+    <string name="settings_pause_on_volume_zero_desc">Seadme helivaljuse summutamisel peata taasesitus (ei kehti salvestamise puhul)</string>
+    <string name="edit_station_overwrite_title">Kas kirjutame metateabe üle?</string>
+    <string name="edit_station_overwrite_message">Kas soovid hetkel sisestatud raadiojaama teabe asendada allalaaditud metateabega?</string>
+    <string name="edit_station_error_empty_url">Voogedastuse võrguaadress ei tohi olla tühi</string>
 </resources>
