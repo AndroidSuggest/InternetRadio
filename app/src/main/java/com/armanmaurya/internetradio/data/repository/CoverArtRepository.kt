@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.data.repository
 
 import com.armanmaurya.internetradio.data.remote.ITunesApiService
+import com.armanmaurya.internetradio.utils.TrackSanitizer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -12,7 +13,9 @@ class CoverArtRepository @Inject constructor(
 ) {
     suspend fun getCoverArt(trackName: String, artistName: String?): String? = withContext(Dispatchers.IO) {
         try {
-            val term = if (!artistName.isNullOrBlank()) "$trackName $artistName" else trackName
+            val cleanTrack = TrackSanitizer.sanitizeTrackInfo(trackName)
+            val cleanArtist = artistName?.let { TrackSanitizer.sanitizeTrackInfo(it) }
+            val term = if (!cleanArtist.isNullOrBlank()) "$cleanTrack $cleanArtist" else cleanTrack
             val response = apiService.searchTrack(term = term)
             
             val track = response.results?.firstOrNull() ?: return@withContext null
