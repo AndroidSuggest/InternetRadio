@@ -12,6 +12,7 @@ import com.armanmaurya.internetradio.ui.mobile.screens.player.components.Control
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.recordings.RecordingsTab
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.about.AboutTab
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.lyrics.LyricsTab
+import com.armanmaurya.internetradio.ui.shared.components.shimmerEffect
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.ui.zIndex
 import androidx.compose.animation.*
@@ -435,27 +436,22 @@ fun PlayerSheetContent(
             val pageStation = if (isInfinite && playlistSize > 0) playlist.getOrNull(page % playlistSize) ?: station else playlist.getOrNull(page) ?: station
             val isCurrentPlayingStation = pageStation.stationUuid == station.stationUuid
             
-            val isShowingCover = isCurrentPlayingStation && showCoverArt && !playbackState.trackCoverArtUri.isNullOrBlank()
+            val hasCoverArt = !playbackState.trackCoverArtUri.isNullOrBlank()
+            val isFetching = playbackState.isFetchingArtwork
+            val isShowingCover = isCurrentPlayingStation && showCoverArt && (hasCoverArt || isFetching)
 
             val overlaySize = lerp(16.dp, 48.dp, progress)
             val overlayPadding = lerp(2.dp, 8.dp, progress)
 
-            val animatedThumbSize by androidx.compose.animation.core.animateDpAsState(
-                targetValue = if (isShowingCover) overlaySize else currentSize,
-                label = "thumbSize"
-            )
-            val animatedThumbPadding by androidx.compose.animation.core.animateDpAsState(
-                targetValue = if (isShowingCover) overlayPadding else 0.dp,
-                label = "thumbPadding"
-            )
-            val animatedCornerRadius by androidx.compose.animation.core.animateDpAsState(
-                targetValue = if (isShowingCover) 6.dp else 0.dp,
-                label = "cornerRadius"
-            )
-            val coverAlpha by androidx.compose.animation.core.animateFloatAsState(
+            val coverFraction by androidx.compose.animation.core.animateFloatAsState(
                 targetValue = if (isShowingCover) 1f else 0f,
-                label = "coverAlpha"
+                label = "coverFraction"
             )
+
+            val animatedThumbSize = androidx.compose.ui.unit.lerp(currentSize, overlaySize, coverFraction)
+            val animatedThumbPadding = androidx.compose.ui.unit.lerp(0.dp, overlayPadding, coverFraction)
+            val animatedCornerRadius = androidx.compose.ui.unit.lerp(0.dp, 6.dp, coverFraction)
+            val coverAlpha = coverFraction
 
             Box(
                 modifier = Modifier
@@ -473,19 +469,28 @@ fun PlayerSheetContent(
                     )
                     .clickable { showCoverArt = !showCoverArt }
             ) {
-                if (isCurrentPlayingStation && !playbackState.trackCoverArtUri.isNullOrBlank()) {
-                    SubcomposeAsyncImage(
-                        model = coil3.request.ImageRequest.Builder(LocalContext.current)
-                            .data(playbackState.trackCoverArtUri)
-                            .size(coil3.size.Size.ORIGINAL)
-                            .build(),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        filterQuality = FilterQuality.High,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .alpha(coverAlpha)
-                    )
+                if (isCurrentPlayingStation && (hasCoverArt || isFetching)) {
+                    if (hasCoverArt) {
+                        SubcomposeAsyncImage(
+                            model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                                .data(playbackState.trackCoverArtUri)
+                                .size(coil3.size.Size.ORIGINAL)
+                                .build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            filterQuality = FilterQuality.High,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha(coverAlpha)
+                        )
+                    } else if (isFetching) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha(coverAlpha)
+                                .shimmerEffect()
+                        )
+                    }
                 }
 
                 SubcomposeAsyncImage(

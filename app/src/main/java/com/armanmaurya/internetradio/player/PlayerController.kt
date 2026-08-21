@@ -139,6 +139,8 @@ class PlayerController @Inject constructor(
                         currentPlaylistIndex = currentIndex,
                         currentTrack = null, 
                         trackStartTime = null, 
+                        trackCoverArtUri = null,
+                        isFetchingArtwork = false,
                         lyricsSyncOffsetMs = 0L,
                         sessionActiveDurationMs = 0L,
                         sessionResumeTimeMs = if (it.isPlaying) System.currentTimeMillis() else null
@@ -195,7 +197,7 @@ class PlayerController @Inject constructor(
         }
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-            val artworkUri = mediaMetadata.extras?.getString("track_cover_art_url") ?: mediaMetadata.artworkUri?.toString()
+            val artworkUri = mediaMetadata.extras?.getString("track_cover_art_url")
             val trackInfo = mediaMetadata.extras?.getString("icy_title") 
                 ?: if (mediaMetadata.title != null && mediaMetadata.artist != null) {
                     "${mediaMetadata.title} - ${mediaMetadata.artist}"
