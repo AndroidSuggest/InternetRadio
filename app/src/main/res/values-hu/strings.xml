@@ -228,4 +228,9 @@
     <string name="cast_no_devices_found">Nem található eszköz a hálózaton.</string>
     <string name="cast_disconnect">Leválasztás</string>
     <string name="cast_close">Bezárás</string>
+    <string name="cd_delete">Törlés</string>
+    <string name="settings_auto_route_search_title">Automatikus navigáció kereséskor</string>
+    <string name="settings_auto_route_search_subtitle">Kereséskor automatikusan átvált a Böngészés lapra</string>
+    <string name="settings_select_all_text_on_focus_subtitle">A keresőmező szövegének automatikus kijelölése fókuszba kerüléskor</string>
+    <string name="settings_select_all_text_on_focus_title">Keresési szöveg automatikus kijelölése</string>
 </resources>
