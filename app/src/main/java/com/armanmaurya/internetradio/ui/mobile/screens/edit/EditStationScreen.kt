@@ -457,10 +457,12 @@ fun EditStationScreen(
             }
         ) { paddingValues ->
             val isPureBlack = MaterialTheme.colorScheme.surface == Color.Black
+            val extraBottomPadding = if (contentPadding.calculateBottomPadding() > 0.dp) 72.dp else 0.dp
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .padding(bottom = extraBottomPadding)
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -607,7 +609,7 @@ fun EditStationScreen(
                                 countryCode = matched?.first ?: ""
                             },
                             label = { Text(stringResource(R.string.edit_station_country_field)) },
-                            modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
+                            modifier = Modifier.menuAnchor(androidx.compose.material3.ExposedDropdownMenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
                                 if (isPureBlack) Modifier.border(
                                     1.dp,
                                     MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
@@ -616,7 +618,21 @@ fun EditStationScreen(
                             ),
                             singleLine = true,
                             shape = RoundedCornerShape(16.dp),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCountry) },
+                            trailingIcon = { 
+                                if (countrySearchText.isNotEmpty()) {
+                                    IconButton(onClick = { 
+                                        countrySearchText = ""
+                                        countryCode = ""
+                                        iso3166_2 = ""
+                                        stateSearchText = ""
+                                        expandedCountry = true
+                                    }) {
+                                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.general_clear))
+                                    }
+                                } else {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCountry) 
+                                }
+                            },
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
@@ -663,7 +679,7 @@ fun EditStationScreen(
                                     iso3166_2 = matched?.code ?: ""
                                 },
                                 label = { Text(stringResource(R.string.edit_station_state_field)) },
-                                modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
+                                modifier = Modifier.menuAnchor(androidx.compose.material3.ExposedDropdownMenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
                                     if (isPureBlack) Modifier.border(
                                         1.dp,
                                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
@@ -672,7 +688,19 @@ fun EditStationScreen(
                                 ),
                                 singleLine = true,
                                 shape = RoundedCornerShape(16.dp),
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState) },
+                                trailingIcon = { 
+                                    if (stateSearchText.isNotEmpty()) {
+                                        IconButton(onClick = { 
+                                            stateSearchText = ""
+                                            iso3166_2 = ""
+                                            expandedState = true
+                                        }) {
+                                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.general_clear))
+                                        }
+                                    } else {
+                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState) 
+                                    }
+                                },
                                 colors = TextFieldDefaults.colors(
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent,
@@ -714,7 +742,7 @@ fun EditStationScreen(
                                 expandedLanguage = true
                             },
                             label = { Text(stringResource(R.string.edit_station_add_languages)) },
-                            modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
+                            modifier = Modifier.menuAnchor(androidx.compose.material3.ExposedDropdownMenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
                                 if (isPureBlack) Modifier.border(
                                     1.dp,
                                     MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
@@ -723,7 +751,18 @@ fun EditStationScreen(
                             ),
                             singleLine = true,
                             shape = RoundedCornerShape(16.dp),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguage) },
+                            trailingIcon = { 
+                                if (languageSearchText.isNotEmpty()) {
+                                    IconButton(onClick = { 
+                                        languageSearchText = ""
+                                        expandedLanguage = true
+                                    }) {
+                                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.general_clear))
+                                    }
+                                } else {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguage) 
+                                }
+                            },
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
@@ -800,7 +839,7 @@ fun EditStationScreen(
                             viewModel.onTagSearchQueryChange(it)
                         },
                         label = { Text(stringResource(R.string.edit_station_add_tags)) },
-                        modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
+                        modifier = Modifier.menuAnchor(androidx.compose.material3.ExposedDropdownMenuAnchorType.PrimaryEditable, true).fillMaxWidth().then(
                             if (isPureBlack) Modifier.border(
                                 1.dp,
                                 MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
@@ -809,7 +848,19 @@ fun EditStationScreen(
                         ),
                         singleLine = true,
                         shape = RoundedCornerShape(16.dp),
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTags) },
+                        trailingIcon = { 
+                            if (tagsSearchText.isNotEmpty()) {
+                                IconButton(onClick = { 
+                                    tagsSearchText = ""
+                                    expandedTags = true
+                                    viewModel.onTagSearchQueryChange("")
+                                }) {
+                                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.general_clear))
+                                }
+                            } else {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTags) 
+                            }
+                        },
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
@@ -997,8 +1048,7 @@ fun EditStationScreen(
                 }
 
                 val safeDrawingBottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
-                val bottomPadding = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), safeDrawingBottom)
-                Spacer(modifier = Modifier.height(16.dp + bottomPadding))
+                Spacer(modifier = Modifier.height(96.dp + safeDrawingBottom))
             }
         }
     }

@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
@@ -182,7 +185,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 val density = LocalDensity.current
-                val bottomInset = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+                val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                 val sheetPeekHeight = if (playbackState.currentStation != null) 72.dp + bottomInset else 0.dp
 
                 val onCheckUpdates: () -> Unit = {
@@ -209,22 +212,28 @@ class MainActivity : AppCompatActivity() {
 
 
                 BottomSheetScaffold(
+                    modifier = Modifier.imePadding(),
                     scaffoldState = scaffoldState,
                     sheetPeekHeight = sheetPeekHeight,
                     sheetMaxWidth = androidx.compose.ui.unit.Dp.Unspecified,
                     sheetDragHandle = null,
                     sheetContent = {
                         val configuration = LocalConfiguration.current
+                        val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
+                        val imeInsets = WindowInsets.ime
+
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .heightIn(min = 72.dp + bottomInset)
                         ) {
-                            val fullHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
                             val peekHeightPx = with(density) { (72.dp + bottomInset).toPx() }
                             
-                            val progress by remember(fullHeight, peekHeightPx) {
+                            val progress by remember(screenHeightPx, peekHeightPx, imeInsets) {
                                 derivedStateOf {
+                                    val imeHeightPx = imeInsets.getBottom(density).toFloat()
+                                    val fullHeight = screenHeightPx - imeHeightPx
+                                    
                                     val currentOffset = try {
                                         scaffoldState.bottomSheetState.requireOffset()
                                     } catch (e: Exception) {
