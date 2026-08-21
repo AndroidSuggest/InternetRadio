@@ -146,7 +146,8 @@ fun EditStationScreen(
                 if (fieldsAlreadyFilled) {
                     val nameDiffers = !result.name.isNullOrBlank() && result.name != name
                     val homepageDiffers = !result.homepage.isNullOrBlank() && result.homepage != homepage
-                    val tagsDiffer = !result.genre.isNullOrBlank() && result.genre != tags
+                    val parsedGenre = result.genre?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() }?.joinToString(", ")?.lowercase()
+                    val tagsDiffer = parsedGenre != null && parsedGenre != tags.lowercase()
                     
                     if (nameDiffers || homepageDiffers || tagsDiffer) {
                         pendingProbeResult = result
@@ -156,7 +157,7 @@ fun EditStationScreen(
                     if (!result.name.isNullOrBlank()) name = result.name!!
                     if (!result.homepage.isNullOrBlank()) homepage = result.homepage!!
                     if (!result.genre.isNullOrBlank()) {
-                        tags = result.genre!!.split(",").map { it.trim() }.filter { it.isNotBlank() }.joinToString(", ")
+                        tags = result.genre!!.split(",").map { it.trim() }.filter { it.isNotBlank() }.joinToString(", ").lowercase()
                     }
                 }
             }
@@ -221,7 +222,7 @@ fun EditStationScreen(
                             if (!result.name.isNullOrBlank()) name = result.name
                             if (!result.homepage.isNullOrBlank()) homepage = result.homepage
                             if (!result.genre.isNullOrBlank()) {
-                                tags = result.genre.split(",").map { it.trim() }.filter { it.isNotBlank() }.joinToString(", ")
+                                tags = result.genre.split(",").map { it.trim() }.filter { it.isNotBlank() }.joinToString(", ").lowercase()
                             }
                         }
                         showOverwriteDialog = false
