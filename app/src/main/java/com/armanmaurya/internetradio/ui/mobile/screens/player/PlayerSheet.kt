@@ -435,11 +435,27 @@ fun PlayerSheetContent(
             val pageStation = if (isInfinite && playlistSize > 0) playlist.getOrNull(page % playlistSize) ?: station else playlist.getOrNull(page) ?: station
             val isCurrentPlayingStation = pageStation.stationUuid == station.stationUuid
             
-            val artToShow = if (isCurrentPlayingStation && showCoverArt && !playbackState.trackCoverArtUri.isNullOrBlank()) {
-                playbackState.trackCoverArtUri
-            } else {
-                pageStation.favicon.ifBlank { null }
-            }
+            val isShowingCover = isCurrentPlayingStation && showCoverArt && !playbackState.trackCoverArtUri.isNullOrBlank()
+
+            val overlaySize = lerp(16.dp, 48.dp, progress)
+            val overlayPadding = lerp(2.dp, 8.dp, progress)
+
+            val animatedThumbSize by androidx.compose.animation.core.animateDpAsState(
+                targetValue = if (isShowingCover) overlaySize else currentSize,
+                label = "thumbSize"
+            )
+            val animatedThumbPadding by androidx.compose.animation.core.animateDpAsState(
+                targetValue = if (isShowingCover) overlayPadding else 0.dp,
+                label = "thumbPadding"
+            )
+            val animatedCornerRadius by androidx.compose.animation.core.animateDpAsState(
+                targetValue = if (isShowingCover) 6.dp else 0.dp,
+                label = "cornerRadius"
+            )
+            val coverAlpha by androidx.compose.animation.core.animateFloatAsState(
+                targetValue = if (isShowingCover) 1f else 0f,
+                label = "coverAlpha"
+            )
 
             Box(
                 modifier = Modifier
@@ -455,18 +471,45 @@ fun PlayerSheetContent(
                             Modifier
                         }
                     )
+                    .clickable { showCoverArt = !showCoverArt }
             ) {
+                if (isCurrentPlayingStation && !playbackState.trackCoverArtUri.isNullOrBlank()) {
+                    SubcomposeAsyncImage(
+                        model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                            .data(playbackState.trackCoverArtUri)
+                            .size(coil3.size.Size.ORIGINAL)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        filterQuality = FilterQuality.High,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .alpha(coverAlpha)
+                    )
+                }
+
                 SubcomposeAsyncImage(
                     model = coil3.request.ImageRequest.Builder(LocalContext.current)
-                        .data(artToShow)
+                        .data(pageStation.favicon.ifBlank { null })
                         .size(coil3.size.Size.ORIGINAL)
                         .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     filterQuality = FilterQuality.High,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { showCoverArt = !showCoverArt },
+                        .align(Alignment.BottomStart)
+                        .padding(animatedThumbPadding)
+                        .size(animatedThumbSize)
+                        .clip(RoundedCornerShape(animatedCornerRadius))
+                        .then(
+                            if (isShowingCover) {
+                                Modifier
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(animatedCornerRadius))
+                            } else {
+                                Modifier
+                            }
+                        ),
                     error = {
                         Box(
                             contentAlignment = Alignment.Center,
