@@ -164,7 +164,7 @@ fun EditStationScreen(
 
         LaunchedEffect(url) {
             if (url.startsWith("http")) {
-                if (station != null && url == station.url && (station.codec.isNotBlank() || station.bitrate > 0)) {
+                if (station != null && url == station.url) {
                     isProbingMetadata = false
                     isProbingCodec = false
                 } else {
