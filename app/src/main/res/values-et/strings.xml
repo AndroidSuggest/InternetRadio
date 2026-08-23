@@ -316,4 +316,9 @@
     <string name="edit_station_overwrite_title">Kas kirjutame metateabe üle?</string>
     <string name="edit_station_overwrite_message">Kas soovid hetkel sisestatud raadiojaama teabe asendada allalaaditud metateabega?</string>
     <string name="edit_station_error_empty_url">Voogedastuse võrguaadress ei tohi olla tühi</string>
+    <string name="recordings_currently_recording">Hetkel salvestamas</string>
+    <string name="recordings_saved">Talletatud salvestised</string>
+    <string name="action_stop_recording">Lõpeta salvestamine</string>
+    <string name="lyrics_powered_by">Kasutusel on</string>
+    <string name="lyrics_provider_lrclib">LRCLIB</string>
 </resources>
