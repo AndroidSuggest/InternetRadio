@@ -350,6 +350,10 @@ class PlaybackService : MediaLibraryService() {
                 return true
             }
 
+            override fun isCurrentMediaItemSeekable(): Boolean {
+                return false
+            }
+
             override fun getDuration(): Long {
                 return androidx.media3.common.C.TIME_UNSET
             }
