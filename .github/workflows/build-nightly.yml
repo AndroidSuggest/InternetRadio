@@ -36,13 +36,16 @@ jobs:
       - name: Rename APK
         run: mv app/build/outputs/apk/nightly/*.apk app/build/outputs/apk/nightly/internetradio-nightly-${{ env.date }}.apk
         
-      - name: Create Nightly Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "app/build/outputs/apk/nightly/*.apk"
-          tag: "nightly-build"
-          name: "Nightly Build - ${{ env.date }}"
-          body: "This is the latest nightly build. It includes the newest features but may be unstable."
-          prerelease: true
-          allowUpdates: true
-          replacesArtifacts: true
+      - name: Replace Nightly Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          if gh release view nightly-build --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release delete nightly-build --repo "$GITHUB_REPOSITORY" -y --cleanup-tag
+          fi
+          gh release create nightly-build app/build/outputs/apk/nightly/internetradio-nightly-${{ env.date }}.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --prerelease \
+            --title "Nightly Build - ${{ env.date }}" \
+            --notes "This is the latest nightly build. It includes the newest features but may be unstable."
