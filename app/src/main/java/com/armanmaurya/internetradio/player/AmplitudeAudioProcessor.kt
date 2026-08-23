@@ -11,7 +11,6 @@ class AmplitudeAudioProcessor(
 ) : BaseAudioProcessor() {
 
     override fun onConfigure(inputAudioFormat: AudioFormat): AudioFormat {
-        recordingManager.setAudioFormat(inputAudioFormat.sampleRate, inputAudioFormat.channelCount, inputAudioFormat.bytesPerFrame)
         return inputAudioFormat
     }
 
@@ -35,15 +34,6 @@ class AmplitudeAudioProcessor(
             
             val rms = if (count > 0) sqrt(sumSquares / count).toFloat() else 0f
             recordingManager.updateAmplitude(rms)
-            
-            if (recordingManager.isRecording.value) {
-                // Extract PCM bytes and write to encoder
-                val pcmData = ByteArray(remaining)
-                val originalPos = inputBuffer.position()
-                inputBuffer.get(pcmData)
-                inputBuffer.position(originalPos)
-                recordingManager.writeBytes(pcmData, 0, remaining)
-            }
         }
         
         // Pass the buffer through unchanged

@@ -259,12 +259,12 @@ fun PlainLyricsView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Powered by ",
+                    text = stringResource(R.string.lyrics_powered_by),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "LRCLIB",
+                    text = stringResource(R.string.lyrics_provider_lrclib),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     textDecoration = TextDecoration.Underline,
@@ -467,12 +467,12 @@ fun SyncedLyricsView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Powered by ",
+                    text = stringResource(R.string.lyrics_powered_by),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "LRCLIB",
+                    text = stringResource(R.string.lyrics_provider_lrclib),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     textDecoration = TextDecoration.Underline,

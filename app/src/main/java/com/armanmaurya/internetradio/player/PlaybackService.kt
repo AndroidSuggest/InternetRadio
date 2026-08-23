@@ -369,10 +369,6 @@ class PlaybackService : MediaLibraryService() {
         player?.let {
             it.addListener(stationChangeListener)
             it.addListener(object : androidx.media3.common.Player.Listener {
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    recordingManager.setPlaying(isPlaying)
-                }
-
                 override fun onDeviceVolumeChanged(volume: Int, muted: Boolean) {
                     val isZero = volume == 0 || muted
                     val wasNonZero = previousVolume > 0
@@ -380,7 +376,7 @@ class PlaybackService : MediaLibraryService() {
                     if (isZero && wasNonZero) {
                         if (ignoreNextVolumeZero) {
                             ignoreNextVolumeZero = false
-                        } else if (pauseOnVolumeZero && !recordingManager.isRecording.value) {
+                        } else if (pauseOnVolumeZero) {
                             player?.pause()
                         }
                     } else if (!isZero) {
@@ -422,8 +418,6 @@ class PlaybackService : MediaLibraryService() {
         } catch (e: Exception) {
             // Ignored
         }
-        
-        recordingManager.stopRecording()
         
         mediaLibrarySession?.run {
             player.removeListener(stationChangeListener)
@@ -553,6 +547,7 @@ class PlaybackService : MediaLibraryService() {
                     val stopIntent = Intent(this, ScheduleReceiver::class.java).apply {
                         this.action = ScheduleReceiver.ACTION_STOP_RECORDING
                         putExtra("KEEP_PLAYBACK", keepPlayback)
+                        putExtra("UUID", stationUuid)
                     }
                     val pendingIntent = PendingIntent.getBroadcast(
                         this,
@@ -569,7 +564,15 @@ class PlaybackService : MediaLibraryService() {
                 if (startRecording) {
                     serviceScope.launch {
                         val station = libraryRepository.getStationById(stationUuid) ?: return@launch
-                        recordingManager.startRecording(station)
+                        val startIntent = android.content.Intent(this@PlaybackService, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
+                            this.action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
+                            putExtra("STATION_JSON", com.google.gson.Gson().toJson(station))
+                        }
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            startForegroundService(startIntent)
+                        } else {
+                            startService(startIntent)
+                        }
                     }
                 }
             }
@@ -577,7 +580,6 @@ class PlaybackService : MediaLibraryService() {
             volumeFadeJob?.cancel()
             player?.volume = 1f
             player?.stop()
-            recordingManager.stopRecording()
         }
         return super.onStartCommand(intent, flags, startId)
     }

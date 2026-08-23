@@ -21,6 +21,10 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Deselect
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -42,11 +46,19 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Pause
 import android.media.MediaPlayer
 import com.armanmaurya.internetradio.ui.mobile.components.RecordingFileItem
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun RecordingsContent(
     viewModel: RecordingsViewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel(),
+    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    onStopRecording: (String) -> Unit = {},
+    onStationClick: (List<com.armanmaurya.internetradio.data.model.RadioStation>, Int, com.armanmaurya.internetradio.player.PlaybackSource) -> Unit = { _, _, _ -> },
+    onEditStation: (String) -> Unit = {},
+    onExportStation: ((com.armanmaurya.internetradio.data.model.RadioStation) -> Unit)? = null,
+    playingStationUuid: String? = null,
+    isPlaybackActive: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val folders by viewModel.folders.collectAsStateWithLifecycle()
@@ -119,18 +131,26 @@ fun RecordingsContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 0.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 0.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                FilledTonalIconButton(
-                    onClick = { 
-                        selectionMode = false
-                        selectedFolders = emptySet()
-                        selectedFiles = emptySet()
-                    },
-                    shape = RoundedCornerShape(12.dp)
+                Box(
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { 
+                            selectionMode = false
+                            selectedFolders = emptySet()
+                            selectedFiles = emptySet()
+                        }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = "Cancel")
+                    Icon(
+                        Icons.Default.Close, 
+                        contentDescription = "Cancel",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 
                 Text(
@@ -146,247 +166,318 @@ fun RecordingsContent(
                     currentFolder != null && selectedFiles.size == currentFolder.recordings.size && currentFolder.recordings.isNotEmpty()
                 }
                 
-                FilledTonalIconButton(
-                    onClick = {
-                        if (isAllSelected) {
-                            selectedFolders = emptySet()
-                            selectedFiles = emptySet()
-                        } else {
-                            if (selectedStationName == null) {
-                                selectedFolders = folders.map { it.stationName }.toSet()
+                Box(
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { 
+                            if (isAllSelected) {
+                                selectedFolders = emptySet()
+                                selectedFiles = emptySet()
                             } else {
-                                val currentFolder = folders.find { it.stationName == selectedStationName }
-                                if (currentFolder != null) {
-                                    selectedFiles = currentFolder.recordings.map { it.uri.toString() }.toSet()
+                                if (selectedStationName == null) {
+                                    selectedFolders = folders.map { it.stationName }.toSet()
+                                } else {
+                                    val currentFolder = folders.find { it.stationName == selectedStationName }
+                                    if (currentFolder != null) {
+                                        selectedFiles = currentFolder.recordings.map { it.uri.toString() }.toSet()
+                                    }
                                 }
                             }
                         }
-                    },
-                    shape = RoundedCornerShape(12.dp)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         if (isAllSelected) Icons.Default.Deselect else Icons.Default.SelectAll, 
-                        contentDescription = "Select All"
+                        contentDescription = "Select All",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 
                 Spacer(modifier = Modifier.width(8.dp))
                 
-                FilledTonalIconButton(
-                    onClick = { showDeleteConfirmDialog = true },
-                    shape = RoundedCornerShape(12.dp)
+                Box(
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .clickable { showDeleteConfirmDialog = true }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+                    Icon(
+                        Icons.Default.Delete, 
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 }
             }
         }
-
-        if (folders.isEmpty()) {
-            Box(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.general_no_recordings),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    modifier = Modifier.padding(32.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            AnimatedContent(
-            targetState = selectedStationName,
-            transitionSpec = {
-                if (targetState != null) {
-                    // Entering folder (slide left)
-                    (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
-                        slideOutHorizontally { width -> -width } + fadeOut()
-                    )
-                } else {
-                    // Exiting folder (slide right)
-                    (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
-                        slideOutHorizontally { width -> width } + fadeOut()
-                    )
-                }
-            },
-            label = "FolderTransition"
-        ) { stationName ->
-            val currentFolder = folders.find { it.stationName == stationName }
-            
-            if (stationName == null || currentFolder == null) {
-                // Show Folders
-                LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp)
-            ) {
-                items(
-                    items = folders,
-                    key = { it.stationName }
-                ) { folder ->
-                    val isSelected = folder.stationName in selectedFolders
+        
+        val libraryStationUuids by viewModel.libraryStationUuids.collectAsStateWithLifecycle()
+        var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
+        
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (activeSessions.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(
                         modifier = Modifier
-                            .animateItem()
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                                else if (isPureBlack) androidx.compose.ui.graphics.Color.Black 
-                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            )
-                            .then(
-                                if (isPureBlack) Modifier.border(
-                                    1.dp,
-                                    if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                                    RoundedCornerShape(12.dp)
-                                ) else Modifier
-                            )
-                            .combinedClickable(
-                                onClick = { 
-                                    if (selectionMode) {
-                                        if (isSelected) selectedFolders -= folder.stationName else selectedFolders += folder.stationName
-                                        if (selectedFolders.isEmpty()) selectionMode = false
-                                    } else {
-                                        selectedStationName = folder.stationName 
-                                    }
-                                },
-                                onLongClick = {
-                                    if (!selectionMode) {
-                                        selectionMode = true
-                                        selectedFolders += folder.stationName
-                                    }
-                                }
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(top = 8.dp, bottom = 8.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(72.dp)
-                                .clip(RoundedCornerShape(
-                                    topStart = 12.dp,
-                                    bottomStart = 12.dp,
-                                    topEnd = 8.dp,
-                                    bottomEnd = 8.dp
-                                ))
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Folder,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.Center
+                                .clip(MaterialTheme.shapes.small)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = folder.stationName,
-                                style = MaterialTheme.typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = pluralStringResource(
-                                    R.plurals.recordings_count,
-                                    folder.recordings.size,
-                                    folder.recordings.size
-                                ),
-                                style = MaterialTheme.typography.bodyMedium,
+                                text = stringResource(R.string.recordings_currently_recording),
+                                style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        if (selectionMode) {
-                            Checkbox(
-                                checked = isSelected,
-                                onCheckedChange = null,
-                                modifier = Modifier.padding(end = 16.dp)
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.width(16.dp))
-                        }
                     }
                 }
+                
+                val sessionsList = activeSessions.values.toList()
+                items(
+                    items = sessionsList,
+                    key = { "session_" + it.station.stationUuid }
+                ) { session ->
+                    val duration by session.durationSeconds.collectAsState(initial = 0L)
+                    StationCard(
+                        station = session.station,
+                        onClick = { onStationClick(sessionsList.map { it.station }, sessionsList.indexOf(session), com.armanmaurya.internetradio.player.PlaybackSource.None) },
+                        isRecordingOverlay = true,
+                        recordingDuration = duration,
+                        onStopRecordingClick = { onStopRecording(session.station.stationUuid) },
+                        isFavorite = libraryStationUuids.contains(session.station.stationUuid),
+                        onToggleFavoriteClick = { viewModel.toggleLibrary(session.station) },
+                        onEditClick = if (libraryStationUuids.contains(session.station.stationUuid)) { { onEditStation(session.station.stationUuid) } } else null,
+                        onExportClick = { onExportStation?.invoke(session.station) },
+                        isCurrentlyPlaying = playingStationUuid == session.station.stationUuid,
+                        isPlaybackActive = isPlaybackActive,
+                        modifier = Modifier.animateItem()
+                    )
+                }
             }
-        } else {
-            // Show Files in Folder
-            Column(modifier = Modifier.fillMaxSize()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FilledTonalIconButton(
-                        onClick = { selectedStationName = null },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.home_cd_back_to_folders),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
+
+            if (folders.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = currentFolder.stationName,
-                            style = MaterialTheme.typography.titleMedium,
+                            text = stringResource(R.string.general_no_recordings),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(32.dp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-                
-                var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
-                
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 0.dp)
-                ) {
-                    items(
-                        items = currentFolder.recordings,
-                        key = { it.uri.toString() }
-                    ) { recording ->
-                        val isExpanded = expandedRecording?.uri == recording.uri
-                        val isSelected = recording.uri.toString() in selectedFiles
-                        RecordingFileItem(
-                            recording = recording,
-                            isExpanded = isExpanded,
-                            isSelected = isSelected,
-                            selectionMode = selectionMode,
-                            onClick = {
-                                if (selectionMode) {
-                                    if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
-                                    if (selectedFiles.isEmpty()) selectionMode = false
-                                } else {
-                                    expandedRecording = if (isExpanded) null else recording
+            } else {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    AnimatedContent(
+                        targetState = selectedStationName,
+                        transitionSpec = {
+                            if (targetState != null) {
+                                // Entering folder (slide left)
+                                (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { width -> -width } + fadeOut()
+                                )
+                            } else {
+                                // Exiting folder (slide right)
+                                (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { width -> width } + fadeOut()
+                                )
+                            }
+                        },
+                        label = "FolderTransition"
+                    ) { stationName ->
+                        val currentFolder = folders.find { it.stationName == stationName }
+                        
+                        if (stationName == null || currentFolder == null) {
+                            // Show Folders
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 7.dp)
+                            ) {
+                                folders.forEach { folder ->
+                                    val isSelected = folder.stationName in selectedFolders
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(
+                                                if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                                else if (isPureBlack) androidx.compose.ui.graphics.Color.Black 
+                                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                            )
+                                            .then(
+                                                if (isPureBlack) Modifier.border(
+                                                    1.dp,
+                                                    if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                                                    RoundedCornerShape(12.dp)
+                                                ) else Modifier
+                                            )
+                                            .combinedClickable(
+                                                onClick = { 
+                                                    if (selectionMode) {
+                                                        if (isSelected) selectedFolders -= folder.stationName else selectedFolders += folder.stationName
+                                                        if (selectedFolders.isEmpty()) selectionMode = false
+                                                    } else {
+                                                        selectedStationName = folder.stationName 
+                                                    }
+                                                },
+                                                onLongClick = {
+                                                    if (!selectionMode) {
+                                                        selectionMode = true
+                                                        selectedFolders += folder.stationName
+                                                    }
+                                                }
+                                            ),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(72.dp)
+                                                .clip(RoundedCornerShape(
+                                                    topStart = 12.dp,
+                                                    bottomStart = 12.dp,
+                                                    topEnd = 8.dp,
+                                                    bottomEnd = 8.dp
+                                                ))
+                                                .background(MaterialTheme.colorScheme.primaryContainer),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Folder,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                        }
+                                        
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        
+                                        Column(
+                                            modifier = Modifier.weight(1f),
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                text = folder.stationName,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            Text(
+                                                text = pluralStringResource(
+                                                    R.plurals.recordings_count,
+                                                    folder.recordings.size,
+                                                    folder.recordings.size
+                                                ),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                        if (selectionMode) {
+                                            Checkbox(
+                                                checked = isSelected,
+                                                onCheckedChange = null,
+                                                modifier = Modifier.padding(end = 16.dp)
+                                            )
+                                        } else {
+                                            Spacer(modifier = Modifier.width(16.dp))
+                                        }
+                                    }
                                 }
-                            },
-                            onLongClick = {
-                                if (!selectionMode) {
-                                    selectionMode = true
-                                    selectedFiles += recording.uri.toString()
+                            }
+                        } else {
+                            // Show Files in Folder
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.small)
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .clickable { selectedStationName = null }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = stringResource(R.string.home_cd_back_to_folders),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.small)
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .padding(horizontal = 8.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = currentFolder.stationName,
+                                            style = MaterialTheme.typography.labelLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
-                            },
-                            onDelete = {
-                                viewModel.deleteRecording(recording)
-                            },
-                            modifier = Modifier.animateItem()
-                        )
+                                
+                                var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
+                                
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 16.dp)
+                                ) {
+                                    currentFolder.recordings.forEach { recording ->
+                                        val isExpanded = expandedRecording?.uri == recording.uri
+                                        val isSelected = recording.uri.toString() in selectedFiles
+                                        RecordingFileItem(
+                                            recording = recording,
+                                            isExpanded = isExpanded,
+                                            isSelected = isSelected,
+                                            selectionMode = selectionMode,
+                                            onClick = {
+                                                if (selectionMode) {
+                                                    if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
+                                                    if (selectedFiles.isEmpty()) selectionMode = false
+                                                } else {
+                                                    expandedRecording = if (isExpanded) null else recording
+                                                }
+                                            },
+                                            onLongClick = {
+                                                if (!selectionMode) {
+                                                    selectionMode = true
+                                                    selectedFiles += recording.uri.toString()
+                                                }
+                                            },
+                                            onDelete = {
+                                                viewModel.deleteRecording(recording)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
-    }
-}
 }
 }

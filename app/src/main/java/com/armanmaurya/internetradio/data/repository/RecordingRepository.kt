@@ -35,8 +35,9 @@ class RecordingRepository @Inject constructor(
         val folders = mutableListOf<RecordingFolder>()
         val stationDirs = rootDir.listFiles { file -> file.isDirectory } ?: emptyArray()
         
+        val supportedExtensions = listOf(".mp3", ".aac", ".m4a", ".ogg", ".flac", ".wav", ".opus", ".ts")
         for (dir in stationDirs) {
-            val files = dir.listFiles { file -> file.isFile && (file.name.endsWith(".mp3") || file.name.endsWith(".aac") || file.name.endsWith(".m4a")) } ?: emptyArray()
+            val files = dir.listFiles { file -> file.isFile && supportedExtensions.any { ext -> file.name.endsWith(ext, ignoreCase = true) } } ?: emptyArray()
             if (files.isNotEmpty()) {
                 val recordings = files.map {
                     RecordingFile(
@@ -60,7 +61,8 @@ class RecordingRepository @Inject constructor(
         val stationDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "InternetRadio/$safeStationName")
         if (!stationDir.exists() || !stationDir.isDirectory) return@withContext emptyList()
         
-        val files = stationDir.listFiles { file -> file.isFile && (file.name.endsWith(".mp3") || file.name.endsWith(".aac") || file.name.endsWith(".m4a")) } ?: emptyArray()
+        val supportedExtensions = listOf(".mp3", ".aac", ".m4a", ".ogg", ".flac", ".wav", ".opus", ".ts")
+        val files = stationDir.listFiles { file -> file.isFile && supportedExtensions.any { ext -> file.name.endsWith(ext, ignoreCase = true) } } ?: emptyArray()
         files.map {
             RecordingFile(
                 fileName = it.name,

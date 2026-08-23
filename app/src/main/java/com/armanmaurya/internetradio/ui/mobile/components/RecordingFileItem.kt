@@ -1,6 +1,9 @@
 package com.armanmaurya.internetradio.ui.mobile.components
 
 import android.media.MediaPlayer
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import android.text.format.DateUtils
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -156,36 +159,41 @@ fun InlineMediaPlayer(uri: android.net.Uri) {
     val context = LocalContext.current
     var isPlaying by remember { mutableStateOf(false) }
     var progress by remember { mutableStateOf(0f) }
-    var duration by remember { mutableStateOf(1) }
-    var currentPosition by remember { mutableStateOf(0) }
+    var duration by remember { mutableStateOf(1L) }
+    var currentPosition by remember { mutableStateOf(0L) }
     
-    val mediaPlayer = remember(uri) {
-        MediaPlayer().apply {
-            setDataSource(context, uri)
-            setOnPreparedListener { 
-                duration = it.duration
-                it.start()
-                isPlaying = true
-            }
-            setOnCompletionListener {
-                isPlaying = false
-                currentPosition = 0
-                progress = 0f
-            }
-            prepareAsync()
+    val exoPlayer = remember(uri) {
+        ExoPlayer.Builder(context).build().apply {
+            setMediaItem(MediaItem.fromUri(uri))
+            prepare()
+            playWhenReady = true
+            addListener(object : Player.Listener {
+                override fun onIsPlayingChanged(playing: Boolean) {
+                    isPlaying = playing
+                }
+                override fun onPlaybackStateChanged(state: Int) {
+                    if (state == Player.STATE_READY) {
+                        duration = this@apply.duration.coerceAtLeast(1L)
+                    } else if (state == Player.STATE_ENDED) {
+                        isPlaying = false
+                        seekTo(0)
+                        progress = 0f
+                    }
+                }
+            })
         }
     }
 
-    DisposableEffect(mediaPlayer) {
+    DisposableEffect(exoPlayer) {
         onDispose {
-            mediaPlayer.release()
+            exoPlayer.release()
         }
     }
 
     LaunchedEffect(isPlaying) {
         while (isPlaying) {
-            currentPosition = mediaPlayer.currentPosition
-            progress = currentPosition.toFloat() / duration.coerceAtLeast(1)
+            currentPosition = exoPlayer.currentPosition
+            progress = currentPosition.toFloat() / duration.coerceAtLeast(1L)
             kotlinx.coroutines.delay(100)
         }
     }
@@ -198,10 +206,10 @@ fun InlineMediaPlayer(uri: android.net.Uri) {
     ) {
         IconButton(onClick = {
             if (isPlaying) {
-                mediaPlayer.pause()
+                exoPlayer.pause()
                 isPlaying = false
             } else {
-                mediaPlayer.start()
+                exoPlayer.play()
                 isPlaying = true
             }
         }) {
@@ -216,9 +224,9 @@ fun InlineMediaPlayer(uri: android.net.Uri) {
             value = progress,
             onValueChange = { 
                 progress = it
-                val newPosition = (it * duration).toInt()
+                val newPosition = (it * duration).toLong()
                 currentPosition = newPosition
-                mediaPlayer.seekTo(newPosition)
+                exoPlayer.seekTo(newPosition)
             },
             modifier = Modifier.weight(1f),
             colors = SliderDefaults.colors(

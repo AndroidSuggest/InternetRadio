@@ -108,6 +108,7 @@ fun PlayerSheetContent(
     isFavorite: Boolean,
     trackHistory: List<TrackHistoryEntity> = emptyList(),
     stationRecordings: List<com.armanmaurya.internetradio.data.repository.RecordingFile> = emptyList(),
+    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
     retryCountdown: Int? = null,
     lyricsState: com.armanmaurya.internetradio.data.model.LyricsState = com.armanmaurya.internetradio.data.model.LyricsState.Loading,
     progress: Float, // 0.0 (collapsed) to 1.0 (expanded)
@@ -141,9 +142,8 @@ fun PlayerSheetContent(
     val density = LocalDensity.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
-
     val clipboardManager = LocalClipboardManager.current
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val uriHandler = LocalUriHandler.current
 
     var showSleepTimerDialog by remember { mutableStateOf(false) }
@@ -1292,9 +1292,17 @@ fun PlayerSheetContent(
                             )
                         } else if (page == 1) {
                             RecordingsTab(
+                                activeSessions = activeSessions,
                                 stationRecordings = stationRecordings,
                                 listState = recordingsListState,
                                 nestedScrollConnection = nestedScrollConnection,
+                                onStopRecording = { uuid ->
+                                    val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
+                                        action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_STOP
+                                        putExtra("UUID", uuid)
+                                    }
+                                    context.startService(intent)
+                                },
                                 onDeleteRecording = onDeleteRecording
                             )
                         } else if (page == 2) {

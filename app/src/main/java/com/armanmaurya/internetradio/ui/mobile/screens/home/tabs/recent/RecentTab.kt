@@ -50,7 +50,9 @@ fun RecentContent(
     viewModel: RecentViewModel = hiltViewModel(),
     playingStationUuid: String? = null,
     isPlaybackActive: Boolean = false,
-    searchQuery: String = ""
+    searchQuery: String = "",
+    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    onToggleRecording: (RadioStation) -> Unit = {}
 ) {
     val recentStations by viewModel.recentStations.collectAsStateWithLifecycle()
     val libraryStationUuids by viewModel.libraryStationUuids.collectAsStateWithLifecycle()
@@ -145,6 +147,9 @@ fun RecentContent(
                             items = currentStations,
                             key = { _, it -> it.stationUuid }
                         ) { index, station ->
+                            val session = activeSessions[station.stationUuid]
+                            val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
+                            
                             if (isGridView) {
                                 StationCard(
                                     station = station,
@@ -158,7 +163,11 @@ fun RecentContent(
                                     onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
                                     onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
                                     onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
-                                    onExportClick = { onExportStation?.invoke(station) }
+                                    onExportClick = { onExportStation?.invoke(station) },
+                                    isRecording = session != null,
+                                    recordingDuration = duration,
+                                    onRecordClick = { onToggleRecording(station) },
+                                    onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null
                                 )
                             } else {
                                 StationListCard(
