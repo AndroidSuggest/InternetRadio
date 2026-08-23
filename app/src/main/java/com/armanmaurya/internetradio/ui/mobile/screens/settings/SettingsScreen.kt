@@ -183,6 +183,15 @@ fun SettingsScreen(
                 bottomShape = bottomShape,
                 singleShape = singleShape
             )
+            ScheduleSection(
+                uiState = uiState,
+                expandedItem = expandedItem,
+                onExpandedItemChange = { expandedItem = it },
+                onSetStartOfWeek = viewModel::setStartOfWeek,
+                onSetAlarmVolumeTransitionSeconds = viewModel::setAlarmVolumeTransitionSeconds,
+                topShape = topShape,
+                bottomShape = bottomShape
+            )
             BackupSection(
                 uiState = uiState,
                 expandedItem = expandedItem,
@@ -190,15 +199,6 @@ fun SettingsScreen(
                 onSetConflictStrategy = viewModel::setConflictStrategy,
                 onExport = { exportLauncher.launch("stations.json") },
                 onImport = { importLauncher.launch(arrayOf("application/json")) },
-                topShape = topShape,
-                bottomShape = bottomShape
-            )
-            ScheduleSection(
-                uiState = uiState,
-                expandedItem = expandedItem,
-                onExpandedItemChange = { expandedItem = it },
-                onSetStartOfWeek = viewModel::setStartOfWeek,
-                onSetAlarmVolumeTransitionSeconds = viewModel::setAlarmVolumeTransitionSeconds,
                 topShape = topShape,
                 bottomShape = bottomShape
             )
