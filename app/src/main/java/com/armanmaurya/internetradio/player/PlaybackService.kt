@@ -327,15 +327,31 @@ class PlaybackService : MediaLibraryService() {
         player = object : androidx.media3.common.ForwardingPlayer(exoPlayer) {
             override fun getAvailableCommands(): Player.Commands {
                 val commands = super.getAvailableCommands()
+                val builder = commands.buildUpon()
+                    .remove(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
+                    .remove(Player.COMMAND_SEEK_BACK)
+                    .remove(Player.COMMAND_SEEK_FORWARD)
+
                 if (mediaItemCount <= 1) {
-                    return commands.buildUpon()
+                    builder
                         .remove(Player.COMMAND_SEEK_TO_NEXT)
                         .remove(Player.COMMAND_SEEK_TO_PREVIOUS)
                         .remove(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
                         .remove(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
-                        .build()
                 }
-                return commands
+                return builder.build()
+            }
+            
+            override fun isCurrentMediaItemDynamic(): Boolean {
+                return true
+            }
+
+            override fun isCurrentMediaItemLive(): Boolean {
+                return true
+            }
+
+            override fun getDuration(): Long {
+                return androidx.media3.common.C.TIME_UNSET
             }
 
             override fun hasNextMediaItem(): Boolean {

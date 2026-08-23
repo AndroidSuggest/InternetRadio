@@ -577,6 +577,7 @@ fun RadioStation.toMediaItem(context: android.content.Context, parentId: String?
     return MediaItem.Builder()
         .setMediaId(id)
         .setUri(urlResolved)
+        .setLiveConfiguration(androidx.media3.common.MediaItem.LiveConfiguration.Builder().build())
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(name)
