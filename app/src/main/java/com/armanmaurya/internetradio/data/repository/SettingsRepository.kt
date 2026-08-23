@@ -62,6 +62,7 @@ class SettingsRepository @Inject constructor(
         val LIBRARY_SORT_OPTION = stringPreferencesKey("library_sort_option")
         val START_OF_WEEK = stringPreferencesKey("start_of_week")
         val SHOW_COVER_ART_IN_NOTIFICATION = booleanPreferencesKey("show_cover_art_in_notification")
+        val IS_ALARM_VOLUME_TRANSITION_ENABLED = booleanPreferencesKey("is_alarm_volume_transition_enabled")
         val ALARM_VOLUME_TRANSITION_SECONDS = androidx.datastore.preferences.core.intPreferencesKey("alarm_volume_transition_seconds")
         val SELECT_ALL_TEXT_ON_FOCUS = booleanPreferencesKey("select_all_text_on_focus")
         val PAUSE_ON_VOLUME_ZERO = booleanPreferencesKey("pause_on_volume_zero")
@@ -111,7 +112,8 @@ class SettingsRepository @Inject constructor(
             val startOfWeekName = preferences[PreferencesKeys.START_OF_WEEK]
             val startOfWeek = com.armanmaurya.internetradio.data.model.StartOfWeek.entries.find { it.name == startOfWeekName } ?: com.armanmaurya.internetradio.data.model.StartOfWeek.SUNDAY
             val showCoverArtInNotification = preferences[PreferencesKeys.SHOW_COVER_ART_IN_NOTIFICATION] ?: true
-            val alarmVolumeTransitionSeconds = preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] ?: 0
+            val isAlarmVolumeTransitionEnabled = preferences[PreferencesKeys.IS_ALARM_VOLUME_TRANSITION_ENABLED] ?: false
+            val alarmVolumeTransitionSeconds = preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] ?: 15
             val selectAllTextOnFocus = preferences[PreferencesKeys.SELECT_ALL_TEXT_ON_FOCUS] ?: true
 
             AppPreferences(
@@ -146,6 +148,7 @@ class SettingsRepository @Inject constructor(
                 librarySortOption = librarySortOption,
                 startOfWeek = startOfWeek,
                 showCoverArtInNotification = showCoverArtInNotification,
+                isAlarmVolumeTransitionEnabled = isAlarmVolumeTransitionEnabled,
                 alarmVolumeTransitionSeconds = alarmVolumeTransitionSeconds
             )
         }
@@ -337,6 +340,12 @@ class SettingsRepository @Inject constructor(
     suspend fun setAlarmVolumeTransitionSeconds(seconds: Int) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] = seconds
+        }
+    }
+
+    suspend fun setAlarmVolumeTransitionEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_ALARM_VOLUME_TRANSITION_ENABLED] = enabled
         }
     }
 }

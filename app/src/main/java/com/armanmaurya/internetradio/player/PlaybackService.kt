@@ -263,7 +263,7 @@ class PlaybackService : MediaLibraryService() {
                 stopOnAudioBecomingNoisy = prefs.stopOnAudioBecomingNoisy
                 pauseOnVolumeZero = prefs.pauseOnVolumeZero
                 showCoverArtInNotification = prefs.showCoverArtInNotification
-                alarmFadeInSeconds = prefs.alarmVolumeTransitionSeconds
+                alarmFadeInSeconds = if (prefs.isAlarmVolumeTransitionEnabled) prefs.alarmVolumeTransitionSeconds else 0
             }
         }
 

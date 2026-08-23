@@ -93,8 +93,8 @@ fun SettingsScreen(
     var expandedItem by remember { mutableStateOf<String?>(null) }
     var hasInitializedGradualVolume by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.alarmVolumeTransitionSeconds) {
-        if (!hasInitializedGradualVolume && uiState.alarmVolumeTransitionSeconds > 0) {
+    LaunchedEffect(uiState.isAlarmVolumeTransitionEnabled) {
+        if (!hasInitializedGradualVolume && uiState.isAlarmVolumeTransitionEnabled) {
             expandedItem = "GradualVolume"
             hasInitializedGradualVolume = true
         }
@@ -188,6 +188,7 @@ fun SettingsScreen(
                 expandedItem = expandedItem,
                 onExpandedItemChange = { expandedItem = it },
                 onSetStartOfWeek = viewModel::setStartOfWeek,
+                onSetAlarmVolumeTransitionEnabled = viewModel::setAlarmVolumeTransitionEnabled,
                 onSetAlarmVolumeTransitionSeconds = viewModel::setAlarmVolumeTransitionSeconds,
                 topShape = topShape,
                 bottomShape = bottomShape
@@ -677,6 +678,7 @@ private fun ScheduleSection(
     expandedItem: String?,
     onExpandedItemChange: (String?) -> Unit,
     onSetStartOfWeek: (StartOfWeek) -> Unit,
+    onSetAlarmVolumeTransitionEnabled: (Boolean) -> Unit,
     onSetAlarmVolumeTransitionSeconds: (Int) -> Unit,
     topShape: RoundedCornerShape,
     bottomShape: RoundedCornerShape
@@ -701,13 +703,11 @@ private fun ScheduleSection(
 
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
 
-        val isEnabled = uiState.alarmVolumeTransitionSeconds > 0
-        var lastSliderValue by remember { mutableStateOf(if (uiState.alarmVolumeTransitionSeconds > 0) uiState.alarmVolumeTransitionSeconds.toFloat() else 15f) }
+        val isEnabled = uiState.isAlarmVolumeTransitionEnabled
+        var lastSliderValue by remember { mutableStateOf(uiState.alarmVolumeTransitionSeconds.toFloat()) }
         
         LaunchedEffect(uiState.alarmVolumeTransitionSeconds) {
-            if (uiState.alarmVolumeTransitionSeconds > 0) {
-                lastSliderValue = uiState.alarmVolumeTransitionSeconds.toFloat()
-            }
+            lastSliderValue = uiState.alarmVolumeTransitionSeconds.toFloat()
         }
 
         ExpandableItem(
@@ -728,20 +728,19 @@ private fun ScheduleSection(
             hasSwitch = true,
             switchChecked = isEnabled,
             onSwitchChange = { checked ->
+                onSetAlarmVolumeTransitionEnabled(checked)
                 if (checked) {
-                    onSetAlarmVolumeTransitionSeconds(15)
                     onExpandedItemChange("GradualVolume")
                 } else {
-                    onSetAlarmVolumeTransitionSeconds(0)
                     onExpandedItemChange(null)
                 }
             },
             onToggle = { 
-                if (!isEnabled) {
-                    onSetAlarmVolumeTransitionSeconds(15)
+                val newState = !isEnabled
+                onSetAlarmVolumeTransitionEnabled(newState)
+                if (newState) {
                     onExpandedItemChange("GradualVolume")
                 } else {
-                    onSetAlarmVolumeTransitionSeconds(0)
                     onExpandedItemChange(null)
                 }
             },

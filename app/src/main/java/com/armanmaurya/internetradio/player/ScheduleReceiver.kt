@@ -86,7 +86,7 @@ class ScheduleReceiver : BroadcastReceiver() {
             putExtra("RECORDING_DURATION", schedule.durationMinutes)
             putExtra("KEEP_PLAYBACK", schedule.keepPlayback)
             putExtra("VOLUME_LEVEL", schedule.volumeLevel)
-            putExtra("ALARM_TRANSITION_SECONDS", prefs.alarmVolumeTransitionSeconds)
+            putExtra("ALARM_TRANSITION_SECONDS", if (prefs.isAlarmVolumeTransitionEnabled) prefs.alarmVolumeTransitionSeconds else 0)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -156,6 +156,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setAlarmVolumeTransitionEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setAlarmVolumeTransitionEnabled(enabled)
+        }
+    }
+
     fun exportLibrary(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
