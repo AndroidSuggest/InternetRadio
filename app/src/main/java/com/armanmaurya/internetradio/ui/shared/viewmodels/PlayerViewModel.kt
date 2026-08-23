@@ -64,10 +64,20 @@ class PlayerViewModel @Inject constructor(
             initialValue = com.armanmaurya.internetradio.data.model.LyricsState.Loading
         )
 
-    val isRecording = recordingManager.isRecording
-    val recordingDuration = recordingManager.recordingDuration
+    val activeSessions = recordingManager.sessionsFlow
+
+    val isCurrentStationRecording = combine(playbackState.map { it.currentStation }, activeSessions) { station, sessions ->
+        station != null && sessions.containsKey(station.stationUuid)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val currentRecordingDuration = combine(playbackState.map { it.currentStation }, activeSessions) { station, sessions ->
+        if (station != null) sessions[station.stationUuid] else null
+    }.flatMapLatest { session ->
+        session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
     val amplitude = recordingManager.amplitude
-    /** Fires once per saved recording — observed at Activity level so toast shows even when sheet is dismissed. */
     val recordingSavedEvent = recordingManager.recordingSavedEvent
 
     val discoveredCastDevices = castController.discoveredDevices
@@ -81,17 +91,6 @@ class PlayerViewModel @Inject constructor(
     init {
         playbackState
             .onEach { state ->
-                // Ignore the initial null state during UI load so we don't kill background recordings
-                if (state.currentStation == null && isRecording.value) {
-                    return@onEach
-                }
-                
-                // Auto-stop and save recording if station changes
-                val isDifferentStation = recordingManager.currentStation?.stationUuid != state.currentStation?.stationUuid
-                if (isRecording.value && isDifferentStation) {
-                    recordingManager.stopRecording()
-                }
-
                 if (state.isError) {
                     handlePlaybackFailure()
                 }
@@ -215,12 +214,23 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun toggleRecording() {
-        if (isRecording.value) {
-            recordingManager.stopRecording()
+    fun toggleRecording(station: RadioStation? = playbackState.value.currentStation) {
+        val st = station ?: return
+        if (activeSessions.value.containsKey(st.stationUuid)) {
+            val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
+                action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_STOP
+                putExtra("UUID", st.stationUuid)
+            }
+            context.startService(intent)
         } else {
-            playbackState.value.currentStation?.let {
-                recordingManager.startRecording(it)
+            val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
+                action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
+                putExtra("STATION_JSON", com.google.gson.Gson().toJson(st))
+            }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
             }
         }
     }
@@ -281,9 +291,6 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun stop() {
-        // Stop and save any active recording before stopping playback,
-        // so the file is properly finalized when the miniplayer is closed.
-        recordingManager.stopRecording()
         if (connectedCastDevice.value != null) {
             castController.stop()
         }

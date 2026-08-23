@@ -1,10 +1,14 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -70,16 +74,23 @@ fun SchedulesTabContent(
             ) {
                 if (playbackSchedules.isNotEmpty()) {
                     item {
-                        androidx.compose.material3.Card(
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                            modifier = Modifier.padding(vertical = 4.dp)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp, bottom = 8.dp)
                         ) {
-                            Text(
-                                text = stringResource(R.string.schedule_playback),
-                                style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(androidx.compose.material3.MaterialTheme.shapes.small)
+                                    .background(androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant)
+                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.schedule_playback),
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                     items(playbackSchedules, key = { it.id }) { schedule ->
@@ -100,16 +111,23 @@ fun SchedulesTabContent(
 
                 if (recordSchedules.isNotEmpty()) {
                     item {
-                        androidx.compose.material3.Card(
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                            modifier = Modifier.padding(vertical = 4.dp)
+                        androidx.compose.foundation.layout.Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp, bottom = 8.dp)
                         ) {
-                            Text(
-                                text = stringResource(R.string.schedule_record),
-                                style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                            )
+                            androidx.compose.foundation.layout.Box(
+                                modifier = Modifier
+                                    .clip(androidx.compose.material3.MaterialTheme.shapes.small)
+                                    .background(androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant)
+                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.schedule_record),
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                     items(recordSchedules, key = { it.id }) { schedule ->

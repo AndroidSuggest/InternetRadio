@@ -59,8 +59,7 @@ import com.armanmaurya.internetradio.ui.mobile.screens.home.components.ToggleChi
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
 import com.armanmaurya.internetradio.data.model.LibrarySortOption
-import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyGridState
+import sh.calvin.reorderable.*
 
 
 import androidx.compose.material.icons.filled.DragIndicator
@@ -76,7 +75,9 @@ fun LibraryContent(
     viewModel: LibraryViewModel = hiltViewModel(),
     playingStationUuid: String? = null,
     isPlaybackActive: Boolean = false,
-    searchQuery: String = ""
+    searchQuery: String = "",
+    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    onToggleRecording: (RadioStation) -> Unit = {}
 ) {
     LaunchedEffect(searchQuery) {
         viewModel.onSearchQueryChange(searchQuery)
@@ -301,6 +302,9 @@ fun LibraryContent(
                 ReorderableItem(reorderableState, key = station.stationUuid) { isDragging ->
                     val dragModifier = if (sortOption == LibrarySortOption.CUSTOM) Modifier.longPressDraggableHandle() else Modifier
                     
+                    val session = activeSessions[station.stationUuid]
+                    val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
+                    
                     Box(modifier = Modifier.animateItem()) {
                         if (isGridView) {
                             StationCard(
@@ -312,7 +316,11 @@ fun LibraryContent(
                                 modifier = Modifier.fillMaxWidth().then(dragModifier),
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                                 isPlaybackActive = isPlaybackActive,
-                                isFavorite = true
+                                isFavorite = true,
+                                isRecording = session != null,
+                                recordingDuration = duration,
+                                onRecordClick = { onToggleRecording(station) },
+                                onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null
                             )
                         } else {
                             StationListCard(

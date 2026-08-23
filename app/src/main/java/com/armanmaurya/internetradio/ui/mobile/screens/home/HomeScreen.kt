@@ -122,6 +122,7 @@ fun HomeScreen(
     val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
     val playingStationUuid = playbackState.currentStation?.stationUuid
     val isPlaybackActive = playbackState.isPlaying
+    val activeSessions by playerViewModel.activeSessions.collectAsStateWithLifecycle()
 
     if (!uiState.isPreferencesLoaded) {
         return // Wait for preferences to load before rendering
@@ -353,7 +354,9 @@ fun HomeScreen(
                             contentPadding = contentPadding,
                             viewModel = browseViewModel,
                             playingStationUuid = playingStationUuid,
-                            isPlaybackActive = isPlaybackActive
+                            isPlaybackActive = isPlaybackActive,
+                            activeSessions = activeSessions,
+                            onToggleRecording = { playerViewModel.toggleRecording(it) }
                         )
                         1 -> RecentContent(
                             onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
@@ -362,7 +365,9 @@ fun HomeScreen(
                             contentPadding = contentPadding,
                             playingStationUuid = playingStationUuid,
                             isPlaybackActive = isPlaybackActive,
-                            searchQuery = uiState.searchQuery
+                            searchQuery = uiState.searchQuery,
+                            activeSessions = activeSessions,
+                            onToggleRecording = { playerViewModel.toggleRecording(it) }
                         )
                         2 -> LibraryContent(
                             onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
@@ -371,9 +376,24 @@ fun HomeScreen(
                             contentPadding = contentPadding,
                             playingStationUuid = playingStationUuid,
                             isPlaybackActive = isPlaybackActive,
-                            searchQuery = uiState.searchQuery
+                            searchQuery = uiState.searchQuery,
+                            activeSessions = activeSessions,
+                            onToggleRecording = { playerViewModel.toggleRecording(it) }
                         )
                         3 -> com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.RecordingsContent(
+                            activeSessions = activeSessions,
+                            onStopRecording = { uuid ->
+                                val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
+                                    action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_STOP
+                                    putExtra("UUID", uuid)
+                                }
+                                context.startService(intent)
+                            },
+                            onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                            onEditStation = onEditStation,
+                            onExportStation = onExportStation,
+                            playingStationUuid = playingStationUuid,
+                            isPlaybackActive = isPlaybackActive,
                             contentPadding = contentPadding
                         )
                         4 -> SchedulesTabContent(

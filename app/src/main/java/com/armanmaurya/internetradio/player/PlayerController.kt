@@ -125,9 +125,6 @@ class PlayerController @Inject constructor(
                 return
             }
             
-            // Station has changed, stop previous recording
-            recordingManager.stopRecording()
-
             val tagStation = currentPlaylist.find { it.stationUuid == originalId } 
                 ?: mediaItem.localConfiguration?.tag as? RadioStation
                 

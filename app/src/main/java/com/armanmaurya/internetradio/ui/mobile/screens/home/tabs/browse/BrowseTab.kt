@@ -89,7 +89,9 @@ fun BrowseContent(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: BrowseViewModel = hiltViewModel(),
     playingStationUuid: String? = null,
-    isPlaybackActive: Boolean = false
+    isPlaybackActive: Boolean = false,
+    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    onToggleRecording: (RadioStation) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val libraryStationUuids by viewModel.libraryStationUuids.collectAsStateWithLifecycle()
@@ -160,6 +162,10 @@ fun BrowseContent(
                         order = uiState.order,
                         reverse = uiState.reverse
                     )
+                    
+                    val session = activeSessions[station.stationUuid]
+                    val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
+                    
                     if (uiState.isGridView) {
                         StationCard(
                             station = station,
@@ -172,7 +178,11 @@ fun BrowseContent(
                             onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
                             isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                             isPlaybackActive = isPlaybackActive,
-                            isFavorite = libraryStationUuids.contains(station.stationUuid)
+                            isFavorite = libraryStationUuids.contains(station.stationUuid),
+                            isRecording = session != null,
+                            recordingDuration = duration,
+                            onRecordClick = { onToggleRecording(station) },
+                            onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null
                         )
                     } else {
                         StationListCard(

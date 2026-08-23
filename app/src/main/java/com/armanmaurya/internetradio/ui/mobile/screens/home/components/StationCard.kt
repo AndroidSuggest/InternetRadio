@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -23,6 +24,8 @@ import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -64,6 +67,11 @@ fun StationCard(
     isCurrentlyPlaying: Boolean = false,
     isPlaybackActive: Boolean = false,
     isFavorite: Boolean = false,
+    isRecordingOverlay: Boolean = false,
+    recordingDuration: Long = 0L,
+    onStopRecordingClick: (() -> Unit)? = null,
+    onRecordClick: (() -> Unit)? = null,
+    isRecording: Boolean = false,
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -169,32 +177,88 @@ fun StationCard(
                     }
             )
 
-            if (isCurrentlyPlaying) {
+            // Top-Left corner gradient for badge/bookmark visibility
+            if (isFavorite || isRecordingOverlay || isRecording) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawWithCache {
+                            val radialGradient = Brush.radialGradient(
+                                colors = listOf(Color.Black.copy(alpha = 0.5f), Color.Transparent),
+                                center = Offset(0f, 0f),
+                                radius = size.width * 0.45f
+                            )
+                            onDrawBehind {
+                                drawRect(radialGradient)
+                            }
+                        }
+                )
+            }
+
+            // Dark overlay for playing/recording states
+            if (isCurrentlyPlaying || isRecordingOverlay || isRecording) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.4f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    PlayingVisualizer(isPlaybackActive = isPlaybackActive)
+                    if (isCurrentlyPlaying) {
+                        PlayingVisualizer(isPlaybackActive = isPlaybackActive)
+                    }
+                }
+            }
+            
+            // Top-left indicators
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(6.dp),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isFavorite) {
+                    val isLight = MaterialTheme.colorScheme.surface.luminance() > 0.5f
+                    val overlayColor = if (isLight) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
+                    val overlayVisible = isCurrentlyPlaying || isRecordingOverlay || isRecording
+                    Icon(
+                        imageVector = Icons.Default.Bookmark,
+                        contentDescription = stringResource(R.string.home_cd_favorite),
+                        tint = if (overlayVisible) overlayColor else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(2.dp)
+                    )
+                }
+                
+                if (isRecordingOverlay || isRecording) {
+                    // Mic + timer pill
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier
+                            .background(
+                                color = Color.Black.copy(alpha = 0.55f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 5.dp, vertical = 3.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(3.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Mic,
+                            contentDescription = null,
+                            tint = Color.Red,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        if (isRecordingOverlay || isRecording) {
+                            Text(
+                                text = String.format(java.util.Locale.US, "%02d:%02d", recordingDuration / 60, recordingDuration % 60),
+                                color = Color.White,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                            )
+                        }
+                    }
                 }
             }
 
-            if (isFavorite) {
-                val isLight = MaterialTheme.colorScheme.surface.luminance() > 0.5f
-                val playingColor = if (isLight) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
-
-                Icon(
-                    imageVector = Icons.Default.Bookmark,
-                    contentDescription = stringResource(R.string.home_cd_favorite),
-                    tint = if (isCurrentlyPlaying) playingColor else MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
-                )
-            }
-
-            if (onToggleFavoriteClick != null || onEditClick != null || onRemoveFromRecentClick != null || onExportClick != null) {
+            if (onToggleFavoriteClick != null || onEditClick != null || onRemoveFromRecentClick != null || onExportClick != null || onRecordClick != null || onStopRecordingClick != null) {
                 Box(modifier = Modifier.align(Alignment.TopEnd)) {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(
@@ -207,6 +271,33 @@ fun StationCard(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        if (onStopRecordingClick != null) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_stop_recording)) },
+                                onClick = {
+                                    showMenu = false
+                                    onStopRecordingClick()
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Stop, contentDescription = null, tint = Color.Red)
+                                }
+                            )
+                        } else if (onRecordClick != null) {
+                            DropdownMenuItem(
+                                text = { Text(if (isRecording) "Stop Recording" else "Record Station") },
+                                onClick = {
+                                    showMenu = false
+                                    onRecordClick()
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
+                                        contentDescription = null,
+                                        tint = if (isRecording) Color.Red else MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            )
+                        }
                         if (onExportClick != null) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.home_export_station)) },

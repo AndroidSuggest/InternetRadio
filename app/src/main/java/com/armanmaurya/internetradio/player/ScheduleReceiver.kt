@@ -44,7 +44,14 @@ class ScheduleReceiver : BroadcastReceiver() {
         val action = intent.action
 
         if (action == ACTION_STOP_RECORDING) {
-            recordingManager.stopRecording()
+            val uuid = intent.getStringExtra("UUID")
+            if (uuid != null) {
+                val stopIntent = Intent(context, BackgroundRecordingService::class.java).apply {
+                    this.action = BackgroundRecordingService.ACTION_STOP
+                    putExtra("UUID", uuid)
+                }
+                context.startService(stopIntent)
+            }
             val keepPlayback = intent.getBooleanExtra("KEEP_PLAYBACK", false)
             if (!keepPlayback) {
                 playerController.stop()

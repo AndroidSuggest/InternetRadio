@@ -282,8 +282,9 @@ class MainActivity : AppCompatActivity() {
                             val isFavorite by playerViewModel.isFavorite.collectAsStateWithLifecycle()
                             val trackHistory by playerViewModel.trackHistory.collectAsStateWithLifecycle()
                             val stationRecordings by playerViewModel.stationRecordings.collectAsStateWithLifecycle()
-                            val isRecording by playerViewModel.isRecording.collectAsStateWithLifecycle()
-                            val recordingDuration by playerViewModel.recordingDuration.collectAsStateWithLifecycle()
+                            val activeSessions by playerViewModel.activeSessions.collectAsStateWithLifecycle()
+                            val isRecording by playerViewModel.isCurrentStationRecording.collectAsStateWithLifecycle()
+                            val recordingDuration by playerViewModel.currentRecordingDuration.collectAsStateWithLifecycle()
                             val amplitude by playerViewModel.amplitude.collectAsStateWithLifecycle()
                             val retryCountdown by playerViewModel.retryCountdown.collectAsStateWithLifecycle()
                             val discoveredCastDevices by playerViewModel.discoveredCastDevices.collectAsStateWithLifecycle()
@@ -344,6 +345,7 @@ class MainActivity : AppCompatActivity() {
                                     isFavorite = isFavorite,
                                     trackHistory = trackHistory,
                                     stationRecordings = stationRecordings,
+                                    activeSessions = activeSessions,
                                     retryCountdown = retryCountdown,
                                     lyricsState = lyricsState,
                                     progress = progress,
