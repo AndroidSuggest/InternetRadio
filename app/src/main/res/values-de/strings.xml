@@ -221,7 +221,7 @@
     <string name="edit_station_overwrite_title">Überschreibe Metadaten?</string>
     <string name="edit_station_overwrite_message">Sollen die aktuellen Senderdetails mit den abgerufenen Metadaten ersetzt werden?</string>
     <string name="edit_station_error_empty_url">Stream-URL kann nicht leer sein</string>
-    <string name="edit_station_fields_reset_message">Originaldaten zurücksetzten</string>
+    <string name="edit_station_fields_reset_message">Originaldaten wiederhergestellt</string>
     <string name="edit_station_saved_message">Gespeichert</string>
     <string name="edit_station_cd_reset_to_original">Auf Originalzustand zurückgesetzt</string>
     <string name="edit_station_similar_stations">Ähnliche Sender</string>
