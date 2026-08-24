@@ -333,4 +333,5 @@
     <string name="lyrics_provider_lrclib">LRCLIB</string>
     <string name="recordings_currently_recording">Trwa nagrywanie</string>
     <string name="lyrics_powered_by">Dostarczane przez</string>
+    <string name="action_record_station">Nagraj stację</string>
 </resources>
