@@ -322,4 +322,9 @@
     <string name="edit_station_overwrite_title">Suprascrieți metadatele?</string>
     <string name="edit_station_overwrite_message">Doriți să înlocuiți detaliile stației curente cu metadatele preluate din server?</string>
     <string name="edit_station_error_empty_url">URL-ul fluxului nu poate fi gol</string>
+    <string name="recordings_currently_recording">În prezent se înregistrează</string>
+    <string name="recordings_saved">Înregistrări salvate</string>
+    <string name="action_stop_recording">Oprește înregistrarea</string>
+    <string name="action_record_station">Înregistrează stația</string>
+    <string name="lyrics_powered_by">Cu sprijinul</string>
 </resources>
