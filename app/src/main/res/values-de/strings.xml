@@ -382,9 +382,9 @@
     </plurals>
     <string name="settings_gradual_volume_enabled">%1$s Fade-in</string>
     <string name="settings_gradual_volume_disabled">Aus</string>
-    <string name="recordings_currently_recording">Aktuelle Aufnahmen</string>
+    <string name="recordings_currently_recording">Aktive Aufnahmen</string>
     <string name="recordings_saved">Gespeicherte Aufnahmen</string>
     <string name="action_stop_recording">Aufnahme beenden</string>
-    <string name="lyrics_powered_by">Powered by </string>
-
+    <string name="action_record_station">Sender aufnehmen</string>
+    <string name="lyrics_powered_by">Powered by</string>
 </resources>
