@@ -18,25 +18,33 @@ class LyricsRepository @Inject constructor(
         try {
             suspend fun searchAndFindBestMatch(query: String): com.armanmaurya.internetradio.data.remote.dto.LrcLibResponse? {
                 val responses = lrcLibApi.searchLyrics(query)
-                val valid = responses.filter { !it.instrumental && (!it.syncedLyrics.isNullOrBlank() || !it.plainLyrics.isNullOrBlank()) }
-                // Prefer synced lyrics over plain lyrics
-                return valid.firstOrNull { !it.syncedLyrics.isNullOrBlank() } ?: valid.firstOrNull()
+                if (responses.isEmpty()) return null
+                
+                // The first result is deemed the most relevant by LRCLIB's search engine.
+                val topMatch = responses.first()
+                
+                // Find all responses that represent the exact same track (to prefer synced versions if available)
+                val sameTrackGroup = responses.filter { 
+                    it.trackName.equals(topMatch.trackName, ignoreCase = true) && 
+                    it.artistName.equals(topMatch.artistName, ignoreCase = true)
+                }
+                
+                // Prefer synced over plain within the same track group
+                val bestVersion = sameTrackGroup.firstOrNull { !it.syncedLyrics.isNullOrBlank() } 
+                    ?: sameTrackGroup.firstOrNull { !it.plainLyrics.isNullOrBlank() }
+                    ?: topMatch // Fallback to the top match itself (even if it's instrumental)
+                    
+                // If the most relevant version is instrumental or has no text, we consider lyrics unavailable
+                if (bestVersion.instrumental || (bestVersion.syncedLyrics.isNullOrBlank() && bestVersion.plainLyrics.isNullOrBlank())) {
+                    return null
+                }
+                
+                return bestVersion
             }
 
             // 1. Cleaned full query without hyphens or extra punctuation
             val cleanedFull = TrackSanitizer.sanitizeTrackInfo(trackName)
-            var bestMatch = if (cleanedFull.isNotBlank()) searchAndFindBestMatch(cleanedFull) else null
-            
-            // 2. Just the song title (cleaned)
-            if (bestMatch == null && trackName.contains(" - ")) {
-                val parts = trackName.split(" - ", limit = 2)
-                if (parts.size == 2) {
-                    val cleanedTitle = TrackSanitizer.sanitizeTrackInfo(parts[0]) // Title is now first
-                    if (cleanedTitle.isNotBlank()) {
-                        bestMatch = searchAndFindBestMatch(cleanedTitle)
-                    }
-                }
-            }
+            val bestMatch = if (cleanedFull.isNotBlank()) searchAndFindBestMatch(cleanedFull) else null
 
             if (bestMatch != null) {
                 val parsedSyncedLyrics = bestMatch.syncedLyrics?.let { parseLrc(it) }
