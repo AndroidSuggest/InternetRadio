@@ -217,13 +217,14 @@ fun RecordingsContent(
         val libraryStationUuids by viewModel.libraryStationUuids.collectAsStateWithLifecycle()
         var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
         
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
             if (activeSessions.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(
@@ -269,22 +270,7 @@ fun RecordingsContent(
                 }
             }
 
-            if (folders.isEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.general_no_recordings),
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            modifier = Modifier.padding(32.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            } else {
+            if (folders.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     AnimatedContent(
                         targetState = selectedStationName,
@@ -479,5 +465,20 @@ fun RecordingsContent(
                 }
             }
         }
-}
-}
+        
+        if (folders.isEmpty() && activeSessions.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.general_no_recordings),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.padding(32.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}}
