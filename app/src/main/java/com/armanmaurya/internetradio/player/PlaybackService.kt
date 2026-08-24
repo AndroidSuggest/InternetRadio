@@ -520,24 +520,36 @@ class PlaybackService : MediaLibraryService() {
                 // We must change the system volume ONLY after the player requests audio focus 
                 // and the foreground service is fully registered, otherwise Android ignores it 
                 // for fully closed background apps.
+                val isSameStation = player?.currentMediaItem?.mediaId == stationUuid
+                
                 volumeFadeJob?.cancel()
+
+                val applySystemVolume = {
+                    val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+                    val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+                    val targetVolume = (volumeLevel * maxVolume).toInt()
+                    
+                    if (targetVolume == 0) {
+                        ignoreNextVolumeZero = true
+                    }
+                    audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVolume, 0)
+                }
+
                 if (volumeLevel >= 0f) {
-                    val listener = object : androidx.media3.common.Player.Listener {
-                        override fun onPlaybackStateChanged(playbackState: Int) {
-                            if (playbackState == androidx.media3.common.Player.STATE_READY) {
-                                val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-                                val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
-                                val targetVolume = (volumeLevel * maxVolume).toInt()
-                                
-                                if (targetVolume == 0) {
-                                    ignoreNextVolumeZero = true
+                    if (isSameStation && player?.playbackState == androidx.media3.common.Player.STATE_READY) {
+                        // Apply immediately since we won't get a state change callback
+                        applySystemVolume()
+                    } else {
+                        val listener = object : androidx.media3.common.Player.Listener {
+                            override fun onPlaybackStateChanged(playbackState: Int) {
+                                if (playbackState == androidx.media3.common.Player.STATE_READY) {
+                                    applySystemVolume()
+                                    player?.removeListener(this)
                                 }
-                                audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVolume, 0)
-                                player?.removeListener(this)
                             }
                         }
+                        player?.addListener(listener)
                     }
-                    player?.addListener(listener)
                     
                     val transitionSeconds = intent.getIntExtra("ALARM_TRANSITION_SECONDS", alarmFadeInSeconds)
                     if (transitionSeconds > 0) {
@@ -557,9 +569,15 @@ class PlaybackService : MediaLibraryService() {
                 } else {
                     player?.volume = 1f
                 }
+                
                 player?.playWhenReady = true
-                player?.setMediaItem(mediaItem)
-                player?.prepare()
+                if (!isSameStation) {
+                    player?.setMediaItem(mediaItem)
+                    player?.prepare()
+                } else if (player?.playbackState == androidx.media3.common.Player.STATE_IDLE || player?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
+                    // Station is loaded but playback stopped/errored out, so we need to prepare again
+                    player?.prepare()
+                }
 
                 // Schedule stop alarm synchronously (AlarmManager is not async)
                 if (durationMinutes > 0) {
