@@ -37,7 +37,9 @@ class RecordingRepository @Inject constructor(
         
         val supportedExtensions = listOf(".mp3", ".aac", ".m4a", ".ogg", ".flac", ".wav", ".opus", ".ts")
         for (dir in stationDirs) {
-            val files = dir.listFiles { file -> file.isFile && supportedExtensions.any { ext -> file.name.endsWith(ext, ignoreCase = true) } } ?: emptyArray()
+            val files = dir.listFiles { file -> 
+                file.isFile && !file.name.startsWith(".") && supportedExtensions.any { ext -> file.name.endsWith(ext, ignoreCase = true) } 
+            } ?: emptyArray()
             if (files.isNotEmpty()) {
                 val recordings = files.map {
                     RecordingFile(
@@ -62,7 +64,9 @@ class RecordingRepository @Inject constructor(
         if (!stationDir.exists() || !stationDir.isDirectory) return@withContext emptyList()
         
         val supportedExtensions = listOf(".mp3", ".aac", ".m4a", ".ogg", ".flac", ".wav", ".opus", ".ts")
-        val files = stationDir.listFiles { file -> file.isFile && supportedExtensions.any { ext -> file.name.endsWith(ext, ignoreCase = true) } } ?: emptyArray()
+        val files = stationDir.listFiles { file -> 
+            file.isFile && !file.name.startsWith(".") && supportedExtensions.any { ext -> file.name.endsWith(ext, ignoreCase = true) } 
+        } ?: emptyArray()
         files.map {
             RecordingFile(
                 fileName = it.name,

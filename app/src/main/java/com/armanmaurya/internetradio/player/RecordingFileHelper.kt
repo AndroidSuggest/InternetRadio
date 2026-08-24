@@ -15,46 +15,61 @@ import java.util.Date
 import java.util.Locale
 
 object RecordingFileHelper {
-    class OutputSink(val outputStream: OutputStream, private val pfd: ParcelFileDescriptor?) : java.io.Closeable {
+    class OutputSink(
+        val outputStream: OutputStream, 
+        private val pfd: ParcelFileDescriptor?,
+        private val finalizeAction: (() -> Unit)? = null
+    ) : java.io.Closeable {
         override fun close() {
             try { outputStream.close() } catch (e: Exception) {}
             try { pfd?.close() } catch (e: Exception) {}
+            try { finalizeAction?.invoke() } catch (e: Exception) {}
         }
     }
 
     fun openOutputSink(station: RadioStation, extension: String, context: Context): OutputSink {
-        val pfd = openOutputFileDescriptor(station, extension, context)
-        return OutputSink(FileOutputStream(pfd.fileDescriptor), pfd)
-    }
-
-    fun openOutputFileDescriptor(
-        station: RadioStation,
-        extension: String,
-        context: Context
-    ): ParcelFileDescriptor {
         val safeStationName = station.name.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
         val timestamp = SimpleDateFormat("d MMMM yyyy hh-mm a", Locale.getDefault()).format(Date())
         val fileName = "$safeStationName $timestamp.$extension"
         val folderName = "InternetRadio/$safeStationName"
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val partFileName = "$fileName.part"
             val values = ContentValues().apply {
-                put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
+                put(MediaStore.Audio.Media.DISPLAY_NAME, partFileName)
+                put(MediaStore.Audio.Media.IS_PENDING, 1)
                 put(MediaStore.Audio.Media.MIME_TYPE, mimeTypeFor(extension))
                 put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MUSIC}/$folderName")
             }
             val uri = context.contentResolver.insert(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values
             ) ?: throw IllegalStateException("Failed to create MediaStore URI")
-            context.contentResolver.openFileDescriptor(uri, "rw")
+            
+            val pfd = context.contentResolver.openFileDescriptor(uri, "rw")
                 ?: throw IllegalStateException("Failed to open file descriptor")
+                
+            val finalizeAction: () -> Unit = {
+                val updateValues = ContentValues().apply {
+                    put(MediaStore.Audio.Media.DISPLAY_NAME, fileName)
+                    put(MediaStore.Audio.Media.IS_PENDING, 0)
+                }
+                context.contentResolver.update(uri, updateValues, null, null)
+            }
+            OutputSink(FileOutputStream(pfd.fileDescriptor), pfd, finalizeAction)
         } else {
             val dir = File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
                 folderName
             ).apply { mkdirs() }
-            val file = File(dir, fileName)
-            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE or ParcelFileDescriptor.MODE_CREATE)
+            
+            val partFile = File(dir, "$fileName.part")
+            val pfd = ParcelFileDescriptor.open(partFile, ParcelFileDescriptor.MODE_READ_WRITE or ParcelFileDescriptor.MODE_CREATE)
+            
+            val finalizeAction: () -> Unit = {
+                val finalFile = File(dir, fileName)
+                partFile.renameTo(finalFile)
+            }
+            OutputSink(FileOutputStream(pfd.fileDescriptor), pfd, finalizeAction)
         }
     }
 
