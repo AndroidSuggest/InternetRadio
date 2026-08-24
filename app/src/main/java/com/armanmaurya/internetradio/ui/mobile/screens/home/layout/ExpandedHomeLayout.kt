@@ -47,6 +47,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import com.armanmaurya.internetradio.R
@@ -83,7 +85,9 @@ internal fun ExpandedHomeLayout(
     onBrowseHeaderClick: () -> Unit = {},
     tabs: List<String>,
     pagerState: androidx.compose.foundation.pager.PagerState,
-    coroutineScope: kotlinx.coroutines.CoroutineScope
+    coroutineScope: kotlinx.coroutines.CoroutineScope,
+    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    onToggleRecording: (RadioStation) -> Unit = {}
 ) {
     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black
     Box(modifier = Modifier.fillMaxSize()) {
@@ -137,7 +141,9 @@ internal fun ExpandedHomeLayout(
                 onLibraryStationClick = onLibraryStationClick,
                 onBrowseStationClick = onBrowseStationClick,
                 onLibraryHeaderClick = onLibraryHeaderClick,
-                onBrowseHeaderClick = onBrowseHeaderClick
+                onBrowseHeaderClick = onBrowseHeaderClick,
+                activeSessions = activeSessions,
+                onToggleRecording = onToggleRecording
             )
         }
     }
@@ -378,6 +384,8 @@ private fun ExpandedSearchOverlay(
     onBrowseStationClick: (RadioStation) -> Unit,
     onLibraryHeaderClick: () -> Unit = {},
     onBrowseHeaderClick: () -> Unit = {},
+    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    onToggleRecording: (RadioStation) -> Unit = {},
     modifier: Modifier = Modifier.fillMaxSize()
 ) {
     Box(
@@ -437,10 +445,16 @@ private fun ExpandedSearchOverlay(
                         items = libraryStations.take(5),
                         key = { "lib_${it.stationUuid}" }
                     ) { station ->
+                        val session = activeSessions[station.stationUuid]
+                        val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
                         StationListCard(
                             station = station,
                             onClick = { onLibraryStationClick(station) },
                             isFavorite = true,
+                            isRecording = session != null,
+                            recordingDuration = duration,
+                            onRecordClick = { onToggleRecording(station) },
+                            onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
@@ -474,10 +488,16 @@ private fun ExpandedSearchOverlay(
                         items = browseStations.take(10),
                         key = { "browse_${it.stationUuid}" }
                     ) { station ->
+                        val session = activeSessions[station.stationUuid]
+                        val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
                         StationListCard(
                             station = station,
                             onClick = { onBrowseStationClick(station) },
                             isFavorite = libraryUuids.contains(station.stationUuid),
+                            isRecording = session != null,
+                            recordingDuration = duration,
+                            onRecordClick = { onToggleRecording(station) },
+                            onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)

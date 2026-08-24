@@ -344,4 +344,6 @@
     </plurals>
     <string name="settings_gradual_volume_enabled">%1$s सेकंड फ़ेड-इन</string>
     <string name="settings_gradual_volume_disabled">बंद</string>
+    <string name="action_stop_recording">रिकॉर्डिंग रोकें</string>
+    <string name="action_record_station">स्टेशन रिकॉर्ड करें</string>
 </resources>

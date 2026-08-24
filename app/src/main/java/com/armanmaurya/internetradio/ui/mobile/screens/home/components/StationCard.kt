@@ -284,7 +284,7 @@ fun StationCard(
                             )
                         } else if (onRecordClick != null) {
                             DropdownMenuItem(
-                                text = { Text(if (isRecording) "Stop Recording" else "Record Station") },
+                                text = { Text(if (isRecording) stringResource(R.string.action_stop_recording) else stringResource(R.string.action_record_station)) },
                                 onClick = {
                                     showMenu = false
                                     onRecordClick()

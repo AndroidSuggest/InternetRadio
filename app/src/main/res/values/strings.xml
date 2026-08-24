@@ -386,6 +386,7 @@
     <string name="recordings_currently_recording">Currently Recording</string>
     <string name="recordings_saved">Saved Recordings</string>
     <string name="action_stop_recording">Stop Recording</string>
+    <string name="action_record_station">Record Station</string>
     <string name="lyrics_powered_by">Powered by </string>
-    <string name="lyrics_provider_lrclib">LRCLIB</string>
+    <string name="lyrics_provider_lrclib" translatable="false">LRCLIB</string>
 </resources>

@@ -386,5 +386,5 @@
     <string name="recordings_saved">Gespeicherte Aufnahmen</string>
     <string name="action_stop_recording">Aufnahme beenden</string>
     <string name="lyrics_powered_by">Powered by </string>
-    <string name="lyrics_provider_lrclib">LRCLIB</string>
+
 </resources>

@@ -332,7 +332,11 @@ fun LibraryContent(
                                 modifier = Modifier.fillMaxWidth().then(dragModifier),
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                                 isPlaybackActive = isPlaybackActive,
-                                isFavorite = true
+                                isFavorite = true,
+                                isRecording = session != null,
+                                recordingDuration = duration,
+                                onRecordClick = { onToggleRecording(station) },
+                                onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null
                             )
                         }
                     }

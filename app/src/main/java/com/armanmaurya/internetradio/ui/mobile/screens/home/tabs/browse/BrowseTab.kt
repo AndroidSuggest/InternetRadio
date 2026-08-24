@@ -196,7 +196,11 @@ fun BrowseContent(
                             onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
                             isCurrentlyPlaying = playingStationUuid == station.stationUuid,
                             isPlaybackActive = isPlaybackActive,
-                            isFavorite = libraryStationUuids.contains(station.stationUuid)
+                            isFavorite = libraryStationUuids.contains(station.stationUuid),
+                            isRecording = session != null,
+                            recordingDuration = duration,
+                            onRecordClick = { onToggleRecording(station) },
+                            onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null
                         )
                     }
                 }

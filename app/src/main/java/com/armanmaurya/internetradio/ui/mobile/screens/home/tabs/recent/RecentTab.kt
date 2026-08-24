@@ -182,7 +182,11 @@ fun RecentContent(
                                     onToggleFavoriteClick = { viewModel.toggleLibrary(station) },
                                     onRemoveFromRecentClick = { viewModel.removeRecent(station.stationUuid) },
                                     onEditClick = if (libraryStationUuids.contains(station.stationUuid)) { { onEditStation(station.stationUuid) } } else null,
-                                    onExportClick = { onExportStation?.invoke(station) }
+                                    onExportClick = { onExportStation?.invoke(station) },
+                                    isRecording = session != null,
+                                    recordingDuration = duration,
+                                    onRecordClick = { onToggleRecording(station) },
+                                    onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null
                                 )
                             }
                         }

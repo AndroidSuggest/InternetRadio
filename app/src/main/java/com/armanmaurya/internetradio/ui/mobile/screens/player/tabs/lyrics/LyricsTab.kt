@@ -259,7 +259,7 @@ fun PlainLyricsView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.lyrics_powered_by),
+                    text = stringResource(R.string.lyrics_powered_by) + " ",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -467,7 +467,7 @@ fun SyncedLyricsView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.lyrics_powered_by),
+                    text = stringResource(R.string.lyrics_powered_by) + " ",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

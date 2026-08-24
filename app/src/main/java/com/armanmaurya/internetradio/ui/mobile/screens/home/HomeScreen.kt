@@ -255,6 +255,8 @@ fun HomeScreen(
                             items = filteredLibraryStations.take(5),
                             key = { "lib_${it.stationUuid}" }
                         ) { station ->
+                            val session = activeSessions[station.stationUuid]
+                            val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
                             StationListCard(
                                 station = station,
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
@@ -264,6 +266,10 @@ fun HomeScreen(
                                     val index = filteredLibraryStations.indexOf(station).coerceAtLeast(0)
                                     playerViewModel.play(filteredLibraryStations, index, com.armanmaurya.internetradio.player.PlaybackSource.None)
                                 },
+                                isRecording = session != null,
+                                recordingDuration = duration,
+                                onRecordClick = { playerViewModel.toggleRecording(station) },
+                                onStopRecordingClick = if (session != null) { { playerViewModel.toggleRecording(station) } } else null,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
@@ -301,6 +307,8 @@ fun HomeScreen(
                             items = browseUiState.stations.take(10),
                             key = { "browse_${it.stationUuid}" }
                         ) { station ->
+                            val session = activeSessions[station.stationUuid]
+                            val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
                             StationListCard(
                                 station = station,
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
@@ -310,6 +318,10 @@ fun HomeScreen(
                                     val index = browseUiState.stations.indexOf(station).coerceAtLeast(0)
                                     playerViewModel.play(browseUiState.stations, index, com.armanmaurya.internetradio.player.PlaybackSource.None)
                                 },
+                                isRecording = session != null,
+                                recordingDuration = duration,
+                                onRecordClick = { playerViewModel.toggleRecording(station) },
+                                onStopRecordingClick = if (session != null) { { playerViewModel.toggleRecording(station) } } else null,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
