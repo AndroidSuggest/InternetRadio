@@ -163,7 +163,13 @@ fun InlineMediaPlayer(uri: android.net.Uri) {
     var currentPosition by remember { mutableStateOf(0L) }
     
     val exoPlayer = remember(uri) {
-        ExoPlayer.Builder(context).build().apply {
+        val extractorsFactory = androidx.media3.extractor.DefaultExtractorsFactory()
+            .setConstantBitrateSeekingAlwaysEnabled(true)
+        val mediaSourceFactory = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(context, extractorsFactory)
+        
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(mediaSourceFactory)
+            .build().apply {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
             playWhenReady = true
