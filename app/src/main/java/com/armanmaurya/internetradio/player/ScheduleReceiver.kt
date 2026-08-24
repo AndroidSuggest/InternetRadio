@@ -62,31 +62,9 @@ class ScheduleReceiver : BroadcastReceiver() {
         val scheduleId = intent.getIntExtra(EXTRA_SCHEDULE_ID, -1)
         if (scheduleId == -1) return
 
-        // Perform fast local reads synchronously to ensure we call startForegroundService
-        // before the broadcast receiver's FGS start exemption expires.
-        val data = kotlinx.coroutines.runBlocking(Dispatchers.IO) {
-            val schedule = scheduleRepository.getScheduleById(scheduleId)
-            val libraryStation = schedule?.let { libraryRepository.getStationById(it.stationUuid) }
-            val prefs = settingsRepository.appPreferencesFlow.first()
-            Triple(schedule, libraryStation, prefs)
-        }
-
-        val schedule = data.first ?: return
-        if (!schedule.isEnabled) return
-        val libraryStation = data.second
-        val prefs = data.third
-
         val playIntent = Intent(context, PlaybackService::class.java).apply {
-            this.action = "com.armanmaurya.internetradio.ACTION_PLAY_STATION"
-            putExtra("STATION_UUID", schedule.stationUuid)
-            putExtra("STATION_NAME", schedule.stationName)
-            putExtra("STATION_URL", libraryStation?.urlResolved ?: libraryStation?.url ?: "")
-            putExtra("STATION_FAVICON", libraryStation?.favicon ?: "")
-            putExtra("START_RECORDING", schedule.type == ScheduleType.RECORD)
-            putExtra("RECORDING_DURATION", schedule.durationMinutes)
-            putExtra("KEEP_PLAYBACK", schedule.keepPlayback)
-            putExtra("VOLUME_LEVEL", schedule.volumeLevel)
-            putExtra("ALARM_TRANSITION_SECONDS", if (prefs.isAlarmVolumeTransitionEnabled) prefs.alarmVolumeTransitionSeconds else 0)
+            this.action = "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE"
+            putExtra(EXTRA_SCHEDULE_ID, scheduleId)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -99,11 +77,13 @@ class ScheduleReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         scope.launch {
             try {
-                // Reschedule if recurring, else disable
-                if (schedule.isRecurring) {
-                    scheduleManager.schedule(schedule)
-                } else {
-                    scheduleRepository.updateScheduleStatus(schedule.id, false)
+                val schedule = scheduleRepository.getScheduleById(scheduleId)
+                if (schedule != null) {
+                    if (schedule.isRecurring) {
+                        scheduleManager.schedule(schedule)
+                    } else {
+                        scheduleRepository.updateScheduleStatus(schedule.id, false)
+                    }
                 }
             } finally {
                 pendingResult.finish()

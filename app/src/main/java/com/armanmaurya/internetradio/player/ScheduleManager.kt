@@ -25,6 +25,7 @@ class ScheduleManager @Inject constructor(
 
         val intent = Intent(context, ScheduleReceiver::class.java).apply {
             putExtra(ScheduleReceiver.EXTRA_SCHEDULE_ID, entity.id)
+            addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(

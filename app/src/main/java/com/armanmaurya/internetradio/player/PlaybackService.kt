@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -44,6 +45,9 @@ class PlaybackService : MediaLibraryService() {
 
     @Inject
     lateinit var retryStateTracker: RetryStateTracker
+
+    @Inject
+    lateinit var scheduleRepository: com.armanmaurya.internetradio.data.repository.ScheduleRepository
 
     @Inject
     lateinit var settingsRepository: com.armanmaurya.internetradio.data.repository.SettingsRepository
@@ -460,7 +464,7 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
-        if (action == "com.armanmaurya.internetradio.ACTION_PLAY_STATION") {
+        if (action == "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE" || action == "com.armanmaurya.internetradio.ACTION_PLAY_STATION") {
             // Instantly elevate to foreground to bypass Android 12+ background network restrictions
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 val channelId = "schedule_channel"
@@ -480,6 +484,39 @@ class PlaybackService : MediaLibraryService() {
                 startForeground(2001, notification)
             }
 
+            if (action == "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE") {
+                val scheduleId = intent.getIntExtra(ScheduleReceiver.EXTRA_SCHEDULE_ID, -1)
+                if (scheduleId != -1) {
+                    serviceScope.launch(Dispatchers.IO) {
+                        val schedule = scheduleRepository.getScheduleById(scheduleId)
+                        if (schedule == null || !schedule.isEnabled) {
+                            if (player?.playbackState != Player.STATE_READY) {
+                                stopForeground(true)
+                                stopSelf()
+                            }
+                            return@launch
+                        }
+                        val libraryStation = libraryRepository.getStationById(schedule.stationUuid)
+                        val prefs = settingsRepository.appPreferencesFlow.first()
+                        
+                        kotlinx.coroutines.withContext(Dispatchers.Main) {
+                            startStationPlayback(
+                                stationUuid = schedule.stationUuid,
+                                stationUrl = libraryStation?.urlResolved ?: libraryStation?.url ?: "",
+                                stationName = schedule.stationName,
+                                stationFavicon = libraryStation?.favicon ?: "",
+                                startRecording = schedule.type == com.armanmaurya.internetradio.data.local.entity.ScheduleType.RECORD,
+                                durationMinutes = schedule.durationMinutes,
+                                keepPlayback = schedule.keepPlayback,
+                                volumeLevel = schedule.volumeLevel,
+                                transitionSeconds = if (prefs.isAlarmVolumeTransitionEnabled) prefs.alarmVolumeTransitionSeconds else 0
+                            )
+                        }
+                    }
+                }
+                return super.onStartCommand(intent, flags, startId)
+            }
+
             val stationUuid = intent.getStringExtra("STATION_UUID")
             val startRecording = intent.getBooleanExtra("START_RECORDING", false)
             val durationMinutes = intent.getIntExtra("RECORDING_DURATION", 0)
@@ -488,131 +525,13 @@ class PlaybackService : MediaLibraryService() {
             val stationName = intent.getStringExtra("STATION_NAME") ?: ""
             val stationFavicon = intent.getStringExtra("STATION_FAVICON") ?: ""
             val volumeLevel = intent.getFloatExtra("VOLUME_LEVEL", -1f)
+            val transitionSeconds = intent.getIntExtra("ALARM_TRANSITION_SECONDS", alarmFadeInSeconds)
 
             if (stationUuid != null && !stationUrl.isNullOrBlank()) {
-                // --- SYNCHRONOUS playback setup (no coroutine, no race) ---
-                // Build MediaItem directly from intent extras so playback is set up
-                // before PlayerController's MediaController can connect and interfere.
-                val artworkUri = when {
-                    stationFavicon.endsWith(".svg", ignoreCase = true) ->
-                        android.net.Uri.parse(SvgProxyProvider.createProxyUri(this, stationFavicon))
-                    stationFavicon.isNotBlank() -> android.net.Uri.parse(stationFavicon)
-                    else -> android.net.Uri.EMPTY
-                }
-                val mediaItem = androidx.media3.common.MediaItem.Builder()
-                    .setMediaId(stationUuid)
-                    .setUri(stationUrl)
-                    .setLiveConfiguration(androidx.media3.common.MediaItem.LiveConfiguration.Builder().build())
-                    .setMediaMetadata(
-                        androidx.media3.common.MediaMetadata.Builder()
-                            .setTitle(stationName)
-                            .setArtworkUri(artworkUri)
-                            .setExtras(android.os.Bundle().apply {
-                                putString("stationName", stationName)
-                                putString("stationFavicon", stationFavicon)
-                            })
-                            .build()
-                    )
-                    .build()
-
-                // Set playWhenReady=true BEFORE setMediaItem so ExoPlayer auto-starts
-                // on STATE_READY. This runs synchronously before any coroutine can run.
-                // We must change the system volume ONLY after the player requests audio focus 
-                // and the foreground service is fully registered, otherwise Android ignores it 
-                // for fully closed background apps.
-                val isSameStation = player?.currentMediaItem?.mediaId == stationUuid
-                
-                volumeFadeJob?.cancel()
-
-                val applySystemVolume = {
-                    val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-                    val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
-                    val targetVolume = (volumeLevel * maxVolume).toInt()
-                    
-                    if (targetVolume == 0) {
-                        ignoreNextVolumeZero = true
-                    }
-                    audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVolume, 0)
-                }
-
-                if (volumeLevel >= 0f) {
-                    if (isSameStation && player?.playbackState == androidx.media3.common.Player.STATE_READY) {
-                        // Apply immediately since we won't get a state change callback
-                        applySystemVolume()
-                    } else {
-                        val listener = object : androidx.media3.common.Player.Listener {
-                            override fun onPlaybackStateChanged(playbackState: Int) {
-                                if (playbackState == androidx.media3.common.Player.STATE_READY) {
-                                    applySystemVolume()
-                                    player?.removeListener(this)
-                                }
-                            }
-                        }
-                        player?.addListener(listener)
-                    }
-                    
-                    val transitionSeconds = intent.getIntExtra("ALARM_TRANSITION_SECONDS", alarmFadeInSeconds)
-                    if (transitionSeconds > 0) {
-                        player?.volume = 0f
-                        volumeFadeJob = serviceScope.launch {
-                            val steps = transitionSeconds * 10
-                            val volumeStep = 1.0f / steps
-                            for (i in 1..steps) {
-                                kotlinx.coroutines.delay(100)
-                                player?.volume = (volumeStep * i).coerceIn(0f, 1f)
-                            }
-                            player?.volume = 1.0f
-                        }
-                    } else {
-                        player?.volume = 1f
-                    }
-                } else {
-                    player?.volume = 1f
-                }
-                
-                player?.playWhenReady = true
-                if (!isSameStation) {
-                    player?.setMediaItem(mediaItem)
-                    player?.prepare()
-                } else if (player?.playbackState == androidx.media3.common.Player.STATE_IDLE || player?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
-                    // Station is loaded but playback stopped/errored out, so we need to prepare again
-                    player?.prepare()
-                }
-
-                // Schedule stop alarm synchronously (AlarmManager is not async)
-                if (durationMinutes > 0) {
-                    val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-                    val stopIntent = Intent(this, ScheduleReceiver::class.java).apply {
-                        this.action = ScheduleReceiver.ACTION_STOP_RECORDING
-                        putExtra("KEEP_PLAYBACK", keepPlayback)
-                        putExtra("UUID", stationUuid)
-                    }
-                    val pendingIntent = PendingIntent.getBroadcast(
-                        this,
-                        stationUuid.hashCode(),
-                        stopIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    val stopAt = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
-                    val alarmClockInfo = android.app.AlarmManager.AlarmClockInfo(stopAt, pendingIntent)
-                    alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
-                }
-
-                // Recording still needs the full station object — keep async
-                if (startRecording) {
-                    serviceScope.launch {
-                        val station = libraryRepository.getStationById(stationUuid) ?: return@launch
-                        val startIntent = android.content.Intent(this@PlaybackService, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
-                            this.action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
-                            putExtra("STATION_JSON", com.google.gson.Gson().toJson(station))
-                        }
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                            startForegroundService(startIntent)
-                        } else {
-                            startService(startIntent)
-                        }
-                    }
-                }
+                startStationPlayback(
+                    stationUuid, stationUrl, stationName, stationFavicon,
+                    startRecording, durationMinutes, keepPlayback, volumeLevel, transitionSeconds
+                )
             }
         } else if (action == "com.armanmaurya.internetradio.ACTION_STOP_PLAYBACK") {
             volumeFadeJob?.cancel()
@@ -620,5 +539,123 @@ class PlaybackService : MediaLibraryService() {
             player?.stop()
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun startStationPlayback(
+        stationUuid: String,
+        stationUrl: String,
+        stationName: String,
+        stationFavicon: String,
+        startRecording: Boolean,
+        durationMinutes: Int,
+        keepPlayback: Boolean,
+        volumeLevel: Float,
+        transitionSeconds: Int
+    ) {
+        val artworkUri = when {
+            stationFavicon.endsWith(".svg", ignoreCase = true) ->
+                android.net.Uri.parse(SvgProxyProvider.createProxyUri(this, stationFavicon))
+            stationFavicon.isNotBlank() -> android.net.Uri.parse(stationFavicon)
+            else -> android.net.Uri.EMPTY
+        }
+        val mediaItem = androidx.media3.common.MediaItem.Builder()
+            .setMediaId(stationUuid)
+            .setUri(stationUrl)
+            .setLiveConfiguration(androidx.media3.common.MediaItem.LiveConfiguration.Builder().build())
+            .setMediaMetadata(
+                androidx.media3.common.MediaMetadata.Builder()
+                    .setTitle(stationName)
+                    .setArtworkUri(artworkUri)
+                    .setExtras(android.os.Bundle().apply {
+                        putString("stationName", stationName)
+                        putString("stationFavicon", stationFavicon)
+                    })
+                    .build()
+            )
+            .build()
+
+        val isSameStation = player?.currentMediaItem?.mediaId == stationUuid
+        volumeFadeJob?.cancel()
+
+        val applySystemVolume = {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+            val targetVolume = (volumeLevel * maxVolume).toInt()
+            if (targetVolume == 0) ignoreNextVolumeZero = true
+            audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVolume, 0)
+        }
+
+        if (volumeLevel >= 0f) {
+            if (isSameStation && player?.playbackState == androidx.media3.common.Player.STATE_READY) {
+                applySystemVolume()
+            } else {
+                val listener = object : androidx.media3.common.Player.Listener {
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        if (playbackState == androidx.media3.common.Player.STATE_READY) {
+                            applySystemVolume()
+                            player?.removeListener(this)
+                        }
+                    }
+                }
+                player?.addListener(listener)
+            }
+            if (transitionSeconds > 0) {
+                player?.volume = 0f
+                volumeFadeJob = serviceScope.launch {
+                    val steps = transitionSeconds * 10
+                    val volumeStep = 1.0f / steps
+                    for (i in 1..steps) {
+                        kotlinx.coroutines.delay(100)
+                        player?.volume = (volumeStep * i).coerceIn(0f, 1f)
+                    }
+                    player?.volume = 1.0f
+                }
+            } else {
+                player?.volume = 1f
+            }
+        } else {
+            player?.volume = 1f
+        }
+
+        player?.playWhenReady = true
+        if (!isSameStation) {
+            player?.setMediaItem(mediaItem)
+            player?.prepare()
+        } else if (player?.playbackState == androidx.media3.common.Player.STATE_IDLE || player?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
+            player?.prepare()
+        }
+
+        if (durationMinutes > 0) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            val stopIntent = Intent(this, ScheduleReceiver::class.java).apply {
+                this.action = ScheduleReceiver.ACTION_STOP_RECORDING
+                putExtra("KEEP_PLAYBACK", keepPlayback)
+                putExtra("UUID", stationUuid)
+            }
+            val pendingIntent = android.app.PendingIntent.getBroadcast(
+                this,
+                stationUuid.hashCode(),
+                stopIntent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            )
+            val stopAt = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
+            val alarmClockInfo = android.app.AlarmManager.AlarmClockInfo(stopAt, pendingIntent)
+            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+        }
+
+        if (startRecording) {
+            serviceScope.launch {
+                val station = libraryRepository.getStationById(stationUuid) ?: return@launch
+                val startIntent = android.content.Intent(this@PlaybackService, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
+                    this.action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
+                    putExtra("STATION_JSON", com.google.gson.Gson().toJson(station))
+                }
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    startForegroundService(startIntent)
+                } else {
+                    startService(startIntent)
+                }
+            }
+        }
     }
 }
