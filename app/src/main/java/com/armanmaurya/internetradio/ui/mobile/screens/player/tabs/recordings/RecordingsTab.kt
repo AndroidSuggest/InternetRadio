@@ -32,86 +32,88 @@ fun RecordingsTab(
 ) {
     var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
     
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .nestedScroll(nestedScrollConnection),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(bottom = 80.dp)
-    ) {
-        if (activeSessions.isNotEmpty()) {
-            item {
-                Text(
-                    text = stringResource(R.string.recordings_currently_recording),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-            
-            items(activeSessions.values.chunked(2)) { rowSessions ->
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for (session in rowSessions) {
-                        val duration by session.durationSeconds.collectAsState(initial = 0L)
-                        Box(modifier = Modifier.weight(1f)) {
-                            StationCard(
-                                station = session.station,
-                                onClick = {}, // No action on click for now
-                                isRecordingOverlay = true,
-                                recordingDuration = duration,
-                                onStopRecordingClick = { onStopRecording(session.station.stationUuid) }
-                            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                .nestedScroll(nestedScrollConnection),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            if (activeSessions.isNotEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.recordings_currently_recording),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+                
+                items(activeSessions.values.chunked(2)) { rowSessions ->
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        for (session in rowSessions) {
+                            val duration by session.durationSeconds.collectAsState(initial = 0L)
+                            Box(modifier = Modifier.weight(1f)) {
+                                StationCard(
+                                    station = session.station,
+                                    onClick = {}, // No action on click for now
+                                    isRecordingOverlay = true,
+                                    recordingDuration = duration,
+                                    onStopRecordingClick = { onStopRecording(session.station.stationUuid) }
+                                )
+                            }
+                        }
+                        if (rowSessions.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
-                    if (rowSessions.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
+                }
+                
+                item {
+                    Divider(modifier = Modifier.padding(vertical = 16.dp))
+                    if (stationRecordings.isNotEmpty()) {
+                        Text(
+                            text = stringResource(R.string.recordings_saved),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
                     }
                 }
             }
-            
-            item {
-                Divider(modifier = Modifier.padding(vertical = 16.dp))
-                if (stationRecordings.isNotEmpty()) {
-                    Text(
-                        text = stringResource(R.string.recordings_saved),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 8.dp)
+    
+            if (stationRecordings.isNotEmpty()) {
+                items(
+                    items = stationRecordings,
+                    key = { it.uri.toString() }
+                ) { recording ->
+                    val isExpanded = expandedRecording?.uri == recording.uri
+    
+                    RecordingFileItem(
+                        recording = recording,
+                        isExpanded = isExpanded,
+                        onClick = {
+                            expandedRecording = if (isExpanded) null else recording
+                        },
+                        onDelete = { onDeleteRecording(recording) },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
         }
-
+        
         if (stationRecordings.isEmpty() && activeSessions.isEmpty()) {
-            item {
-                Box(
-                    modifier = Modifier.fillParentMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.general_no_recordings),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        } else {
-            items(
-                items = stationRecordings,
-                key = { it.uri.toString() }
-            ) { recording ->
-                val isExpanded = expandedRecording?.uri == recording.uri
-
-                RecordingFileItem(
-                    recording = recording,
-                    isExpanded = isExpanded,
-                    onClick = {
-                        expandedRecording = if (isExpanded) null else recording
-                    },
-                    onDelete = { onDeleteRecording(recording) },
-                    modifier = Modifier.animateItem()
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.general_no_recordings),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
