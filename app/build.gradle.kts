@@ -111,7 +111,7 @@ dependencies {
     implementation(libs.fcast.sdk) {
         exclude(group = "net.java.dev.jna")
     }
-    implementation("net.java.dev.jna:jna:5.13.0@aar")
+    implementation("net.java.dev.jna:jna:5.16.0@aar")
     implementation("com.neovisionaries:nv-i18n:1.29")
 
     implementation(libs.androidx.compose.material.icons.core)
