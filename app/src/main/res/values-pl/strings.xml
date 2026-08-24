@@ -328,4 +328,9 @@
     </plurals>
     <string name="settings_gradual_volume_enabled">Czas podgłaśniania: %1$s</string>
     <string name="settings_gradual_volume_disabled">Wyłączone</string>
+    <string name="recordings_saved">Zapisane nagrania</string>
+    <string name="action_stop_recording">Zatrzymaj nagrywanie</string>
+    <string name="lyrics_provider_lrclib">LRCLIB</string>
+    <string name="recordings_currently_recording">Trwa nagrywanie</string>
+    <string name="lyrics_powered_by">Dostarczane przez</string>
 </resources>
