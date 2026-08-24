@@ -320,5 +320,5 @@
     <string name="recordings_saved">Talletatud salvestised</string>
     <string name="action_stop_recording">Lõpeta salvestamine</string>
     <string name="lyrics_powered_by">Kasutusel on</string>
-
+    <string name="action_record_station">Salvesta raadiojaama</string>
 </resources>
