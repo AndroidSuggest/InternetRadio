@@ -152,7 +152,7 @@ fun CountrySelectScreen(
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(
-                        bottom = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding())
+                        bottom = contentPadding.calculateBottomPadding()
                     )
                 ) {
                     item {

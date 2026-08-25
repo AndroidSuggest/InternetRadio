@@ -116,9 +116,7 @@ fun TagSelectScreen(
     val selectedTagsList = remember(uiState.selectedTags) {
         uiState.selectedTags.toList()
     }
-
-    val safeDrawingBottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
-    val bottomPadding = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), safeDrawingBottom)
+    val bottomPadding = contentPadding.calculateBottomPadding()
 
     Scaffold(
         modifier = Modifier,

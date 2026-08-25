@@ -145,7 +145,7 @@ fun LanguageSelectScreen(
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(
-                        bottom = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding())
+                        bottom = contentPadding.calculateBottomPadding()
                     )
                 ) {
                     item(key = "all_languages") {
