@@ -8,4 +8,6 @@
     <locale android:name="fr"/>
     <locale android:name="ro"/>
     <locale android:name="et"/>
+    <locale android:name="pl"/>
+    <locale android:name="ru"/>
 </locale-config>
