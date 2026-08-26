@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.AppPreferences
 import com.armanmaurya.internetradio.data.model.ConflictStrategy
 import com.armanmaurya.internetradio.data.model.LibraryBackup
@@ -189,15 +190,15 @@ class SettingsViewModel @Inject constructor(
                     stream.write(json.toByteArray())
                 } ?: run {
                     Log.e(TAG, "Export failed: output stream was null for uri=$uri")
-                    _backupResult.send("Export failed: could not open file for writing")
+                    _backupResult.send(context.getString(R.string.settings_exported_failed))
                     return@launch
                 }
 
                 Log.d(TAG, "Export successful: ${entities.size} stations written")
-                _backupResult.send("Exported ${entities.size} station(s) successfully")
+                _backupResult.send(context.resources.getQuantityString(R.plurals.settings_exported_success, entities.size, entities.size))
             } catch (e: Exception) {
                 Log.e(TAG, "Export failed with exception", e)
-                _backupResult.send("Export failed: ${e.localizedMessage}")
+                _backupResult.send(context.getString(R.string.settings_exported_failed_exception, e.localizedMessage))
             }
         }
     }
@@ -274,11 +275,11 @@ class SettingsViewModel @Inject constructor(
             }
 
             val parts = buildList {
-                if (totalImported > 0) add("Imported $totalImported")
-                if (totalUpdated > 0) add("Updated $totalUpdated")
-                if (totalSkipped > 0) add("Skipped $totalSkipped already existing")
-                if (failedFiles > 0) add("Failed to read $failedFiles file(s)")
-                if (isEmpty()) add("No changes — all stations already exist")
+                if (totalImported > 0) add(context.getString(R.string.settings_imported, totalImported))
+                if (totalUpdated > 0) add(context.getString(R.string.settings_imported_updated, totalUpdated))
+                if (totalSkipped > 0) add(context.getString(R.string.settings_imported_skipped, totalSkipped))
+                if (failedFiles > 0) add(context.resources.getQuantityString(R.plurals.settings_imported_failed, failedFiles, failedFiles))
+                if (isEmpty()) add(context.getString(R.string.settings_imported_empty))
             }
             val resultMessage = parts.joinToString(", ")
             Log.d(TAG, "Import complete: $resultMessage")
