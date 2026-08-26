@@ -17,6 +17,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -46,12 +49,14 @@ class BackgroundRecordingService : Service() {
     }
 
     private val activeNotificationIds = mutableSetOf<Int>()
+    private var updateTickerJob: Job? = null
 
     private fun observeSessions() {
         if (notificationJob != null) return
         notificationJob = recordingManager.sessionsFlow.onEach { sessions ->
             val notificationManager = getSystemService(NotificationManager::class.java)
             if (sessions.isEmpty()) {
+                updateTickerJob?.cancel()
                 activeNotificationIds.forEach { notificationManager.cancel(it) }
                 activeNotificationIds.clear()
                 stopSelf()
@@ -68,6 +73,18 @@ class BackgroundRecordingService : Service() {
                 
                 sessions.forEach { (uuid, session) ->
                     notificationManager.notify(uuid.hashCode(), buildChildNotification(session))
+                }
+                
+                if (updateTickerJob == null || updateTickerJob?.isActive != true) {
+                    updateTickerJob = scope.launch {
+                        while (isActive) {
+                            delay(3000)
+                            val currentSessions = recordingManager.sessionsFlow.value
+                            currentSessions.forEach { (uuid, session) ->
+                                notificationManager.notify(uuid.hashCode(), buildChildNotification(session))
+                            }
+                        }
+                    }
                 }
             }
         }.launchIn(scope)
@@ -127,19 +144,25 @@ class BackgroundRecordingService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val sizeMb = session.bytesWritten / (1024f * 1024f)
+        val sizeText = String.format(java.util.Locale.US, "%.2f MB", sizeMb)
+
         return NotificationCompat.Builder(this, "recording_channel")
             .setSmallIcon(R.drawable.media3_notification_small_icon)
             .setOngoing(true)
+            .setOnlyAlertOnce(true)
             .setGroup("GROUP_RECORDINGS")
             .setContentTitle("Recording: ${session.station.name}")
+            .setContentText(sizeText)
             .setContentIntent(contentPendingIntent)
             .setUsesChronometer(true)
-            .setWhen(System.currentTimeMillis() - (session.durationSeconds.value * 1000L))
+            .setWhen(session.startTimeMs)
             .addAction(0, "Stop", stopPendingIntent)
             .build()
     }
 
     override fun onDestroy() {
+        updateTickerJob?.cancel()
         notificationJob?.cancel()
         recordingManager.stopAllRecordings()
         super.onDestroy()

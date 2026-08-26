@@ -34,6 +34,7 @@ class RecordingSession(
     private val _durationSeconds = MutableStateFlow(0L)
     val durationSeconds: StateFlow<Long> = _durationSeconds.asStateFlow()
     var bytesWritten = 0L
+    val startTimeMs = System.currentTimeMillis()
     private var job: Job? = null
 
     fun start() {
