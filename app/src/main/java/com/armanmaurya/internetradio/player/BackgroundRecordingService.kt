@@ -3,6 +3,7 @@ package com.armanmaurya.internetradio.player
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -82,24 +83,59 @@ class BackgroundRecordingService : Service() {
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
 
+        val contentIntent = Intent(this, com.armanmaurya.internetradio.MainActivity::class.java).apply {
+            putExtra("open_tab", "recordings")
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val contentPendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            contentIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         return NotificationCompat.Builder(this, "recording_channel")
             .setSmallIcon(R.drawable.media3_notification_small_icon)
             .setOngoing(true)
             .setGroup("GROUP_RECORDINGS")
             .setGroupSummary(true)
             .setContentTitle(if (sessions.isEmpty()) "Preparing recording..." else "Recording ${sessions.size} station(s)")
+            .setContentIntent(contentPendingIntent)
             .build()
     }
 
     private fun buildChildNotification(session: RecordingSession): Notification {
+        val stopIntent = Intent(this, BackgroundRecordingService::class.java).apply {
+            action = ACTION_STOP
+            putExtra("UUID", session.station.stationUuid)
+        }
+        val stopPendingIntent = PendingIntent.getService(
+            this,
+            session.station.stationUuid.hashCode(),
+            stopIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val contentIntent = Intent(this, com.armanmaurya.internetradio.MainActivity::class.java).apply {
+            putExtra("open_tab", "recordings")
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val contentPendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            contentIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         return NotificationCompat.Builder(this, "recording_channel")
             .setSmallIcon(R.drawable.media3_notification_small_icon)
             .setOngoing(true)
             .setGroup("GROUP_RECORDINGS")
             .setContentTitle("Recording: ${session.station.name}")
-            .setContentText("Recording in progress")
+            .setContentIntent(contentPendingIntent)
             .setUsesChronometer(true)
             .setWhen(System.currentTimeMillis() - (session.durationSeconds.value * 1000L))
+            .addAction(0, "Stop", stopPendingIntent)
             .build()
     }
 

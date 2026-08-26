@@ -81,8 +81,19 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
+    private val _intentFlow = kotlinx.coroutines.flow.MutableSharedFlow<Intent>(
+        replay = 1,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
+    )
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let { _intentFlow.tryEmit(it) }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        intent?.let { _intentFlow.tryEmit(it) }
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
@@ -131,6 +142,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 
                 val navController = rememberNavController()
+                val homeViewModel: com.armanmaurya.internetradio.ui.mobile.screens.home.HomeViewModel = hiltViewModel()
+                LaunchedEffect(Unit) {
+                    _intentFlow.collect { intent ->
+                        if (intent.getStringExtra("open_tab") == "recordings") {
+                            intent.removeExtra("open_tab")
+                            navController.popBackStack(AppDestination.Discover.route, inclusive = false)
+                            homeViewModel.onTabSelected(3)
+                        }
+                    }
+                }
                 val playerViewModel: PlayerViewModel = hiltViewModel()
                 val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
 
@@ -141,7 +162,20 @@ class MainActivity : AppCompatActivity() {
                         skipHiddenState = false
                     )
                 )
+                
+                val notificationPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+                ) { granted ->
+                    if (granted) {
+                        playerViewModel.proceedWithRecording()
+                    }
+                }
 
+                LaunchedEffect(Unit) {
+                    playerViewModel.permissionRequestEvent.collect { _ ->
+                        notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
                 BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                     scope.launch {
                         scaffoldState.bottomSheetState.partialExpand()

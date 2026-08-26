@@ -87,7 +87,8 @@ fun AppNavHost(
                 },
                 onEditSchedule = { scheduleId -> navController.navigate(AppDestination.EditSchedule.createRoute(scheduleId)) },
                 onEditStation = { stationUuid -> navController.navigate(AppDestination.EditStation.createRoute(stationUuid)) },
-                contentPadding = contentPadding
+                contentPadding = contentPadding,
+                playerViewModel = playerViewModel
             )
         }
         composable(AppDestination.Settings.route) {

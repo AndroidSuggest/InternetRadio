@@ -459,7 +459,9 @@ fun HomeScreen(
                 },
                 tabs = tabs,
                 pagerState = pagerState,
-                coroutineScope = coroutineScope
+                coroutineScope = coroutineScope,
+                activeSessions = activeSessions,
+                onToggleRecording = { playerViewModel.toggleRecording(it) }
             )
         } else {
             CompactHomeLayout(

@@ -167,27 +167,6 @@ fun PlayerSheetContent(
         )
     }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { _ ->
-        onToggleRecording()
-    }
-
-    val handleToggleRecording = {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val permissionStatus = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.POST_NOTIFICATIONS
-            )
-            if (permissionStatus == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                onToggleRecording()
-            } else {
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        } else {
-            onToggleRecording()
-        }
-    }
-    
 
 
     LaunchedEffect(connectedCastDevice) {
@@ -1126,7 +1105,7 @@ fun PlayerSheetContent(
                     onPrevious = onPrevious,
                     onTogglePlayPause = onTogglePlayPause,
                     onNext = onNext,
-                    onToggleRecording = handleToggleRecording
+                    onToggleRecording = onToggleRecording
                 )
                 } // End of Player UI wrapper
 

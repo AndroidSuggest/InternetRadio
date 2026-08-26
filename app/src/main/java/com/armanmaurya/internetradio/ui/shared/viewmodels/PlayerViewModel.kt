@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import org.fcast.sender_sdk.DeviceInfo
@@ -214,6 +215,30 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    private val _permissionRequestEvent = kotlinx.coroutines.flow.MutableSharedFlow<RadioStation>()
+    val permissionRequestEvent = _permissionRequestEvent.asSharedFlow()
+    
+    var pendingRecordingStation: RadioStation? = null
+
+    private fun startRecordingIntent(st: RadioStation) {
+        val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
+            action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
+            putExtra("STATION_JSON", com.google.gson.Gson().toJson(st))
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+    }
+
+    fun proceedWithRecording() {
+        pendingRecordingStation?.let {
+            startRecordingIntent(it)
+            pendingRecordingStation = null
+        }
+    }
+
     fun toggleRecording(station: RadioStation? = playbackState.value.currentStation) {
         val st = station ?: return
         if (activeSessions.value.containsKey(st.stationUuid)) {
@@ -223,14 +248,20 @@ class PlayerViewModel @Inject constructor(
             }
             context.startService(intent)
         } else {
-            val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
-                action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
-                putExtra("STATION_JSON", com.google.gson.Gson().toJson(st))
-            }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                val permissionStatus = androidx.core.content.ContextCompat.checkSelfPermission(
+                    context, android.Manifest.permission.POST_NOTIFICATIONS
+                )
+                if (permissionStatus == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    startRecordingIntent(st)
+                } else {
+                    pendingRecordingStation = st
+                    viewModelScope.launch {
+                        _permissionRequestEvent.emit(st)
+                    }
+                }
             } else {
-                context.startService(intent)
+                startRecordingIntent(st)
             }
         }
     }
