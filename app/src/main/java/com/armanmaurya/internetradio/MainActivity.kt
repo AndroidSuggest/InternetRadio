@@ -96,6 +96,7 @@ class MainActivity : AppCompatActivity() {
         intent?.let { _intentFlow.tryEmit(it) }
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        volumeControlStream = android.media.AudioManager.STREAM_MUSIC
 
         val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         if (uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
