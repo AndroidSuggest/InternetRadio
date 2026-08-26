@@ -35,11 +35,11 @@
     <string name="settings_theme_title">Temă</string>
     <string name="settings_theme_light">Luminoasă</string>
     <string name="settings_theme_dark">Întunecată</string>
-    <string name="settings_pure_black_title">Neagră</string>
+    <string name="settings_pure_black_title">Negru</string>
     <string name="settings_pure_black_subtitle">Utilizează fundal negru în modul întunecat</string>
     <string name="settings_general_section">General</string>
     <string name="settings_language_title">Limba</string>
-    <string name="settings_auto_route_search_title">Rută automată în Căutare</string>
+    <string name="settings_auto_route_search_title">Comutare automată în Căutare</string>
     <string name="settings_auto_route_search_subtitle">Comutare automată la fila Răsfoire la căutare</string>
     <string name="settings_auto_play">Redare automată la pornire</string>
     <string name="settings_auto_play_desc">Redă ultimul post ascultat când pornește aplicația</string>
@@ -198,7 +198,7 @@
     <string name="settings_disable_update_check_desc">Nu verifica automat pentru actualizări la pornire</string>
     <string name="settings_show_cover_art">Afișează coperta în notificări</string>
     <string name="settings_show_cover_art_desc">Afișează coperta piesei în loc de miniatura postului pe ecranul de blocare și în notificări</string>
-    <string name="settings_start_week_title">Începe săptămâna</string>
+    <string name="settings_start_week_title">Săptămâna începe</string>
     <string name="settings_start_week_sunday">Duminică</string>
     <string name="settings_start_week_monday">Luni</string>
     <string name="settings_start_week_friday">Vineri</string>
@@ -294,7 +294,7 @@
     <string name="player_cd_stop">Stop</string>
     <string name="settings_schedule_section">Programe</string>
     <string name="settings_gradual_volume_disabled">Oprit</string>
-    <string name="settings_gradual_volume">Volum gradual program</string>
+    <string name="settings_gradual_volume">Estompare volum</string>
     <string name="settings_gradual_volume_enabled">Estompare %1$s (de) secunde</string>
     <string name="player_tab_about_stream_url">Adresa URL a fluxului</string>
     <string name="settings_select_all_text_on_focus_title">Selectează tot textul la căutare</string>
