@@ -59,7 +59,7 @@
     <string name="settings_max_retry_duration">Maksymalny czas ponawiania prób</string>
     <string name="settings_retry_1_min">1 minuta</string>
     <string name="settings_retry_5_min">5 minut</string>
-    <string name="settings_retry_15_min">15 minutes</string>
+    <string name="settings_retry_15_min">15 minut</string>
     <string name="settings_retry_30_min">30 minut</string>
     <string name="settings_retry_indefinitely">Nieokreślony</string>
     <string name="settings_check_updates">Sprawdź aktualizacje</string>
