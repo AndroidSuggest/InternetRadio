@@ -144,16 +144,27 @@ class MainActivity : AppCompatActivity() {
                 
                 val navController = rememberNavController()
                 val homeViewModel: com.armanmaurya.internetradio.ui.mobile.screens.home.HomeViewModel = hiltViewModel()
+                val playerViewModel: PlayerViewModel = hiltViewModel()
                 LaunchedEffect(Unit) {
                     _intentFlow.collect { intent ->
-                        if (intent.getStringExtra("open_tab") == "recordings") {
+                        if (intent.action == com.armanmaurya.internetradio.ui.shared.utils.ShortcutHelper.ACTION_PLAY_STATION) {
+                            intent.action = null
+                            val json = intent.getStringExtra(com.armanmaurya.internetradio.ui.shared.utils.ShortcutHelper.EXTRA_STATION_JSON)
+                            if (json != null) {
+                                try {
+                                    val station = com.google.gson.Gson().fromJson(json, com.armanmaurya.internetradio.data.model.RadioStation::class.java)
+                                    playerViewModel.play(listOf(station), 0)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        } else if (intent.getStringExtra("open_tab") == "recordings") {
                             intent.removeExtra("open_tab")
                             navController.popBackStack(AppDestination.Discover.route, inclusive = false)
                             homeViewModel.onTabSelected(3)
                         }
                     }
                 }
-                val playerViewModel: PlayerViewModel = hiltViewModel()
                 val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
 
                 val scope = rememberCoroutineScope()

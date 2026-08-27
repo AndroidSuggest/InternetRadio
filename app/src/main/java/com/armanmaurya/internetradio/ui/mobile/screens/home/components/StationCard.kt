@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
@@ -271,6 +272,17 @@ fun StationCard(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        val context = androidx.compose.ui.platform.LocalContext.current
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_create_shortcut)) },
+                            onClick = {
+                                showMenu = false
+                                com.armanmaurya.internetradio.ui.shared.utils.ShortcutHelper.pinStationShortcut(context, station)
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.Add, contentDescription = null)
+                            }
+                        )
                         if (onStopRecordingClick != null) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_stop_recording)) },
