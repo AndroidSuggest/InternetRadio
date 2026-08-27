@@ -333,4 +333,25 @@
         <item quantity="other">Таймер истечёт через %1$d минут.</item>
     </plurals>
     <string name="player_timer_min">%1$d минут</string>
+    <string name="settings_exported_failed">Ошибка экспорта: не удалось открыть файл для записи</string>
+    <string name="settings_exported_failed_exception">Экспорт не удался: %1$s</string>
+    <plurals name="settings_exported_success">
+        <item quantity="one">Успешно экспортирована %1$d станция</item>
+        <item quantity="few">Успешно экспортированы %1$d станции</item>
+        <item quantity="many">Успешно экспортировано %1$d станций</item>
+        <item quantity="other">Успешно экспортировано %1$d станций</item>
+    </plurals>
+    <string name="settings_imported">Импортировано: %1$d</string>
+    <string name="settings_imported_empty">Изменений нет — все станции уже существуют</string>
+    <plurals name="settings_imported_failed">
+        <item quantity="one">Не удалось открыть %1$d файл</item>
+        <item quantity="few">Не удалось открыть %1$d файла</item>
+        <item quantity="many">Не удалось открыть %1$d файлов</item>
+        <item quantity="other">Не удалось открыть %1$d файлов</item>
+    </plurals>
+    <string name="settings_imported_skipped">Пропущено (уже существует): %1$d</string>
+    <string name="settings_imported_updated">Обновлено: %1$d</string>
+    <string name="schedule_listen_while_recording">Слушать во время записи</string>
+    <string name="schedule_listen_while_recording_subtitle">Слушать станцию во время фоновой записи</string>
+    <string name="action_create_shortcut">Создать ярлык</string>
 </resources>
