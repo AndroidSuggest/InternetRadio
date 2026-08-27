@@ -321,4 +321,21 @@
     <string name="action_stop_recording">Lõpeta salvestamine</string>
     <string name="lyrics_powered_by">Kasutusel on</string>
     <string name="action_record_station">Salvesta raadiojaama</string>
+    <string name="settings_exported_failed">Eksportimine ei õnnestunud: faili avamine kirjutamiseks ei õnnestunud</string>
+    <string name="settings_exported_failed_exception">Eksportimine ei õnnestunud: %1$s</string>
+    <plurals name="settings_exported_success">
+        <item quantity="one">%1$d raadiojaama eksportimine õnnestus</item>
+        <item quantity="other">%1$d raadiojaama eksportimine õnnestus</item>
+    </plurals>
+    <string name="settings_imported">Imporditud: %1$d</string>
+    <string name="settings_imported_empty">Muudatused jäid tegemata - kõik raadiojaamad on juba olemas</string>
+    <plurals name="settings_imported_failed">
+        <item quantity="one">%1$d faili lugemine ei õnnestunud</item>
+        <item quantity="other">%1$d faili lugemine ei õnnestunud</item>
+    </plurals>
+    <string name="settings_imported_skipped">Vahelejäetud (juba on olemas): %1$d</string>
+    <string name="settings_imported_updated">Uuendatud: %1$d</string>
+    <string name="schedule_listen_while_recording">Kuula salvestamise ajal</string>
+    <string name="schedule_listen_while_recording_subtitle">Taustal salvestamise ajal võimalda kuulata ka voogedastust</string>
+    <string name="action_create_shortcut">Lisa viide</string>
 </resources>
