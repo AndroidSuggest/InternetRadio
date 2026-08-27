@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -88,6 +90,7 @@ fun LibraryContent(
     val isGridView by viewModel.isGridView.collectAsStateWithLifecycle()
     val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
     var showSortMenu by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var isDragLocked by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
 
     val isLoading = stations == null
     Crossfade(
@@ -198,6 +201,23 @@ fun LibraryContent(
                         trailingIconContentDescription = if (useFilter) stringResource(R.string.general_clear) else null
                     )
 
+                    androidx.compose.animation.AnimatedVisibility(visible = sortOption == LibrarySortOption.CUSTOM) {
+                        Box(
+                            modifier = Modifier
+                                .clip(MaterialTheme.shapes.small)
+                                .background(if (isDragLocked) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer)
+                                .clickable { isDragLocked = !isDragLocked }
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isDragLocked) Icons.Default.Lock else Icons.Default.LockOpen,
+                                contentDescription = if (isDragLocked) "Unlock dragging" else "Lock dragging",
+                                tint = if (isDragLocked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+
                     Box {
                         val sortText = when (sortOption) {
                             LibrarySortOption.NAME_A_Z, LibrarySortOption.NAME_Z_A -> stringResource(R.string.home_sort_name)
@@ -301,7 +321,7 @@ fun LibraryContent(
                 key = { _, it -> it.stationUuid }
             ) { index, station ->
                 ReorderableItem(reorderableState, key = station.stationUuid) { isDragging ->
-                    val dragModifier = if (sortOption == LibrarySortOption.CUSTOM) Modifier.longPressDraggableHandle() else Modifier
+                    val dragModifier = if (sortOption == LibrarySortOption.CUSTOM && !isDragLocked) Modifier.longPressDraggableHandle() else Modifier
                     
                     val session = activeSessions[station.stationUuid]
                     val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
