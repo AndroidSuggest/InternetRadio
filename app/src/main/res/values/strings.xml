@@ -340,6 +340,8 @@
     <string name="schedule_action_save">Save</string>
     <string name="schedule_action_create">Create</string>
     <string name="schedule_none">None</string>
+    <string name="schedule_listen_while_recording">Listen while recording</string>
+    <string name="schedule_listen_while_recording_subtitle">Play station audio during background recording</string>
     <string name="schedule_grant_exact_alarm_permission">Please grant Exact Alarm permission to schedule</string>
     <string name="schedule_indefinite">Indefinite</string>
     <string name="schedule_once">Once</string>

@@ -18,10 +18,12 @@ data class ScheduleEntity(
     val timeHour: Int = 0,
     val timeMinute: Int = 0,
     val isEnabled: Boolean = true,
-    @androidx.room.ColumnInfo(defaultValue = "1.0")
+    @androidx.room.ColumnInfo(defaultValue = "1")
     val volumeLevel: Float = 1.0f,
     @androidx.room.ColumnInfo(defaultValue = "0")
     val keepPlayback: Boolean = false,
+    @androidx.room.ColumnInfo(defaultValue = "1")
+    val playOnRecording: Boolean = true,
     @androidx.room.ColumnInfo(defaultValue = "''")
     val scheduleName: String = ""
 )

@@ -187,6 +187,7 @@ private fun ScheduleConfigurationForm(
 
     var scheduleType by remember(initialSchedule) { mutableStateOf(initialSchedule?.type ?: ScheduleType.PLAYBACK) }
     var keepPlayback by remember(initialSchedule) { mutableStateOf(initialSchedule?.keepPlayback ?: false) }
+    var playOnRecording by remember(initialSchedule) { mutableStateOf(initialSchedule?.playOnRecording ?: true) }
     val selectedDays = remember(initialSchedule) { 
         val days = mutableStateListOf<Int>()
         initialSchedule?.daysOfWeek?.split(",")?.mapNotNull { it.toIntOrNull() }?.let { days.addAll(it) }
@@ -305,6 +306,7 @@ private fun ScheduleConfigurationForm(
                                 isEnabled = true,
                                 volumeLevel = volumeLevel,
                                 keepPlayback = keepPlayback,
+                                playOnRecording = playOnRecording,
                                 scheduleName = scheduleName.trim()
                             )
                             onSave(entity)
@@ -525,35 +527,6 @@ private fun ScheduleConfigurationForm(
 
         Spacer(modifier = Modifier.height(24.dp))
         
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.schedule_volume, (volumeLevel * 100).toInt()),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-                Slider(
-                    value = volumeLevel,
-                    onValueChange = { volumeLevel = it },
-                    valueRange = 0f..1f,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    track = { sliderState ->
-                        SliderDefaults.Track(
-                            sliderState = sliderState,
-                            modifier = Modifier.height(24.dp),
-                            colors = SliderDefaults.colors()
-                        )
-                    }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -632,13 +605,84 @@ private fun ScheduleConfigurationForm(
             }
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
         AnimatedVisibility(
             visible = scheduleType == ScheduleType.RECORD,
             enter = fadeIn() + expandVertically(),
             exit = fadeOut() + shrinkVertically()
         ) {
             Column {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                            Text(stringResource(R.string.schedule_listen_while_recording), style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                stringResource(R.string.schedule_listen_while_recording_subtitle),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = playOnRecording,
+                            onCheckedChange = { playOnRecording = it }
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        val showPlaybackOptions = scheduleType == ScheduleType.PLAYBACK || (scheduleType == ScheduleType.RECORD && playOnRecording)
+
+        AnimatedVisibility(
+            visible = showPlaybackOptions,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.schedule_volume, (volumeLevel * 100).toInt()),
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
+                        Slider(
+                            value = volumeLevel,
+                            onValueChange = { volumeLevel = it },
+                            valueRange = 0f..1f,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                            track = { sliderState ->
+                                SliderDefaults.Track(
+                                    sliderState = sliderState,
+                                    modifier = Modifier.height(24.dp),
+                                    colors = SliderDefaults.colors()
+                                )
+                            }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        AnimatedVisibility(
+            visible = scheduleType == ScheduleType.RECORD && playOnRecording,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
