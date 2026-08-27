@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.armanmaurya.internetradio.ui.mobile.screens.player.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -94,8 +96,8 @@ fun SharedTransitionScope.Controls(
                                 progress = { sleepTimerProgress },
                                 modifier = Modifier.size(28.dp),
                                 color = LocalContentColor.current,
-                                strokeWidth = 2.dp,
-                                strokeCap = StrokeCap.Round
+                                trackColor = LocalContentColor.current.copy(alpha = 0.2f),
+                                strokeWidth = 2.dp
                             )
                             val mins = (remainingTime / 60000).toInt() + 1
                             Text(
@@ -141,9 +143,8 @@ fun SharedTransitionScope.Controls(
             shape = RoundedCornerShape(16.dp)
         ) {
             if (isLoading) {
-                androidx.compose.material3.CircularProgressIndicator(
+                androidx.compose.material3.LoadingIndicator(
                     modifier = Modifier.size(32.dp),
-                    strokeWidth = 3.dp,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {

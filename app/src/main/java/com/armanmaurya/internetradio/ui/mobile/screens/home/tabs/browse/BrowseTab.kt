@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.browse
 
 
@@ -25,7 +26,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
@@ -213,7 +214,7 @@ fun BrowseContent(
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                            LoadingIndicator(modifier = Modifier.size(32.dp))
                         }
                     }
                 }
@@ -227,7 +228,7 @@ fun BrowseContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                LoadingIndicator()
             }
         } else if (uiState.error != null) {
             Column(

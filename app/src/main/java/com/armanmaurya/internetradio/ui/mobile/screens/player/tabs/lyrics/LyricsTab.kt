@@ -1,9 +1,10 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.lyrics
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -91,7 +92,7 @@ fun LyricsTab(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         item {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            LoadingIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }

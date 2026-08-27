@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.armanmaurya.internetradio.ui.mobile.screens.tags
 
 
@@ -226,7 +227,7 @@ fun TagSelectScreen(
             Box(modifier = Modifier.weight(1f)) {
                 if (uiState.isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                        LoadingIndicator()
                     }
                 } else if (uiState.error != null) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

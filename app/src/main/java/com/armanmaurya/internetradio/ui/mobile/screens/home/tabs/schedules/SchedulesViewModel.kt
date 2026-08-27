@@ -31,18 +31,18 @@ class SchedulesViewModel @Inject constructor(
             initialValue = AppPreferences()
         )
 
-    val schedules: StateFlow<List<ScheduleEntity>> = scheduleRepository.getAllSchedules()
+    val schedules: StateFlow<List<ScheduleEntity>?> = scheduleRepository.getAllSchedules()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
+            initialValue = null
         )
 
-    val libraryStations: StateFlow<List<RadioStation>> = libraryRepository.getAllStations()
+    val libraryStations: StateFlow<List<RadioStation>?> = libraryRepository.getAllStations()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
+            initialValue = null
         )
 
     fun toggleSchedule(schedule: ScheduleEntity, isEnabled: Boolean) {

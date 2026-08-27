@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules
 
 import androidx.compose.foundation.background
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.collectAsState
@@ -50,7 +52,14 @@ fun SchedulesTabContent(
             .fillMaxSize()
             .padding(contentPadding)
     ) {
-        if (schedules.isEmpty()) {
+        if (schedules == null || libraryStations == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                LoadingIndicator()
+            }
+        } else if (schedules!!.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -64,8 +73,8 @@ fun SchedulesTabContent(
                 )
             }
         } else {
-            val playbackSchedules = schedules.filter { it.type == ScheduleType.PLAYBACK }
-            val recordSchedules = schedules.filter { it.type == ScheduleType.RECORD }
+            val playbackSchedules = schedules!!.filter { it.type == ScheduleType.PLAYBACK }
+            val recordSchedules = schedules!!.filter { it.type == ScheduleType.RECORD }
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -94,7 +103,7 @@ fun SchedulesTabContent(
                         }
                     }
                     items(playbackSchedules, key = { it.id }) { schedule ->
-                        val stationFavicon = libraryStations.find { it.stationUuid == schedule.stationUuid }?.favicon
+                        val stationFavicon = libraryStations!!.find { it.stationUuid == schedule.stationUuid }?.favicon
                         ScheduleItem(
                             schedule = schedule,
                             stationFavicon = stationFavicon,
@@ -131,7 +140,7 @@ fun SchedulesTabContent(
                         }
                     }
                     items(recordSchedules, key = { it.id }) { schedule ->
-                        val stationFavicon = libraryStations.find { it.stationUuid == schedule.stationUuid }?.favicon
+                        val stationFavicon = libraryStations!!.find { it.stationUuid == schedule.stationUuid }?.favicon
                         ScheduleItem(
                             schedule = schedule,
                             stationFavicon = stationFavicon,

@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.armanmaurya.internetradio.ui.mobile.screens.edit
 
 import androidx.compose.ui.res.stringResource
@@ -341,9 +342,8 @@ fun EditStationScreen(
                             }
 
                             if (isResetting) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.padding(end = 8.dp).size(24.dp), 
-                                    strokeWidth = 2.dp
+                                LoadingIndicator(
+                                    modifier = Modifier.padding(end = 8.dp).size(24.dp)
                                 )
                             } else {
                                 IconButton(
@@ -547,9 +547,8 @@ fun EditStationScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             if (isProbingMetadata) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
+                                LoadingIndicator(
+                                    modifier = Modifier.size(24.dp)
                                 )
                             } else {
                                 Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.edit_station_refresh_metadata))
@@ -993,9 +992,8 @@ fun EditStationScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             if (isProbingCodec) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
+                                LoadingIndicator(
+                                    modifier = Modifier.size(24.dp)
                                 )
                             } else {
                                 Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.edit_station_refresh_metadata))
@@ -1028,7 +1026,7 @@ fun EditStationScreen(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                            LoadingIndicator(modifier = Modifier.size(32.dp))
                         }
                     } else {
                         LazyVerticalGrid(

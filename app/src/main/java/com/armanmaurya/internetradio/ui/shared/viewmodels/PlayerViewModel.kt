@@ -196,7 +196,7 @@ class PlayerViewModel @Inject constructor(
     }.flatMapLatest { stationName ->
         if (stationName == null) flowOf(emptyList()) // Fetch recordings immediately
         else flowOf(recordingRepository.getRecordingsForStation(stationName))
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun deleteRecording(recording: com.armanmaurya.internetradio.data.repository.RecordingFile) {
         viewModelScope.launch {

@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.armanmaurya.internetradio.ui.mobile.screens.player
 
 import androidx.compose.ui.res.stringResource
@@ -107,7 +108,7 @@ fun PlayerSheetContent(
     playbackState: PlaybackState,
     isFavorite: Boolean,
     trackHistory: List<TrackHistoryEntity> = emptyList(),
-    stationRecordings: List<com.armanmaurya.internetradio.data.repository.RecordingFile> = emptyList(),
+    stationRecordings: List<com.armanmaurya.internetradio.data.repository.RecordingFile>? = null,
     activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
     retryCountdown: Int? = null,
     lyricsState: com.armanmaurya.internetradio.data.model.LyricsState = com.armanmaurya.internetradio.data.model.LyricsState.Loading,
@@ -607,9 +608,8 @@ fun PlayerSheetContent(
 
                 IconButton(onClick = onTogglePlayPause) {
                     if (playbackState.isLoading) {
-                        androidx.compose.material3.CircularProgressIndicator(
+                        androidx.compose.material3.LoadingIndicator(
                             modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     } else {
@@ -854,9 +854,8 @@ fun PlayerSheetContent(
 
                             IconButton(onClick = onTogglePlayPause) {
                                 if (playbackState.isLoading) {
-                                    androidx.compose.material3.CircularProgressIndicator(
+                                    androidx.compose.material3.LoadingIndicator(
                                         modifier = Modifier.size(24.dp),
-                                        strokeWidth = 2.dp,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                 } else {

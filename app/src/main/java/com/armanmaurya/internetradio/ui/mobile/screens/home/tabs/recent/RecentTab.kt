@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recent
 
 
@@ -73,7 +74,7 @@ fun RecentContent(
     ) { loading ->
         if (loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                LoadingIndicator()
             }
         } else {
             val currentStations = recentStations ?: emptyList()

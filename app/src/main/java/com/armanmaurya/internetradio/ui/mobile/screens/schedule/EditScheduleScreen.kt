@@ -57,8 +57,10 @@ fun EditScheduleScreen(
     onNavigateBack: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
-    val libraryStations by viewModel.libraryStations.collectAsState()
-    val schedules by viewModel.schedules.collectAsState()
+    val libraryStationsState by viewModel.libraryStations.collectAsState()
+    val libraryStations = libraryStationsState ?: emptyList()
+    val schedulesState by viewModel.schedules.collectAsState()
+    val schedules = schedulesState ?: emptyList()
     val appPreferences by viewModel.appPreferences.collectAsState()
     
     val scheduleToEdit = remember(scheduleId, schedules) {
