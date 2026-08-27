@@ -1,3 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Internet Radio</string>
+    <string name="version_format">Versão %1$s</string>
+    <string name="general_search">Pesquisar</string>
+    <string name="general_clear">Limpar</string>
+    <string name="general_later">Mais tarde</string>
+    <string name="general_update_now">Atualizar agora</string>
+    <string name="general_cancel">Cancelar</string>
+    <string name="general_ok">Ok</string>
+    <string name="general_reset">Resetar</string>
+    <string name="general_discard">Descartar</string>
+    <string name="general_save">Salvar</string>
 </resources>
