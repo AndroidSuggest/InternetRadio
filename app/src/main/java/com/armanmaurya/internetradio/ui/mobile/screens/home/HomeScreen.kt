@@ -175,6 +175,7 @@ fun HomeScreen(
 
     val sheetState = rememberModalBottomSheetState()
     var isSearchExpanded by remember { mutableStateOf(false) }
+    var isLibraryDragging by remember { mutableStateOf(false) }
 
     // Forward search query from HomeViewModel → ViewModels
     LaunchedEffect(uiState.searchQuery) {
@@ -358,6 +359,7 @@ fun HomeScreen(
                 HorizontalPager(
                     state = pagerState,
                     beyondViewportPageCount = beyondBounds,
+                    userScrollEnabled = !isLibraryDragging,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
                     when (page) {
@@ -392,7 +394,8 @@ fun HomeScreen(
                             isPlaybackActive = isPlaybackActive,
                             searchQuery = uiState.searchQuery,
                             activeSessions = activeSessions,
-                            onToggleRecording = { playerViewModel.toggleRecording(it) }
+                            onToggleRecording = { playerViewModel.toggleRecording(it) },
+                            onDragStateChange = { isLibraryDragging = it }
                         )
                         3 -> com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.RecordingsContent(
                             activeSessions = activeSessions,

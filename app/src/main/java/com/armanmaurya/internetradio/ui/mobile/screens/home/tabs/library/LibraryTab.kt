@@ -80,7 +80,8 @@ fun LibraryContent(
     isPlaybackActive: Boolean = false,
     searchQuery: String = "",
     activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
-    onToggleRecording: (RadioStation) -> Unit = {}
+    onToggleRecording: (RadioStation) -> Unit = {},
+    onDragStateChange: (Boolean) -> Unit = {}
 ) {
     LaunchedEffect(searchQuery) {
         viewModel.onSearchQueryChange(searchQuery)
@@ -142,6 +143,7 @@ fun LibraryContent(
             
             // Wait for drag completion to update database
             LaunchedEffect(reorderableState.isAnyItemDragging) {
+                onDragStateChange(reorderableState.isAnyItemDragging)
                 if (!reorderableState.isAnyItemDragging && sortOption == LibrarySortOption.CUSTOM) {
                     // Update database only when dragging is completely done
                     // Since moveStation takes indices, we'd need to update based on the full list.
