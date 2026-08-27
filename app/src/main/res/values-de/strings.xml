@@ -96,7 +96,7 @@
     <string name="settings_theme_system">Systemstandard</string>
 
     <!-- ========================================== -->
-    <!-- 6b. BACKUP & RESTORE                       -->
+    <!-- 5b. BACKUP & RESTORE                       -->
     <!-- ========================================== -->
     <string name="settings_backup_section">Sicherung &amp; Wiederherstellung</string>
     <string name="settings_conflict_title">Wenn ein Konflikt auftritt</string>
@@ -108,8 +108,21 @@
     <string name="settings_conflict_keep_newer_desc">Die zuletzt hinzugefügte Version verwenden</string>
     <string name="settings_export_title">Bibliothek exportieren</string>
     <string name="settings_export_subtitle">Senderbibliothek in eine Datei sichern</string>
+    <string name="settings_exported_failed">Export fehlgeschlagen: Die Datei zum Schreiben konnte nicht geöffnet werden</string>
+    <string name="settings_exported_failed_exception">Export fehlgeschlagen: %1$s</string>
+    <plurals name="settings_exported_success">
+        <item quantity="other">Erfolgreich %1$d Sender exportiert</item>
+    </plurals>
     <string name="settings_import_title">Sender importieren</string>
     <string name="settings_import_subtitle">Sender aus einer Sicherungsdatei wiederherstellen</string>
+    <string name="settings_imported">Importiert: %1$d</string>
+    <string name="settings_imported_empty">Keine Änderungen — Alle Sender existieren bereits</string>
+    <plurals name="settings_imported_failed">
+        <item quantity="one">%1$d Datei konnte nicht gelesen werden</item>
+        <item quantity="other">%1$d Dateien konnten nicht gelesen werden</item>
+    </plurals>
+    <string name="settings_imported_skipped">Übersprungen (bereits vorhanden): %1$d</string>
+    <string name="settings_imported_updated">Aktualisiert: %1$d</string>
 
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->

@@ -96,7 +96,7 @@
     <string name="settings_theme_system">System Default</string>
 
     <!-- ========================================== -->
-    <!-- 6b. BACKUP & RESTORE                       -->
+    <!-- 5b. BACKUP & RESTORE                       -->
     <!-- ========================================== -->
     <string name="settings_backup_section">Backup &amp; Restore</string>
     <string name="settings_conflict_title">When a conflict occurs</string>
@@ -108,8 +108,23 @@
     <string name="settings_conflict_keep_newer_desc">Keep whichever was added more recently</string>
     <string name="settings_export_title">Export Stations</string>
     <string name="settings_export_subtitle">Save your stations to a file</string>
+    <string name="settings_exported_failed">Export failed: could not open file for writing</string>
+    <string name="settings_exported_failed_exception">Export failed: %1$s</string>
+    <plurals name="settings_exported_success">
+        <item quantity="one">Exported %1$d station successfully</item>
+        <item quantity="other">Exported %1$d stations successfully</item>
+    </plurals>
     <string name="settings_import_title">Import Stations</string>
     <string name="settings_import_subtitle">Restore stations from a backup file</string>
+    <string name="settings_imported">Imported: %1$d</string>
+    <string name="settings_imported_empty">No changes — all stations already exist</string>
+    <plurals name="settings_imported_failed">
+        <item quantity="one">Failed to read %1$d file</item>
+        <item quantity="other">Failed to read %1$d files</item>
+    </plurals>
+    <string name="settings_imported_failed">%1$d</string>
+    <string name="settings_imported_skipped">Skipped (already existing): %1$d</string>
+    <string name="settings_imported_updated">Updated: %1$d</string>
 
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->

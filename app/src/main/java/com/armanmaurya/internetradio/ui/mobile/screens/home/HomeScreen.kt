@@ -266,6 +266,7 @@ fun HomeScreen(
                                     val index = filteredLibraryStations.indexOf(station).coerceAtLeast(0)
                                     playerViewModel.play(filteredLibraryStations, index, com.armanmaurya.internetradio.player.PlaybackSource.None)
                                 },
+                                onToggleFavoriteClick = { browseViewModel.toggleLibrary(station) },
                                 isRecording = session != null,
                                 recordingDuration = duration,
                                 onRecordClick = { playerViewModel.toggleRecording(station) },
@@ -318,6 +319,7 @@ fun HomeScreen(
                                     val index = browseUiState.stations.indexOf(station).coerceAtLeast(0)
                                     playerViewModel.play(browseUiState.stations, index, com.armanmaurya.internetradio.player.PlaybackSource.None)
                                 },
+                                onToggleFavoriteClick = { browseViewModel.toggleLibrary(station) },
                                 isRecording = session != null,
                                 recordingDuration = duration,
                                 onRecordClick = { playerViewModel.toggleRecording(station) },
@@ -475,5 +477,3 @@ fun HomeScreen(
         }
     }
 }
-
-
