@@ -122,7 +122,6 @@
         <item quantity="one">Failed to read %1$d file</item>
         <item quantity="other">Failed to read %1$d files</item>
     </plurals>
-    <string name="settings_imported_failed">%1$d</string>
     <string name="settings_imported_skipped">Skipped (already existing): %1$d</string>
     <string name="settings_imported_updated">Updated: %1$d</string>
 

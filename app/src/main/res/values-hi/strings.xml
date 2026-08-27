@@ -361,7 +361,6 @@
         <item quantity="one">%1$d फ़ाइल पढ़ने में विफल</item>
         <item quantity="other">%1$d फ़ाइलें पढ़ने में विफल</item>
     </plurals>
-    <string name="settings_imported_failed">%1$d</string>
     <string name="settings_imported_skipped">छोड़ा गया (पहले से मौजूद): %1$d</string>
     <string name="settings_imported_updated">अपडेट किया गया: %1$d</string>
 
