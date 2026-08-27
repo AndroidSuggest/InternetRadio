@@ -55,4 +55,17 @@
     <string name="settings_check_updates">Vérifier les mises à jour</string>
     <string name="settings_rate_review">Évaluer et commenter</string>
     <string name="settings_track_history_limit">Track History Limit</string>
+    <string name="settings_pause_on_volume_zero">Pause sur mute volume</string>
+    <string name="settings_pause_on_volume_zero_desc">Mettez la lecture en pause lorsque l\'appareil est en sourdine (cela ne s\'applique pas pendant l\'enregistrement)</string>
+    <string name="settings_show_cover_art">Illustration en notification</string>
+    <string name="settings_show_cover_art_desc">Montrez l\'affichage du morceaux et non le logo de la station dans l\'écran de verrouillage et les notifications</string>
+    <string name="settings_system_default">Système par défaut</string>
+    <string name="settings_start_week_title">Jour du début de semaine</string>
+    <string name="settings_start_week_sunday">Dimanche</string>
+    <string name="settings_start_week_monday">Lundi</string>
+    <string name="settings_start_week_friday">Vendredi</string>
+    <string name="settings_start_week_saturday">Samedi</string>
+    <string name="settings_number_of_tracks">Nombre de lecture</string>
+    <string name="settings_checking_for_updates">Recherche mises à jour...</string>
+    <string name="settings_no_update_available">Aucune mise à jour</string>
 </resources>
