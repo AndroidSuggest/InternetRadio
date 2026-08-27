@@ -409,6 +409,18 @@ class PlaybackService : MediaLibraryService() {
                     
                     previousVolume = if (muted) 0 else volume
                 }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    updateWidget()
+                }
+
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    updateWidget()
+                }
+
+                override fun onMediaMetadataChanged(mediaMetadata: androidx.media3.common.MediaMetadata) {
+                    updateWidget()
+                }
             })
 
             val intent = Intent(this, MainActivity::class.java)
@@ -539,6 +551,22 @@ class PlaybackService : MediaLibraryService() {
             volumeFadeJob?.cancel()
             player?.volume = 1f
             player?.stop()
+        } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE") {
+            val p = player
+            if (p != null) {
+                if (p.isPlaying || (p.playbackState == Player.STATE_BUFFERING && p.playWhenReady)) {
+                    p.pause()
+                } else {
+                    if (p.playbackState == Player.STATE_IDLE) p.prepare()
+                    p.play()
+                }
+            }
+        } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT") {
+            player?.takeIf { it.hasNextMediaItem() }?.seekToNextMediaItem()
+        } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS") {
+            player?.takeIf { it.hasPreviousMediaItem() }?.seekToPreviousMediaItem()
+        } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_UPDATE") {
+            updateWidget()
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -698,6 +726,28 @@ class PlaybackService : MediaLibraryService() {
                     startService(startIntent)
                 }
             }
+        }
+    }
+
+    private fun updateWidget() {
+        val widgetManager = android.appwidget.AppWidgetManager.getInstance(this)
+        val widgetComponent = android.content.ComponentName(this, com.armanmaurya.internetradio.widget.PlayerWidgetProvider::class.java)
+        val widgetIds = widgetManager.getAppWidgetIds(widgetComponent)
+        if (widgetIds.isNotEmpty()) {
+            val p = player
+            val trackTitle = p?.mediaMetadata?.title?.toString()
+            val stationName = p?.currentMediaItem?.mediaMetadata?.extras?.getString("stationName")
+            val artworkUri = p?.mediaMetadata?.artworkUri?.toString()
+            
+            com.armanmaurya.internetradio.widget.PlayerWidgetProvider.updateWidgets(
+                context = this,
+                appWidgetManager = widgetManager,
+                appWidgetIds = widgetIds,
+                player = p,
+                trackTitle = trackTitle,
+                stationName = stationName,
+                artworkUri = artworkUri
+            )
         }
     }
 }
