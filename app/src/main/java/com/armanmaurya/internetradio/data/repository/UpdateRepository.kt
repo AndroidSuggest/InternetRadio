@@ -13,17 +13,28 @@ class UpdateRepository @Inject constructor(
 ) {
     private val gson = Gson()
 
-    suspend fun getLatestRelease(): GithubRelease? = withContext(Dispatchers.IO) {
+    suspend fun getLatestRelease(isNightly: Boolean = false): GithubRelease? = withContext(Dispatchers.IO) {
         try {
+            val url = if (isNightly) {
+                "https://api.github.com/repos/armanmaurya/internetradio/releases"
+            } else {
+                "https://api.github.com/repos/armanmaurya/internetradio/releases/latest"
+            }
+
             val request = Request.Builder()
-                .url("https://api.github.com/repos/armanmaurya/internetradio/releases/latest")
+                .url(url)
                 .header("Accept", "application/vnd.github.v3+json")
                 .build()
 
             val response = okHttpClient.newCall(request).execute()
             if (response.isSuccessful) {
                 response.body?.string()?.let { bodyString ->
-                    gson.fromJson(bodyString, GithubRelease::class.java)
+                    if (isNightly) {
+                        val releases = gson.fromJson(bodyString, Array<GithubRelease>::class.java)
+                        return@let releases.firstOrNull { it.prerelease || it.tag_name.contains("nightly", true) }
+                    } else {
+                        return@let gson.fromJson(bodyString, GithubRelease::class.java)
+                    }
                 }
             } else {
                 null

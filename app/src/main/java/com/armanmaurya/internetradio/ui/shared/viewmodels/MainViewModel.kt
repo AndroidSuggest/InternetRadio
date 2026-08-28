@@ -30,11 +30,11 @@ class MainViewModel @Inject constructor(
             val twentyFourHours = 24 * 60 * 60 * 1000L
 
             if (force || currentTime - lastCheckTime > twentyFourHours) {
-                val release = updateRepository.getLatestRelease()
+                val isNightly = currentVersion.contains("nightly", ignoreCase = true)
+                val release = updateRepository.getLatestRelease(isNightly)
                 var hasUpdate = false
                 if (release != null) {
-                    val latestVersion = release.tag_name
-                    if (isNewerVersion(currentVersion, latestVersion)) {
+                    if (isNewerVersion(currentVersion, release, isNightly)) {
                         _updateAvailable.value = release
                         hasUpdate = true
                     }
@@ -51,7 +51,19 @@ class MainViewModel @Inject constructor(
         _updateAvailable.value = null
     }
 
-    private fun isNewerVersion(current: String, latest: String): Boolean {
+    private fun isNewerVersion(current: String, release: GithubRelease, isNightly: Boolean): Boolean {
+        if (isNightly) {
+            val currentMatch = Regex("""(\d{4}-\d{2}-\d{2})""").find(current)
+            val releaseMatch = Regex("""(\d{4}-\d{2}-\d{2})""").find(release.name ?: release.tag_name)
+            if (currentMatch != null && releaseMatch != null) {
+                val currentDate = currentMatch.groupValues[1].replace("-", "").toIntOrNull() ?: 0
+                val releaseDate = releaseMatch.groupValues[1].replace("-", "").toIntOrNull() ?: 0
+                return releaseDate > currentDate
+            }
+            return false
+        }
+
+        val latest = release.tag_name
         val currentParts = current.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
         val latestParts = latest.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
 
