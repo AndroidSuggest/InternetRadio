@@ -140,13 +140,6 @@ fun HomeScreen(
         pageCount = { tabs.size }
     )
     
-    // Defer beyondViewportPageCount to avoid lag during navigation transitions
-    var beyondBounds by remember { androidx.compose.runtime.mutableIntStateOf(0) }
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(400)
-        beyondBounds = 1
-    }
-    
     val context = LocalContext.current
     var stationToExport by remember { mutableStateOf<RadioStation?>(null) }
     val exportLauncher = rememberLauncherForActivityResult(
@@ -358,7 +351,6 @@ fun HomeScreen(
             ) {
                 HorizontalPager(
                     state = pagerState,
-                    beyondViewportPageCount = beyondBounds,
                     userScrollEnabled = !isLibraryDragging,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
