@@ -67,6 +67,10 @@ class ScheduleReceiver : BroadcastReceiver() {
             putExtra(EXTRA_SCHEDULE_ID, scheduleId)
         }
 
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        val wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "InternetRadio:ScheduleWakeLock")
+        wakeLock.acquire(60_000L)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(playIntent)
         } else {

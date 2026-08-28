@@ -325,6 +325,7 @@ class PlaybackService : MediaLibraryService() {
             .build()
             
         exoPlayer.repeatMode = Player.REPEAT_MODE_ALL
+        exoPlayer.setWakeMode(androidx.media3.common.C.WAKE_MODE_NETWORK)
             
         registerReceiver(audioNoisyReceiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
 
