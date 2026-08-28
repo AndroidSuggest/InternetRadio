@@ -62,19 +62,38 @@ class ScheduleReceiver : BroadcastReceiver() {
         val scheduleId = intent.getIntExtra(EXTRA_SCHEDULE_ID, -1)
         if (scheduleId == -1) return
 
-        val playIntent = Intent(context, PlaybackService::class.java).apply {
-            this.action = "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE"
-            putExtra(EXTRA_SCHEDULE_ID, scheduleId)
-        }
+        val type = intent.getStringExtra("EXTRA_TYPE")
+        val playOnRecording = intent.getBooleanExtra("EXTRA_PLAY_ON_RECORDING", true)
 
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
         val wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "InternetRadio:ScheduleWakeLock")
         wakeLock.acquire(60_000L)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(playIntent)
-        } else {
-            context.startService(playIntent)
+        val isPlayback = type == ScheduleType.PLAYBACK.name || (type == ScheduleType.RECORD.name && playOnRecording)
+        val isRecord = type == ScheduleType.RECORD.name
+
+        if (isRecord) {
+            val recordIntent = Intent(context, BackgroundRecordingService::class.java).apply {
+                this.action = BackgroundRecordingService.ACTION_START_FROM_SCHEDULE
+                putExtra(EXTRA_SCHEDULE_ID, scheduleId)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(recordIntent)
+            } else {
+                context.startService(recordIntent)
+            }
+        }
+
+        if (isPlayback) {
+            val playIntent = Intent(context, PlaybackService::class.java).apply {
+                this.action = "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE"
+                putExtra(EXTRA_SCHEDULE_ID, scheduleId)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(playIntent)
+            } else {
+                context.startService(playIntent)
+            }
         }
 
         // Reschedule in background using goAsync

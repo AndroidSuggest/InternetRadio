@@ -25,6 +25,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class BackgroundRecordingService : Service() {
     @Inject lateinit var recordingManager: RecordingManager
+    @Inject lateinit var scheduleRepository: com.armanmaurya.internetradio.data.repository.ScheduleRepository
+    @Inject lateinit var libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository
     private var notificationJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Main)
 
@@ -38,6 +40,31 @@ class BackgroundRecordingService : Service() {
                 station?.let { recordingManager.startRecording(it) }
                 startForeground(NOTIF_ID, buildGroupSummaryNotification(recordingManager.sessionsFlow.value))
                 observeSessions()
+            }
+            ACTION_START_FROM_SCHEDULE -> {
+                val scheduleId = intent.getIntExtra(com.armanmaurya.internetradio.player.ScheduleReceiver.EXTRA_SCHEDULE_ID, -1)
+                
+                if (scheduleId != -1) {
+                    startForeground(NOTIF_ID, buildGroupSummaryNotification(recordingManager.sessionsFlow.value))
+                    scope.launch(Dispatchers.IO) {
+                        val schedule = scheduleRepository.getScheduleById(scheduleId) ?: return@launch
+                        val station = libraryRepository.getStationById(schedule.stationUuid) ?: return@launch
+                        recordingManager.startRecording(station)
+                        observeSessions()
+                        
+                        if (schedule.durationMinutes > 0) {
+                            val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+                            val stopIntent = Intent(this@BackgroundRecordingService, com.armanmaurya.internetradio.player.ScheduleReceiver::class.java).apply {
+                                this.action = com.armanmaurya.internetradio.player.ScheduleReceiver.ACTION_STOP_RECORDING
+                                putExtra("KEEP_PLAYBACK", schedule.keepPlayback)
+                                putExtra("UUID", station.stationUuid)
+                            }
+                            val pendingIntent = android.app.PendingIntent.getBroadcast(this@BackgroundRecordingService, station.stationUuid.hashCode(), stopIntent, android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE)
+                            val stopAt = System.currentTimeMillis() + (schedule.durationMinutes * 60 * 1000L)
+                            alarmManager.setAlarmClock(android.app.AlarmManager.AlarmClockInfo(stopAt, pendingIntent), pendingIntent)
+                        }
+                    }
+                }
             }
             ACTION_STOP -> {
                 val uuid = intent.getStringExtra("UUID") ?: return START_STICKY
@@ -172,6 +199,7 @@ class BackgroundRecordingService : Service() {
 
     companion object {
         const val ACTION_START = "com.armanmaurya.internetradio.REC_START"
+        const val ACTION_START_FROM_SCHEDULE = "com.armanmaurya.internetradio.REC_START_SCHEDULE"
         const val ACTION_STOP  = "com.armanmaurya.internetradio.REC_STOP"
         const val NOTIF_ID     = 3001
     }

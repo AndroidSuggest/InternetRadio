@@ -25,6 +25,8 @@ class ScheduleManager @Inject constructor(
 
         val intent = Intent(context, ScheduleReceiver::class.java).apply {
             putExtra(ScheduleReceiver.EXTRA_SCHEDULE_ID, entity.id)
+            putExtra("EXTRA_TYPE", entity.type.name)
+            putExtra("EXTRA_PLAY_ON_RECORDING", entity.playOnRecording)
             addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
 

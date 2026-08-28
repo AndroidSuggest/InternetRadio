@@ -525,12 +525,8 @@ class PlaybackService : MediaLibraryService() {
                                 stationUrl = libraryStation?.urlResolved ?: libraryStation?.url ?: "",
                                 stationName = schedule.stationName,
                                 stationFavicon = libraryStation?.favicon ?: "",
-                                startRecording = schedule.type == com.armanmaurya.internetradio.data.local.entity.ScheduleType.RECORD,
-                                durationMinutes = schedule.durationMinutes,
-                                keepPlayback = schedule.keepPlayback,
                                 volumeLevel = schedule.volumeLevel,
-                                transitionSeconds = if (prefs.isAlarmVolumeTransitionEnabled) prefs.alarmVolumeTransitionSeconds else 0,
-                                playOnRecording = schedule.playOnRecording
+                                transitionSeconds = if (prefs.isAlarmVolumeTransitionEnabled) prefs.alarmVolumeTransitionSeconds else 0
                             )
                         }
                     }
@@ -539,20 +535,16 @@ class PlaybackService : MediaLibraryService() {
             }
 
             val stationUuid = intent.getStringExtra("STATION_UUID")
-            val startRecording = intent.getBooleanExtra("START_RECORDING", false)
-            val durationMinutes = intent.getIntExtra("RECORDING_DURATION", 0)
-            val keepPlayback = intent.getBooleanExtra("KEEP_PLAYBACK", false)
             val stationUrl = intent.getStringExtra("STATION_URL")
             val stationName = intent.getStringExtra("STATION_NAME") ?: ""
             val stationFavicon = intent.getStringExtra("STATION_FAVICON") ?: ""
             val volumeLevel = intent.getFloatExtra("VOLUME_LEVEL", -1f)
             val transitionSeconds = intent.getIntExtra("ALARM_TRANSITION_SECONDS", alarmFadeInSeconds)
-            val playOnRecording = intent.getBooleanExtra("PLAY_ON_RECORDING", true)
 
             if (stationUuid != null && !stationUrl.isNullOrBlank()) {
                 startStationPlayback(
                     stationUuid, stationUrl, stationName, stationFavicon,
-                    startRecording, durationMinutes, keepPlayback, volumeLevel, transitionSeconds, playOnRecording
+                    volumeLevel, transitionSeconds
                 )
             }
         } else if (action == "com.armanmaurya.internetradio.ACTION_STOP_PLAYBACK") {
@@ -584,12 +576,8 @@ class PlaybackService : MediaLibraryService() {
         stationUrl: String,
         stationName: String,
         stationFavicon: String,
-        startRecording: Boolean,
-        durationMinutes: Int,
-        keepPlayback: Boolean,
         volumeLevel: Float,
-        transitionSeconds: Int,
-        playOnRecording: Boolean
+        transitionSeconds: Int
     ) {
         val artworkUri = when {
             stationFavicon.endsWith(".svg", ignoreCase = true) ->
@@ -612,45 +600,6 @@ class PlaybackService : MediaLibraryService() {
                     .build()
             )
             .build()
-
-        if (startRecording && !playOnRecording) {
-            if (durationMinutes > 0) {
-                val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-                val stopIntent = Intent(this, ScheduleReceiver::class.java).apply {
-                    this.action = ScheduleReceiver.ACTION_STOP_RECORDING
-                    putExtra("KEEP_PLAYBACK", keepPlayback)
-                    putExtra("UUID", stationUuid)
-                }
-                val pendingIntent = android.app.PendingIntent.getBroadcast(
-                    this,
-                    stationUuid.hashCode(),
-                    stopIntent,
-                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-                )
-                val stopAt = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
-                val alarmClockInfo = android.app.AlarmManager.AlarmClockInfo(stopAt, pendingIntent)
-                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
-            }
-            
-            serviceScope.launch {
-                val station = libraryRepository.getStationById(stationUuid) ?: return@launch
-                val startIntent = android.content.Intent(this@PlaybackService, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
-                    this.action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
-                    putExtra("STATION_JSON", com.google.gson.Gson().toJson(station))
-                }
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    startForegroundService(startIntent)
-                } else {
-                    startService(startIntent)
-                }
-            }
-            
-            if (player?.playbackState != androidx.media3.common.Player.STATE_READY) {
-                stopForeground(true)
-                stopSelf()
-            }
-            return
-        }
 
         val isSameStation = player?.currentMediaItem?.mediaId == stationUuid
         volumeFadeJob?.cancel()
@@ -701,39 +650,6 @@ class PlaybackService : MediaLibraryService() {
             player?.prepare()
         } else if (player?.playbackState == androidx.media3.common.Player.STATE_IDLE || player?.playbackState == androidx.media3.common.Player.STATE_ENDED) {
             player?.prepare()
-        }
-
-        if (durationMinutes > 0) {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-            val stopIntent = Intent(this, ScheduleReceiver::class.java).apply {
-                this.action = ScheduleReceiver.ACTION_STOP_RECORDING
-                putExtra("KEEP_PLAYBACK", keepPlayback)
-                putExtra("UUID", stationUuid)
-            }
-            val pendingIntent = android.app.PendingIntent.getBroadcast(
-                this,
-                stationUuid.hashCode(),
-                stopIntent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-            )
-            val stopAt = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
-            val alarmClockInfo = android.app.AlarmManager.AlarmClockInfo(stopAt, pendingIntent)
-            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
-        }
-
-        if (startRecording) {
-            serviceScope.launch {
-                val station = libraryRepository.getStationById(stationUuid) ?: return@launch
-                val startIntent = android.content.Intent(this@PlaybackService, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
-                    this.action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
-                    putExtra("STATION_JSON", com.google.gson.Gson().toJson(station))
-                }
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    startForegroundService(startIntent)
-                } else {
-                    startService(startIntent)
-                }
-            }
         }
     }
 
