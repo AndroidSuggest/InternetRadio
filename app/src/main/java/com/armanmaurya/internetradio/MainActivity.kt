@@ -256,6 +256,32 @@ class MainActivity : AppCompatActivity() {
                 val widthSizeClass = windowSizeClass.widthSizeClass
                 val isExpanded = widthSizeClass == WindowWidthSizeClass.Expanded
 
+                val configuration = LocalConfiguration.current
+                val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
+                val imeInsets = WindowInsets.ime
+                val peekHeightPx = with(density) { (72.dp + bottomInset).toPx() }
+                
+                val progress by remember(screenHeightPx, peekHeightPx, imeInsets) {
+                    derivedStateOf {
+                        val imeHeightPx = imeInsets.getBottom(density).toFloat()
+                        val fullHeight = screenHeightPx - imeHeightPx
+                        
+                        val currentOffset = try {
+                            scaffoldState.bottomSheetState.requireOffset()
+                        } catch (e: Exception) {
+                            fullHeight - peekHeightPx
+                        }
+                        
+                        val totalRange = fullHeight - peekHeightPx
+                        if (totalRange > 0) {
+                            (1f - (currentOffset / totalRange)).coerceIn(0f, 1f)
+                        } else {
+                            0f
+                        }
+                    }
+                }
+                
+                val cornerRadius = androidx.compose.ui.unit.lerp(28.dp, 0.dp, progress)
 
                 BottomSheetScaffold(
                     modifier = Modifier.imePadding(),
@@ -263,38 +289,13 @@ class MainActivity : AppCompatActivity() {
                     sheetPeekHeight = sheetPeekHeight,
                     sheetMaxWidth = androidx.compose.ui.unit.Dp.Unspecified,
                     sheetDragHandle = null,
+                    sheetShape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius),
                     sheetContent = {
-                        val configuration = LocalConfiguration.current
-                        val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
-                        val imeInsets = WindowInsets.ime
-
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .heightIn(min = 72.dp + bottomInset)
                         ) {
-                            val peekHeightPx = with(density) { (72.dp + bottomInset).toPx() }
-                            
-                            val progress by remember(screenHeightPx, peekHeightPx, imeInsets) {
-                                derivedStateOf {
-                                    val imeHeightPx = imeInsets.getBottom(density).toFloat()
-                                    val fullHeight = screenHeightPx - imeHeightPx
-                                    
-                                    val currentOffset = try {
-                                        scaffoldState.bottomSheetState.requireOffset()
-                                    } catch (e: Exception) {
-                                        fullHeight - peekHeightPx
-                                    }
-                                    
-                                    val totalRange = fullHeight - peekHeightPx
-                                    if (totalRange > 0) {
-                                        (1f - (currentOffset / totalRange)).coerceIn(0f, 1f)
-                                    } else {
-                                        0f
-                                    }
-                                }
-                            }
-
                             val enableSwipeToDismiss by remember(
                                 progress,
                                 scaffoldState.bottomSheetState.currentValue,
