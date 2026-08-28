@@ -124,7 +124,7 @@ class PlayerController @Inject constructor(
 
             val originalId = mediaItem.mediaId.substringAfter("|")
             if (originalId == activeStation?.stationUuid) {
-                _playbackState.update { it.copy(currentStation = activeStation, currentPlaylistIndex = currentIndex) }
+                _playbackState.update { it.copy(currentStation = activeStation, currentPlaylistIndex = currentPlaylist.indexOf(activeStation).coerceAtLeast(0)) }
                 return
             }
             
@@ -136,7 +136,7 @@ class PlayerController @Inject constructor(
                 _playbackState.update { 
                     it.copy(
                         currentStation = activeStation, 
-                        currentPlaylistIndex = currentIndex,
+                        currentPlaylistIndex = currentPlaylist.indexOf(tagStation).coerceAtLeast(0),
                         currentTrack = null, 
                         trackStartTime = null, 
                         trackCoverArtUri = null,

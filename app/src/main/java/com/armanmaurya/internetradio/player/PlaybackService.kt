@@ -248,7 +248,15 @@ class PlaybackService : MediaLibraryService() {
                             .build()
                             
                         player?.let { p ->
-                            p.replaceMediaItem(p.currentMediaItemIndex, itemWithArt)
+                            for (i in 0 until p.mediaItemCount) {
+                                if (p.getMediaItemAt(i).mediaId == stationUuid) {
+                                    val currentItemAtI = p.getMediaItemAt(i)
+                                    val updatedItem = currentItemAtI.buildUpon()
+                                        .setMediaMetadata(metadataWithArt)
+                                        .build()
+                                    p.replaceMediaItem(i, updatedItem)
+                                }
+                            }
                         }
                     }
                 }
