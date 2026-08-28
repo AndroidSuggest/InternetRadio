@@ -160,9 +160,20 @@ class PlayerViewModel @Inject constructor(
                         // Update Recent
                         recentRepository.addRecentStation(freshStation)
 
-                        // Re-trigger playback with fresh station
-                        play(listOf(freshStation), 0)
+                        // Re-trigger playback, preserving the full playlist so ExoPlayer
+                        // doesn't collapse to a single item and trigger linkSingleItemToContext.
+                        val fullPlaylist = playerController.currentPlaylistSnapshot
+                        val idx = fullPlaylist.indexOfFirst { it.stationUuid == freshStation.stationUuid }
+                        if (idx != -1) {
+                            val updatedPlaylist = fullPlaylist.map {
+                                if (it.stationUuid == freshStation.stationUuid) freshStation else it
+                            }
+                            play(updatedPlaylist, idx)
+                        } else {
+                            play(listOf(freshStation), 0)
+                        }
                     }
+
                 }
         }
     }

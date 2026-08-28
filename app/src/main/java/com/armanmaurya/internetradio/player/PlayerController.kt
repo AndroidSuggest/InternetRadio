@@ -46,8 +46,10 @@ class PlayerController @Inject constructor(
 
     private var activeStation: RadioStation? = null
     private var currentPlaylist: List<RadioStation> = emptyList()
+    val currentPlaylistSnapshot: List<RadioStation> get() = currentPlaylist
     private var currentPlaybackSource: PlaybackSource = PlaybackSource.None
     private var isFetchingMore = false
+
 
     /**
      * Syncs the playback context from Android Auto.
@@ -357,13 +359,11 @@ class PlayerController @Inject constructor(
         
         val mediaItems = stations.map { it.toMediaItem() }
         player.setMediaItems(mediaItems, startIndex, 0L)
+        player.volume = 1f
         player.prepare()
-        
-        scope.launch {
-            player.volume = 1f
-            if (playWhenReady) player.play() else player.pause()
-        }
+        if (playWhenReady) player.play() else player.pause()
     }
+
     
     fun updateCurrentStation(updatedStation: RadioStation, oldUuid: String? = null) {
         val player = controller ?: return
