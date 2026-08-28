@@ -102,8 +102,9 @@ class PlayerController @Inject constructor(
 
         override fun onPlaybackStateChanged(state: Int) {
             _playbackState.update {
+                val isTransientIdle = state == Player.STATE_IDLE && controller?.playWhenReady == true && controller?.playerError == null
                 it.copy(
-                    isLoading = state == Player.STATE_BUFFERING,
+                    isLoading = state == Player.STATE_BUFFERING || (it.isLoading && isTransientIdle),
                     isError = state == Player.STATE_IDLE && controller?.playerError != null
                 )
             }
@@ -439,6 +440,7 @@ class PlayerController @Inject constructor(
         if (player.isPlaying || isBuffering) {
             player.pause()
         } else {
+            _playbackState.update { it.copy(isLoading = true) }
             if (player.playbackState == Player.STATE_IDLE) {
                 player.prepare()
             }

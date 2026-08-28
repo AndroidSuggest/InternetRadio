@@ -376,6 +376,13 @@ class PlaybackService : MediaLibraryService() {
                 val item = currentMediaItem
                 if (item != null && !playWhenReady) {
                     retryStateTracker.reset()
+                    if (playbackState == Player.STATE_READY || playbackState == Player.STATE_BUFFERING) {
+                        // The player was paused and likely has a stale buffer or a dead socket.
+                        // We call stop() to drop the old connection and buffer, 
+                        // then prepare() to connect fresh to the live edge.
+                        super.stop()
+                        super.prepare()
+                    }
                 }
                 super.play()
             }
