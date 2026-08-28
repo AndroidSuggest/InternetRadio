@@ -334,4 +334,25 @@
     <string name="recordings_currently_recording">Trwa nagrywanie</string>
     <string name="lyrics_powered_by">Dostarczane przez</string>
     <string name="action_record_station">Nagraj stację</string>
+    <string name="settings_imported">Zaimportowano: %1$d</string>
+    <string name="settings_imported_empty">Brak zmian — wszystkie stacje już istnieją</string>
+    <string name="settings_exported_failed">Eksport nie powiódł się: nie można otworzyć pliku do zapisu</string>
+    <string name="settings_exported_failed_exception">Błąd eksportu: %1$s</string>
+    <plurals name="settings_exported_success">
+        <item quantity="one">Pomyślnie wyeksportowano %1$d stację</item>
+        <item quantity="few">Pomyślnie wyeksportowano %1$d stacje</item>
+        <item quantity="many">Pomyślnie wyeksportowano %1$d stacji</item>
+        <item quantity="other">Pomyślnie wyeksportowano %1$d stacji</item>
+    </plurals>
+    <plurals name="settings_imported_failed">
+        <item quantity="one">Nie udało się odczytać %1$d pliku</item>
+        <item quantity="few">Nie udało się odczytać %1$d plików</item>
+        <item quantity="many">Nie udało się odczytać %1$d plików</item>
+        <item quantity="other">Nie udało się odczytać %1$d plików</item>
+    </plurals>
+    <string name="settings_imported_skipped">Pominięto (istnieje już): %1$d</string>
+    <string name="settings_imported_updated">Zaktualizowano: %1$d</string>
+    <string name="schedule_listen_while_recording">Słuchaj podczas nagrywania</string>
+    <string name="schedule_listen_while_recording_subtitle">Odtwarzanie dźwięku stacji podczas nagrywania w tle</string>
+    <string name="action_create_shortcut">Utwórz skrót</string>
 </resources>
