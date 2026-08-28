@@ -271,7 +271,7 @@
     <string name="edit_station_cd_remove_language">Rimuovi lingua</string>
     <string name="edit_station_cd_remove_tag">Rimuovi tag</string>
     <string name="edit_station_refresh_metadata">Aggiorna metadati</string>
-    <string name="player_no_track_data">Nessun dato del brano</string>
+    <string name="player_no_track_data">Nessun dato della traccia</string>
     <string name="player_station_info">Informazioni stazione</string>
     <string name="player_label_tags">Tag</string>
     <string name="player_label_website">Sito web</string>
@@ -286,7 +286,7 @@
     </plurals>
     <string name="player_timer_min">%1$d min</string>
     <string name="player_recording_saved">Registrazione salvata!</string>
-    <string name="player_copied_track_to_clipboard">Brano copiato negli appunti</string>
+    <string name="player_copied_track_to_clipboard">Traccia copiata negli appunti</string>
     <string name="player_copied_to_clipboard">Copiato negli appunti</string>
     <string name="player_cd_toggle_favorite">Attiva/disattiva preferiti</string>
     <string name="player_cd_homepage">Pagina home</string>
@@ -327,4 +327,23 @@
     <string name="action_stop_recording">Interrompi registrazione</string>
     <string name="action_record_station">Registra stazione</string>
     <string name="lyrics_powered_by">Offerto da</string>
+    <string name="settings_exported_failed">Esportazione non riuscita: impossibile aprire il file per la scrittura</string>
+    <string name="settings_exported_failed_exception">Esportazione non riuscita: %1$s</string>
+    <plurals name="settings_exported_success">
+        <item quantity="one">%1$d stazione esportata correttamente</item>
+        <item quantity="many">%1$d stazioni esportate correttamente</item>
+        <item quantity="other">%1$d stazioni esportate correttamente</item>
+    </plurals>
+    <string name="settings_imported">Importate: %1$d</string>
+    <string name="settings_imported_empty">Nessuna modifica — esistono già tutte le stazioni</string>
+    <plurals name="settings_imported_failed">
+        <item quantity="one">Impossibile leggere %1$d file</item>
+        <item quantity="many">Impossibile leggere %1$d file</item>
+        <item quantity="other">Impossibile leggere %1$d file</item>
+    </plurals>
+    <string name="settings_imported_skipped">Saltate (esistono già): %1$d</string>
+    <string name="settings_imported_updated">Aggiornate: %1$d</string>
+    <string name="schedule_listen_while_recording">Ascolta durante la registrazione</string>
+    <string name="schedule_listen_while_recording_subtitle">Riproduci l\'audio della stazione durante la registrazione in background</string>
+    <string name="action_create_shortcut">Crea scorciatoia</string>
 </resources>
