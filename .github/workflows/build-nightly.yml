@@ -44,8 +44,14 @@ jobs:
           if gh release view nightly-build --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release delete nightly-build --repo "$GITHUB_REPOSITORY" -y --cleanup-tag
           fi
+          
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          
           gh release create nightly-build app/build/outputs/apk/nightly/internetradio-nightly-${{ env.date }}.apk \
             --repo "$GITHUB_REPOSITORY" \
             --prerelease \
             --title "Nightly Build - ${{ env.date }}" \
-            --notes "This is the latest nightly build. It includes the newest features but may be unstable."
+            --notes "This is the latest nightly build. It includes the newest features but may be unstable.
+
+          **Changes include everything up to commit:** [\`$SHORT_SHA\`]($COMMIT_URL)"
