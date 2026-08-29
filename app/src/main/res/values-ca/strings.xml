@@ -1,3 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Internet Radio</string>
+    <string name="version_format">Versió %1$s</string>
+    <string name="general_search">Cercar</string>
+    <string name="general_clear">Netejar</string>
 </resources>
