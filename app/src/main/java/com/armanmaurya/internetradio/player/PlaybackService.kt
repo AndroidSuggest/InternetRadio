@@ -462,6 +462,8 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
+        // Push a final stopped-state widget update before tearing down
+        pushStoppedWidgetUpdate()
         serviceScope.cancel()
         // Clear session ref first so the callback stops pushing updates
         autoCallback.activeSession = null
@@ -485,6 +487,7 @@ class PlaybackService : MediaLibraryService() {
         val player = player
         if (player != null) {
             if (!player.playWhenReady || player.mediaItemCount == 0) {
+                pushStoppedWidgetUpdate()
                 stopSelf()
             }
         }
@@ -562,11 +565,20 @@ class PlaybackService : MediaLibraryService() {
         } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE") {
             val p = player
             if (p != null) {
-                if (p.isPlaying || (p.playbackState == Player.STATE_BUFFERING && p.playWhenReady)) {
-                    p.pause()
-                } else {
-                    if (p.playbackState == Player.STATE_IDLE) p.prepare()
-                    p.play()
+                when {
+                    p.isPlaying || (p.playbackState == Player.STATE_BUFFERING && p.playWhenReady) -> {
+                        p.pause()
+                    }
+                    p.mediaItemCount == 0 -> {
+                        // Cold boot: app was killed. Restore last played station with full playlist context.
+                        serviceScope.launch {
+                            restoreAndPlayLastStation()
+                        }
+                    }
+                    else -> {
+                        if (p.playbackState == Player.STATE_IDLE) p.prepare()
+                        p.play()
+                    }
                 }
             }
         } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT") {
@@ -681,5 +693,100 @@ class PlaybackService : MediaLibraryService() {
                 artworkUri = artworkUri
             )
         }
+    }
+
+    /**
+     * Pushes a final "stopped" widget update from the recent DB.
+     * Called when the service is about to be destroyed so the widget
+     * shows the correct station name/art with a Play button instead of freezing.
+     * Uses a new independent scope since serviceScope may already be cancelled.
+     */
+    private fun pushStoppedWidgetUpdate() {
+        val widgetManager = android.appwidget.AppWidgetManager.getInstance(this)
+        val widgetComponent = android.content.ComponentName(this, com.armanmaurya.internetradio.widget.PlayerWidgetProvider::class.java)
+        val widgetIds = widgetManager.getAppWidgetIds(widgetComponent)
+        if (widgetIds.isEmpty()) return
+
+        // Use a fresh scope since serviceScope may have been cancelled already
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            val lastStation = recentRepository.getAllRecent().first().firstOrNull()
+            com.armanmaurya.internetradio.widget.PlayerWidgetProvider.updateWidgets(
+                context = this@PlaybackService,
+                appWidgetManager = widgetManager,
+                appWidgetIds = widgetIds,
+                player = null,                    // null → isPlaying=false → shows Play icon
+                trackTitle = lastStation?.name,   // Clean station name from DB, not live stream title
+                stationName = lastStation?.name,
+                artworkUri = lastStation?.favicon
+            )
+        }
+    }
+
+    /**
+     * Restores the last played station with a full playlist context, mirroring
+     * the autoPlayOnStart strategy used by PlayerController:
+     * 1. Check if the station is in the library → load full library as playlist
+     * 2. Fall back to the full recents list as playlist
+     */
+    private suspend fun restoreAndPlayLastStation() {
+        val p = player ?: return
+        val lastStation = recentRepository.getAllRecent().first().firstOrNull() ?: run {
+            stopSelf()
+            return
+        }
+
+        val libraryStations = libraryRepository.getAllStations().first()
+        val libraryIndex = libraryStations.indexOfFirst { it.stationUuid == lastStation.stationUuid }
+
+        val mediaItems: List<androidx.media3.common.MediaItem>
+        val startIndex: Int
+
+        if (libraryIndex != -1) {
+            // Found in library: load the full library as playlist
+            mediaItems = libraryStations.map { station ->
+                buildMediaItem(station)
+            }
+            startIndex = libraryIndex
+        } else {
+            // Not in library: fall back to full recents list
+            val recentStations = recentRepository.getAllRecent().first()
+            val recentIndex = recentStations.indexOfFirst { it.stationUuid == lastStation.stationUuid }.coerceAtLeast(0)
+            mediaItems = recentStations.map { station ->
+                buildMediaItem(station)
+            }
+            startIndex = recentIndex
+        }
+
+        p.volume = 1f
+        p.setMediaItems(mediaItems, startIndex, 0L)
+        p.playWhenReady = true
+        p.prepare()
+    }
+
+    /**
+     * Builds a MediaItem from a RadioStation, handling SVG artwork proxying.
+     */
+    private fun buildMediaItem(station: com.armanmaurya.internetradio.data.model.RadioStation): androidx.media3.common.MediaItem {
+        val artworkUri = when {
+            station.favicon.endsWith(".svg", ignoreCase = true) ->
+                android.net.Uri.parse(SvgProxyProvider.createProxyUri(this, station.favicon))
+            station.favicon.isNotBlank() -> android.net.Uri.parse(station.favicon)
+            else -> android.net.Uri.EMPTY
+        }
+        return androidx.media3.common.MediaItem.Builder()
+            .setMediaId(station.stationUuid)
+            .setUri(station.urlResolved.ifBlank { station.url })
+            .setLiveConfiguration(androidx.media3.common.MediaItem.LiveConfiguration.Builder().build())
+            .setMediaMetadata(
+                androidx.media3.common.MediaMetadata.Builder()
+                    .setTitle(station.name)
+                    .setArtworkUri(artworkUri)
+                    .setExtras(android.os.Bundle().apply {
+                        putString("stationName", station.name)
+                        putString("stationFavicon", station.favicon)
+                    })
+                    .build()
+            )
+            .build()
     }
 }
