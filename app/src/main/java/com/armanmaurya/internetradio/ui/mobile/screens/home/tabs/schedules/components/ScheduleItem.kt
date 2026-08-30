@@ -82,16 +82,35 @@ fun ScheduleItem(
                     .padding(top = 16.dp, bottom = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AsyncImage(
-                    model = stationFavicon?.ifBlank { null },
+                coil3.compose.SubcomposeAsyncImage(
+                    model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                        .data(stationFavicon?.ifBlank { null })
+                        .size(coil3.size.Size.ORIGINAL)
+                        .build(),
                     contentDescription = stringResource(R.string.schedule_station_logo_cd),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(56.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF1E1E1E)),
-                    error = painterResource(id = R.drawable.ic_launcher_foreground),
-                    fallback = painterResource(id = R.drawable.ic_launcher_foreground)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    error = {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    },
+                    loading = {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
