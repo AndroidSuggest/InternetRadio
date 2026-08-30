@@ -168,18 +168,20 @@ private fun ScheduleConfigurationForm(
     val context = LocalContext.current
     val alarmManager = remember { context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager }
 
-    val calendar = Calendar.getInstance()
+    val startCalendar = remember { Calendar.getInstance().apply { add(Calendar.MINUTE, 1) } }
+    val endCalendar = remember { Calendar.getInstance().apply { add(Calendar.MINUTE, 1); add(Calendar.HOUR_OF_DAY, 1) } }
+
     var scheduleName by remember(initialSchedule) { mutableStateOf(initialSchedule?.scheduleName ?: "") }
-    var startHour by remember(initialSchedule) { mutableStateOf(initialSchedule?.timeHour ?: calendar.get(Calendar.HOUR_OF_DAY)) }
-    var startMinute by remember(initialSchedule) { mutableStateOf(initialSchedule?.timeMinute ?: calendar.get(Calendar.MINUTE)) }
+    var startHour by remember(initialSchedule) { mutableStateOf(initialSchedule?.timeHour ?: startCalendar.get(Calendar.HOUR_OF_DAY)) }
+    var startMinute by remember(initialSchedule) { mutableStateOf(initialSchedule?.timeMinute ?: startCalendar.get(Calendar.MINUTE)) }
     var endHour by remember(initialSchedule) { 
         mutableStateOf(
-            initialSchedule?.let { ((it.timeHour * 60 + it.timeMinute + it.durationMinutes) / 60) % 24 } ?: ((calendar.get(Calendar.HOUR_OF_DAY) + 1) % 24)
+            initialSchedule?.let { ((it.timeHour * 60 + it.timeMinute + it.durationMinutes) / 60) % 24 } ?: endCalendar.get(Calendar.HOUR_OF_DAY)
         ) 
     }
     var endMinute by remember(initialSchedule) { 
         mutableStateOf(
-            initialSchedule?.let { (it.timeHour * 60 + it.timeMinute + it.durationMinutes) % 60 } ?: calendar.get(Calendar.MINUTE)
+            initialSchedule?.let { (it.timeHour * 60 + it.timeMinute + it.durationMinutes) % 60 } ?: endCalendar.get(Calendar.MINUTE)
         ) 
     }
     
