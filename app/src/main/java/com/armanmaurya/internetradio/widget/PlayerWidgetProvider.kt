@@ -69,6 +69,7 @@ class PlayerWidgetProvider : AppWidgetProvider() {
             artworkUri: String?
         ) {
             val isPlaying = player?.isPlaying == true
+            val playlistSize = player?.mediaItemCount ?: 0
             
             val playPauseIntent = Intent(context, PlaybackService::class.java).apply { action = "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" }
             val prevIntent = Intent(context, PlaybackService::class.java).apply { action = "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS" }
@@ -111,14 +112,14 @@ class PlayerWidgetProvider : AppWidgetProvider() {
                             }
                         }
                         
-                        applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, swBitmap)
+                        applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, playlistSize, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, swBitmap)
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, null)
+                        applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, playlistSize, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, null)
                     }
                 }
             } else {
-                applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, null)
+                applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, playlistSize, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, null)
             }
         }
 
@@ -127,6 +128,7 @@ class PlayerWidgetProvider : AppWidgetProvider() {
             appWidgetManager: AppWidgetManager,
             appWidgetIds: IntArray,
             isPlaying: Boolean,
+            playlistSize: Int,
             trackTitle: String?,
             stationName: String?,
             pendingPlayPause: PendingIntent,
@@ -149,8 +151,8 @@ class PlayerWidgetProvider : AppWidgetProvider() {
                 views.setOnClickPendingIntent(R.id.widget_btn_prev, pendingPrev)
                 views.setOnClickPendingIntent(R.id.widget_btn_next, pendingNext)
                 
-                // Hide prev/next buttons if widget is narrow (e.g. 4 cells wide on a dense grid)
-                if (minWidth < 300) {
+                // Hide prev/next buttons if widget is narrow or if playlist has only 1 item
+                if (minWidth < 300 || playlistSize <= 1) {
                     views.setViewVisibility(R.id.widget_btn_prev, android.view.View.GONE)
                     views.setViewVisibility(R.id.widget_btn_next, android.view.View.GONE)
                 } else {
