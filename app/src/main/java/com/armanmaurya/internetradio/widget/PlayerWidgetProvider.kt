@@ -39,6 +39,23 @@ class PlayerWidgetProvider : AppWidgetProvider() {
         }
     }
 
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: android.os.Bundle
+    ) {
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+        val intent = Intent(context, PlaybackService::class.java).apply {
+            action = "com.armanmaurya.internetradio.ACTION_WIDGET_UPDATE"
+        }
+        try {
+            context.startService(intent)
+        } catch (e: Exception) {
+            // App is in background and idle.
+        }
+    }
+
     companion object {
         private val scope = CoroutineScope(Dispatchers.IO)
         
@@ -53,15 +70,9 @@ class PlayerWidgetProvider : AppWidgetProvider() {
         ) {
             val isPlaying = player?.isPlaying == true
             
-            val playPauseIntent = Intent(context, PlaybackService::class.java).apply {
-                action = "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE"
-            }
-            val prevIntent = Intent(context, PlaybackService::class.java).apply {
-                action = "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS"
-            }
-            val nextIntent = Intent(context, PlaybackService::class.java).apply {
-                action = "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT"
-            }
+            val playPauseIntent = Intent(context, PlaybackService::class.java).apply { action = "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" }
+            val prevIntent = Intent(context, PlaybackService::class.java).apply { action = "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS" }
+            val nextIntent = Intent(context, PlaybackService::class.java).apply { action = "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" }
             
             val pendingPlayPause = PendingIntent.getService(context, 0, playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             val pendingPrev = PendingIntent.getService(context, 1, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -69,20 +80,6 @@ class PlayerWidgetProvider : AppWidgetProvider() {
 
             val launchIntent = Intent(context, MainActivity::class.java)
             val pendingLaunch = PendingIntent.getActivity(context, 3, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-
-            val views = RemoteViews(context.packageName, R.layout.widget_player)
-            views.setOnClickPendingIntent(R.id.widget_root, pendingLaunch)
-            views.setOnClickPendingIntent(R.id.widget_btn_play_pause, pendingPlayPause)
-            views.setOnClickPendingIntent(R.id.widget_btn_prev, pendingPrev)
-            views.setOnClickPendingIntent(R.id.widget_btn_next, pendingNext)
-
-            views.setTextViewText(R.id.widget_track_title, trackTitle ?: context.getString(R.string.app_name))
-            views.setTextViewText(R.id.widget_station_name, stationName ?: "")
-
-            views.setImageViewResource(
-                R.id.widget_btn_play_pause,
-                if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
-            )
 
             if (!artworkUri.isNullOrBlank()) {
                 scope.launch {
@@ -101,44 +98,98 @@ class PlayerWidgetProvider : AppWidgetProvider() {
                             .build()
                             
                         val result = context.imageLoader.execute(request)
+                        var swBitmap: Bitmap? = null
                         if (result is SuccessResult) {
                             val bitmap = (result.image as? BitmapImage)?.bitmap 
                                 ?: (result.image.asDrawable(context.resources) as? BitmapDrawable)?.bitmap
                             if (bitmap != null) {
-                                val swBitmap = if (bitmap.config == Bitmap.Config.HARDWARE) {
+                                swBitmap = if (bitmap.config == Bitmap.Config.HARDWARE) {
                                     bitmap.copy(Bitmap.Config.ARGB_8888, false) ?: bitmap
                                 } else {
                                     bitmap
                                 }
-                                views.setImageViewBitmap(R.id.widget_album_art, getLeftRoundedCornerBitmap(swBitmap, 16f))
-                                
-                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                                    val tint = getArtworkTint(swBitmap)
-                                    views.setColorStateList(R.id.widget_root, "setBackgroundTintList", android.content.res.ColorStateList.valueOf(tint))
-                                    
-                                    val white = android.graphics.Color.WHITE
-                                    views.setTextColor(R.id.widget_track_title, white)
-                                    views.setTextColor(R.id.widget_station_name, android.graphics.Color.parseColor("#B3FFFFFF"))
-                                    views.setColorStateList(R.id.widget_btn_play_pause, "setImageTintList", android.content.res.ColorStateList.valueOf(white))
-                                    views.setColorStateList(R.id.widget_btn_prev, "setImageTintList", android.content.res.ColorStateList.valueOf(white))
-                                    views.setColorStateList(R.id.widget_btn_next, "setImageTintList", android.content.res.ColorStateList.valueOf(white))
-                                }
-                                
-                                appWidgetManager.updateAppWidget(appWidgetIds, views)
                             }
                         }
+                        
+                        applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, swBitmap)
                     } catch (e: Exception) {
                         e.printStackTrace()
+                        applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, null)
                     }
                 }
             } else {
-                views.setImageViewResource(R.id.widget_album_art, R.drawable.media3_notification_small_icon)
+                applyWidgetUpdates(context, appWidgetManager, appWidgetIds, isPlaying, trackTitle, stationName, pendingPlayPause, pendingPrev, pendingNext, pendingLaunch, null)
             }
-            
-            appWidgetManager.updateAppWidget(appWidgetIds, views)
         }
 
-        private fun getLeftRoundedCornerBitmap(bitmap: Bitmap, pixels: Float): Bitmap {
+        private fun applyWidgetUpdates(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            appWidgetIds: IntArray,
+            isPlaying: Boolean,
+            trackTitle: String?,
+            stationName: String?,
+            pendingPlayPause: PendingIntent,
+            pendingPrev: PendingIntent,
+            pendingNext: PendingIntent,
+            pendingLaunch: PendingIntent,
+            artworkBitmap: Bitmap?
+        ) {
+            for (appWidgetId in appWidgetIds) {
+                val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+                val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 50)
+                val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 250)
+                
+                // If the widget is shrunk to less than 100dp tall, use the small horizontal layout
+                val layoutId = if (minHeight < 100) R.layout.widget_player_small else R.layout.widget_player
+                
+                val views = RemoteViews(context.packageName, layoutId)
+                views.setOnClickPendingIntent(R.id.widget_root, pendingLaunch)
+                views.setOnClickPendingIntent(R.id.widget_btn_play_pause, pendingPlayPause)
+                views.setOnClickPendingIntent(R.id.widget_btn_prev, pendingPrev)
+                views.setOnClickPendingIntent(R.id.widget_btn_next, pendingNext)
+                
+                // Hide prev/next buttons if widget is narrow (e.g. 4 cells wide on a dense grid)
+                if (minWidth < 300) {
+                    views.setViewVisibility(R.id.widget_btn_prev, android.view.View.GONE)
+                    views.setViewVisibility(R.id.widget_btn_next, android.view.View.GONE)
+                } else {
+                    views.setViewVisibility(R.id.widget_btn_prev, android.view.View.VISIBLE)
+                    views.setViewVisibility(R.id.widget_btn_next, android.view.View.VISIBLE)
+                }
+
+                views.setTextViewText(R.id.widget_track_title, trackTitle ?: context.getString(R.string.app_name))
+                views.setTextViewText(R.id.widget_station_name, stationName ?: "")
+
+                views.setImageViewResource(
+                    R.id.widget_btn_play_pause,
+                    if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
+                )
+                
+                if (artworkBitmap != null) {
+                    views.setImageViewBitmap(R.id.widget_album_art, getRoundedCornerBitmap(artworkBitmap, 16f))
+                    
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                        val tint = getArtworkTint(artworkBitmap)
+                        views.setColorStateList(R.id.widget_root, "setBackgroundTintList", android.content.res.ColorStateList.valueOf(tint))
+                        
+                        val white = android.graphics.Color.WHITE
+                        val dark = android.graphics.Color.parseColor("#121212")
+                        views.setTextColor(R.id.widget_track_title, white)
+                        views.setTextColor(R.id.widget_station_name, android.graphics.Color.parseColor("#B3FFFFFF"))
+                        views.setColorStateList(R.id.widget_btn_play_pause, "setImageTintList", android.content.res.ColorStateList.valueOf(dark))
+                        views.setColorStateList(R.id.widget_btn_prev, "setImageTintList", android.content.res.ColorStateList.valueOf(white))
+                        views.setColorStateList(R.id.widget_btn_next, "setImageTintList", android.content.res.ColorStateList.valueOf(white))
+                    }
+                } else {
+                    views.setImageViewResource(R.id.widget_album_art, R.drawable.media3_notification_small_icon)
+                }
+                
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+            }
+        }
+
+        private fun getRoundedCornerBitmap(bitmap: Bitmap, pixels: Float): Bitmap {
             val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(output)
 
@@ -153,8 +204,6 @@ class PlayerWidgetProvider : AppWidgetProvider() {
             
             // Draw full rounded rect
             canvas.drawRoundRect(rectF, pixels, pixels, paint)
-            // Overlay a square rect on the right half to disable right side rounding
-            canvas.drawRect(bitmap.width / 2f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat(), paint)
 
             paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN)
             canvas.drawBitmap(bitmap, rect, rect, paint)
