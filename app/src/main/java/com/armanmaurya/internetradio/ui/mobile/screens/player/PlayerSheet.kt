@@ -1316,6 +1316,7 @@ fun PlayerSheetContent(
         // DIALOG: visible when expanded — same sharedBounds key as pill = true container transform
         TrackDialog(
             searchDialogTrack = searchDialogTrack,
+            rawTrackName = playbackState.rawTrackName,
             trackCoverArtUri = playbackState.trackCoverArtUri,
             isFetchingArtwork = playbackState.isFetchingArtwork,
             onDismissRequest = { searchDialogTrack = null }

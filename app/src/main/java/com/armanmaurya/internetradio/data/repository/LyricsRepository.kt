@@ -13,11 +13,15 @@ import javax.inject.Singleton
 class LyricsRepository @Inject constructor(
     private val lrcLibApi: LrcLibApi
 ) {
-    fun getLyricsForTrack(trackName: String): Flow<LyricsState> = flow {
+    fun getLyricsForTrack(trackName: String, artistName: String? = null): Flow<LyricsState> = flow {
         emit(LyricsState.Loading)
         try {
-            suspend fun searchAndFindBestMatch(query: String): com.armanmaurya.internetradio.data.remote.dto.LrcLibResponse? {
-                val responses = lrcLibApi.searchLyrics(query)
+            suspend fun searchAndFindBestMatch(query: String, explicitArtist: String?): com.armanmaurya.internetradio.data.remote.dto.LrcLibResponse? {
+                val responses = if (explicitArtist != null) {
+                    lrcLibApi.searchLyricsExplicit(query, explicitArtist)
+                } else {
+                    lrcLibApi.searchLyrics(query)
+                }
                 if (responses.isEmpty()) return null
                 
                 // The first result is deemed the most relevant by LRCLIB's search engine.
@@ -44,7 +48,8 @@ class LyricsRepository @Inject constructor(
 
             // 1. Cleaned full query without hyphens or extra punctuation
             val cleanedFull = TrackSanitizer.sanitizeTrackInfo(trackName)
-            val bestMatch = if (cleanedFull.isNotBlank()) searchAndFindBestMatch(cleanedFull) else null
+            val cleanedArtist = artistName?.let { TrackSanitizer.sanitizeTrackInfo(it) }
+            val bestMatch = if (cleanedFull.isNotBlank()) searchAndFindBestMatch(cleanedFull, cleanedArtist) else null
 
             if (bestMatch != null) {
                 val parsedSyncedLyrics = bestMatch.syncedLyrics?.let { parseLrc(it) }

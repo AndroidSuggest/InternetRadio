@@ -308,6 +308,7 @@
     <string name="player_retrying_in">Retrying in %1$ds...</string>
     <string name="player_retrying_connection">Retrying connection...</string>
     <string name="player_tab_lyrics">Lyrics</string>
+    <string name="player_original_stream_metadata">Original Stream Metadata</string>
     <string name="player_lyrics_not_available">Lyrics not available</string>
     <string name="player_cd_cast">Cast</string>
     <string name="player_cd_volume">Volume</string>

@@ -25,7 +25,7 @@ import com.armanmaurya.internetradio.data.local.dao.ScheduleDao
         TrackHistoryEntity::class,
         ScheduleEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2, spec = RadioDatabase.Migration1To2Spec::class),
@@ -34,7 +34,8 @@ import com.armanmaurya.internetradio.data.local.dao.ScheduleDao
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7, spec = RadioDatabase.Migration6To7Spec::class),
         AutoMigration(from = 7, to = 8),
-        AutoMigration(from = 8, to = 9)
+        AutoMigration(from = 8, to = 9),
+        AutoMigration(from = 9, to = 10)
     ]
 )
 @TypeConverters(Converters::class)

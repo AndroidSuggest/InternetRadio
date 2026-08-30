@@ -198,13 +198,15 @@ class PlayerController @Inject constructor(
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
             val artworkUri = mediaMetadata.extras?.getString("track_cover_art_url")
+            val cleanTrackName = mediaMetadata.extras?.getString("clean_track_name")
+            val cleanArtistName = mediaMetadata.extras?.getString("clean_artist_name")
+            val rawTrackName = mediaMetadata.extras?.getString("icy_raw_title")
             val trackInfo = mediaMetadata.extras?.getString("icy_title") 
                 ?: if (mediaMetadata.title != null && mediaMetadata.artist != null) {
                     "${mediaMetadata.title} - ${mediaMetadata.artist}"
                 } else {
                     mediaMetadata.title?.toString() ?: mediaMetadata.artist?.toString()
                 }
-            val previousTrack = _playbackState.value.currentTrack
             if (trackInfo != null && trackInfo.isNotBlank() && trackInfo != activeStation?.name) {
                 // Read the exact start time recorded by the background service. 
                 // If it's -1, it means it's the tune-in track and we don't know the position.
@@ -215,10 +217,13 @@ class PlayerController @Inject constructor(
                     currentTrack = trackInfo, 
                     trackStartTime = exactStartTime,
                     trackCoverArtUri = artworkUri,
-                    isFetchingArtwork = isFetchingArtwork
+                    isFetchingArtwork = isFetchingArtwork,
+                    cleanTrackName = cleanTrackName,
+                    cleanArtistName = cleanArtistName,
+                    rawTrackName = rawTrackName
                 ) }
             } else {
-                _playbackState.update { it.copy(currentTrack = null, trackStartTime = null, trackCoverArtUri = artworkUri, isFetchingArtwork = false) }
+                _playbackState.update { it.copy(currentTrack = null, trackStartTime = null, trackCoverArtUri = artworkUri, isFetchingArtwork = false, cleanTrackName = null, cleanArtistName = null, rawTrackName = null) }
             }
         }
     }
@@ -622,6 +627,9 @@ data class PlaybackState(
     val currentPlaylist: List<RadioStation> = emptyList(),
     val currentPlaylistIndex: Int = -1,
     val currentTrack: String? = null,
+    val cleanTrackName: String? = null,
+    val cleanArtistName: String? = null,
+    val rawTrackName: String? = null,
     val trackStartTime: Long? = null,
     val lyricsSyncOffsetMs: Long = 0L,
     val trackCoverArtUri: String? = null,

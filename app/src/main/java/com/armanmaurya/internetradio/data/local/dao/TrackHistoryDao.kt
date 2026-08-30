@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TrackHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(trackHistory: TrackHistoryEntity)
+    suspend fun insert(trackHistory: TrackHistoryEntity): Long
 
     @Query("SELECT * FROM track_history WHERE stationUuid = :stationUuid ORDER BY timestamp DESC LIMIT :limit")
     fun getTrackHistoryForStation(stationUuid: String, limit: Int = 50): Flow<List<TrackHistoryEntity>>
@@ -23,4 +23,7 @@ interface TrackHistoryDao {
 
     @Query("UPDATE track_history SET coverArtUrl = :coverArtUrl WHERE stationUuid = :stationUuid AND trackTitle = :trackTitle")
     suspend fun updateCoverArt(stationUuid: String, trackTitle: String, coverArtUrl: String)
+
+    @Query("UPDATE track_history SET trackTitle = :newTrackTitle, coverArtUrl = :coverArtUrl WHERE id = :id")
+    suspend fun updateTrackMetadata(id: Long, newTrackTitle: String, coverArtUrl: String?)
 }

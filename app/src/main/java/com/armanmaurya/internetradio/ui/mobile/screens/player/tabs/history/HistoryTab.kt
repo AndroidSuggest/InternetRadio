@@ -169,10 +169,49 @@ fun HistoryTab(
                         enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
                         exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                        Column {
+                            if (track.rawTrackTitle.isNotBlank() && track.rawTrackTitle != track.trackTitle) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = stringResource(R.string.player_original_stream_metadata),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = track.rawTrackTitle,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 2,
+                                            modifier = Modifier.basicMarquee()
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            clipboardManager.setText(AnnotatedString(track.rawTrackTitle))
+                                            Toast.makeText(context, context.getString(R.string.player_copied_to_clipboard), Toast.LENGTH_SHORT).show()
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ContentCopy,
+                                            contentDescription = stringResource(R.string.player_cd_copy_track_name),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -243,6 +282,7 @@ fun HistoryTab(
                                     modifier = Modifier.size(32.dp)
                                 )
                             }
+                        }
                         }
                     }
                 }

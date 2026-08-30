@@ -221,25 +221,41 @@ class PlaybackService : MediaLibraryService() {
                 // Log the track history
                 val stationUuid = currentMediaItem.mediaId
                 serviceScope.launch {
-                    trackHistoryRepository.logTrack(stationUuid, trackTitle)
+                    val trackId = trackHistoryRepository.logTrack(stationUuid, trackTitle)
                     
-                    // Fetch track cover art
-                    val coverArtUrl = coverArtRepository.getCoverArt(trackName, artistName)
-                    if (coverArtUrl != null) {
-                        android.util.Log.d("PlaybackService", "Found cover art: \$coverArtUrl")
-                        trackHistoryRepository.updateCoverArt(stationUuid, trackTitle, coverArtUrl)
+                    // Fetch track cover art and cleaned metadata
+                    val metadata = coverArtRepository.getTrackMetadata(trackName, artistName)
+                    
+                    // Determine the cleaned title
+                    val cleanedTitle = if (metadata != null) {
+                        val cTrack = metadata.trackName
+                        val cArtist = metadata.artistName
+                        when {
+                            cTrack != null && cArtist != null -> "$cTrack - $cArtist"
+                            cTrack != null -> cTrack
+                            else -> trackTitle
+                        }
+                    } else {
+                        trackTitle
+                    }
+
+                    if (trackId != null) {
+                        trackHistoryRepository.updateTrackMetadata(trackId, cleanedTitle, metadata?.coverArtUrl)
                     }
                     
                     // Ensure track hasn't changed while fetching
                     if (activeTrackTitle == trackTitle) {
                         val updatedExtras = android.os.Bundle(newExtras).apply {
                             putString("is_fetching_artwork", "false")
-                            if (coverArtUrl != null) {
-                                putString("track_cover_art_url", coverArtUrl) // Make cover art available to internal UI
+                            putString("icy_title", cleanedTitle)
+                            if (metadata?.trackName != null) putString("clean_track_name", metadata.trackName)
+                            if (metadata?.artistName != null) putString("clean_artist_name", metadata.artistName)
+                            if (metadata?.coverArtUrl != null) {
+                                putString("track_cover_art_url", metadata.coverArtUrl) // Make cover art available to internal UI
                             }
                         }
                         val metadataWithArt = newMetadataBuilder
-                            .setArtworkUri(if (showCoverArtInNotification && coverArtUrl != null) android.net.Uri.parse(coverArtUrl) else stationFaviconUri)
+                            .setArtworkUri(if (showCoverArtInNotification && metadata?.coverArtUrl != null) android.net.Uri.parse(metadata.coverArtUrl) else stationFaviconUri)
                             .setExtras(updatedExtras)
                             .setDescription(System.currentTimeMillis().toString()) // Force ExoPlayer to detect a metadata change
                             .build()

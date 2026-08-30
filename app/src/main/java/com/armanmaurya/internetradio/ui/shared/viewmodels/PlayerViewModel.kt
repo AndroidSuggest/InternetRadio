@@ -48,15 +48,33 @@ class PlayerViewModel @Inject constructor(
 
     val playbackState = playerController.playbackState
     
+    private data class LyricsRequestData(
+        val track: String?,
+        val cleanTrack: String?,
+        val cleanArtist: String?,
+        val isFetching: Boolean
+    )
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val lyricsState = playbackState
-        .map { it.currentTrack }
-        .distinctUntilChanged()
-        .flatMapLatest { track ->
-            if (track.isNullOrBlank()) {
+    val lyricsState = combine(
+        playbackState.map { it.currentTrack }.distinctUntilChanged(),
+        playbackState.map { it.cleanTrackName }.distinctUntilChanged(),
+        playbackState.map { it.cleanArtistName }.distinctUntilChanged(),
+        playbackState.map { it.isFetchingArtwork }.distinctUntilChanged()
+    ) { track, cleanTrack, cleanArtist, isFetching ->
+        LyricsRequestData(track, cleanTrack, cleanArtist, isFetching)
+    }
+        .flatMapLatest { data ->
+            if (data.track.isNullOrBlank()) {
                 flowOf(com.armanmaurya.internetradio.data.model.LyricsState.NotAvailable)
+            } else if (data.isFetching) {
+                flowOf(com.armanmaurya.internetradio.data.model.LyricsState.Loading)
             } else {
-                lyricsRepository.getLyricsForTrack(track)
+                if (data.cleanTrack != null) {
+                    lyricsRepository.getLyricsForTrack(data.cleanTrack, data.cleanArtist)
+                } else {
+                    lyricsRepository.getLyricsForTrack(data.track, null)
+                }
             }
         }
         .stateIn(

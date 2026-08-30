@@ -9,4 +9,10 @@ interface LrcLibApi {
     suspend fun searchLyrics(
         @Query("q") query: String
     ): List<LrcLibResponse>
+
+    @GET("api/search")
+    suspend fun searchLyricsExplicit(
+        @Query("track_name") trackName: String,
+        @Query("artist_name") artistName: String? = null
+    ): List<LrcLibResponse>
 }

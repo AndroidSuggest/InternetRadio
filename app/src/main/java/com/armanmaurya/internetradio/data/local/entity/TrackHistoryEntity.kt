@@ -11,5 +11,7 @@ data class TrackHistoryEntity(
     val trackTitle: String,
     val timestamp: Long,
     @androidx.room.ColumnInfo(defaultValue = "NULL")
-    val coverArtUrl: String? = null
+    val coverArtUrl: String? = null,
+    @androidx.room.ColumnInfo(defaultValue = "")
+    val rawTrackTitle: String = ""
 )

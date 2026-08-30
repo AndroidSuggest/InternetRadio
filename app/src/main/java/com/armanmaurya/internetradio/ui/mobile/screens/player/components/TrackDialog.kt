@@ -58,6 +58,7 @@ import java.net.URLEncoder
 @Composable
 fun SharedTransitionScope.TrackDialog(
     searchDialogTrack: String?,
+    rawTrackName: String?,
     trackCoverArtUri: String?,
     isFetchingArtwork: Boolean,
     onDismissRequest: () -> Unit
@@ -108,49 +109,52 @@ fun SharedTransitionScope.TrackDialog(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                if (isFetchingArtwork || trackCoverArtUri != null) {
+                    Box(modifier = Modifier.padding(bottom = 20.dp)) {
+                        if (isFetchingArtwork) {
+                            Box(
+                                modifier = Modifier
+                                    .sharedElement(
+                                        sharedContentState = rememberSharedContentState(key = "track_cover"),
+                                        animatedVisibilityScope = this@AnimatedVisibility,
+                                        boundsTransform = { _, _ -> tween(durationMillis = 350) }
+                                    )
+                                    .size(160.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .shimmerEffect()
+                            )
+                        } else if (trackCoverArtUri != null) {
+                            SubcomposeAsyncImage(
+                                model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                                    .data(trackCoverArtUri)
+                                    .crossfade(true)
+                                    .build(),
+                                loading = {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .shimmerEffect()
+                                    )
+                                },
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .sharedElement(
+                                        sharedContentState = rememberSharedContentState(key = "track_cover"),
+                                        animatedVisibilityScope = this@AnimatedVisibility,
+                                        boundsTransform = { _, _ -> tween(durationMillis = 350) }
+                                    )
+                                    .size(160.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                            )
+                        }
+                    }
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isFetchingArtwork) {
-                        Box(
-                            modifier = Modifier
-                                .sharedElement(
-                                    sharedContentState = rememberSharedContentState(key = "track_cover"),
-                                    animatedVisibilityScope = this@AnimatedVisibility,
-                                    boundsTransform = { _, _ -> tween(durationMillis = 350) }
-                                )
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .shimmerEffect()
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                    } else if (trackCoverArtUri != null) {
-                        SubcomposeAsyncImage(
-                            model = coil3.request.ImageRequest.Builder(LocalContext.current)
-                                .data(trackCoverArtUri)
-                                .crossfade(true)
-                                .build(),
-                            loading = {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .shimmerEffect()
-                                )
-                            },
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .sharedElement(
-                                    sharedContentState = rememberSharedContentState(key = "track_cover"),
-                                    animatedVisibilityScope = this@AnimatedVisibility,
-                                    boundsTransform = { _, _ -> tween(durationMillis = 350) }
-                                )
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                    }
                     Column(
                         modifier = Modifier
                             .sharedBounds(
@@ -180,6 +184,7 @@ fun SharedTransitionScope.TrackDialog(
                                 modifier = Modifier.basicMarquee()
                             )
                         }
+
                     }
                     IconButton(
                         onClick = {
@@ -195,6 +200,44 @@ fun SharedTransitionScope.TrackDialog(
                         )
                     }
                 }
+
+                if (!rawTrackName.isNullOrBlank() && rawTrackName != trackToSearch) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.player_original_stream_metadata),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = rawTrackName,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                modifier = Modifier.basicMarquee()
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(rawTrackName))
+                                Toast.makeText(context, context.getString(R.string.player_copied_to_clipboard), Toast.LENGTH_SHORT).show()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = stringResource(R.string.player_cd_copy_track_name),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
