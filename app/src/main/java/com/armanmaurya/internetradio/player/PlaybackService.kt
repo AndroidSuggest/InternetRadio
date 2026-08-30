@@ -520,7 +520,7 @@ class PlaybackService : MediaLibraryService() {
                 if (scheduleId != -1) {
                     serviceScope.launch(Dispatchers.IO) {
                         val schedule = scheduleRepository.getScheduleById(scheduleId)
-                        if (schedule == null || !schedule.isEnabled) {
+                        if (schedule == null) {
                             if (player?.playbackState != Player.STATE_READY) {
                                 stopForeground(true)
                                 stopSelf()
