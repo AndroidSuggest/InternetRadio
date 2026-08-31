@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
@@ -171,36 +172,43 @@ private fun ScheduleConfigurationForm(
     val startCalendar = remember { Calendar.getInstance().apply { add(Calendar.MINUTE, 1) } }
     val endCalendar = remember { Calendar.getInstance().apply { add(Calendar.MINUTE, 1); add(Calendar.HOUR_OF_DAY, 1) } }
 
-    var scheduleName by remember(initialSchedule) { mutableStateOf(initialSchedule?.scheduleName ?: "") }
-    var startHour by remember(initialSchedule) { mutableStateOf(initialSchedule?.timeHour ?: startCalendar.get(Calendar.HOUR_OF_DAY)) }
-    var startMinute by remember(initialSchedule) { mutableStateOf(initialSchedule?.timeMinute ?: startCalendar.get(Calendar.MINUTE)) }
-    var endHour by remember(initialSchedule) { 
+    var scheduleName by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { mutableStateOf(initialSchedule?.scheduleName ?: "") }
+    var startHour by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { mutableStateOf(initialSchedule?.timeHour ?: startCalendar.get(Calendar.HOUR_OF_DAY)) }
+    var startMinute by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { mutableStateOf(initialSchedule?.timeMinute ?: startCalendar.get(Calendar.MINUTE)) }
+    var endHour by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { 
         mutableStateOf(
             initialSchedule?.let { ((it.timeHour * 60 + it.timeMinute + it.durationMinutes) / 60) % 24 } ?: endCalendar.get(Calendar.HOUR_OF_DAY)
         ) 
     }
-    var endMinute by remember(initialSchedule) { 
+    var endMinute by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { 
         mutableStateOf(
             initialSchedule?.let { (it.timeHour * 60 + it.timeMinute + it.durationMinutes) % 60 } ?: endCalendar.get(Calendar.MINUTE)
         ) 
     }
     
-    var hasEndTime by remember(initialSchedule) { 
+    var hasEndTime by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { 
         mutableStateOf(initialSchedule == null || initialSchedule.durationMinutes > 0) 
     }
 
-    var scheduleType by remember(initialSchedule) { mutableStateOf(initialSchedule?.type ?: ScheduleType.PLAYBACK) }
-    var keepPlayback by remember(initialSchedule) { mutableStateOf(initialSchedule?.keepPlayback ?: false) }
-    var playOnRecording by remember(initialSchedule) { mutableStateOf(initialSchedule?.playOnRecording ?: true) }
-    val selectedDays = remember(initialSchedule) { 
+    var scheduleType by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { mutableStateOf(initialSchedule?.type ?: ScheduleType.PLAYBACK) }
+    var keepPlayback by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { mutableStateOf(initialSchedule?.keepPlayback ?: false) }
+    var playOnRecording by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { mutableStateOf(initialSchedule?.playOnRecording ?: true) }
+    
+    val selectedDays = androidx.compose.runtime.saveable.rememberSaveable(
+        initialSchedule,
+        saver = androidx.compose.runtime.saveable.listSaver(
+            save = { it.toList() },
+            restore = { mutableStateListOf(*it.toTypedArray()) }
+        )
+    ) { 
         val days = mutableStateListOf<Int>()
         initialSchedule?.daysOfWeek?.split(",")?.mapNotNull { it.toIntOrNull() }?.let { days.addAll(it) }
         days 
     }
-    var volumeLevel by remember(initialSchedule) { mutableFloatStateOf(initialSchedule?.volumeLevel ?: 1.0f) }
+    var volumeLevel by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { mutableFloatStateOf(initialSchedule?.volumeLevel ?: 1.0f) }
 
-    var showStartTimePicker by remember { mutableStateOf(false) }
-    var showEndTimePicker by remember { mutableStateOf(false) }
+    var showStartTimePicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    var showEndTimePicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     
     val is24HourFormat = android.text.format.DateFormat.is24HourFormat(context)
 
@@ -331,11 +339,22 @@ private fun ScheduleConfigurationForm(
                 .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black
+        val cardBorder = if (isPureBlack) {
+            androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        } else {
+            null
+        }
+
         TextField(
             value = scheduleName,
             onValueChange = { scheduleName = it },
             label = { Text(stringResource(R.string.schedule_name_optional)) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (cardBorder != null) Modifier.border(cardBorder, RoundedCornerShape(16.dp)) else Modifier
+                ),
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
             colors = TextFieldDefaults.colors(
@@ -350,7 +369,8 @@ private fun ScheduleConfigurationForm(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            border = cardBorder
         ) {
             if (station != null) {
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -455,9 +475,11 @@ private fun ScheduleConfigurationForm(
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+
             Card(
                 onClick = { showStartTimePicker = true },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                border = cardBorder
             ) {
                 Column(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(stringResource(R.string.schedule_start_time), style = MaterialTheme.typography.labelMedium)
@@ -480,7 +502,8 @@ private fun ScheduleConfigurationForm(
                     .combinedClickable(
                         onClick = { showEndTimePicker = true },
                         onLongClick = { hasEndTime = false }
-                    )
+                    ),
+                border = cardBorder
             ) {
                 Column(modifier = Modifier.padding(16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(stringResource(R.string.schedule_end_time), style = MaterialTheme.typography.labelMedium)
@@ -631,7 +654,10 @@ private fun ScheduleConfigurationForm(
             exit = fadeOut() + shrinkVertically()
         ) {
             Column {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    border = cardBorder
+                ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -665,7 +691,10 @@ private fun ScheduleConfigurationForm(
             exit = fadeOut() + shrinkVertically()
         ) {
             Column {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    border = cardBorder
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -701,7 +730,10 @@ private fun ScheduleConfigurationForm(
             exit = fadeOut() + shrinkVertically()
         ) {
             Column {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    border = cardBorder
+                ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
