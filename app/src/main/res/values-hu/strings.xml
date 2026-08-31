@@ -233,4 +233,32 @@
     <string name="settings_auto_route_search_subtitle">Kereséskor automatikusan átvált a Böngészés lapra</string>
     <string name="settings_select_all_text_on_focus_subtitle">A keresőmező szövegének automatikus kijelölése fókuszba kerüléskor</string>
     <string name="settings_select_all_text_on_focus_title">Keresési szöveg automatikus kijelölése</string>
+    <string name="settings_disable_update_check">Frissítések keresésének letiltása</string>
+    <string name="settings_disable_update_check_desc">Ne keressen automatikusan alkalmazásfrissítéseket indításkor</string>
+    <string name="settings_pause_on_volume_zero">Szüneteltetés némításkor</string>
+    <string name="settings_pause_on_volume_zero_desc">A lejátszás szüneteltetése az eszköz némításakor (felvétel közben nem alkalmazható)</string>
+    <string name="settings_show_cover_art">Borítókép az értesítésben</string>
+    <string name="settings_show_cover_art_desc">A zeneszám borítóképének használata az állomás indexképe helyett a lezárt képernyőn és az értesítésekben</string>
+    <string name="settings_start_week_title">Hét kezdőnapja</string>
+    <string name="settings_start_week_sunday">Vasárnap</string>
+    <string name="settings_start_week_monday">Hétfő</string>
+    <string name="settings_start_week_friday">Péntek</string>
+    <string name="settings_start_week_saturday">Szombat</string>
+    <string name="settings_exported_failed">Az exportálás sikertelen: a fájl nem írható</string>
+    <string name="settings_exported_failed_exception">Az exportálás sikertelen: %1$s</string>
+    <plurals name="settings_exported_success">
+        <item quantity="one">%1$d állomás sikeresen exportálva</item>
+        <item quantity="other">%1$d állomás sikeresen exportálva</item>
+    </plurals>
+    <string name="settings_imported">Importálva: %1$d</string>
+    <string name="settings_imported_empty">Nincs változás – minden állomás már szerepel a könyvtárban</string>
+    <plurals name="settings_imported_failed">
+        <item quantity="one">Nem sikerült beolvasni %1$d fájlt</item>
+        <item quantity="other">Nem sikerült beolvasni %1$d fájlt</item>
+    </plurals>
+    <string name="settings_imported_skipped">Kihagyva (már létezik): %1$d</string>
+    <string name="settings_imported_updated">Frissítve: %1$d</string>
+    <string name="home_tab_schedules">Időzítések</string>
+    <string name="home_verified">Ellenőrzött</string>
+    <string name="home_add_to_library">Hozzáadás a könyvtárhoz</string>
 </resources>
