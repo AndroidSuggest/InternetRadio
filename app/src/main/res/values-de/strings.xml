@@ -308,6 +308,7 @@
     <string name="player_retrying_connection">Verbindung wird erneut versucht...</string>
     <string name="player_tab_lyrics">Songtext</string>
     <string name="player_lyrics_not_available">Songtext nicht verfügbar.</string>
+    <string name="player_original_stream_metadata">Original Stream-Metadaten</string>
     <string name="player_cd_cast">Streamen</string>
     <string name="player_cd_volume">Lautstärke</string>
     <string name="player_cast_connected">Verbunden</string>
