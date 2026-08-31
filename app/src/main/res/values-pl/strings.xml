@@ -355,4 +355,5 @@
     <string name="schedule_listen_while_recording">Słuchaj podczas nagrywania</string>
     <string name="schedule_listen_while_recording_subtitle">Odtwarzanie dźwięku stacji podczas nagrywania w tle</string>
     <string name="action_create_shortcut">Utwórz skrót</string>
+    <string name="player_original_stream_metadata">Oryginalne metadane strumienia</string>
 </resources>
