@@ -332,15 +332,26 @@ fun HomeScreen(
 
         modifier = modifier.fillMaxSize(),
     ) { innerPadding ->
+        val bottomCornerRadius = rememberBottomCornerRadius()
         val pagerContent = @Composable {
             // Tab Container with horizontal pager
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 shape = if (widthSizeClass == WindowWidthSizeClass.Expanded) {
-                    RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp)
+                    RoundedCornerShape(
+                        topStart = 28.dp, 
+                        topEnd = 28.dp, 
+                        bottomStart = 28.dp,
+                        bottomEnd = bottomCornerRadius
+                    )
                 } else {
-                    RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+                    RoundedCornerShape(
+                        topStart = 28.dp, 
+                        topEnd = 28.dp,
+                        bottomStart = bottomCornerRadius,
+                        bottomEnd = bottomCornerRadius
+                    )
                 },
                 border = if (MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black) {
                     androidx.compose.foundation.BorderStroke(
@@ -471,4 +482,37 @@ fun HomeScreen(
             )
         }
     }
+}
+
+@Composable
+fun rememberBottomCornerRadius(): androidx.compose.ui.unit.Dp {
+    val view = androidx.compose.ui.platform.LocalView.current
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    var radiusPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        // Observe system window insets in Compose. When these change, it means the View system 
+        // has dispatched insets, ensuring rootWindowInsets is no longer null.
+        val insets = WindowInsets.safeDrawing
+        val top = insets.getTop(density)
+        val bottom = insets.getBottom(density)
+
+        androidx.compose.runtime.LaunchedEffect(view, top, bottom) {
+            // Wait until rootWindowInsets is available
+            var rootInsets = view.rootWindowInsets
+            var attempts = 0
+            while (rootInsets == null && attempts < 10) {
+                kotlinx.coroutines.delay(50)
+                rootInsets = view.rootWindowInsets
+                attempts++
+            }
+            
+            val bl = rootInsets?.getRoundedCorner(android.view.RoundedCorner.POSITION_BOTTOM_LEFT)?.radius ?: 0
+            val br = rootInsets?.getRoundedCorner(android.view.RoundedCorner.POSITION_BOTTOM_RIGHT)?.radius ?: 0
+            
+            radiusPx = kotlin.math.max(bl, br)
+        }
+    }
+
+    return with(density) { radiusPx.toDp() }
 }
