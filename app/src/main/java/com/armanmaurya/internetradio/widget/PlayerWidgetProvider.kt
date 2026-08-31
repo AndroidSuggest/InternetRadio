@@ -27,8 +27,11 @@ class PlayerWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         
-        pushIdleStateUpdate(context, appWidgetManager, appWidgetIds)
-        pingService(context)
+        if (PlaybackService.isRunning) {
+            pingService(context)
+        } else {
+            pushIdleStateUpdate(context, appWidgetManager, appWidgetIds)
+        }
     }
 
     override fun onAppWidgetOptionsChanged(
@@ -39,8 +42,11 @@ class PlayerWidgetProvider : AppWidgetProvider() {
     ) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
         
-        pushIdleStateUpdate(context, appWidgetManager, intArrayOf(appWidgetId))
-        pingService(context)
+        if (PlaybackService.isRunning) {
+            pingService(context)
+        } else {
+            pushIdleStateUpdate(context, appWidgetManager, intArrayOf(appWidgetId))
+        }
     }
 
     private fun pushIdleStateUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {

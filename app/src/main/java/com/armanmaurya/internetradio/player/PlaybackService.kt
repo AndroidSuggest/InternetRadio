@@ -280,8 +280,13 @@ class PlaybackService : MediaLibraryService() {
         }
     }
 
+    companion object {
+        var isRunning = false
+    }
+
     override fun onCreate() {
         super.onCreate()
+        isRunning = true
 
         loadErrorHandlingPolicy = ExponentialBackoffLoadErrorHandlingPolicy(retryStateTracker)
         
@@ -478,6 +483,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
+        isRunning = false
         // Push a final stopped-state widget update before tearing down
         pushStoppedWidgetUpdate()
         serviceScope.cancel()
