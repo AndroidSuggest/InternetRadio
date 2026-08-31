@@ -11,13 +11,16 @@
 
     <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp">
+        android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
 
         <ImageView
             android:id="@+id/widget_album_art"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:src="@drawable/media3_notification_small_icon" />
             
@@ -83,7 +86,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
 
             <ImageButton
                 android:id="@+id/widget_btn_prev"

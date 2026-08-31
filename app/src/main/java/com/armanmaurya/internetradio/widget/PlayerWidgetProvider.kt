@@ -19,6 +19,7 @@ import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.player.PlaybackService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class PlayerWidgetProvider : AppWidgetProvider() {
@@ -26,17 +27,8 @@ class PlayerWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         
-        updateWidgets(context, appWidgetManager, appWidgetIds, null, null, null, null)
-
-        val intent = Intent(context, PlaybackService::class.java).apply {
-            action = "com.armanmaurya.internetradio.ACTION_WIDGET_UPDATE"
-        }
-        
-        try {
-            context.startService(intent)
-        } catch (e: Exception) {
-            // App is in background and idle. No state to sync.
-        }
+        pushIdleStateUpdate(context, appWidgetManager, appWidgetIds)
+        pingService(context)
     }
 
     override fun onAppWidgetOptionsChanged(
@@ -46,13 +38,43 @@ class PlayerWidgetProvider : AppWidgetProvider() {
         newOptions: android.os.Bundle
     ) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+        
+        pushIdleStateUpdate(context, appWidgetManager, intArrayOf(appWidgetId))
+        pingService(context)
+    }
+
+    private fun pushIdleStateUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        scope.launch {
+            try {
+                val entryPoint = dagger.hilt.android.EntryPointAccessors.fromApplication(
+                    context.applicationContext, WidgetEntryPoint::class.java
+                )
+                val recentStationDao = entryPoint.recentStationDao()
+                val recentStation = recentStationDao.getAllRecent().first().firstOrNull()
+
+                if (recentStation != null) {
+                    updateWidgets(
+                        context, appWidgetManager, appWidgetIds, 
+                        null, recentStation.name, context.getString(R.string.app_name), recentStation.favicon
+                    )
+                } else {
+                    updateWidgets(context, appWidgetManager, appWidgetIds, null, null, null, null)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                updateWidgets(context, appWidgetManager, appWidgetIds, null, null, null, null)
+            }
+        }
+    }
+
+    private fun pingService(context: Context) {
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = "com.armanmaurya.internetradio.ACTION_WIDGET_UPDATE"
         }
         try {
             context.startService(intent)
         } catch (e: Exception) {
-            // App is in background and idle.
+            // App is in background and idle. No state to sync.
         }
     }
 
@@ -204,13 +226,14 @@ class PlayerWidgetProvider : AppWidgetProvider() {
         }
 
         private fun getRoundedCornerBitmap(bitmap: Bitmap, pixels: Float): Bitmap {
-            val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+            val size = Math.min(bitmap.width, bitmap.height)
+            val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(output)
 
             val color = -0xbdbdbe
             val paint = android.graphics.Paint()
-            val rect = android.graphics.Rect(0, 0, bitmap.width, bitmap.height)
-            val rectF = android.graphics.RectF(rect)
+            val destRect = android.graphics.Rect(0, 0, size, size)
+            val rectF = android.graphics.RectF(destRect)
 
             paint.isAntiAlias = true
             canvas.drawARGB(0, 0, 0, 0)
@@ -220,7 +243,14 @@ class PlayerWidgetProvider : AppWidgetProvider() {
             canvas.drawRoundRect(rectF, pixels, pixels, paint)
 
             paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN)
-            canvas.drawBitmap(bitmap, rect, rect, paint)
+            
+            val srcRect = android.graphics.Rect(
+                (bitmap.width - size) / 2,
+                (bitmap.height - size) / 2,
+                (bitmap.width + size) / 2,
+                (bitmap.height + size) / 2
+            )
+            canvas.drawBitmap(bitmap, srcRect, destRect, paint)
 
             return output
         }
