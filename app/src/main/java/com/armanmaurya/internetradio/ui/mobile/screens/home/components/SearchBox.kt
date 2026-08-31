@@ -82,6 +82,11 @@ fun RadioSearchBar(
         label = "SearchBarPadding"
     )
 
+    val bottomPadding by animateDpAsState(
+        targetValue = if (isSearchExpanded) 0.dp else 4.dp,
+        label = "SearchBarBottomPadding"
+    )
+
     SearchBar(
         inputField = {
             val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == androidx.compose.ui.graphics.Color.Black
@@ -268,7 +273,7 @@ fun RadioSearchBar(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = horizontalPadding)
-            .padding(bottom = 4.dp)
+            .padding(bottom = bottomPadding)
     ) {
         content()
     }
