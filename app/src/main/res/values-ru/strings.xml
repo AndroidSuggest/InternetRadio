@@ -354,4 +354,5 @@
     <string name="schedule_listen_while_recording">Слушать во время записи</string>
     <string name="schedule_listen_while_recording_subtitle">Слушать станцию во время фоновой записи</string>
     <string name="action_create_shortcut">Создать ярлык</string>
+    <string name="player_original_stream_metadata">Данные аудиопотока</string>
 </resources>
