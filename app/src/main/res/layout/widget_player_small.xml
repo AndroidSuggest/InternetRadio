@@ -17,6 +17,7 @@
             android:id="@+id/widget_album_art"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:maxWidth="120dp"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:src="@drawable/media3_notification_small_icon" />
