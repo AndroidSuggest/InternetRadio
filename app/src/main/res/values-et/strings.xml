@@ -338,4 +338,5 @@
     <string name="schedule_listen_while_recording">Kuula salvestamise ajal</string>
     <string name="schedule_listen_while_recording_subtitle">Taustal salvestamise ajal võimalda kuulata ka voogedastust</string>
     <string name="action_create_shortcut">Lisa viide</string>
+    <string name="player_original_stream_metadata">Voogedastuse algne metateave</string>
 </resources>
