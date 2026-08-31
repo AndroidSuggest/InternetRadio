@@ -397,6 +397,8 @@ fun PlayerSheetContent(
             }
         }
 
+        val currentScale = if (baseExpandedSize.value > 0f) currentSize.value / baseExpandedSize.value else 1f
+
         androidx.compose.runtime.CompositionLocalProvider(
             androidx.compose.foundation.LocalOverscrollFactory provides null
         ) {
@@ -409,8 +411,14 @@ fun PlayerSheetContent(
                             y = with(density) { currentY.toPx() }.roundToInt()
                         )
                     }
-                    .size(currentSize)
-                    .clip(RoundedCornerShape(12.dp)),
+                    .size(baseExpandedSize)
+                    .graphicsLayer {
+                        scaleX = currentScale
+                        scaleY = currentScale
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
+                        clip = true
+                        shape = RoundedCornerShape(12.dp / currentScale)
+                    },
                 userScrollEnabled = progress > 0.5f // Only allow swiping when expanded
             ) { page ->
             val pageStation = if (isInfinite && playlistSize > 0) playlist.getOrNull(page % playlistSize) ?: station else playlist.getOrNull(page) ?: station
@@ -420,17 +428,17 @@ fun PlayerSheetContent(
             val isFetching = playbackState.isFetchingArtwork
             val isShowingCover = isCurrentPlayingStation && showCoverArt && (hasCoverArt || isFetching)
 
-            val overlaySize = lerp(16.dp, 48.dp, progress)
-            val overlayPadding = lerp(2.dp, 8.dp, progress)
+            val overlaySize = lerp(16.dp, 48.dp, progress) / currentScale
+            val overlayPadding = lerp(2.dp, 8.dp, progress) / currentScale
 
             val coverFraction by androidx.compose.animation.core.animateFloatAsState(
                 targetValue = if (isShowingCover) 1f else 0f,
                 label = "coverFraction"
             )
 
-            val animatedThumbSize = androidx.compose.ui.unit.lerp(currentSize, overlaySize, coverFraction)
+            val animatedThumbSize = androidx.compose.ui.unit.lerp(baseExpandedSize, overlaySize, coverFraction)
             val animatedThumbPadding = androidx.compose.ui.unit.lerp(0.dp, overlayPadding, coverFraction)
-            val animatedCornerRadius = androidx.compose.ui.unit.lerp(0.dp, 6.dp, coverFraction)
+            val animatedCornerRadius = androidx.compose.ui.unit.lerp(0.dp, 6.dp / currentScale, coverFraction)
             val coverAlpha = coverFraction
 
             Box(
@@ -439,9 +447,9 @@ fun PlayerSheetContent(
                     .then(
                         if (isRecording && isCurrentPlayingStation) {
                             Modifier.border(
-                                width = 2.dp,
+                                width = 2.dp / currentScale,
                                 color = androidx.compose.ui.graphics.Color(0xFFCC0000).copy(alpha = 1f - (progress * 5f).coerceIn(0f, 1f)),
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(12.dp / currentScale)
                             )
                         } else {
                             Modifier
@@ -490,7 +498,7 @@ fun PlayerSheetContent(
                             if (isShowingCover) {
                                 Modifier
                                     .background(MaterialTheme.colorScheme.surface)
-                                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(animatedCornerRadius))
+                                    .border(1.dp / currentScale, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(animatedCornerRadius))
                             } else {
                                 Modifier
                             }
