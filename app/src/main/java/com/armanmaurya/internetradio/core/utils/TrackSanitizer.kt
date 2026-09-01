@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.utils
+package com.armanmaurya.internetradio.core.utils
 
 object TrackSanitizer {
     fun sanitizeTrackInfo(info: String): String {

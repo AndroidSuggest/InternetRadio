@@ -21,7 +21,8 @@ import javax.inject.Singleton
 class RecordingManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val recordingRepository: RecordingRepository,
-    private val okHttpClient: OkHttpClient
+    private val okHttpClient: OkHttpClient,
+    private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
     private val activeSessions = mutableMapOf<String, RecordingSession>()
@@ -47,6 +48,7 @@ class RecordingManager @Inject constructor(
             context = context,
             okHttpClient = okHttpClient,
             scope = scope,
+            fileSystemFacade = fileSystemFacade,
             onStopped = ::onSessionStopped
         )
         activeSessions[station.stationUuid] = session

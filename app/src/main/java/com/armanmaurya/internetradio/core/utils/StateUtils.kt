@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.util
+package com.armanmaurya.internetradio.core.utils
 
 import android.content.Context
 import com.google.gson.Gson

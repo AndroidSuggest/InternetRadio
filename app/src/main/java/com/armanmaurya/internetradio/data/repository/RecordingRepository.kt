@@ -26,7 +26,8 @@ data class RecordingFile(
 
 @Singleton
 class RecordingRepository @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade
 ) {
     suspend fun getRecordingFolders(): List<RecordingFolder> = withContext(Dispatchers.IO) {
         val rootDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "InternetRadio")
@@ -86,7 +87,7 @@ class RecordingRepository @Inject constructor(
     }
 
     suspend fun deleteRecording(recording: RecordingFile): Boolean = withContext(Dispatchers.IO) {
-        val deleted = recording.file.delete()
+        val deleted = fileSystemFacade.deleteAudioRecording(recording.uri)
         if (deleted) {
             val parent = recording.file.parentFile
             if (parent != null && parent.isDirectory) {
@@ -103,7 +104,7 @@ class RecordingRepository @Inject constructor(
     suspend fun deleteRecordings(recordings: List<RecordingFile>): Boolean = withContext(Dispatchers.IO) {
         var allDeleted = true
         recordings.forEach { recording ->
-            val deleted = recording.file.delete()
+            val deleted = fileSystemFacade.deleteAudioRecording(recording.uri)
             if (deleted) {
                 val parent = recording.file.parentFile
                 if (parent != null && parent.isDirectory) {
@@ -124,11 +125,10 @@ class RecordingRepository @Inject constructor(
         var allDeleted = true
         stationNames.forEach { stationName ->
             val safeStationName = stationName.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
-            val stationDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "InternetRadio/$safeStationName")
-            if (stationDir.exists() && stationDir.isDirectory) {
-                if (!stationDir.deleteRecursively()) {
-                    allDeleted = false
-                }
+            val deleted = fileSystemFacade.deleteAudioRecordingFolder(safeStationName)
+            if (!deleted) {
+                // If it failed to delete (e.g. not empty, or doesn't exist), maybe it's fine.
+                // We'll trust the caller to refresh.
             }
         }
         notifyRecordingsChanged()

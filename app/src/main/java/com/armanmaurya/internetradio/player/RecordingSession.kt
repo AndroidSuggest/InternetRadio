@@ -29,6 +29,7 @@ class RecordingSession(
     private val context: Context,
     private val okHttpClient: OkHttpClient,
     private val scope: CoroutineScope,
+    private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade,
     private val onStopped: (uuid: String, bytes: Long) -> Unit
 ) {
     private val _durationSeconds = MutableStateFlow(0L)
@@ -92,7 +93,7 @@ class RecordingSession(
         }
         
         val format = StreamFormatUtils.audioFormatFromMagicBytes(magic)
-        val sink = RecordingFileHelper.openOutputSink(station, format.extension, context)
+        val sink = openSink(format.extension) ?: return
         
         try {
             if (format == StreamFormatUtils.AudioFormat.OGG) {
@@ -121,7 +122,7 @@ class RecordingSession(
         val initialPlaylist = HlsPlaylistParser.parse(playlistText, playlistUrl)
         val ext = if (initialPlaylist.segments.firstOrNull()?.url?.contains(".aac") == true) "aac" else "ts"
         
-        val sink = RecordingFileHelper.openOutputSink(station, ext, context)
+        val sink = openSink(ext) ?: return
         
         try {
             while (scope.isActive && job?.isActive == true) {
@@ -167,6 +168,42 @@ class RecordingSession(
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    class OutputSink(
+        val outputStream: java.io.OutputStream, 
+        private val pfd: android.os.ParcelFileDescriptor?,
+        private val finalizeAction: (() -> Unit)? = null
+    ) : java.io.Closeable {
+        override fun close() {
+            try { outputStream.close() } catch (e: Exception) {}
+            try { pfd?.close() } catch (e: Exception) {}
+            try { finalizeAction?.invoke() } catch (e: Exception) {}
+        }
+    }
+
+    private suspend fun openSink(ext: String): OutputSink? {
+        val safeStationName = station.name.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
+        val timestamp = java.text.SimpleDateFormat("d MMMM yyyy hh-mm a", java.util.Locale.getDefault()).format(java.util.Date())
+        val fileName = "$safeStationName $timestamp.$ext"
+        val partFileName = "$fileName.part"
+        val folderName = "InternetRadio/$safeStationName"
+        val mimeType = when (ext) {
+            "mp3" -> "audio/mpeg"
+            "aac" -> "audio/aac"
+            "ogg" -> "audio/ogg"
+            "m4a" -> "audio/mp4"
+            else  -> "audio/mpeg"
+        }
+
+        val (uri, pfd) = fileSystemFacade.createAudioRecordingFile(folderName, partFileName, mimeType) ?: return null
+        val outputStream = FileOutputStream(pfd.fileDescriptor)
+        
+        return OutputSink(outputStream, pfd) {
+            kotlinx.coroutines.runBlocking {
+                try { fileSystemFacade.finalizeAudioRecordingFile(uri, fileName) } catch (e: Exception) {}
+            }
         }
     }
 }

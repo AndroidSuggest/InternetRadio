@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.utils
+package com.armanmaurya.internetradio.core.utils
 
 import android.content.Context
 import java.text.DateFormat

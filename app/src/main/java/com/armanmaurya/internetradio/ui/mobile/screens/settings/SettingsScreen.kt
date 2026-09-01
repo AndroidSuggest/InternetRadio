@@ -211,20 +211,9 @@ fun SettingsScreen(
                 bottomShape = bottomShape
             )
 
-            val packageInfo = remember {
-                try {
-                    context.packageManager.getPackageInfo(context.packageName, 0)
-                } catch (e: Exception) {
-                    null
-                }
-            }
-            val versionName = packageInfo?.versionName ?: stringResource(R.string.general_unknown)
-            val versionCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                packageInfo?.longVersionCode?.toString() ?: "0"
-            } else {
-                @Suppress("DEPRECATION")
-                packageInfo?.versionCode?.toString() ?: "0"
-            }
+            val mainViewModel: com.armanmaurya.internetradio.ui.shared.viewmodels.MainViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val versionName = mainViewModel.systemFacade.getAppVersionName()
+            val versionCode = mainViewModel.systemFacade.getAppVersionCode().toString()
 
             androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(32.dp))
             Text(

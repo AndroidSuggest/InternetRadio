@@ -146,10 +146,11 @@ fun HomeScreen(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
         if (uri != null && stationToExport != null) {
-            val result = com.armanmaurya.internetradio.utils.ExportUtils.exportStation(context, uri, stationToExport!!)
-            val message = if (result.isSuccess) context.getString(R.string.export_success, stationToExport!!.name) else context.getString(R.string.export_failed, result.exceptionOrNull()?.localizedMessage)
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            stationToExport = null
+            libraryViewModel.exportStation(context, uri, stationToExport!!) { result ->
+                val message = if (result.isSuccess) context.getString(R.string.export_success, stationToExport!!.name) else context.getString(R.string.export_failed, result.exceptionOrNull()?.localizedMessage)
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                stationToExport = null
+            }
         }
     }
     val onExportStation: (RadioStation) -> Unit = { station ->

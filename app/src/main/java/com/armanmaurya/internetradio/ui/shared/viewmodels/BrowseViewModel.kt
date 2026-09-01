@@ -148,7 +148,7 @@ class BrowseViewModel @Inject constructor(
             }?.takeIf { it.isNotBlank() }
 
             val apiStateQuery = if (countryCode != null && stateCode != null) {
-                com.armanmaurya.internetradio.util.StateUtils.getStateNameByCode(
+                com.armanmaurya.internetradio.core.utils.StateUtils.getStateNameByCode(
                     context,
                     countryCode, stateCode
                 )

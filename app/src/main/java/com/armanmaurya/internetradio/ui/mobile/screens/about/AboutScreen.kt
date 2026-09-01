@@ -56,12 +56,8 @@ fun AboutScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val context = LocalContext.current
-    val packageInfo = try {
-        context.packageManager.getPackageInfo(context.packageName, 0)
-    } catch (e: Exception) {
-        null
-    }
-    val versionName = packageInfo?.versionName ?: "1.0.0"
+    val mainViewModel: com.armanmaurya.internetradio.ui.shared.viewmodels.MainViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val versionName = mainViewModel.systemFacade.getAppVersionName()
 
     fun openUrl(url: String) {
         try {

@@ -1,7 +1,7 @@
 package com.armanmaurya.internetradio.data.repository
 
 import com.armanmaurya.internetradio.data.remote.ITunesApiService
-import com.armanmaurya.internetradio.utils.TrackSanitizer
+import com.armanmaurya.internetradio.core.utils.TrackSanitizer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

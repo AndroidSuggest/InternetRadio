@@ -46,11 +46,8 @@ fun AboutScreen(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val versionName = try {
-        context.packageManager.getPackageInfo(context.packageName, 0).versionName
-    } catch (e: Exception) {
-        "1.0.0"
-    }
+    val mainViewModel: com.armanmaurya.internetradio.ui.shared.viewmodels.MainViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val versionName = mainViewModel.systemFacade.getAppVersionName()
 
     fun openUrl(url: String) {
         try {

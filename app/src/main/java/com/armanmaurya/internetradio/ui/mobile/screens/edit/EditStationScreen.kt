@@ -97,7 +97,7 @@ fun EditStationScreen(
         }
         var iso3166_2 by remember(station) { mutableStateOf(station?.iso3166_2 ?: "") }
         val statesList = remember(countryCode) {
-            if (countryCode.isNotBlank()) com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, countryCode) else emptyList()
+            if (countryCode.isNotBlank()) com.armanmaurya.internetradio.core.utils.StateUtils.getStatesForCountry(context, countryCode) else emptyList()
         }
         var expandedState by remember { mutableStateOf(false) }
         var stateSearchText by remember(station, countryCode) {
@@ -317,7 +317,7 @@ fun EditStationScreen(
                                                         } else ""
                                                         iso3166_2 = freshStation.iso3166_2 ?: ""
                                                         stateSearchText = if (iso3166_2.isNotBlank()) {
-                                                            val st = com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, countryCode).find { it.code == iso3166_2 }
+                                                            val st = com.armanmaurya.internetradio.core.utils.StateUtils.getStatesForCountry(context, countryCode).find { it.code == iso3166_2 }
                                                             if (st != null) "${st.getDisplayName(java.util.Locale.getDefault().language)} (${st.code})" else iso3166_2
                                                         } else ""
                                                         languageCodes = freshStation.languageCodes.joinToString(", ")

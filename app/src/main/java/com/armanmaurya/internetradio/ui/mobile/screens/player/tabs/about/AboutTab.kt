@@ -53,7 +53,7 @@ fun AboutTab(
         val countryName = station.countryCode.takeIf { it.isNotBlank() }?.let { java.util.Locale("", it).getDisplayCountry(java.util.Locale.getDefault()) }
         val stateName = station.iso3166_2?.takeIf { it.isNotBlank() }?.let { iso3166_2 ->
             if (station.countryCode.isNotBlank()) {
-                com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, station.countryCode).find { it.code == iso3166_2 }?.getDisplayName(java.util.Locale.getDefault().language) ?: iso3166_2
+                com.armanmaurya.internetradio.core.utils.StateUtils.getStatesForCountry(context, station.countryCode).find { it.code == iso3166_2 }?.getDisplayName(java.util.Locale.getDefault().language) ?: iso3166_2
             } else iso3166_2
         }
 

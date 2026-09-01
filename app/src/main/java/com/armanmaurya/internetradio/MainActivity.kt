@@ -91,6 +91,9 @@ class MainActivity : AppCompatActivity() {
         intent?.let { _intentFlow.tryEmit(it) }
     }
 
+    @Inject
+    lateinit var systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade
+
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         intent?.let { _intentFlow.tryEmit(it) }
@@ -122,11 +125,7 @@ class MainActivity : AppCompatActivity() {
 
             LaunchedEffect(appPreferences.disableUpdateCheck) {
                 if (!appPreferences.disableUpdateCheck) {
-                    val versionName = try {
-                        packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
-                    } catch (e: Exception) {
-                        "0.0.0"
-                    }
+                    val versionName = systemFacade.getAppVersionName()
                     mainViewModel.checkForUpdates(versionName)
                 }
             }
@@ -238,11 +237,7 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_checking_for_updates), android.widget.Toast.LENGTH_SHORT).show()
                     }
-                    val vName = try {
-                        packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
-                    } catch (e: Exception) {
-                        "0.0.0"
-                    }
+                    val vName = systemFacade.getAppVersionName()
                     mainViewModel.checkForUpdates(vName, force = true) { hasUpdate ->
                         if (!hasUpdate) {
                             runOnUiThread {

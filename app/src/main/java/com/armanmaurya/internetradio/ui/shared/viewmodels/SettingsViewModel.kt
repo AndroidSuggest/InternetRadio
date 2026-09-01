@@ -36,7 +36,9 @@ private const val TAG = "SettingsViewModel"
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    private val libraryRepository: LibraryRepository
+    private val libraryRepository: LibraryRepository,
+    private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade,
+    private val systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade
 ) : ViewModel() {
 
     val uiState: StateFlow<AppPreferences> = settingsRepository.appPreferencesFlow
@@ -169,12 +171,7 @@ class SettingsViewModel @Inject constructor(
                 val entities = libraryRepository.getAllStationEntities()
                 Log.d(TAG, "Exporting ${entities.size} stations to $uri")
 
-                val versionName = try {
-                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
-                } catch (e: Exception) {
-                    Log.w(TAG, "Could not get version name", e)
-                    "unknown"
-                }
+                val versionName = systemFacade.getAppVersionName()
 
                 // Use SimpleDateFormat for API 24 compatibility (Instant.now() requires API 26)
                 val exportedAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
@@ -182,17 +179,13 @@ class SettingsViewModel @Inject constructor(
 
                 val backup = LibraryBackup(
                     exportedAt = exportedAt,
-                    appVersion = versionName ?: "unknown",
+                    appVersion = versionName,
                     stations = entities.map { it.toBackupStation() }
                 )
                 val json = Gson().toJson(backup)
-                context.contentResolver.openOutputStream(uri)?.use { stream ->
+                fileSystemFacade.openOutputStream(uri)?.use { stream ->
                     stream.write(json.toByteArray())
-                } ?: run {
-                    Log.e(TAG, "Export failed: output stream was null for uri=$uri")
-                    _backupResult.send(context.getString(R.string.settings_exported_failed))
-                    return@launch
-                }
+                } ?: throw Exception("Could not open output stream")
 
                 Log.d(TAG, "Export successful: ${entities.size} stations written")
                 _backupResult.send(context.resources.getQuantityString(R.plurals.settings_exported_success, entities.size, entities.size))

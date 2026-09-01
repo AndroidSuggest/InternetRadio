@@ -34,7 +34,9 @@ class LibraryViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val stationRepository: StationRepository,
     private val playerController: PlayerController,
-    private val okHttpClient: OkHttpClient
+    private val okHttpClient: OkHttpClient,
+    private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade,
+    private val systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade
 ) : ViewModel() {
 
     // Using useFilterOnFavorites and isGridViewFavorites for now, maybe we can rename these in Settings later
@@ -476,6 +478,15 @@ class LibraryViewModel @Inject constructor(
                 .onSuccess { _duplicateStations.value = it }
                 .onFailure { _duplicateStations.value = emptyList() }
             _isCheckingUrl.value = false
+        }
+    }
+
+    fun exportStation(context: android.content.Context, uri: android.net.Uri, station: RadioStation, onResult: (Result<Unit>) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = com.armanmaurya.internetradio.core.utils.ExportUtils.exportStation(context, uri, station, fileSystemFacade, systemFacade)
+            withContext(Dispatchers.Main) {
+                onResult(result)
+            }
         }
     }
 }

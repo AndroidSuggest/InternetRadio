@@ -268,7 +268,7 @@ private fun ScheduleConfigurationForm(
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
         }
-        return com.armanmaurya.internetradio.utils.FormatUtils.getTimeFormat(context).format(cal.time)
+        return com.armanmaurya.internetradio.core.utils.FormatUtils.getTimeFormat(context).format(cal.time)
     }
 
     Scaffold(

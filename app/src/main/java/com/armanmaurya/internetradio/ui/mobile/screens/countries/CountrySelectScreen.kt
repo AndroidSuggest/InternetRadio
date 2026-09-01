@@ -166,7 +166,7 @@ fun CountrySelectScreen(
                     itemsIndexed(filteredCountries, key = { _, country -> country.isoCode }) { _, country ->
                         val isSelected = country.isoCode == selectedCountryCode
                         val statesForCountry = remember(country.isoCode) {
-                            com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, country.isoCode)
+                            com.armanmaurya.internetradio.core.utils.StateUtils.getStatesForCountry(context, country.isoCode)
                         }
                         CountryItem(
                             country = country,
@@ -208,7 +208,7 @@ fun CountrySelectScreen(
             }
             var stateSearchQuery by remember { mutableStateOf("") }
             val allStates = remember(currentCountry.isoCode) {
-                com.armanmaurya.internetradio.util.StateUtils.getStatesForCountry(context, currentCountry.isoCode)
+                com.armanmaurya.internetradio.core.utils.StateUtils.getStatesForCountry(context, currentCountry.isoCode)
             }
             val filteredStates = remember(allStates, stateSearchQuery) {
                 if (stateSearchQuery.isBlank()) allStates

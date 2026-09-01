@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.utils
+package com.armanmaurya.internetradio.core.utils
 
 import android.content.Context
 import android.net.Uri
@@ -12,13 +12,9 @@ import java.util.Date
 import java.util.Locale
 
 object ExportUtils {
-    fun exportStation(context: Context, uri: Uri, station: RadioStation): Result<Unit> {
+    suspend fun exportStation(context: Context, uri: Uri, station: RadioStation, fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade, systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade): Result<Unit> {
         return try {
-            val versionName = try {
-                context.packageManager.getPackageInfo(context.packageName, 0).versionName
-            } catch (e: Exception) {
-                "unknown"
-            }
+            val versionName = systemFacade.getAppVersionName()
 
             val exportedAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
                 .format(Date())
@@ -31,7 +27,7 @@ object ExportUtils {
                 stations = listOf(backupStation)
             )
             val json = Gson().toJson(backup)
-            context.contentResolver.openOutputStream(uri)?.use { stream ->
+            fileSystemFacade.openOutputStream(uri)?.use { stream ->
                 stream.write(json.toByteArray())
             } ?: return Result.failure(Exception("Could not open file for writing"))
 

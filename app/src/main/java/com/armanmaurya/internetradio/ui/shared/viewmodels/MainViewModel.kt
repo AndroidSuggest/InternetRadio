@@ -16,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val updateRepository: UpdateRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    val systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade
 ) : ViewModel() {
 
     private val _updateAvailable = MutableStateFlow<GithubRelease?>(null)
