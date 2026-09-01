@@ -346,4 +346,5 @@
     <string name="schedule_listen_while_recording">Ascolta durante la registrazione</string>
     <string name="schedule_listen_while_recording_subtitle">Riproduci l\'audio della stazione durante la registrazione in background</string>
     <string name="action_create_shortcut">Crea scorciatoia</string>
+    <string name="player_original_stream_metadata">Metadati stream originali</string>
 </resources>
