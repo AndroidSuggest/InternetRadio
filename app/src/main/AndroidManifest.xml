@@ -102,14 +102,26 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".widget.PlayerWidgetProvider" android:exported="true">
+        <receiver android:name=".widget.NowPlayingWidgetReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/player_widget_info" />
+                android:resource="@xml/now_playing_widget_info" />
         </receiver>
+
+        <receiver android:name=".widget.WidgetControlReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" />
+                <action android:name="com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" />
+                <action android:name="com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS" />
+            </intent-filter>
+        </receiver>
+
+
     </application>
 
 </manifest>

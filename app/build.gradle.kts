@@ -73,6 +73,10 @@ android {
         compose = true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
+
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -138,6 +142,10 @@ dependencies {
     implementation(libs.androidx.tv.material)
 
     implementation(libs.calvin.reorderable)
+
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    implementation(libs.androidx.palette)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

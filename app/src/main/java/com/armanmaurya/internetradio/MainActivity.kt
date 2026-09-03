@@ -72,8 +72,10 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
+import androidx.glance.appwidget.updateAll
 import com.armanmaurya.internetradio.ui.shared.viewmodels.MainViewModel
 import com.armanmaurya.internetradio.ui.shared.components.UpdateBottomSheet
+import com.armanmaurya.internetradio.widget.NowPlayingWidget
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -114,6 +116,20 @@ class MainActivity : AppCompatActivity() {
         val activeTag = if (currentLocales.isEmpty) "System" else currentLocales[0]?.toLanguageTag() ?: "System"
         lifecycleScope.launch {
             settingsRepository.setAppLanguage(activeTag)
+            
+            // Clean up the persistent DataStore if the service is dead.
+            if (!com.armanmaurya.internetradio.player.PlaybackService.isRunning) {
+                com.armanmaurya.internetradio.widget.pushWidgetUpdate(
+                    context = applicationContext,
+                    title = "Nothing playing",
+                    artist = "",
+                    artworkUrl = null,
+                    isPlaying = false,
+                    hasNext = false,
+                    hasPrev = false
+                )
+            }
+            NowPlayingWidget().updateAll(this@MainActivity)
         }
         enableEdgeToEdge()
         setContent {

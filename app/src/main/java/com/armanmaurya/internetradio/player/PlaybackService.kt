@@ -19,6 +19,7 @@ import androidx.media3.session.MediaSession
 import com.armanmaurya.internetradio.MainActivity
 import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.data.repository.TrackHistoryRepository
+import com.armanmaurya.internetradio.widget.pushWidgetUpdate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -284,9 +285,38 @@ class PlaybackService : MediaLibraryService() {
         var isRunning = false
     }
 
+    /** Receives widget control broadcasts when the service is already running in the foreground.
+     *  This bypasses Android 12+ background startForegroundService restrictions on OEM devices. */
+    private val widgetActionReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context, intent: Intent?) {
+            when (intent?.action) {
+                "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" -> {
+                    val p = player ?: return
+                    when {
+                        p.isPlaying || (p.playbackState == androidx.media3.common.Player.STATE_BUFFERING && p.playWhenReady) -> p.pause()
+                        p.mediaItemCount == 0 -> serviceScope.launch { restoreAndPlayLastStation() }
+                        else -> { if (p.playbackState == androidx.media3.common.Player.STATE_IDLE) p.prepare(); p.play() }
+                    }
+                }
+                "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" ->
+                    player?.takeIf { it.hasNextMediaItem() }?.seekToNextMediaItem()
+                "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS" ->
+                    player?.takeIf { it.hasPreviousMediaItem() }?.seekToPreviousMediaItem()
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         isRunning = true
+
+        // Register the widget broadcast receiver so buttons work on all OEM launchers
+        val widgetFilter = android.content.IntentFilter().apply {
+            addAction("com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE")
+            addAction("com.armanmaurya.internetradio.ACTION_WIDGET_NEXT")
+            addAction("com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS")
+        }
+        registerReceiver(widgetActionReceiver, widgetFilter, android.content.Context.RECEIVER_NOT_EXPORTED)
 
         loadErrorHandlingPolicy = ExponentialBackoffLoadErrorHandlingPolicy(retryStateTracker)
         
@@ -451,6 +481,14 @@ class PlaybackService : MediaLibraryService() {
                     updateWidget()
                 }
 
+                override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                    updateWidget()
+                }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    updateWidget()
+                }
+
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                     updateWidget()
                 }
@@ -494,6 +532,11 @@ class PlaybackService : MediaLibraryService() {
         } catch (e: Exception) {
             // Ignored
         }
+        try {
+            unregisterReceiver(widgetActionReceiver)
+        } catch (e: Exception) {
+            // Ignored
+        }
         
         mediaLibrarySession?.run {
             player.removeListener(stationChangeListener)
@@ -506,10 +549,12 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
+        // Force clear the widget right before the OS kills the process
+        pushStoppedWidgetUpdate()
+        
         val player = player
         if (player != null) {
             if (!player.playWhenReady || player.mediaItemCount == 0) {
-                pushStoppedWidgetUpdate()
                 stopSelf()
             }
         }
@@ -584,33 +629,119 @@ class PlaybackService : MediaLibraryService() {
             volumeFadeJob?.cancel()
             player?.volume = 1f
             player?.stop()
-        } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE") {
-            val p = player
-            if (p != null) {
-                when {
-                    p.isPlaying || (p.playbackState == Player.STATE_BUFFERING && p.playWhenReady) -> {
-                        p.pause()
-                    }
-                    p.mediaItemCount == 0 -> {
-                        // Cold boot: app was killed. Restore last played station with full playlist context.
-                        serviceScope.launch {
-                            restoreAndPlayLastStation()
-                        }
-                    }
-                    else -> {
-                        if (p.playbackState == Player.STATE_IDLE) p.prepare()
-                        p.play()
-                    }
+        } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" ||
+                   action == "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" ||
+                   action == "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS") {
+            // Satisfy Android 12+ requirement: startForegroundService must be followed by
+            // startForeground within 5 seconds. If already in foreground, this is a no-op.
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                val channelId = "schedule_channel"
+                val nm = getSystemService(android.app.NotificationManager::class.java)
+                if (nm.getNotificationChannel(channelId) == null) {
+                    val channel = android.app.NotificationChannel(
+                        channelId, "Scheduled Playback",
+                        android.app.NotificationManager.IMPORTANCE_LOW
+                    ).apply { setShowBadge(false) }
+                    nm.createNotificationChannel(channel)
+                }
+                val note = android.app.Notification.Builder(this, channelId)
+                    .setSmallIcon(com.armanmaurya.internetradio.R.drawable.media3_notification_small_icon)
+                    .setContentTitle("Updating player...")
+                    .setOngoing(false)
+                    .build()
+                startForeground(2001, note)
+                // Media3 will immediately replace this with its proper notification.
+                // Stop the dummy to avoid it showing when paused.
+                serviceScope.launch {
+                    kotlinx.coroutines.delay(300)
+                    stopForeground(true)
                 }
             }
-        } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT") {
-            player?.takeIf { it.hasNextMediaItem() }?.seekToNextMediaItem()
-        } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS") {
-            player?.takeIf { it.hasPreviousMediaItem() }?.seekToPreviousMediaItem()
+            when (action) {
+                "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" -> {
+                    val p = player
+                    if (p != null) {
+                        when {
+                            p.isPlaying || (p.playbackState == Player.STATE_BUFFERING && p.playWhenReady) -> p.pause()
+                            p.mediaItemCount == 0 -> serviceScope.launch { restoreAndPlayLastStation() }
+                            else -> { if (p.playbackState == Player.STATE_IDLE) p.prepare(); p.play() }
+                        }
+                    }
+                }
+                "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" ->
+                    player?.takeIf { it.hasNextMediaItem() }?.seekToNextMediaItem()
+                "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS" ->
+                    player?.takeIf { it.hasPreviousMediaItem() }?.seekToPreviousMediaItem()
+            }
         } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_UPDATE") {
             updateWidget()
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    /**
+     * Reads the current player state and pushes it to the widget via DataStore,
+     * then triggers a Glance re-render for every placed widget instance.
+     */
+    private fun updateWidget() {
+        val p = player ?: return
+        
+        // Read ExoPlayer state on the main thread
+        val metadata   = p.currentMediaItem?.mediaMetadata
+        val isPlaying  = p.playWhenReady
+        
+        // If actively playing -> push live track info
+        // If paused -> instantly push base station info
+        val title = if (isPlaying) {
+            metadata?.title?.toString() ?: "Nothing playing"
+        } else {
+            metadata?.extras?.getString("stationName") ?: metadata?.title?.toString() ?: "Nothing playing"
+        }
+        
+        val artworkUrl = if (isPlaying) {
+            metadata?.extras?.getString("track_cover_art_url") ?: metadata?.extras?.getString("stationFavicon")
+        } else {
+            metadata?.extras?.getString("stationFavicon")
+        }
+        
+        val artist = if (isPlaying) {
+            metadata?.artist?.toString() ?: ""
+        } else {
+            ""
+        }
+
+        val hasNext    = p.hasNextMediaItem()
+        val hasPrev    = p.hasPreviousMediaItem()
+
+        serviceScope.launch(Dispatchers.IO) {
+            pushWidgetUpdate(
+                context    = applicationContext,
+                title      = title,
+                artist     = artist,
+                artworkUrl = artworkUrl,
+                isPlaying  = isPlaying,
+                hasNext    = hasNext,
+                hasPrev    = hasPrev,
+            )
+        }
+    }
+
+    /**
+     * Pushes a stopped/idle state to the widget.
+     * Call this when the service is about to be destroyed or when playback stops.
+     */
+    private fun pushStoppedWidgetUpdate() {
+        serviceScope.launch(Dispatchers.IO) {
+            pushWidgetUpdate(
+                context    = applicationContext,
+                title      = "Nothing playing",
+                artist     = "",
+                artworkUrl = null,
+                isPlaying  = false,
+                hasNext    = false,
+                hasPrev    = false,
+            )
+        }
     }
 
     private fun startStationPlayback(
@@ -695,54 +826,8 @@ class PlaybackService : MediaLibraryService() {
         }
     }
 
-    private fun updateWidget() {
-        val widgetManager = android.appwidget.AppWidgetManager.getInstance(this)
-        val widgetComponent = android.content.ComponentName(this, com.armanmaurya.internetradio.widget.PlayerWidgetProvider::class.java)
-        val widgetIds = widgetManager.getAppWidgetIds(widgetComponent)
-        if (widgetIds.isNotEmpty()) {
-            val p = player
-            val trackTitle = p?.mediaMetadata?.title?.toString()
-            val stationName = p?.currentMediaItem?.mediaMetadata?.extras?.getString("stationName")
-            val artworkUri = p?.mediaMetadata?.artworkUri?.toString()
-            
-            com.armanmaurya.internetradio.widget.PlayerWidgetProvider.updateWidgets(
-                context = this,
-                appWidgetManager = widgetManager,
-                appWidgetIds = widgetIds,
-                player = p,
-                trackTitle = trackTitle,
-                stationName = stationName,
-                artworkUri = artworkUri
-            )
-        }
-    }
 
-    /**
-     * Pushes a final "stopped" widget update from the recent DB.
-     * Called when the service is about to be destroyed so the widget
-     * shows the correct station name/art with a Play button instead of freezing.
-     * Uses a new independent scope since serviceScope may already be cancelled.
-     */
-    private fun pushStoppedWidgetUpdate() {
-        val widgetManager = android.appwidget.AppWidgetManager.getInstance(this)
-        val widgetComponent = android.content.ComponentName(this, com.armanmaurya.internetradio.widget.PlayerWidgetProvider::class.java)
-        val widgetIds = widgetManager.getAppWidgetIds(widgetComponent)
-        if (widgetIds.isEmpty()) return
 
-        // Use a fresh scope since serviceScope may have been cancelled already
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-            val lastStation = recentRepository.getAllRecent().first().firstOrNull()
-            com.armanmaurya.internetradio.widget.PlayerWidgetProvider.updateWidgets(
-                context = this@PlaybackService,
-                appWidgetManager = widgetManager,
-                appWidgetIds = widgetIds,
-                player = null,                    // null → isPlaying=false → shows Play icon
-                trackTitle = lastStation?.name,   // Clean station name from DB, not live stream title
-                stationName = lastStation?.name,
-                artworkUri = lastStation?.favicon
-            )
-        }
-    }
 
     /**
      * Restores the last played station with a full playlist context, mirroring
