@@ -113,6 +113,13 @@
     <plurals name="settings_exported_success">
         <item quantity="other">Erfolgreich %1$d Sender exportiert</item>
     </plurals>
+    <string name="settings_gradual_volume">Schrittweise Zeitplanlautstärke</string>
+    <string name="settings_gradual_volume_disabled">Aus</string>
+    <string name="settings_gradual_volume_enabled">%1$s Fade-in</string>
+    <plurals name="settings_gradual_volume_seconds">
+        <item quantity="one">%1$d Sekunde</item>
+        <item quantity="other">%1$d Sekunden</item>
+    </plurals>
     <string name="settings_import_title">Sender importieren</string>
     <string name="settings_import_subtitle">Sender aus einer Sicherungsdatei wiederherstellen</string>
     <string name="settings_imported">Importiert: %1$d</string>
@@ -123,6 +130,7 @@
     </plurals>
     <string name="settings_imported_skipped">Übersprungen: %1$d (bereits vorhanden)</string>
     <string name="settings_imported_updated">Aktualisiert: %1$d</string>
+    <string name="settings_schedule_section">Zeitpläne</string>
 
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
@@ -390,18 +398,14 @@
     <string name="nav_all_languages">Alle Sprachen</string>
     <string name="player_cd_stop">Stop</string>
 
-    <string name="settings_schedule_section">Zeitpläne</string>
-    <string name="settings_gradual_volume">Schrittweise Zeitplanlautstärke</string>
-    <plurals name="settings_gradual_volume_seconds">
-        <item quantity="one">%1$d Sekunde</item>
-        <item quantity="other">%1$d Sekunden</item>
-    </plurals>
-    <string name="settings_gradual_volume_enabled">%1$s Fade-in</string>
-    <string name="settings_gradual_volume_disabled">Aus</string>
     <string name="recordings_currently_recording">Aktive Aufnahmen</string>
     <string name="recordings_saved">Gespeicherte Aufnahmen</string>
     <string name="action_stop_recording">Aufnahme beenden</string>
     <string name="action_record_station">Sender aufnehmen</string>
     <string name="action_create_shortcut">Verknüpfung erstellen</string>
     <string name="lyrics_powered_by">Powered by</string>
+
+    <string name="rate">Gefällt Dir Internet Radio? Bitte nimm Dir etwas Zeit um die App zu bewerten. Deine Unterstützung bedeutet uns sehr viel!</string>
+    <string name="rate_now">Jetzt bewerten</string>
+    <string name="rate_cancel">Nein, Danke</string>
 </resources>

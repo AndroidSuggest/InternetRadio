@@ -36,7 +36,7 @@ fun RateAppDialog(
         },
         text = {
             Text(
-                text = "Are you enjoying Internet Radio? If so, please consider taking a moment to rate the app. Your support means a lot!",
+                text = stringResource(R.string.rate),
                 style = MaterialTheme.typography.bodyMedium
             )
         },
@@ -44,14 +44,14 @@ fun RateAppDialog(
             TextButton(
                 onClick = onRateClick
             ) {
-                Text("Rate Now")
+                Text(stringResource(R.string.rate_now))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = { onDismissClick(true) }
             ) {
-                Text("No, Thanks")
+                Text(stringResource(R.string.rate_cancel))
             }
         }
     )

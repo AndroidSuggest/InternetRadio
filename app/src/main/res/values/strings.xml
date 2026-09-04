@@ -114,6 +114,13 @@
         <item quantity="one">Exported %1$d station successfully</item>
         <item quantity="other">Exported %1$d stations successfully</item>
     </plurals>
+    <string name="settings_gradual_volume">Gradual schedule volume</string>
+    <string name="settings_gradual_volume_disabled">Off</string>
+    <string name="settings_gradual_volume_enabled">%1$s fade-in</string>
+    <plurals name="settings_gradual_volume_seconds">
+        <item quantity="one">%1$d second</item>
+        <item quantity="other">%1$d seconds</item>
+    </plurals>
     <string name="settings_import_title">Import Stations</string>
     <string name="settings_import_subtitle">Restore stations from a backup file</string>
     <string name="settings_imported">Imported: %1$d</string>
@@ -124,6 +131,7 @@
     </plurals>
     <string name="settings_imported_skipped">Skipped (already existing): %1$d</string>
     <string name="settings_imported_updated">Updated: %1$d</string>
+    <string name="settings_schedule_section">Schedules</string>
 
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
@@ -392,14 +400,6 @@
     <string name="nav_all_languages">All Languages</string>
     <string name="player_cd_stop">Stop</string>
 
-    <string name="settings_schedule_section">Schedules</string>
-    <string name="settings_gradual_volume">Gradual schedule volume</string>
-    <plurals name="settings_gradual_volume_seconds">
-        <item quantity="one">%1$d second</item>
-        <item quantity="other">%1$d seconds</item>
-    </plurals>
-    <string name="settings_gradual_volume_enabled">%1$s fade-in</string>
-    <string name="settings_gradual_volume_disabled">Off</string>
     <string name="recordings_currently_recording">Currently Recording</string>
     <string name="recordings_saved">Saved Recordings</string>
     <string name="action_stop_recording">Stop Recording</string>
@@ -407,4 +407,8 @@
     <string name="action_create_shortcut">Create Shortcut</string>
     <string name="lyrics_powered_by">Powered by </string>
     <string name="lyrics_provider_lrclib" translatable="false">LRCLIB</string>
+
+    <string name="rate">Are you enjoying Internet Radio? If so, please consider taking a moment to rate the app. Your support means a lot!</string>
+    <string name="rate_now">Rate Now</string>
+    <string name="rate_cancel">No, Thanks</string>
 </resources>
