@@ -361,7 +361,19 @@ class PlayerController @Inject constructor(
         }
 
         activeStation = station
-        _playbackState.update { it.copy(currentStation = station, currentPlaylist = currentPlaylist, currentPlaylistIndex = startIndex, currentTrack = null, trackStartTime = null, lyricsSyncOffsetMs = 0L, playbackSource = currentPlaybackSource) }
+        _playbackState.update { 
+            it.copy(
+                currentStation = station, 
+                currentPlaylist = currentPlaylist, 
+                currentPlaylistIndex = startIndex, 
+                currentTrack = null, 
+                trackStartTime = null, 
+                lyricsSyncOffsetMs = 0L, 
+                playbackSource = currentPlaybackSource,
+                sessionActiveDurationMs = 0L,
+                sessionResumeTimeMs = if (playWhenReady) System.currentTimeMillis() else null
+            ) 
+        }
         
         val mediaItems = stations.map { it.toMediaItem() }
         player.setMediaItems(mediaItems, startIndex, 0L)
