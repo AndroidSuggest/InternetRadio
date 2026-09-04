@@ -256,6 +256,8 @@ class PlaybackService : MediaLibraryService() {
                             }
                         }
                         val metadataWithArt = newMetadataBuilder
+                            .setTitle(metadata?.trackName ?: trackName)
+                            .setArtist(metadata?.artistName ?: artistName)
                             .setArtworkUri(if (showCoverArtInNotification && metadata?.coverArtUrl != null) android.net.Uri.parse(metadata.coverArtUrl) else stationFaviconUri)
                             .setExtras(updatedExtras)
                             .setDescription(System.currentTimeMillis().toString()) // Force ExoPlayer to detect a metadata change
