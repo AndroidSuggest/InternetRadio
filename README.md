@@ -73,7 +73,7 @@ Join the Telegram community for discussions, feedback, and announcements, sharin
 - **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose)
 - **Database**: [Room](https://developer.android.com/training/data-storage/room)
 - **Dependency Injection**: [Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
-- **API**: [Radio Browser API](https://www.radio-browser.info/)
+- **APIs/Services**: [Radio Browser API](https://www.radio-browser.info/), [iTunes Search API](https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/), [LrcLib API](https://lrclib.net/), [FCast](https://fcast.org/)
 
 ## Building From Source
 
@@ -115,15 +115,6 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct
 Translations are managed on <a href="https://hosted.weblate.org/projects/internetradio/">Weblate</a> — no local setup needed, contribute directly from your browser.
 
 <a href="https://hosted.weblate.org/engage/internetradio/"><img src="https://hosted.weblate.org/widget/internetradio/multi-auto.svg"></a>
-
-## Open Source Libraries
-
-InternetRadio uses the following open-source libraries:
-
-- [Android Jetpack Libraries](https://developer.android.com/jetpack) (Compose, Room, Media3, Lifecycle, Navigation, DataStore, etc.)
-- [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - A dependency injection library for Android.
-- [Radio Browser API](https://www.radio-browser.info/) - A community-driven effort to collect radio stations.
-- [FCast](https://fcast.org/) - An open-source protocol for wireless streaming.
 
 ## Acknowledgments
 
