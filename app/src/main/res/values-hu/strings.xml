@@ -85,9 +85,9 @@
     <string name="settings_conflict_overwrite_desc">Mindig a biztonsági mentés verziójának használata</string>
     <string name="settings_conflict_keep_newer">Újabb megtartása</string>
     <string name="settings_conflict_keep_newer_desc">A később hozzáadott megtartása</string>
-    <string name="settings_export_title">Könyvtár exportálása</string>
+    <string name="settings_export_title">Állomások exportálása</string>
     <string name="settings_export_subtitle">Állomások mentése fájlba</string>
-    <string name="settings_import_title">Könyvtár importálása</string>
+    <string name="settings_import_title">Állomások importálása</string>
     <string name="settings_import_subtitle">Állomások visszaállítása biztonsági mentésből</string>
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
@@ -261,4 +261,9 @@
     <string name="home_tab_schedules">Időzítések</string>
     <string name="home_verified">Ellenőrzött</string>
     <string name="home_add_to_library">Hozzáadás a könyvtárhoz</string>
+    <string name="home_remove_from_library">Eltávolítás a könyvtárból</string>
+    <string name="home_remove_from_recent">Eltávolítás a legutóbbiak közül</string>
+    <string name="home_sort_added">Hozzáadás szerint</string>
+    <string name="home_sort_name">Név</string>
+    <string name="home_sort_custom">Egyéni</string>
 </resources>
