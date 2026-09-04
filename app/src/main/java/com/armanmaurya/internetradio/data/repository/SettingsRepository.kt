@@ -54,6 +54,8 @@ class SettingsRepository @Inject constructor(
         val TRACK_HISTORY_LIMIT = androidx.datastore.preferences.core.intPreferencesKey("track_history_limit")
         val DEFAULT_TAB = androidx.datastore.preferences.core.intPreferencesKey("default_tab")
         val AUTO_PLAY_ON_START = booleanPreferencesKey("auto_play_on_start")
+        val APP_LAUNCH_COUNT = androidx.datastore.preferences.core.intPreferencesKey("app_launch_count")
+        val HAS_RATED_APP = booleanPreferencesKey("has_rated_app")
         val DISABLE_UPDATE_CHECK = booleanPreferencesKey("disable_update_check")
         val LAST_UPDATE_CHECK_TIME = androidx.datastore.preferences.core.longPreferencesKey("last_update_check_time")
         val MAX_RETRY_DURATION = androidx.datastore.preferences.core.longPreferencesKey("max_retry_duration")
@@ -102,6 +104,8 @@ class SettingsRepository @Inject constructor(
             val trackHistoryLimit = preferences[PreferencesKeys.TRACK_HISTORY_LIMIT] ?: 50
             val defaultTab = preferences[PreferencesKeys.DEFAULT_TAB] ?: 0
             val autoPlayOnStart = preferences[PreferencesKeys.AUTO_PLAY_ON_START] ?: false
+            val appLaunchCount = preferences[PreferencesKeys.APP_LAUNCH_COUNT] ?: 0
+            val hasRatedApp = preferences[PreferencesKeys.HAS_RATED_APP] ?: false
             val disableUpdateCheck = preferences[PreferencesKeys.DISABLE_UPDATE_CHECK] ?: false
             val lastUpdateCheckTime = preferences[PreferencesKeys.LAST_UPDATE_CHECK_TIME] ?: 0L
             val maxRetryDuration = preferences[PreferencesKeys.MAX_RETRY_DURATION] ?: 300_000L
@@ -141,6 +145,8 @@ class SettingsRepository @Inject constructor(
                 trackHistoryLimit = trackHistoryLimit,
                 defaultTab = defaultTab,
                 autoPlayOnStart = autoPlayOnStart,
+                appLaunchCount = appLaunchCount,
+                hasRatedApp = hasRatedApp,
                 disableUpdateCheck = disableUpdateCheck,
                 lastUpdateCheckTime = lastUpdateCheckTime,
                 maxRetryDuration = maxRetryDuration,
@@ -167,6 +173,14 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setAutoPlayOnStart(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.AUTO_PLAY_ON_START] = enabled }
+    }
+
+    suspend fun setAppLaunchCount(count: Int) {
+        context.dataStore.edit { it[PreferencesKeys.APP_LAUNCH_COUNT] = count }
+    }
+
+    suspend fun setHasRatedApp(rated: Boolean) {
+        context.dataStore.edit { it[PreferencesKeys.HAS_RATED_APP] = rated }
     }
 
     suspend fun setDisableUpdateCheck(disabled: Boolean) {

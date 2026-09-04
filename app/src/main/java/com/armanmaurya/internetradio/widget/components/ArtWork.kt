@@ -32,6 +32,7 @@ fun ArtWork(art: ImageProvider?, modifier: GlanceModifier) {
                 provider = ImageProvider(R.drawable.ic_launcher_foreground),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                colorFilter = androidx.glance.ColorFilter.tint(GlanceTheme.colors.primary),
                 modifier = GlanceModifier.fillMaxSize()
             )
         }

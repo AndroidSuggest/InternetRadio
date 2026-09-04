@@ -23,6 +23,31 @@ class MainViewModel @Inject constructor(
     private val _updateAvailable = MutableStateFlow<GithubRelease?>(null)
     val updateAvailable: StateFlow<GithubRelease?> = _updateAvailable.asStateFlow()
 
+    private val _showReviewPrompt = MutableStateFlow(false)
+    val showReviewPrompt: StateFlow<Boolean> = _showReviewPrompt.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val prefs = settingsRepository.appPreferencesFlow.first()
+            if (!prefs.hasRatedApp) {
+                val newCount = prefs.appLaunchCount + 1
+                settingsRepository.setAppLaunchCount(newCount)
+                if (newCount == 5 || newCount == 15) {
+                    _showReviewPrompt.value = true
+                }
+            }
+        }
+    }
+
+    fun dismissReviewPrompt(hasRated: Boolean) {
+        _showReviewPrompt.value = false
+        if (hasRated) {
+            viewModelScope.launch {
+                settingsRepository.setHasRatedApp(true)
+            }
+        }
+    }
+
     fun checkForUpdates(currentVersion: String, force: Boolean = false, onResult: ((Boolean) -> Unit)? = null) {
         viewModelScope.launch {
             val appPreferences = settingsRepository.appPreferencesFlow.first()

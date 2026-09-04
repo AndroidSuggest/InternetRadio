@@ -156,6 +156,22 @@ class MainActivity : AppCompatActivity() {
                         }
                     )
                 }
+
+                val showReviewPrompt by mainViewModel.showReviewPrompt.collectAsStateWithLifecycle()
+                if (showReviewPrompt) {
+                    com.armanmaurya.internetradio.ui.mobile.components.RateAppDialog(
+                        onRateClick = {
+                            mainViewModel.dismissReviewPrompt(hasRated = true)
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+                                startActivity(intent)
+                            } catch (e: Exception) {}
+                        },
+                        onDismissClick = { permanently ->
+                            mainViewModel.dismissReviewPrompt(hasRated = permanently)
+                        }
+                    )
+                }
                 
                 val navController = rememberNavController()
                 val homeViewModel: com.armanmaurya.internetradio.ui.mobile.screens.home.HomeViewModel = hiltViewModel()

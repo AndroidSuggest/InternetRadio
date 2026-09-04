@@ -55,7 +55,6 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // LEFT ZONE: Artwork + Track info — opens the app when tapped.
         Row(
             modifier = GlanceModifier
                 .defaultWeight()
@@ -72,11 +71,9 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 artist = state.artist,
                 titleColor = state.titleColor,
                 artistColor = state.artistColor,
-                modifier = GlanceModifier.defaultWeight().padding(start = 8.dp)
+                modifier = GlanceModifier.defaultWeight()
             )
         }
-
-        // RIGHT ZONE: Playback controls — separate, no parent click conflict.
         Row(
             modifier = GlanceModifier.padding(end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,

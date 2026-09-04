@@ -165,6 +165,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setHasRatedApp(rated: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setHasRatedApp(rated)
+        }
+    }
+
     fun exportLibrary(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {

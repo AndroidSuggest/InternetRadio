@@ -690,7 +690,7 @@ class PlaybackService : MediaLibraryService() {
         
         // Read ExoPlayer state on the main thread
         val metadata   = p.currentMediaItem?.mediaMetadata
-        val isPlaying  = p.playWhenReady
+        val isPlaying = p.isPlaying || (p.playbackState == androidx.media3.common.Player.STATE_BUFFERING && p.playWhenReady)
         
         // If actively playing -> push live track info
         // If paused -> instantly push base station info

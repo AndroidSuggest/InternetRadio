@@ -177,9 +177,8 @@ fun LyricsTab(
                         enter = androidx.compose.animation.slideInHorizontally(initialOffsetX = { it * 2 }),
                         exit = androidx.compose.animation.slideOutHorizontally(targetOffsetX = { it * 2 })
                     ) {
-                        IconButton(
+                        androidx.compose.material3.FilledTonalIconButton(
                             onClick = { onSyncOffsetChange(syncOffsetMs - 500L) },
-                            modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                         ) {
                             Icon(
                                 Icons.Default.Remove, 
@@ -213,9 +212,8 @@ fun LyricsTab(
                         enter = androidx.compose.animation.slideInHorizontally(initialOffsetX = { -it * 2 }),
                         exit = androidx.compose.animation.slideOutHorizontally(targetOffsetX = { -it * 2 })
                     ) {
-                        IconButton(
+                        androidx.compose.material3.FilledTonalIconButton(
                             onClick = { onSyncOffsetChange(syncOffsetMs + 500L) },
-                            modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                         ) {
                             Icon(
                                 Icons.Default.Add, 

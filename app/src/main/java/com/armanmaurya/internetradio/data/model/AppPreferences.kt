@@ -22,6 +22,8 @@ data class AppPreferences(
     val isGridViewBrowse: Boolean = true,
     val isGridViewRecent: Boolean = true,
     val autoPlayOnStart: Boolean = false,
+    val appLaunchCount: Int = 0,
+    val hasRatedApp: Boolean = false,
     val isGridViewFavorites: Boolean = true,
     val isGridViewAdded: Boolean = true,
     val selectAllTextOnFocus: Boolean = true,

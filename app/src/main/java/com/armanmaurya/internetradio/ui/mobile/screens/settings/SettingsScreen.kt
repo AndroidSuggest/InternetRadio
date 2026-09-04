@@ -206,6 +206,7 @@ fun SettingsScreen(
             AboutSection(
                 onAboutClick = onAboutClick,
                 onCheckUpdatesClick = onCheckUpdatesClick,
+                onRateClick = { viewModel.setHasRatedApp(true) },
                 topShape = topShape,
                 middleShape = middleShape,
                 bottomShape = bottomShape
@@ -558,6 +559,7 @@ private fun PlayerSection(
 private fun AboutSection(
     onAboutClick: () -> Unit,
     onCheckUpdatesClick: () -> Unit,
+    onRateClick: () -> Unit,
     topShape: RoundedCornerShape,
     middleShape: RoundedCornerShape,
     bottomShape: RoundedCornerShape
@@ -568,6 +570,7 @@ private fun AboutSection(
         Item(
             title = stringResource(R.string.settings_rate_review),
             onClick = {
+                onRateClick()
                 try {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
                         data = Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
