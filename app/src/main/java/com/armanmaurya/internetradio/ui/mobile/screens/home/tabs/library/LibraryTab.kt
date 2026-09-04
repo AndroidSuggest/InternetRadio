@@ -110,24 +110,7 @@ fun LibraryContent(
             val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
             val showScrollToTop by androidx.compose.runtime.remember { androidx.compose.runtime.derivedStateOf { gridState.firstVisibleItemIndex > 0 } }
             
-            var previousIndex by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
-            var previousScrollOffset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
-            var isAddFabVisible by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
 
-            LaunchedEffect(gridState) {
-                androidx.compose.runtime.snapshotFlow { gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset }
-                    .collect { (index, offset) ->
-                        if (index > previousIndex || (index == previousIndex && offset > previousScrollOffset + 50)) {
-                            isAddFabVisible = false
-                            previousIndex = index
-                            previousScrollOffset = offset
-                        } else if (index < previousIndex || (index == previousIndex && offset < previousScrollOffset - 50)) {
-                            isAddFabVisible = true
-                            previousIndex = index
-                            previousScrollOffset = offset
-                        }
-                    }
-            }
             val coroutineScope = rememberCoroutineScope()
             val reorderableState = rememberReorderableLazyGridState(gridState) { from, to ->
                 if (sortOption == LibrarySortOption.CUSTOM) {
@@ -387,13 +370,10 @@ fun LibraryContent(
                     }
                 }
 
-        AnimatedVisibility(
-            visible = isAddFabVisible,
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 16.dp + contentPadding.calculateBottomPadding(), end = 16.dp),
-            enter = scaleIn() + fadeIn() + slideIn(initialOffset = { androidx.compose.ui.unit.IntOffset(it.width, it.height) }),
-            exit = scaleOut() + fadeOut() + slideOut(targetOffset = { androidx.compose.ui.unit.IntOffset(it.width, it.height) })
+                .padding(bottom = 16.dp + contentPadding.calculateBottomPadding(), end = 16.dp)
         ) {
             FloatingActionButton(
                 onClick = { onEditStation(null) },

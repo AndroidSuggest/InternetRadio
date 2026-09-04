@@ -29,7 +29,6 @@ import androidx.glance.currentState
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.glance.action.clickable
 import com.armanmaurya.internetradio.widget.components.PlayerContent
 import com.armanmaurya.internetradio.widget.state.NowPlayingWidgetState
 
