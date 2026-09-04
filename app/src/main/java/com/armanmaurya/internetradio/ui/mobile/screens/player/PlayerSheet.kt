@@ -428,8 +428,11 @@ fun PlayerSheetContent(
             val isFetching = playbackState.isFetchingArtwork
             val isShowingCover = isCurrentPlayingStation && showCoverArt && (hasCoverArt || isFetching)
 
-            val overlaySize = lerp(16.dp, 48.dp, progress) / currentScale
-            val overlayPadding = lerp(2.dp, 8.dp, progress) / currentScale
+            val visualOverlaySize = lerp(lerp(16.dp, 48.dp, progress), 16.dp, historyProgress)
+            val overlaySize = visualOverlaySize / currentScale
+
+            val visualOverlayPadding = lerp(lerp(2.dp, 8.dp, progress), 2.dp, historyProgress)
+            val overlayPadding = visualOverlayPadding / currentScale
 
             val coverFraction by androidx.compose.animation.core.animateFloatAsState(
                 targetValue = if (isShowingCover) 1f else 0f,
