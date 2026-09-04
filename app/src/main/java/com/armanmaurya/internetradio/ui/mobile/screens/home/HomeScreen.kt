@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
@@ -333,33 +334,54 @@ fun HomeScreen(
 
         modifier = modifier.fillMaxSize(),
     ) { innerPadding ->
-        val bottomCornerRadius = rememberBottomCornerRadius()
+        val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black
+        val outlineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
         val pagerContent = @Composable {
             // Tab Container with horizontal pager
             Surface(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (isPureBlack) {
+                            Modifier.drawWithContent {
+                                drawContent()
+                                // Draw a 3-sided border (left + top + right) for the pure black theme.
+                                // We skip the bottom edge intentionally so there is no divider line
+                                // between the surface and the navigation bar.
+                                val strokePx = 1.dp.toPx()
+                                val r = 28.dp.toPx()
+                                val path = androidx.compose.ui.graphics.Path().apply {
+                                    moveTo(0f, size.height)
+                                    lineTo(0f, r)
+                                    arcTo(
+                                        rect = androidx.compose.ui.geometry.Rect(0f, 0f, r * 2, r * 2),
+                                        startAngleDegrees = 180f,
+                                        sweepAngleDegrees = 90f,
+                                        forceMoveTo = false
+                                    )
+                                    lineTo(size.width - r, 0f)
+                                    arcTo(
+                                        rect = androidx.compose.ui.geometry.Rect(size.width - r * 2, 0f, size.width, r * 2),
+                                        startAngleDegrees = 270f,
+                                        sweepAngleDegrees = 90f,
+                                        forceMoveTo = false
+                                    )
+                                    lineTo(size.width, size.height)
+                                }
+                                drawPath(
+                                    path = path,
+                                    color = outlineColor,
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokePx)
+                                )
+                            }
+                        } else Modifier
+                    ),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 shape = if (widthSizeClass == WindowWidthSizeClass.Expanded) {
-                    RoundedCornerShape(
-                        topStart = 28.dp, 
-                        topEnd = 28.dp, 
-                        bottomStart = 28.dp,
-                        bottomEnd = bottomCornerRadius
-                    )
+                    RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp)
                 } else {
-                    RoundedCornerShape(
-                        topStart = 28.dp, 
-                        topEnd = 28.dp,
-                        bottomStart = bottomCornerRadius,
-                        bottomEnd = bottomCornerRadius
-                    )
+                    RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
                 },
-                border = if (MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black) {
-                    androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                    )
-                } else null
             ) {
                 HorizontalPager(
                     state = pagerState,
@@ -483,37 +505,4 @@ fun HomeScreen(
             )
         }
     }
-}
-
-@Composable
-fun rememberBottomCornerRadius(): androidx.compose.ui.unit.Dp {
-    val view = androidx.compose.ui.platform.LocalView.current
-    val density = androidx.compose.ui.platform.LocalDensity.current
-    var radiusPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
-
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-        // Observe system window insets in Compose. When these change, it means the View system 
-        // has dispatched insets, ensuring rootWindowInsets is no longer null.
-        val insets = WindowInsets.safeDrawing
-        val top = insets.getTop(density)
-        val bottom = insets.getBottom(density)
-
-        androidx.compose.runtime.LaunchedEffect(view, top, bottom) {
-            // Wait until rootWindowInsets is available
-            var rootInsets = view.rootWindowInsets
-            var attempts = 0
-            while (rootInsets == null && attempts < 10) {
-                kotlinx.coroutines.delay(50)
-                rootInsets = view.rootWindowInsets
-                attempts++
-            }
-            
-            val bl = rootInsets?.getRoundedCorner(android.view.RoundedCorner.POSITION_BOTTOM_LEFT)?.radius ?: 0
-            val br = rootInsets?.getRoundedCorner(android.view.RoundedCorner.POSITION_BOTTOM_RIGHT)?.radius ?: 0
-            
-            radiusPx = kotlin.math.max(bl, br)
-        }
-    }
-
-    return with(density) { radiusPx.toDp() }
 }
