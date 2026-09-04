@@ -15,7 +15,7 @@ import javax.inject.Inject
 data class BrowseUiState(
     val searchQuery: String = "",
     val stations: List<RadioStation> = emptyList(),
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val isNextPageLoading: Boolean = false,
     val canLoadMore: Boolean = true,
     val isSearchActive: Boolean = false,
