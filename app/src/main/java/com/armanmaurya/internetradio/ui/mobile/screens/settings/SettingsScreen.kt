@@ -35,6 +35,8 @@ import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.CallMerge
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.StarRate
+import androidx.compose.material.icons.filled.Favorite
+import com.armanmaurya.internetradio.core.config.StoreConfig
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -218,7 +220,7 @@ fun SettingsScreen(
 
             androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(32.dp))
             Text(
-                text = "v$versionName ($versionCode)",
+                text = "v$versionName ($versionCode) • ${stringResource(StoreConfig.storeNameRes)}",
                 style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.fillMaxWidth(),
@@ -568,19 +570,23 @@ private fun AboutSection(
 
     Section(title = stringResource(R.string.about_title)) {
         Item(
-            title = stringResource(R.string.settings_rate_review),
+            title = if (StoreConfig.isPlayStoreBuild) stringResource(R.string.settings_rate_review) else stringResource(R.string.settings_support_app),
             onClick = {
                 onRateClick()
                 try {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
+                        data = if (StoreConfig.isPlayStoreBuild) {
+                            Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
+                        } else {
+                            Uri.parse("https://github.com/armanmaurya/InternetRadio")
+                        }
                     }
                     context.startActivity(intent)
                 } catch (_: Exception) {
                     // Handle error silently
                 }
             },
-            icon = Icons.Default.StarRate,
+            icon = if (StoreConfig.isPlayStoreBuild) Icons.Default.StarRate else Icons.Default.Favorite,
             shape = topShape
         )
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
@@ -588,7 +594,7 @@ private fun AboutSection(
             title = stringResource(R.string.about_us),
             onClick = onAboutClick,
             icon = Icons.Default.Info,
-            shape = middleShape
+            shape = if (StoreConfig.isPlayStoreBuild) middleShape else middleShape // Keep it simple
         )
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
         Item(

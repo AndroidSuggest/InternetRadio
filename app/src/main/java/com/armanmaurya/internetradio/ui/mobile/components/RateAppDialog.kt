@@ -14,29 +14,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 
+import com.armanmaurya.internetradio.core.config.StoreConfig
+import androidx.compose.material.icons.filled.Favorite
+
 @Composable
 fun RateAppDialog(
     onRateClick: () -> Unit,
     onDismissClick: (permanently: Boolean) -> Unit
 ) {
+    val isPlay = StoreConfig.isPlayStoreBuild
     AlertDialog(
         onDismissRequest = { onDismissClick(false) },
         icon = {
             Icon(
-                imageVector = Icons.Default.StarRate,
+                imageVector = if (isPlay) Icons.Default.StarRate else Icons.Default.Favorite,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
         },
         title = {
             Text(
-                text = stringResource(R.string.settings_rate_review),
+                text = if (isPlay) stringResource(R.string.settings_rate_review) else stringResource(R.string.settings_support_app),
                 style = MaterialTheme.typography.titleLarge
             )
         },
         text = {
             Text(
-                text = stringResource(R.string.rate),
+                text = if (isPlay) {
+                    stringResource(R.string.review_message_play)
+                } else {
+                    stringResource(R.string.review_message_foss)
+                },
                 style = MaterialTheme.typography.bodyMedium
             )
         },
@@ -44,14 +52,14 @@ fun RateAppDialog(
             TextButton(
                 onClick = onRateClick
             ) {
-                Text(stringResource(R.string.rate_now))
+                Text(if (isPlay) stringResource(R.string.review_rate_now) else stringResource(R.string.review_star_github))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = { onDismissClick(true) }
             ) {
-                Text(stringResource(R.string.rate_cancel))
+                Text(stringResource(R.string.review_no_thanks))
             }
         }
     )

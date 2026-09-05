@@ -73,6 +73,16 @@
     <string name="settings_stop_on_audio_noisy_desc">Pause playback when Bluetooth or wired headphones are disconnected</string>
     <string name="settings_pause_on_volume_zero">Pause on volume zero</string>
     <string name="settings_pause_on_volume_zero_desc">Pause playback when device is muted (does not apply while recording)</string>
+    <string name="settings_about_foss_edition">FOSS Edition</string>
+    <string name="settings_about_play_edition">Google Play Edition</string>
+    <string name="settings_update_up_to_date">App is up to date</string>
+    <string name="settings_update_failed">Failed to check for updates</string>
+    <string name="settings_support_app">Support the App</string>
+    <string name="review_rate_now">Rate Now</string>
+    <string name="review_star_github">Star on GitHub</string>
+    <string name="review_no_thanks">No, Thanks</string>
+    <string name="review_message_play">Are you enjoying Internet Radio? If so, please consider taking a moment to rate the app. Your support means a lot!</string>
+    <string name="review_message_foss">Are you enjoying Internet Radio? If so, please consider supporting the project by leaving a star on GitHub. Your support means a lot!</string>
     <string name="settings_show_cover_art">Cover Art in Notification</string>
     <string name="settings_show_cover_art_desc">Show track cover art instead of station thumbnail in lock screen and notifications</string>
     <string name="settings_max_retry_duration">Maximum retry duration</string>
