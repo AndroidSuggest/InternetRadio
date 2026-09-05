@@ -73,6 +73,7 @@ import android.content.res.Configuration
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import androidx.glance.appwidget.updateAll
+import com.armanmaurya.internetradio.core.config.StoreConfig
 import com.armanmaurya.internetradio.ui.shared.viewmodels.MainViewModel
 import com.armanmaurya.internetradio.ui.shared.components.UpdateBottomSheet
 import com.armanmaurya.internetradio.widget.NowPlayingWidget
@@ -141,8 +142,12 @@ class MainActivity : AppCompatActivity() {
 
             LaunchedEffect(appPreferences.disableUpdateCheck) {
                 if (!appPreferences.disableUpdateCheck) {
-                    val versionName = systemFacade.getAppVersionName()
-                    mainViewModel.checkForUpdates(versionName)
+                    if (StoreConfig.isPlayStoreBuild) {
+                        StoreConfig.checkPlayStoreUpdate(this@MainActivity)
+                    } else {
+                        val versionName = systemFacade.getAppVersionName()
+                        mainViewModel.checkForUpdates(versionName)
+                    }
                 }
             }
 
@@ -163,7 +168,12 @@ class MainActivity : AppCompatActivity() {
                         onRateClick = {
                             mainViewModel.dismissReviewPrompt(hasRated = true)
                             try {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+                                val uri = if (StoreConfig.isPlayStoreBuild) {
+                                    Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+                                } else {
+                                    Uri.parse("https://github.com/armanmaurya/InternetRadio")
+                                }
+                                val intent = Intent(Intent.ACTION_VIEW, uri)
                                 startActivity(intent)
                             } catch (e: Exception) {}
                         },
@@ -266,14 +276,21 @@ class MainActivity : AppCompatActivity() {
                 val sheetPeekHeight = if (playbackState.currentStation != null) 72.dp + bottomInset else 0.dp
 
                 val onCheckUpdates: () -> Unit = {
-                    runOnUiThread {
-                        android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_checking_for_updates), android.widget.Toast.LENGTH_SHORT).show()
-                    }
-                    val vName = systemFacade.getAppVersionName()
-                    mainViewModel.checkForUpdates(vName, force = true) { hasUpdate ->
-                        if (!hasUpdate) {
-                            runOnUiThread {
-                                android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_no_update_available), android.widget.Toast.LENGTH_SHORT).show()
+                    if (StoreConfig.isPlayStoreBuild) {
+                        runOnUiThread {
+                            android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_checking_for_updates), android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        StoreConfig.checkPlayStoreUpdate(this@MainActivity, manualCheck = true)
+                    } else {
+                        runOnUiThread {
+                            android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_checking_for_updates), android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        val vName = systemFacade.getAppVersionName()
+                        mainViewModel.checkForUpdates(vName, force = true) { hasUpdate ->
+                            if (!hasUpdate) {
+                                runOnUiThread {
+                                    android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_no_update_available), android.widget.Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     }

@@ -41,6 +41,16 @@ android {
         localeFilters += listOf("en", "hi", "tr", "hu", "de", "fr", "ro", "et", "pl", "ru")
     }
 
+    flavorDimensions += "store"
+    productFlavors {
+        create("foss") {
+            dimension = "store"
+        }
+        create("play") {
+            dimension = "store"
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -146,6 +156,9 @@ dependencies {
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
     implementation(libs.androidx.palette)
+
+    "playImplementation"("com.google.android.play:app-update:2.1.0")
+    "playImplementation"("com.google.android.play:app-update-ktx:2.1.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

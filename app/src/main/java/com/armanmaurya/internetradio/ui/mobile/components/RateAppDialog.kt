@@ -14,29 +14,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 
+import com.armanmaurya.internetradio.core.config.StoreConfig
+import androidx.compose.material.icons.filled.Favorite
+
 @Composable
 fun RateAppDialog(
     onRateClick: () -> Unit,
     onDismissClick: (permanently: Boolean) -> Unit
 ) {
+    val isPlay = StoreConfig.isPlayStoreBuild
     AlertDialog(
         onDismissRequest = { onDismissClick(false) },
         icon = {
             Icon(
-                imageVector = Icons.Default.StarRate,
+                imageVector = if (isPlay) Icons.Default.StarRate else Icons.Default.Favorite,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
         },
         title = {
             Text(
-                text = stringResource(R.string.settings_rate_review),
+                text = if (isPlay) stringResource(R.string.settings_rate_review) else "Support the App",
                 style = MaterialTheme.typography.titleLarge
             )
         },
         text = {
             Text(
-                text = "Are you enjoying Internet Radio? If so, please consider taking a moment to rate the app. Your support means a lot!",
+                text = if (isPlay) {
+                    "Are you enjoying Internet Radio? If so, please consider taking a moment to rate the app. Your support means a lot!"
+                } else {
+                    "Are you enjoying Internet Radio? If so, please consider supporting the project by leaving a star on GitHub. Your support means a lot!"
+                },
                 style = MaterialTheme.typography.bodyMedium
             )
         },
@@ -44,7 +52,7 @@ fun RateAppDialog(
             TextButton(
                 onClick = onRateClick
             ) {
-                Text("Rate Now")
+                Text(if (isPlay) "Rate Now" else "Star on GitHub")
             }
         },
         dismissButton = {

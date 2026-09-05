@@ -35,10 +35,10 @@ jobs:
           IS_NIGHTLY_BUILD: "true"
           NIGHTLY_RUN_NUMBER: ${{ github.run_number }}
           NIGHTLY_DATE: ${{ env.date }}
-        run: ./gradlew assembleNightly
+        run: ./gradlew assembleFossNightly
         
       - name: Rename APK
-        run: mv app/build/outputs/apk/nightly/*.apk app/build/outputs/apk/nightly/internetradio-nightly-${{ env.date }}.apk
+        run: mv app/build/outputs/apk/foss/nightly/*.apk app/build/outputs/apk/foss/nightly/internetradio-nightly-${{ env.date }}.apk
         
       - name: Replace Nightly Release
         env:
@@ -52,7 +52,7 @@ jobs:
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
           
-          gh release create nightly-build app/build/outputs/apk/nightly/internetradio-nightly-${{ env.date }}.apk \
+          gh release create nightly-build app/build/outputs/apk/foss/nightly/internetradio-nightly-${{ env.date }}.apk \
             --repo "$GITHUB_REPOSITORY" \
             --prerelease \
             --title "Nightly Build - ${{ env.date }}" \
