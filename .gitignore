@@ -14,5 +14,8 @@
 .cxx
 local.properties
 app/release
+app/debug
+app/foss
+app/play
 /.idea
 /.kotlin

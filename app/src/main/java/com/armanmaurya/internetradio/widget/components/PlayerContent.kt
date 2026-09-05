@@ -15,8 +15,10 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionSendBroadcast
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.fillMaxHeight
+import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
@@ -51,70 +53,137 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
         Intent("com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS").setComponent(receiverComponent)
     )
 
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    val iconFilter = androidx.glance.ColorFilter.tint(
+        state.titleColor ?: GlanceTheme.colors.onPrimary
+    )
+    
+    val isSmallHeight = size.height < 70.dp
+
+    if (isSmallHeight) {
         Row(
-            modifier = GlanceModifier
-                .defaultWeight()
-                .fillMaxHeight()
-                .clickable(openAppAction),
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = GlanceModifier
+                    .defaultWeight()
+                    .fillMaxHeight()
+                    .clickable(openAppAction),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ArtWork(
+                    art = state.artwork,
+                    modifier = GlanceModifier.size(artDimension)
+                )
+                NowPlayingTrackInfo(
+                    title = state.title,
+                    artist = state.artist,
+                    titleColor = state.titleColor,
+                    artistColor = state.artistColor,
+                    modifier = GlanceModifier.defaultWeight()
+                )
+            }
+            Row(
+                modifier = GlanceModifier.padding(end = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (showExtraControls && state.hasPrev) {
+                    Image(
+                        provider = ImageProvider(R.drawable.ic_widget_prev),
+                        contentDescription = "Previous",
+                        colorFilter = iconFilter,
+                        modifier = GlanceModifier.size(36.dp).clickable(prevAction)
+                    )
+                } else if (showExtraControls) {
+                    androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
+                }
+
+                Image(
+                    provider = ImageProvider(
+                        if (state.isPlaying) R.drawable.ic_widget_pause
+                        else R.drawable.ic_widget_play
+                    ),
+                    contentDescription = if (state.isPlaying) "Pause" else "Play",
+                    colorFilter = iconFilter,
+                    modifier = GlanceModifier
+                        .size(40.dp)
+                        .padding(horizontal = 4.dp)
+                        .clickable(playPauseAction)
+                )
+
+                if (showExtraControls && state.hasNext) {
+                    Image(
+                        provider = ImageProvider(R.drawable.ic_widget_next),
+                        contentDescription = "Next",
+                        colorFilter = iconFilter,
+                        modifier = GlanceModifier.size(36.dp).clickable(nextAction)
+                    )
+                } else if (showExtraControls) {
+                    androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
+                }
+            }
+        }
+    } else {
+        Row(
+            modifier = modifier,
             verticalAlignment = Alignment.CenterVertically
         ) {
             ArtWork(
                 art = state.artwork,
-                modifier = GlanceModifier.size(artDimension)
+                modifier = GlanceModifier.size(artDimension).clickable(openAppAction)
             )
-            NowPlayingTrackInfo(
-                title = state.title,
-                artist = state.artist,
-                titleColor = state.titleColor,
-                artistColor = state.artistColor,
-                modifier = GlanceModifier.defaultWeight()
-            )
-        }
-        Row(
-            modifier = GlanceModifier.padding(end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            val iconFilter = androidx.glance.ColorFilter.tint(
-                state.titleColor ?: GlanceTheme.colors.onPrimary
-            )
-
-            if (showExtraControls && state.hasPrev) {
-                Image(
-                    provider = ImageProvider(R.drawable.ic_widget_prev),
-                    contentDescription = "Previous",
-                    colorFilter = iconFilter,
-                    modifier = GlanceModifier.size(36.dp).clickable(prevAction)
+            Column(
+                modifier = GlanceModifier.defaultWeight().fillMaxHeight().padding(start = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                NowPlayingTrackInfo(
+                    title = state.title,
+                    artist = state.artist,
+                    titleColor = state.titleColor,
+                    artistColor = state.artistColor,
+                    modifier = GlanceModifier.fillMaxWidth().defaultWeight().clickable(openAppAction)
                 )
-            } else if (showExtraControls) {
-                androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
-            }
+                
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth().padding(top = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (showExtraControls && state.hasPrev) {
+                        Image(
+                            provider = ImageProvider(R.drawable.ic_widget_prev),
+                            contentDescription = "Previous",
+                            colorFilter = iconFilter,
+                            modifier = GlanceModifier.size(36.dp).clickable(prevAction)
+                        )
+                    } else if (showExtraControls) {
+                        androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
+                    }
 
-            Image(
-                provider = ImageProvider(
-                    if (state.isPlaying) R.drawable.ic_widget_pause
-                    else R.drawable.ic_widget_play
-                ),
-                contentDescription = if (state.isPlaying) "Pause" else "Play",
-                colorFilter = iconFilter,
-                modifier = GlanceModifier
-                    .size(40.dp)
-                    .padding(horizontal = 4.dp)
-                    .clickable(playPauseAction)
-            )
+                    Image(
+                        provider = ImageProvider(
+                            if (state.isPlaying) R.drawable.ic_widget_pause
+                            else R.drawable.ic_widget_play
+                        ),
+                        contentDescription = if (state.isPlaying) "Pause" else "Play",
+                        colorFilter = iconFilter,
+                        modifier = GlanceModifier
+                            .size(40.dp)
+                            .padding(horizontal = 4.dp)
+                            .clickable(playPauseAction)
+                    )
 
-            if (showExtraControls && state.hasNext) {
-                Image(
-                    provider = ImageProvider(R.drawable.ic_widget_next),
-                    contentDescription = "Next",
-                    colorFilter = iconFilter,
-                    modifier = GlanceModifier.size(36.dp).clickable(nextAction)
-                )
-            } else if (showExtraControls) {
-                androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
+                    if (showExtraControls && state.hasNext) {
+                        Image(
+                            provider = ImageProvider(R.drawable.ic_widget_next),
+                            contentDescription = "Next",
+                            colorFilter = iconFilter,
+                            modifier = GlanceModifier.size(36.dp).clickable(nextAction)
+                        )
+                    } else if (showExtraControls) {
+                        androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
+                    }
+                }
             }
         }
     }
