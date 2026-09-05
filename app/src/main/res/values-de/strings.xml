@@ -71,6 +71,11 @@
     <string name="settings_player_section">Wiedergabe</string>
     <string name="settings_stop_on_audio_noisy">Pause bei Gerätetrennung</string>
     <string name="settings_stop_on_audio_noisy_desc">Wiedergabe pausieren, wenn Bluetooth- oder kabelgebundene Kopfhörer getrennt werden</string>
+    <string name="settings_about_foss_edition">FOSS Edition</string>
+    <string name="settings_about_play_edition">Google Play Edition</string>
+    <string name="settings_update_up_to_date">Die App ist aktuell</string>
+    <string name="settings_update_failed">Suche nach Aktualisierungen fehlgeschlagen</string>
+    <string name="settings_support_app">Unterstütze die App</string>
     <string name="settings_pause_on_volume_zero">Anhalten bei keiner Lautstärke</string>
     <string name="settings_pause_on_volume_zero_desc">Die Wiedergabe anhalten, wenn das Gerät stumm ist (Gilt nicht für Aufnahmen)</string>
     <string name="settings_show_cover_art">Titelbild des Songs</string>
@@ -405,7 +410,9 @@
     <string name="action_create_shortcut">Verknüpfung erstellen</string>
     <string name="lyrics_powered_by">Powered by</string>
 
-    <string name="rate">Gefällt Dir Internet Radio? Bitte nimm Dir etwas Zeit um die App zu bewerten. Deine Unterstützung bedeutet uns sehr viel!</string>
-    <string name="rate_now">Jetzt bewerten</string>
-    <string name="rate_cancel">Nein, Danke</string>
+    <string name="review_message_foss">Gefällt Dir Internet Radio? Bitte ziehe in Betracht das Projekt zu unterstützen indem du es auf GitHub folgst/einen Stern vergibst. Deine Unterstützung bedeutet uns sehr viel!</string>
+    <string name="review_message_play">Gefällt Dir Internet Radio? Bitte nimm Dir etwas Zeit um die App zu bewerten. Deine Unterstützung bedeutet uns sehr viel!</string>
+    <string name="review_rate_now">Jetzt bewerten</string>
+    <string name="review_star_github">Auf GitHub folgen</string>
+    <string name="review_no_thanks">Nein, Danke</string>
 </resources>
