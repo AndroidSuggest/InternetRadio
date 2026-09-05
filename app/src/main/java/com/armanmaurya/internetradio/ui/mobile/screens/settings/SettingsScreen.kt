@@ -220,7 +220,7 @@ fun SettingsScreen(
 
             androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(32.dp))
             Text(
-                text = "v$versionName ($versionCode) • ${StoreConfig.storeName}",
+                text = "v$versionName ($versionCode) • ${stringResource(StoreConfig.storeNameRes)}",
                 style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.fillMaxWidth(),
@@ -570,7 +570,7 @@ private fun AboutSection(
 
     Section(title = stringResource(R.string.about_title)) {
         Item(
-            title = if (StoreConfig.isPlayStoreBuild) stringResource(R.string.settings_rate_review) else "Support the App",
+            title = if (StoreConfig.isPlayStoreBuild) stringResource(R.string.settings_rate_review) else stringResource(R.string.settings_support_app),
             onClick = {
                 onRateClick()
                 try {

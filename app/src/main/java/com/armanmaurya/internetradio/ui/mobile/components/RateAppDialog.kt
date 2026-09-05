@@ -34,16 +34,16 @@ fun RateAppDialog(
         },
         title = {
             Text(
-                text = if (isPlay) stringResource(R.string.settings_rate_review) else "Support the App",
+                text = if (isPlay) stringResource(R.string.settings_rate_review) else stringResource(R.string.settings_support_app),
                 style = MaterialTheme.typography.titleLarge
             )
         },
         text = {
             Text(
                 text = if (isPlay) {
-                    "Are you enjoying Internet Radio? If so, please consider taking a moment to rate the app. Your support means a lot!"
+                    stringResource(R.string.review_message_play)
                 } else {
-                    "Are you enjoying Internet Radio? If so, please consider supporting the project by leaving a star on GitHub. Your support means a lot!"
+                    stringResource(R.string.review_message_foss)
                 },
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -52,14 +52,14 @@ fun RateAppDialog(
             TextButton(
                 onClick = onRateClick
             ) {
-                Text(if (isPlay) "Rate Now" else "Star on GitHub")
+                Text(if (isPlay) stringResource(R.string.review_rate_now) else stringResource(R.string.review_star_github))
             }
         },
         dismissButton = {
             TextButton(
                 onClick = { onDismissClick(true) }
             ) {
-                Text("No, Thanks")
+                Text(stringResource(R.string.review_no_thanks))
             }
         }
     )
