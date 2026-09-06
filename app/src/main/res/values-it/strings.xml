@@ -347,4 +347,14 @@
     <string name="schedule_listen_while_recording_subtitle">Riproduci l\'audio della stazione durante la registrazione in background</string>
     <string name="action_create_shortcut">Crea scorciatoia</string>
     <string name="player_original_stream_metadata">Metadati stream originali</string>
+    <string name="settings_about_foss_edition">Edizione FOSS</string>
+    <string name="settings_about_play_edition">Edizione Google Play</string>
+    <string name="settings_update_up_to_date">L\'app è aggiornata</string>
+    <string name="settings_update_failed">Impossibile controllare gli aggiornamenti</string>
+    <string name="settings_support_app">Sostieni l\'app</string>
+    <string name="review_message_foss">Internet Radio ti sta piacendo? In tal caso, prendi in considerazione di sostenere il progetto lasciando una stella su GitHub. Il tuo sostegno significa molto!</string>
+    <string name="review_message_play">Internet Radio ti sta piacendo? In tal caso, considera di prenderti un momento per valutare l\'app. Il tuo sostegno significa molto!</string>
+    <string name="review_rate_now">Valuta ora</string>
+    <string name="review_star_github">Metti una stella su GitHub</string>
+    <string name="review_no_thanks">No, grazie</string>
 </resources>
