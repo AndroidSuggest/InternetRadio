@@ -356,4 +356,14 @@
     <string name="schedule_listen_while_recording_subtitle">Odtwarzanie dźwięku stacji podczas nagrywania w tle</string>
     <string name="action_create_shortcut">Utwórz skrót</string>
     <string name="player_original_stream_metadata">Oryginalne metadane strumienia</string>
+    <string name="settings_about_foss_edition">Edycja FOSS</string>
+    <string name="settings_about_play_edition">Edycja Google Play</string>
+    <string name="settings_update_up_to_date">Aplikacja jest aktualna</string>
+    <string name="settings_update_failed">Nie udało się sprawdzić dostępności aktualizacji</string>
+    <string name="settings_support_app">Wesprzyj aplikację</string>
+    <string name="review_message_foss">Podoba Ci się Radio internetowe? Jeśli tak, rozważ wsparcie projektu, zostawiając gwiazdkę na GitHubie. Twoje wsparcie jest dla nas bardzo ważne!</string>
+    <string name="review_message_play">Podoba Ci się Radio internetowe? Jeśli tak, poświęć chwilę na ocenę aplikacji. Twoje wsparcie jest dla nas bardzo ważne!</string>
+    <string name="review_rate_now">Oceń teraz</string>
+    <string name="review_star_github">Gwiazdka na GitHubie</string>
+    <string name="review_no_thanks">Nie, dziękuję</string>
 </resources>
