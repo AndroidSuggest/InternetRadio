@@ -355,4 +355,14 @@
     <string name="schedule_listen_while_recording_subtitle">Слушать станцию во время фоновой записи</string>
     <string name="action_create_shortcut">Создать ярлык</string>
     <string name="player_original_stream_metadata">Данные аудиопотока</string>
+    <string name="settings_about_foss_edition">Версия с открытым исходным кодом</string>
+    <string name="settings_about_play_edition">Версия из Google Play</string>
+    <string name="settings_update_up_to_date">Приложение обновлено</string>
+    <string name="settings_update_failed">Не удалось проверить обновления</string>
+    <string name="settings_support_app">Поддержка приложения</string>
+    <string name="review_message_foss">Вам нравится \"Интернет Радио\"? Если это так, то поставьте, пожалуйста, звёздочку на нашей странице на GitHub. Ваша поддержка значит очень многое!</string>
+    <string name="review_message_play">Вам нравится \"Интернет Радио\"? Если это так, то, пожалуйста, найдите минутку, чтобы поставить оценку в магазине. Ваша поддержка значит очень многое!</string>
+    <string name="review_rate_now">Оценить сейчас</string>
+    <string name="review_star_github">Звёздочка на GitHub</string>
+    <string name="review_no_thanks">Нет, спасибо</string>
 </resources>
