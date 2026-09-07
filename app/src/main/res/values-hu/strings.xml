@@ -102,7 +102,7 @@
     <string name="about_contributors">Közreműködők</string>
     <string name="about_contribute_msg">Az internetes rádió még gyerekcipőben jár. Szívesen fogadunk közreműködéseket. 💡</string>
     <string name="about_cd_app_icon">Alkalmazás ikon</string>
-    <string name="about_cd_linkedin">LinkedIn</string>
+    <string name="about_cd_linkedin">Linkedin</string>
     <string name="about_cd_github">GitHub</string>
     <string name="about_cd_instagram">Instagram</string>
     <!-- ========================================== -->
@@ -266,4 +266,22 @@
     <string name="home_sort_added">Hozzáadás szerint</string>
     <string name="home_sort_name">Név</string>
     <string name="home_sort_custom">Egyéni</string>
+    <string name="settings_gradual_volume_enabled">%1$s fokozatos felhangosítása</string>
+    <plurals name="settings_gradual_volume_seconds">
+        <item quantity="one">%1$d másodperc</item>
+        <item quantity="other">%1$d másodperc</item>
+    </plurals>
+    <string name="settings_schedule_section">Időzítések</string>
+    <string name="home_export_station">Állomás exportálása</string>
+    <string name="home_clear_recent_title">Törlöd a legutóbbi előzményeket?</string>
+    <string name="home_clear_recent_message">Biztosan törölni szeretnéd az összes legutóbbi állomást? Ez a művelet nem vonható vissza.</string>
+    <string name="select_country_select_state_in">Válassz államot itt: %1$s</string>
+    <string name="settings_about_foss_edition">FOSS Kiadás</string>
+    <string name="settings_about_play_edition">Google Play Kiadás</string>
+    <string name="settings_update_up_to_date">Az alkalmazás naprakész</string>
+    <string name="settings_update_failed">Nem sikerült ellenőrizni a frissítéseket</string>
+    <string name="settings_support_app">Az alkalmazás támogatása</string>
+    <string name="settings_gradual_volume">Fokozatos felhangosítás időzítéskor</string>
+    <string name="settings_gradual_volume_disabled">Ki</string>
+    <string name="home_sort_played">Lejátszás</string>
 </resources>
