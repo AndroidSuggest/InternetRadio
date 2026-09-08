@@ -2,7 +2,7 @@ package com.armanmaurya.internetradio.ui.mobile.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.armanmaurya.internetradio.data.repository.SettingsRepository
+import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

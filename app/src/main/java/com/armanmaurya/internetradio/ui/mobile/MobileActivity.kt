@@ -1,6 +1,9 @@
-package com.armanmaurya.internetradio
+package com.armanmaurya.internetradio.ui.mobile
 
+import android.os.Build
 import android.os.Bundle
+import com.armanmaurya.internetradio.ui.tv.TvActivity
+import com.armanmaurya.internetradio.R
 import androidx.activity.compose.setContent
 import androidx.activity.compose.BackHandler
 import androidx.activity.enableEdgeToEdge
@@ -54,7 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.armanmaurya.internetradio.data.model.RadioStation
-import com.armanmaurya.internetradio.data.repository.SettingsRepository
+import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.ui.mobile.navigation.AppNavHost
 import com.armanmaurya.internetradio.ui.mobile.navigation.AppDestination
 import com.armanmaurya.internetradio.ui.mobile.screens.player.PlayerSheetContent
@@ -79,7 +82,7 @@ import com.armanmaurya.internetradio.ui.shared.components.UpdateBottomSheet
 import com.armanmaurya.internetradio.widget.NowPlayingWidget
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MobileActivity : AppCompatActivity() {
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -130,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                     hasPrev = false
                 )
             }
-            NowPlayingWidget().updateAll(this@MainActivity)
+            NowPlayingWidget().updateAll(this@MobileActivity)
         }
         enableEdgeToEdge()
         setContent {
@@ -143,7 +146,7 @@ class MainActivity : AppCompatActivity() {
             LaunchedEffect(appPreferences.disableUpdateCheck) {
                 if (!appPreferences.disableUpdateCheck) {
                     if (StoreConfig.isPlayStoreBuild) {
-                        StoreConfig.checkPlayStoreUpdate(this@MainActivity)
+                        StoreConfig.checkPlayStoreUpdate(this@MobileActivity)
                     } else {
                         val versionName = systemFacade.getAppVersionName()
                         mainViewModel.checkForUpdates(versionName)
@@ -278,25 +281,25 @@ class MainActivity : AppCompatActivity() {
                 val onCheckUpdates: () -> Unit = {
                     if (StoreConfig.isPlayStoreBuild) {
                         runOnUiThread {
-                            android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_checking_for_updates), android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(this@MobileActivity, getString(R.string.settings_checking_for_updates), android.widget.Toast.LENGTH_SHORT).show()
                         }
-                        StoreConfig.checkPlayStoreUpdate(this@MainActivity, manualCheck = true)
+                        StoreConfig.checkPlayStoreUpdate(this@MobileActivity, manualCheck = true)
                     } else {
                         runOnUiThread {
-                            android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_checking_for_updates), android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(this@MobileActivity, getString(R.string.settings_checking_for_updates), android.widget.Toast.LENGTH_SHORT).show()
                         }
                         val vName = systemFacade.getAppVersionName()
                         mainViewModel.checkForUpdates(vName, force = true) { hasUpdate ->
                             if (!hasUpdate) {
                                 runOnUiThread {
-                                    android.widget.Toast.makeText(this@MainActivity, getString(R.string.settings_no_update_available), android.widget.Toast.LENGTH_SHORT).show()
+                                    android.widget.Toast.makeText(this@MobileActivity, getString(R.string.settings_no_update_available), android.widget.Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
                     }
                 }
 
-                val windowSizeClass = calculateWindowSizeClass(this@MainActivity)
+                val windowSizeClass = calculateWindowSizeClass(this@MobileActivity)
                 val widthSizeClass = windowSizeClass.widthSizeClass
                 val isExpanded = widthSizeClass == WindowWidthSizeClass.Expanded
 

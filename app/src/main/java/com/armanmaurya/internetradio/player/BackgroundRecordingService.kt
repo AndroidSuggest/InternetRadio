@@ -25,8 +25,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class BackgroundRecordingService : Service() {
     @Inject lateinit var recordingManager: RecordingManager
-    @Inject lateinit var scheduleRepository: com.armanmaurya.internetradio.data.repository.ScheduleRepository
-    @Inject lateinit var libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository
+    @Inject lateinit var scheduleRepository: com.armanmaurya.internetradio.domain.repository.ScheduleRepository
+    @Inject lateinit var libraryRepository: com.armanmaurya.internetradio.domain.repository.LibraryRepository
     private var notificationJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Main)
 
@@ -127,7 +127,7 @@ class BackgroundRecordingService : Service() {
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
 
-        val contentIntent = Intent(this, com.armanmaurya.internetradio.MainActivity::class.java).apply {
+        val contentIntent = Intent(this, com.armanmaurya.internetradio.ui.mobile.MobileActivity::class.java).apply {
             putExtra("open_tab", "recordings")
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -160,7 +160,7 @@ class BackgroundRecordingService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val contentIntent = Intent(this, com.armanmaurya.internetradio.MainActivity::class.java).apply {
+        val contentIntent = Intent(this, com.armanmaurya.internetradio.ui.mobile.MobileActivity::class.java).apply {
             putExtra("open_tab", "recordings")
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }

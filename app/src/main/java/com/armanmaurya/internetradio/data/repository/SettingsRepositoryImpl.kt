@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
     name = "settings",
@@ -29,9 +30,9 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
 )
 
 @Singleton
-class SettingsRepository @Inject constructor(
+class SettingsRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
-) {
+) : SettingsRepository {
     private object PreferencesKeys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
@@ -70,7 +71,7 @@ class SettingsRepository @Inject constructor(
         val PAUSE_ON_VOLUME_ZERO = booleanPreferencesKey("pause_on_volume_zero")
     }
 
-    val appPreferencesFlow: Flow<AppPreferences> = context.dataStore.data
+    override val appPreferencesFlow: Flow<AppPreferences> = context.dataStore.data
         .catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())
@@ -159,79 +160,79 @@ class SettingsRepository @Inject constructor(
             )
         }
 
-    suspend fun setUseFilterOnRecent(enabled: Boolean) {
+    override suspend fun setUseFilterOnRecent(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.USE_FILTER_ON_RECENT] = enabled }
     }
 
-    suspend fun setAutoRouteToBrowseOnSearch(enabled: Boolean) {
+    override suspend fun setAutoRouteToBrowseOnSearch(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.AUTO_ROUTE_TO_BROWSE_ON_SEARCH] = enabled }
     }
 
-    suspend fun setSelectAllTextOnFocus(enabled: Boolean) {
+    override suspend fun setSelectAllTextOnFocus(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.SELECT_ALL_TEXT_ON_FOCUS] = enabled }
     }
 
-    suspend fun setAutoPlayOnStart(enabled: Boolean) {
+    override suspend fun setAutoPlayOnStart(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.AUTO_PLAY_ON_START] = enabled }
     }
 
-    suspend fun setAppLaunchCount(count: Int) {
+    override suspend fun setAppLaunchCount(count: Int) {
         context.dataStore.edit { it[PreferencesKeys.APP_LAUNCH_COUNT] = count }
     }
 
-    suspend fun setHasRatedApp(rated: Boolean) {
+    override suspend fun setHasRatedApp(rated: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.HAS_RATED_APP] = rated }
     }
 
-    suspend fun setDisableUpdateCheck(disabled: Boolean) {
+    override suspend fun setDisableUpdateCheck(disabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.DISABLE_UPDATE_CHECK] = disabled }
     }
 
-    suspend fun setStopOnAudioBecomingNoisy(enabled: Boolean) {
+    override suspend fun setStopOnAudioBecomingNoisy(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.STOP_ON_AUDIO_BECOMING_NOISY] = enabled }
     }
 
-    suspend fun setPauseOnVolumeZero(enabled: Boolean) {
+    override suspend fun setPauseOnVolumeZero(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.PAUSE_ON_VOLUME_ZERO] = enabled }
     }
 
-    suspend fun setUseFilterOnFavorites(enabled: Boolean) {
+    override suspend fun setUseFilterOnFavorites(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.USE_FILTER_ON_FAVORITES] = enabled }
     }
 
-    suspend fun setUseFilterOnAdded(enabled: Boolean) {
+    override suspend fun setUseFilterOnAdded(enabled: Boolean) {
         context.dataStore.edit { it[PreferencesKeys.USE_FILTER_ON_ADDED] = enabled }
     }
 
-    suspend fun setThemeMode(themeMode: AppTheme) {
+    override suspend fun setThemeMode(themeMode: AppTheme) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.THEME_MODE] = themeMode.name
         }
     }
 
-    suspend fun setDynamicColor(enabled: Boolean) {
+    override suspend fun setDynamicColor(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.DYNAMIC_COLOR] = enabled
         }
     }
 
-    suspend fun setPureBlack(enabled: Boolean) {
+    override suspend fun setPureBlack(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.PURE_BLACK] = enabled
         }
     }
 
-    suspend fun setAppLanguage(language: String) {
+    override suspend fun setAppLanguage(language: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.APP_LANGUAGE] = language
         }
     }
 
-    suspend fun getSavedAppLanguage(): String? {
+    override suspend fun getSavedAppLanguage(): String? {
         return context.dataStore.data.first()[PreferencesKeys.APP_LANGUAGE]
     }
 
-    suspend fun setSelectedCountryCode(countryCode: String?) {
+    override suspend fun setSelectedCountryCode(countryCode: String?) {
         context.dataStore.edit { preferences ->
             if (countryCode == null) {
                 preferences.remove(PreferencesKeys.SELECTED_COUNTRY_CODE)
@@ -241,7 +242,7 @@ class SettingsRepository @Inject constructor(
         }
     }
 
-    suspend fun setSelectedStateCode(stateCode: String?) {
+    override suspend fun setSelectedStateCode(stateCode: String?) {
         context.dataStore.edit { preferences ->
             if (stateCode == null) {
                 preferences.remove(PreferencesKeys.SELECTED_STATE_CODE)
@@ -251,7 +252,7 @@ class SettingsRepository @Inject constructor(
         }
     }
 
-    suspend fun setSelectedLanguage(language: String?) {
+    override suspend fun setSelectedLanguage(language: String?) {
         context.dataStore.edit { preferences ->
             if (language == null) {
                 preferences.remove(PreferencesKeys.SELECTED_LANGUAGE)
@@ -261,103 +262,103 @@ class SettingsRepository @Inject constructor(
         }
     }
 
-    suspend fun setSelectedTags(tags: Set<String>) {
+    override suspend fun setSelectedTags(tags: Set<String>) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SELECTED_TAGS] = tags
         }
     }
 
-    suspend fun setSortOrder(order: String) {
+    override suspend fun setSortOrder(order: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SORT_ORDER] = order
         }
     }
 
-    suspend fun setSortReverse(reverse: Boolean) {
+    override suspend fun setSortReverse(reverse: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SORT_REVERSE] = reverse
         }
     }
 
-    suspend fun setGridViewBrowse(isGrid: Boolean) {
+    override suspend fun setGridViewBrowse(isGrid: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_GRID_VIEW_BROWSE] = isGrid
         }
     }
 
-    suspend fun setGridViewRecent(isGrid: Boolean) {
+    override suspend fun setGridViewRecent(isGrid: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_GRID_VIEW_RECENT] = isGrid
         }
     }
 
-    suspend fun setGridViewFavorites(isGrid: Boolean) {
+    override suspend fun setGridViewFavorites(isGrid: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_GRID_VIEW_FAVORITES] = isGrid
         }
     }
 
-    suspend fun setGridViewAdded(isGrid: Boolean) {
+    override suspend fun setGridViewAdded(isGrid: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_GRID_VIEW_ADDED] = isGrid
         }
     }
 
-    suspend fun setTrackHistoryLimit(limit: Int) {
+    override suspend fun setTrackHistoryLimit(limit: Int) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.TRACK_HISTORY_LIMIT] = limit
         }
     }
 
-    suspend fun setDefaultTab(tabIndex: Int) {
+    override suspend fun setDefaultTab(tabIndex: Int) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.DEFAULT_TAB] = tabIndex
         }
     }
 
-    suspend fun setLastUpdateCheckTime(timeInMillis: Long) {
+    override suspend fun setLastUpdateCheckTime(timeInMillis: Long) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.LAST_UPDATE_CHECK_TIME] = timeInMillis
         }
     }
 
-    suspend fun setMaxRetryDuration(durationInMillis: Long) {
+    override suspend fun setMaxRetryDuration(durationInMillis: Long) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.MAX_RETRY_DURATION] = durationInMillis
         }
     }
 
-    suspend fun setConflictStrategy(strategy: ConflictStrategy) {
+    override suspend fun setConflictStrategy(strategy: ConflictStrategy) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.CONFLICT_STRATEGY] = strategy.name
         }
     }
 
-    suspend fun setLibrarySortOption(option: com.armanmaurya.internetradio.data.model.LibrarySortOption) {
+    override suspend fun setLibrarySortOption(option: com.armanmaurya.internetradio.data.model.LibrarySortOption) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.LIBRARY_SORT_OPTION] = option.name
         }
     }
 
-    suspend fun setStartOfWeek(startOfWeek: com.armanmaurya.internetradio.data.model.StartOfWeek) {
+    override suspend fun setStartOfWeek(startOfWeek: com.armanmaurya.internetradio.data.model.StartOfWeek) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.START_OF_WEEK] = startOfWeek.name
         }
     }
 
-    suspend fun setShowCoverArtInNotification(enabled: Boolean) {
+    override suspend fun setShowCoverArtInNotification(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SHOW_COVER_ART_IN_NOTIFICATION] = enabled
         }
     }
 
-    suspend fun setAlarmVolumeTransitionSeconds(seconds: Int) {
+    override suspend fun setAlarmVolumeTransitionSeconds(seconds: Int) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] = seconds
         }
     }
 
-    suspend fun setAlarmVolumeTransitionEnabled(enabled: Boolean) {
+    override suspend fun setAlarmVolumeTransitionEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_ALARM_VOLUME_TRANSITION_ENABLED] = enabled
         }

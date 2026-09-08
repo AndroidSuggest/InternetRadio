@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio
 
 import android.app.Application
+import com.armanmaurya.internetradio.core.crash.GlobalExceptionHandler
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -20,7 +21,7 @@ class InternetRadioApp : Application(), SingletonImageLoader.Factory {
         super.onCreate()
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(
-            com.armanmaurya.internetradio.crash.GlobalExceptionHandler(this, defaultHandler)
+            GlobalExceptionHandler(this, defaultHandler)
         )
     }
 

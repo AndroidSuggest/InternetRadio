@@ -8,11 +8,11 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.armanmaurya.internetradio.data.model.RadioStation
-import com.armanmaurya.internetradio.data.repository.SettingsRepository
+import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import com.armanmaurya.internetradio.data.repository.RecentRepository
-import com.armanmaurya.internetradio.data.repository.StationRepository
+import com.armanmaurya.internetradio.domain.repository.RecentRepository
+import com.armanmaurya.internetradio.domain.repository.StationRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +33,7 @@ class PlayerController @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val stationRepository: StationRepository,
     private val recentRepository: RecentRepository,
-    private val libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository,
+    private val libraryRepository: com.armanmaurya.internetradio.domain.repository.LibraryRepository,
     private val recordingManager: RecordingManager,
     private val okHttpClient: okhttp3.OkHttpClient,
     private val streamProber: com.armanmaurya.internetradio.domain.media.StreamProber

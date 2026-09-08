@@ -11,13 +11,15 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
+import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 
 @Singleton
-class TrackHistoryRepository @Inject constructor(
+class TrackHistoryRepositoryImpl @Inject constructor(
     private val trackHistoryDao: TrackHistoryDao,
     private val settingsRepository: SettingsRepository
-) {
-    suspend fun logTrack(stationUuid: String, trackTitle: String): Long? = withContext(Dispatchers.IO) {
+) : TrackHistoryRepository {
+    override suspend fun logTrack(stationUuid: String, trackTitle: String): Long? = withContext(Dispatchers.IO) {
         val latestTrack = trackHistoryDao.getLatestTrackForStation(stationUuid)
         
         // Use rawTrackTitle for duplicate detection to avoid inserting duplicates 
@@ -46,12 +48,12 @@ class TrackHistoryRepository @Inject constructor(
         }
     }
 
-    suspend fun updateTrackMetadata(id: Long, newTrackTitle: String, coverArtUrl: String?) = withContext(Dispatchers.IO) {
+    override suspend fun updateTrackMetadata(id: Long, newTrackTitle: String, coverArtUrl: String?) = withContext(Dispatchers.IO) {
         trackHistoryDao.updateTrackMetadata(id, newTrackTitle, coverArtUrl)
     }
 
     @kotlinx.coroutines.ExperimentalCoroutinesApi
-    fun getTrackHistory(stationUuid: String): Flow<List<TrackHistoryEntity>> {
+    override fun getTrackHistory(stationUuid: String): Flow<List<TrackHistoryEntity>> {
         return settingsRepository.appPreferencesFlow
             .map { it.trackHistoryLimit }
             .distinctUntilChanged()
@@ -60,7 +62,7 @@ class TrackHistoryRepository @Inject constructor(
             }
     }
 
-    suspend fun updateCoverArt(stationUuid: String, trackTitle: String, coverArtUrl: String) = withContext(Dispatchers.IO) {
+    override suspend fun updateCoverArt(stationUuid: String, trackTitle: String, coverArtUrl: String) = withContext(Dispatchers.IO) {
         trackHistoryDao.updateCoverArt(stationUuid, trackTitle, coverArtUrl)
     }
 }

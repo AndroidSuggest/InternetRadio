@@ -1,7 +1,8 @@
-package com.armanmaurya.internetradio.crash
+package com.armanmaurya.internetradio.core.crash
 
 import android.content.Context
 import android.content.Intent
+import com.armanmaurya.internetradio.ui.crash.CrashActivity
 import java.io.PrintWriter
 import java.io.StringWriter
 import kotlin.system.exitProcess

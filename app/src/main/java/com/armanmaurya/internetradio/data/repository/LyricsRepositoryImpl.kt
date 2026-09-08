@@ -8,12 +8,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.armanmaurya.internetradio.domain.repository.LyricsRepository
 
 @Singleton
-class LyricsRepository @Inject constructor(
+class LyricsRepositoryImpl @Inject constructor(
     private val lrcLibApi: LrcLibApi
-) {
-    fun getLyricsForTrack(trackName: String, artistName: String? = null): Flow<LyricsState> = flow {
+) : LyricsRepository {
+    override fun getLyricsForTrack(trackName: String, artistName: String?): Flow<LyricsState> = flow {
         emit(LyricsState.Loading)
         try {
             suspend fun searchAndFindBestMatch(query: String, explicitArtist: String?): com.armanmaurya.internetradio.data.remote.dto.LrcLibResponse? {

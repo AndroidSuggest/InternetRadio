@@ -13,87 +13,88 @@ import com.armanmaurya.internetradio.data.local.dao.ScheduleDao
 import com.armanmaurya.internetradio.data.remote.RadioBrowserApi
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 
 @Singleton
-class LibraryRepository @Inject constructor(
+class LibraryRepositoryImpl @Inject constructor(
     private val libraryStationDao: LibraryStationDao,
     private val recentStationDao: RecentStationDao,
     private val scheduleDao: ScheduleDao,
     private val radioBrowserApi: RadioBrowserApi
-) {
-    fun getAllStations(): Flow<List<RadioStation>> {
+) : LibraryRepository {
+    override fun getAllStations(): Flow<List<RadioStation>> {
         return libraryStationDao.getAllStations().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    fun getStationsByOldestAdded(): Flow<List<RadioStation>> {
+    override fun getStationsByOldestAdded(): Flow<List<RadioStation>> {
         return libraryStationDao.getStationsByOldestAdded().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    fun getStationsByName(): Flow<List<RadioStation>> {
+    override fun getStationsByName(): Flow<List<RadioStation>> {
         return libraryStationDao.getStationsByName().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    fun getStationsByNameDescending(): Flow<List<RadioStation>> {
+    override fun getStationsByNameDescending(): Flow<List<RadioStation>> {
         return libraryStationDao.getStationsByNameDescending().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    fun getStationsByRecentlyPlayed(): Flow<List<RadioStation>> {
+    override fun getStationsByRecentlyPlayed(): Flow<List<RadioStation>> {
         return libraryStationDao.getStationsByRecentlyPlayed().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    fun getStationsByLeastRecentlyPlayed(): Flow<List<RadioStation>> {
+    override fun getStationsByLeastRecentlyPlayed(): Flow<List<RadioStation>> {
         return libraryStationDao.getStationsByLeastRecentlyPlayed().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    fun getStationsByCustomOrder(): Flow<List<RadioStation>> {
+    override fun getStationsByCustomOrder(): Flow<List<RadioStation>> {
         return libraryStationDao.getStationsByCustomOrder().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    suspend fun updateStations(stations: List<LibraryStationEntity>) {
+    override suspend fun updateStations(stations: List<LibraryStationEntity>) {
         libraryStationDao.updateStations(stations)
     }
 
-    fun isStationInLibrary(stationUuid: String): Flow<Boolean> {
+    override fun isStationInLibrary(stationUuid: String): Flow<Boolean> {
         return libraryStationDao.isStationInLibrary(stationUuid).map { it != 0 }
     }
 
-    suspend fun isStationInLibraryDirect(stationUuid: String): Boolean {
+    override suspend fun isStationInLibraryDirect(stationUuid: String): Boolean {
         return libraryStationDao.isStationInLibraryDirect(stationUuid)
     }
 
-    suspend fun getStationById(stationUuid: String): RadioStation? {
+    override suspend fun getStationById(stationUuid: String): RadioStation? {
         return libraryStationDao.getStationById(stationUuid)?.toDomain()
     }
 
-    suspend fun addStationToLibrary(station: RadioStation) {
+    override suspend fun addStationToLibrary(station: RadioStation) {
         libraryStationDao.insertStation(station.toLibraryEntity())
     }
 
-    suspend fun addCustomStation(
+    override suspend fun addCustomStation(
         name: String,
         url: String,
-        favicon: String = "",
-        tags: List<String> = emptyList(),
-        countryCode: String = "",
-        languageCodes: List<String> = emptyList(),
-        homepage: String = "",
-        iso31662: String? = null,
-        codec: String = "unknown",
-        bitrate: Int = 0
+        favicon: String,
+        tags: List<String>,
+        countryCode: String,
+        languageCodes: List<String>,
+        homepage: String,
+        iso31662: String?,
+        codec: String,
+        bitrate: Int
     ) {
         val station = LibraryStationEntity(
             stationUuid = UUID.randomUUID().toString(),
@@ -114,7 +115,7 @@ class LibraryRepository @Inject constructor(
         libraryStationDao.insertStation(station)
     }
     
-    suspend fun updateStation(
+    override suspend fun updateStation(
         stationUuid: String,
         name: String,
         url: String,
@@ -144,11 +145,11 @@ class LibraryRepository @Inject constructor(
         libraryStationDao.insertStation(updated)
     }
 
-    suspend fun removeStationFromLibrary(stationUuid: String) {
+    override suspend fun removeStationFromLibrary(stationUuid: String) {
         libraryStationDao.deleteStationById(stationUuid)
     }
 
-    suspend fun uploadAndSaveNewStation(
+    override suspend fun uploadAndSaveNewStation(
         name: String,
         url: String,
         homepage: String,
@@ -198,7 +199,7 @@ class LibraryRepository @Inject constructor(
         }
     }
 
-    suspend fun uploadExistingCustomStation(
+    override suspend fun uploadExistingCustomStation(
         stationUuid: String,
         name: String,
         url: String,
@@ -254,15 +255,15 @@ class LibraryRepository @Inject constructor(
 
     // --- Backup & Restore ---
 
-    suspend fun getAllStationEntities(): List<LibraryStationEntity> {
+    override suspend fun getAllStationEntities(): List<LibraryStationEntity> {
         return libraryStationDao.getAllStationEntities()
     }
 
-    suspend fun getEntityById(stationUuid: String): LibraryStationEntity? {
+    override suspend fun getEntityById(stationUuid: String): LibraryStationEntity? {
         return libraryStationDao.getStationById(stationUuid)
     }
 
-    suspend fun insertEntity(entity: LibraryStationEntity) {
+    override suspend fun insertEntity(entity: LibraryStationEntity) {
         libraryStationDao.insertStation(entity)
     }
 }

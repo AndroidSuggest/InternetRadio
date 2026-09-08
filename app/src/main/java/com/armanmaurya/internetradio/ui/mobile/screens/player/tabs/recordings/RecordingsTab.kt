@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.repository.RecordingFile
+import com.armanmaurya.internetradio.domain.model.RecordingFile
 import com.armanmaurya.internetradio.player.RecordingSession
 import com.armanmaurya.internetradio.ui.mobile.components.RecordingFileItem
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard

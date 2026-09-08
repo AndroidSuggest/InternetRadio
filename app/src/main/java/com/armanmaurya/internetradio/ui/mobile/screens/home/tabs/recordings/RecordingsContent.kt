@@ -36,8 +36,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.armanmaurya.internetradio.data.repository.RecordingFile
-import com.armanmaurya.internetradio.data.repository.RecordingFolder
+import com.armanmaurya.internetradio.domain.model.RecordingFile
+import com.armanmaurya.internetradio.domain.model.RecordingFolder
 import com.armanmaurya.internetradio.ui.shared.viewmodels.RecordingsViewModel
 import java.util.Locale
 import androidx.compose.animation.*

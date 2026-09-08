@@ -12,7 +12,7 @@ import coil3.asDrawable
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
-import com.armanmaurya.internetradio.MainActivity
+import com.armanmaurya.internetradio.ui.mobile.MobileActivity
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.player.SvgProxyProvider
@@ -65,7 +65,7 @@ object ShortcutHelper {
                 }
             }
 
-            val intent = Intent(context, MainActivity::class.java).apply {
+            val intent = Intent(context, MobileActivity::class.java).apply {
                 action = ACTION_PLAY_STATION
                 putExtra(EXTRA_STATION_JSON, Gson().toJson(station))
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP

@@ -16,9 +16,9 @@ import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import com.armanmaurya.internetradio.MainActivity
+import com.armanmaurya.internetradio.ui.mobile.MobileActivity
 import com.armanmaurya.internetradio.data.model.RadioStation
-import com.armanmaurya.internetradio.data.repository.TrackHistoryRepository
+import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
 import com.armanmaurya.internetradio.widget.pushWidgetUpdate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -48,19 +48,19 @@ class PlaybackService : MediaLibraryService() {
     lateinit var retryStateTracker: RetryStateTracker
 
     @Inject
-    lateinit var scheduleRepository: com.armanmaurya.internetradio.data.repository.ScheduleRepository
+    lateinit var scheduleRepository: com.armanmaurya.internetradio.domain.repository.ScheduleRepository
 
     @Inject
-    lateinit var settingsRepository: com.armanmaurya.internetradio.data.repository.SettingsRepository
+    lateinit var settingsRepository: com.armanmaurya.internetradio.domain.repository.SettingsRepository
 
     @Inject
-    lateinit var libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository
+    lateinit var libraryRepository: com.armanmaurya.internetradio.domain.repository.LibraryRepository
 
     @Inject
-    lateinit var recentRepository: com.armanmaurya.internetradio.data.repository.RecentRepository
+    lateinit var recentRepository: com.armanmaurya.internetradio.domain.repository.RecentRepository
 
     @Inject
-    lateinit var coverArtRepository: com.armanmaurya.internetradio.data.repository.CoverArtRepository
+    lateinit var coverArtRepository: com.armanmaurya.internetradio.domain.repository.CoverArtRepository
 
     @Inject
     lateinit var okHttpClient: okhttp3.OkHttpClient
@@ -500,7 +500,7 @@ class PlaybackService : MediaLibraryService() {
                 }
             })
 
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, MobileActivity::class.java)
             val pendingIntent = PendingIntent.getActivity(
                 this,
                 0,

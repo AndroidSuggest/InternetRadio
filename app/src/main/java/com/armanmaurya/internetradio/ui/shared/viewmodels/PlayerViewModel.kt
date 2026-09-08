@@ -3,10 +3,10 @@ package com.armanmaurya.internetradio.ui.shared.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armanmaurya.internetradio.data.model.RadioStation
-import com.armanmaurya.internetradio.data.repository.LibraryRepository
-import com.armanmaurya.internetradio.data.repository.RecentRepository
-import com.armanmaurya.internetradio.data.repository.StationRepository
-import com.armanmaurya.internetradio.data.repository.TrackHistoryRepository
+import com.armanmaurya.internetradio.domain.repository.LibraryRepository
+import com.armanmaurya.internetradio.domain.repository.RecentRepository
+import com.armanmaurya.internetradio.domain.repository.StationRepository
+import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
 import com.armanmaurya.internetradio.player.PlaybackSource
 import com.armanmaurya.internetradio.player.PlayerController
 import com.armanmaurya.internetradio.player.RecordingManager
@@ -35,11 +35,11 @@ class PlayerViewModel @Inject constructor(
     private val castController: com.armanmaurya.internetradio.player.CastController,
     private val libraryRepository: LibraryRepository,
     private val recentRepository: RecentRepository,
-    private val stationRepository: com.armanmaurya.internetradio.data.repository.StationRepository,
+    private val stationRepository: com.armanmaurya.internetradio.domain.repository.StationRepository,
     private val trackHistoryRepository: TrackHistoryRepository,
     private val recordingManager: RecordingManager,
-    private val recordingRepository: com.armanmaurya.internetradio.data.repository.RecordingRepository,
-    private val lyricsRepository: com.armanmaurya.internetradio.data.repository.LyricsRepository,
+    private val recordingRepository: com.armanmaurya.internetradio.domain.repository.RecordingRepository,
+    private val lyricsRepository: com.armanmaurya.internetradio.domain.repository.LyricsRepository,
     retryStateTracker: com.armanmaurya.internetradio.player.RetryStateTracker
 ) : ViewModel() {
 
@@ -227,7 +227,7 @@ class PlayerViewModel @Inject constructor(
         else flowOf(recordingRepository.getRecordingsForStation(stationName))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    fun deleteRecording(recording: com.armanmaurya.internetradio.data.repository.RecordingFile) {
+    fun deleteRecording(recording: com.armanmaurya.internetradio.domain.model.RecordingFile) {
         viewModelScope.launch {
             recordingRepository.deleteRecording(recording)
         }

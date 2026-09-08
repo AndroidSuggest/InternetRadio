@@ -30,7 +30,7 @@ import com.armanmaurya.internetradio.R
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.armanmaurya.internetradio.data.repository.RecordingFile
+import com.armanmaurya.internetradio.domain.model.RecordingFile
 import java.util.Locale
 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)

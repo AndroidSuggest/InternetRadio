@@ -108,7 +108,7 @@ fun PlayerSheetContent(
     playbackState: PlaybackState,
     isFavorite: Boolean,
     trackHistory: List<TrackHistoryEntity> = emptyList(),
-    stationRecordings: List<com.armanmaurya.internetradio.data.repository.RecordingFile>? = null,
+    stationRecordings: List<com.armanmaurya.internetradio.domain.model.RecordingFile>? = null,
     activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
     retryCountdown: Int? = null,
     lyricsState: com.armanmaurya.internetradio.data.model.LyricsState = com.armanmaurya.internetradio.data.model.LyricsState.Loading,
@@ -134,7 +134,7 @@ fun PlayerSheetContent(
     onVolumeChange: (Float) -> Unit = {},
     onConnectCastDevice: (org.fcast.sender_sdk.DeviceInfo) -> Unit = {},
     onDisconnectCastDevice: () -> Unit = {},
-    onDeleteRecording: (com.armanmaurya.internetradio.data.repository.RecordingFile) -> Unit,
+    onDeleteRecording: (com.armanmaurya.internetradio.domain.model.RecordingFile) -> Unit,
     getCurrentPosition: () -> Long,
     modifier: Modifier = Modifier
 ) {

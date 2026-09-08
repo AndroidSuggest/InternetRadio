@@ -2,22 +2,18 @@ package com.armanmaurya.internetradio.data.repository
 
 import com.armanmaurya.internetradio.data.remote.ITunesApiService
 import com.armanmaurya.internetradio.core.utils.TrackSanitizer
+import com.armanmaurya.internetradio.domain.model.TrackMetadata
+import com.armanmaurya.internetradio.domain.repository.CoverArtRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class TrackMetadata(
-    val coverArtUrl: String?,
-    val trackName: String?,
-    val artistName: String?
-)
-
 @Singleton
-class CoverArtRepository @Inject constructor(
+class CoverArtRepositoryImpl @Inject constructor(
     private val apiService: ITunesApiService
-) {
-    suspend fun getTrackMetadata(trackName: String, artistName: String?): TrackMetadata? = withContext(Dispatchers.IO) {
+) : CoverArtRepository {
+    override suspend fun getTrackMetadata(trackName: String, artistName: String?): TrackMetadata? = withContext(Dispatchers.IO) {
         try {
             val cleanTrack = TrackSanitizer.sanitizeTrackInfo(trackName)
             val cleanArtist = artistName?.let { TrackSanitizer.sanitizeTrackInfo(it) }

@@ -12,8 +12,8 @@ import com.armanmaurya.internetradio.data.model.AppPreferences
 import com.armanmaurya.internetradio.data.model.ConflictStrategy
 import com.armanmaurya.internetradio.data.model.LibraryBackup
 import com.armanmaurya.internetradio.data.model.toBackupStation
-import com.armanmaurya.internetradio.data.repository.LibraryRepository
-import com.armanmaurya.internetradio.data.repository.SettingsRepository
+import com.armanmaurya.internetradio.domain.repository.LibraryRepository
+import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException

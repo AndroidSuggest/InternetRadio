@@ -10,26 +10,16 @@ import kotlinx.coroutines.flow.asSharedFlow
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
-
-data class RecordingFolder(
-    val stationName: String,
-    val recordings: List<RecordingFile>
-)
-
-data class RecordingFile(
-    val fileName: String,
-    val file: File,
-    val uri: Uri,
-    val lastModified: Long,
-    val sizeBytes: Long
-)
+import com.armanmaurya.internetradio.domain.model.RecordingFile
+import com.armanmaurya.internetradio.domain.model.RecordingFolder
+import com.armanmaurya.internetradio.domain.repository.RecordingRepository
 
 @Singleton
-class RecordingRepository @Inject constructor(
+class RecordingRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade
-) {
-    suspend fun getRecordingFolders(): List<RecordingFolder> = withContext(Dispatchers.IO) {
+) : RecordingRepository {
+    override suspend fun getRecordingFolders(): List<RecordingFolder> = withContext(Dispatchers.IO) {
         val rootDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "InternetRadio")
         if (!rootDir.exists() || !rootDir.isDirectory) return@withContext emptyList()
 
@@ -59,7 +49,7 @@ class RecordingRepository @Inject constructor(
         folders.sortedBy { it.stationName }
     }
     
-    suspend fun getRecordingsForStation(stationName: String): List<RecordingFile> = withContext(Dispatchers.IO) {
+    override suspend fun getRecordingsForStation(stationName: String): List<RecordingFile> = withContext(Dispatchers.IO) {
         val safeStationName = stationName.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
         val stationDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "InternetRadio/$safeStationName")
         if (!stationDir.exists() || !stationDir.isDirectory) return@withContext emptyList()
@@ -80,13 +70,13 @@ class RecordingRepository @Inject constructor(
     }
 
     private val _recordingsChangedEvent = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    val recordingsChangedEvent: kotlinx.coroutines.flow.SharedFlow<Unit> = _recordingsChangedEvent.asSharedFlow()
+    override val recordingsChangedEvent: kotlinx.coroutines.flow.SharedFlow<Unit> = _recordingsChangedEvent.asSharedFlow()
 
-    fun notifyRecordingsChanged() {
+    override fun notifyRecordingsChanged() {
         _recordingsChangedEvent.tryEmit(Unit)
     }
 
-    suspend fun deleteRecording(recording: RecordingFile): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun deleteRecording(recording: RecordingFile): Boolean = withContext(Dispatchers.IO) {
         val deleted = fileSystemFacade.deleteAudioRecording(recording.uri)
         if (deleted) {
             val parent = recording.file.parentFile
@@ -101,7 +91,7 @@ class RecordingRepository @Inject constructor(
         deleted
     }
 
-    suspend fun deleteRecordings(recordings: List<RecordingFile>): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun deleteRecordings(recordings: List<RecordingFile>): Boolean = withContext(Dispatchers.IO) {
         var allDeleted = true
         recordings.forEach { recording ->
             val deleted = fileSystemFacade.deleteAudioRecording(recording.uri)
@@ -121,7 +111,7 @@ class RecordingRepository @Inject constructor(
         allDeleted
     }
 
-    suspend fun deleteRecordingFolders(stationNames: List<String>): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun deleteRecordingFolders(stationNames: List<String>): Boolean = withContext(Dispatchers.IO) {
         var allDeleted = true
         stationNames.forEach { stationName ->
             val safeStationName = stationName.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()

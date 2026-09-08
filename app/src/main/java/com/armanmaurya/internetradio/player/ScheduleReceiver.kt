@@ -7,8 +7,8 @@ import android.app.PendingIntent
 import android.app.AlarmManager
 import android.os.Build
 import com.armanmaurya.internetradio.data.local.entity.ScheduleType
-import com.armanmaurya.internetradio.data.repository.LibraryRepository
-import com.armanmaurya.internetradio.data.repository.ScheduleRepository
+import com.armanmaurya.internetradio.domain.repository.LibraryRepository
+import com.armanmaurya.internetradio.domain.repository.ScheduleRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +24,7 @@ class ScheduleReceiver : BroadcastReceiver() {
     lateinit var scheduleRepository: ScheduleRepository
 
     @Inject
-    lateinit var settingsRepository: com.armanmaurya.internetradio.data.repository.SettingsRepository
+    lateinit var settingsRepository: com.armanmaurya.internetradio.domain.repository.SettingsRepository
 
     @Inject
     lateinit var libraryRepository: LibraryRepository

@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio
+package com.armanmaurya.internetradio.ui.tv
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

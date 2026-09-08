@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.crash
+package com.armanmaurya.internetradio.ui.crash
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import com.armanmaurya.internetradio.MainActivity
+import com.armanmaurya.internetradio.ui.mobile.MobileActivity
 import com.armanmaurya.internetradio.ui.shared.theme.InternetRadioTheme
 import java.net.URLEncoder
 
@@ -51,7 +51,7 @@ class CrashActivity : ComponentActivity() {
                         startActivity(browserIntent)
                     },
                     onRestartClick = {
-                        val intent = Intent(this, MainActivity::class.java).apply {
+                        val intent = Intent(this, MobileActivity::class.java).apply {
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                         }
                         startActivity(intent)

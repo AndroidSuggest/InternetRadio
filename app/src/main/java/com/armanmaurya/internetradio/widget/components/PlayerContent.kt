@@ -22,7 +22,7 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
-import com.armanmaurya.internetradio.MainActivity
+import com.armanmaurya.internetradio.ui.mobile.MobileActivity
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.widget.WidgetControlReceiver
 import com.armanmaurya.internetradio.widget.state.NowPlayingWidgetState
@@ -38,7 +38,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     val receiverComponent = ComponentName(context, WidgetControlReceiver::class.java)
 
     val openAppAction = actionStartActivity(
-        Intent(context, MainActivity::class.java).apply {
+        Intent(context, MobileActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
     )

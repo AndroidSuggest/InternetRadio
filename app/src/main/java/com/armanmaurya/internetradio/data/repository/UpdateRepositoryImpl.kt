@@ -7,13 +7,14 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import javax.inject.Inject
+import com.armanmaurya.internetradio.domain.repository.UpdateRepository
 
-class UpdateRepository @Inject constructor(
+class UpdateRepositoryImpl @Inject constructor(
     private val okHttpClient: OkHttpClient
-) {
+) : UpdateRepository {
     private val gson = Gson()
 
-    suspend fun getLatestRelease(isNightly: Boolean = false): GithubRelease? = withContext(Dispatchers.IO) {
+    override suspend fun getLatestRelease(isNightly: Boolean): GithubRelease? = withContext(Dispatchers.IO) {
         try {
             val url = if (isNightly) {
                 "https://api.github.com/repos/armanmaurya/internetradio/releases"

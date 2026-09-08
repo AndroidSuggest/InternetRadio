@@ -44,7 +44,7 @@ object WidgetStateKeys {
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface WidgetEntryPoint {
-    fun recentRepository(): com.armanmaurya.internetradio.data.repository.RecentRepository
+    fun recentRepository(): com.armanmaurya.internetradio.domain.repository.RecentRepository
 }
 
 class NowPlayingWidget : GlanceAppWidget() {

@@ -8,29 +8,30 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.armanmaurya.internetradio.domain.repository.RecentRepository
 
 @Singleton
-class RecentRepository @Inject constructor(
+class RecentRepositoryImpl @Inject constructor(
     private val recentStationDao: RecentStationDao
-) {
-    fun getAllRecent(): Flow<List<RadioStation>> =
+) : RecentRepository {
+    override fun getAllRecent(): Flow<List<RadioStation>> =
         recentStationDao.getAllRecent().map { entities ->
             entities.map { it.toDomain() }
         }
 
-    suspend fun getStationById(stationUuid: String): RadioStation? {
+    override suspend fun getStationById(stationUuid: String): RadioStation? {
         return recentStationDao.getStationById(stationUuid)?.toDomain()
     }
 
-    suspend fun addRecentStation(station: RadioStation) {
+    override suspend fun addRecentStation(station: RadioStation) {
         recentStationDao.insertOrUpdate(station.toRecentEntity())
     }
 
-    suspend fun removeRecent(stationUuid: String) {
+    override suspend fun removeRecent(stationUuid: String) {
         recentStationDao.deleteRecent(stationUuid)
     }
 
-    suspend fun clearAllRecent() {
+    override suspend fun clearAllRecent() {
         recentStationDao.clearAllRecent()
     }
 }

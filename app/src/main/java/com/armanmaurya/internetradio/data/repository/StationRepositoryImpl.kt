@@ -12,37 +12,38 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.armanmaurya.internetradio.data.local.dao.LibraryStationDao
+import com.armanmaurya.internetradio.domain.repository.StationRepository
 
 @Singleton
-class StationRepository @Inject constructor(
+class StationRepositoryImpl @Inject constructor(
     private val api: RadioBrowserApi,
     @ApplicationContext private val context: Context,
     private val libraryStationDao: LibraryStationDao
-) {
+) : StationRepository {
 
-    suspend fun filterStations(
-        name: String? = null,
-        nameExact: Boolean? = null,
-        country: String? = null,
-        countryExact: Boolean? = null,
-        countryCode: String? = null,
-        state: String? = null,
-        stateExact: Boolean? = null,
-        language: String? = null,
-        languageExact: Boolean? = null,
-        tag: String? = null,
-        tagExact: Boolean? = null,
-        tagList: String? = null,
-        codec: String? = null,
-        bitrateMin: Int? = null,
-        bitrateMax: Int? = null,
-        hasExtendedInfo: Boolean? = null,
-        isHttps: Boolean? = null,
-        order: String = "votes",
-        reverse: Boolean = true,
-        limit: Int = 40,
-        offset: Int = 0,
-        hideBroken: Boolean = true
+    override suspend fun filterStations(
+        name: String?,
+        nameExact: Boolean?,
+        country: String?,
+        countryExact: Boolean?,
+        countryCode: String?,
+        state: String?,
+        stateExact: Boolean?,
+        language: String?,
+        languageExact: Boolean?,
+        tag: String?,
+        tagExact: Boolean?,
+        tagList: String?,
+        codec: String?,
+        bitrateMin: Int?,
+        bitrateMax: Int?,
+        hasExtendedInfo: Boolean?,
+        isHttps: Boolean?,
+        order: String,
+        reverse: Boolean,
+        limit: Int,
+        offset: Int,
+        hideBroken: Boolean
     ): Result<List<RadioStation>> =
         runCatching {
             api.advancedSearch(
@@ -71,7 +72,7 @@ class StationRepository @Inject constructor(
             ).map { it.toDomain() }
         }
 
-    suspend fun getCountries(): Result<List<Country>> =
+    override suspend fun getCountries(): Result<List<Country>> =
         runCatching {
             api.getCountries()
                 .map { it.toDomain() }
@@ -79,7 +80,7 @@ class StationRepository @Inject constructor(
                 .sortedByDescending { it.stationCount }
         }
 
-    suspend fun getLanguages(filter: String? = null): Result<List<Language>> =
+    override suspend fun getLanguages(filter: String?): Result<List<Language>> =
         runCatching {
             if (filter.isNullOrBlank()) {
                 api.getLanguages(order = "stationcount", reverse = true)
@@ -90,7 +91,7 @@ class StationRepository @Inject constructor(
             }
         }
 
-    suspend fun getTags(filter: String? = null): Result<List<Tag>> =
+    override suspend fun getTags(filter: String?): Result<List<Tag>> =
         runCatching {
             val apiTags = if (filter.isNullOrBlank()) {
                 api.getTags(order = "stationcount", reverse = true)
@@ -113,7 +114,7 @@ class StationRepository @Inject constructor(
             apiTags + uniqueCustomTags
         }
 
-    suspend fun getCurrentCountryCode(): Result<String> =
+    override suspend fun getCurrentCountryCode(): Result<String> =
         runCatching {
             val countryCode = context.resources.configuration.locales[0].country
             if (countryCode.isBlank()) {
@@ -127,31 +128,31 @@ class StationRepository @Inject constructor(
      * radio-browser.info uses this to rank station popularity.
      * Failures are silently ignored — this is a fire-and-forget call.
      */
-    suspend fun registerClick(stationUuid: String) {
+    override suspend fun registerClick(stationUuid: String) {
         runCatching { api.clickStation(stationUuid) }
     }
 
-    suspend fun getStationsByUuid(uuids: List<String>): Result<List<RadioStation>> =
+    override suspend fun getStationsByUuid(uuids: List<String>): Result<List<RadioStation>> =
         runCatching {
             api.getStationsByUuid(uuids.joinToString(",")).map { it.toDomain() }
         }
 
-    suspend fun getStationsByUrl(url: String): Result<List<RadioStation>> =
+    override suspend fun getStationsByUrl(url: String): Result<List<RadioStation>> =
         runCatching {
             api.searchByUrl(url).map { it.toDomain() }
         }
 
-    suspend fun addStation(
+    override suspend fun addStation(
         name: String,
         url: String,
-        homepage: String? = null,
-        favicon: String? = null,
-        countryCode: String? = null,
-        iso31662: String? = null,
-        languageCodes: String? = null,
-        tags: String? = null,
-        geoLat: Double? = null,
-        geoLong: Double? = null,
+        homepage: String?,
+        favicon: String?,
+        countryCode: String?,
+        iso31662: String?,
+        languageCodes: String?,
+        tags: String?,
+        geoLat: Double?,
+        geoLong: Double?,
     ): Result<AddStationResponse> = runCatching {
         api.addStation(
             name = name,
