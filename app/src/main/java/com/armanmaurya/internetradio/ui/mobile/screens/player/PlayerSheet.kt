@@ -189,8 +189,11 @@ fun PlayerSheetContent(
         }
     }
 
-    val hasBitrate = station.bitrate > 0
-    val hasCodec = station.codec.isNotBlank()
+    val displayCodec = (if (!isFavorite) playbackState.streamCodec else null) ?: station.codec
+    val displayBitrate = (if (!isFavorite) playbackState.streamBitrate else null) ?: station.bitrate
+
+    val hasBitrate = displayBitrate > 0
+    val hasCodec = displayCodec.isNotBlank() && displayCodec.uppercase() != "UNKNOWN"
     val hasInfo = hasBitrate || hasCodec
     var showTimer by rememberSaveable(station.stationUuid) { mutableStateOf(!hasInfo) }
 
@@ -763,11 +766,11 @@ fun PlayerSheetContent(
                                     )
                                 } else {
                                     val infoText = if (hasBitrate && hasCodec) {
-                                        stringResource(R.string.player_station_codec_bitrate, station.codec.uppercase(), station.bitrate.toString())
+                                        stringResource(R.string.player_station_codec_bitrate, displayCodec.uppercase(), displayBitrate.toString())
                                     } else if (hasBitrate) {
-                                        stringResource(R.string.player_station_bitrate_only, station.bitrate.toString())
+                                        stringResource(R.string.player_station_bitrate_only, displayBitrate.toString())
                                     } else {
-                                        station.codec.uppercase()
+                                        displayCodec.uppercase()
                                     }
                                     Text(
                                         text = infoText,

@@ -234,12 +234,20 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun toggleFavorite() {
-        val station = playbackState.value.currentStation ?: return
+        val state = playbackState.value
+        val station = state.currentStation ?: return
         viewModelScope.launch {
             if (isFavorite.value) {
                 libraryRepository.removeStationFromLibrary(station.stationUuid)
             } else {
-                libraryRepository.addStationToLibrary(station)
+                val codecToSave = state.streamCodec ?: station.codec
+                val bitrateToSave = state.streamBitrate ?: station.bitrate
+                val stationToSave = station.copy(
+                    codec = codecToSave,
+                    bitrate = bitrateToSave
+                )
+                libraryRepository.addStationToLibrary(stationToSave)
+                playerController.updateCurrentStation(stationToSave)
             }
         }
     }

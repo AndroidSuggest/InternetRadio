@@ -134,9 +134,9 @@ fun EditStationScreen(
         var probedBitrate by remember(station) { mutableStateOf(station?.bitrate ?: 0) }
         
         var showOverwriteDialog by remember { mutableStateOf(false) }
-        var pendingProbeResult by remember { mutableStateOf<LibraryViewModel.StreamProbeResult?>(null) }
-
-        val handleProbeResult: (LibraryViewModel.StreamProbeResult) -> Unit = { result ->
+        var pendingProbeResult by remember { mutableStateOf<com.armanmaurya.internetradio.player.StreamFormatUtils.StreamProbeResult?>(null) }
+        var probeErrorMessage by remember { mutableStateOf<String?>(null) }
+        val handleProbeResult: (com.armanmaurya.internetradio.player.StreamFormatUtils.StreamProbeResult) -> Unit = { result ->
             probedCodec = result.codec
             probedBitrate = result.bitrate
             

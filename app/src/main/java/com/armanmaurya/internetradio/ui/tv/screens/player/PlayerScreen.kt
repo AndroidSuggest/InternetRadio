@@ -166,7 +166,13 @@ fun PlayerScreen(
                             contentScale = ContentScale.Crop
                         )
                         
-                        if (station.bitrate > 0) {
+                        val displayCodec = (if (!isInLibrary) playbackState.streamCodec else null) ?: station.codec
+                        val displayBitrate = (if (!isInLibrary) playbackState.streamBitrate else null) ?: station.bitrate
+                        
+                        val hasBitrate = displayBitrate > 0
+                        val hasCodec = displayCodec.isNotBlank() && displayCodec.uppercase() != "UNKNOWN"
+                        
+                        if (hasBitrate || hasCodec) {
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -178,9 +184,13 @@ fun PlayerScreen(
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 val badgeText = buildString {
-                                    append("${station.bitrate} kbps")
-                                    if (station.codec.isNotEmpty()) {
-                                        append(" • ${station.codec.uppercase()}")
+                                    if (hasBitrate) {
+                                        append("$displayBitrate kbps")
+                                        if (hasCodec) {
+                                            append(" • ${displayCodec.uppercase()}")
+                                        }
+                                    } else {
+                                        append(displayCodec.uppercase())
                                     }
                                 }
                                 Text(

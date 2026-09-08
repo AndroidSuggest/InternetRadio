@@ -34,7 +34,8 @@ class PlayerController @Inject constructor(
     private val stationRepository: StationRepository,
     private val recentRepository: RecentRepository,
     private val libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository,
-    private val recordingManager: RecordingManager
+    private val recordingManager: RecordingManager,
+    private val okHttpClient: okhttp3.OkHttpClient
 ) {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private val controller: MediaController? get() = if (controllerFuture?.isDone == true) controllerFuture?.get() else null
@@ -92,11 +93,40 @@ class PlayerController @Inject constructor(
 
         override fun onEvents(player: Player, events: Player.Events) {
             super.onEvents(player, events)
-            _playbackState.update { 
-                it.copy(
+            _playbackState.update { state ->
+                var updatedState = state.copy(
                     hasNext = player.hasNextMediaItem(),
                     hasPrevious = player.hasPreviousMediaItem()
                 )
+                
+                if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
+                    updatedState = updatedState.copy(streamCodec = null, streamBitrate = null)
+                    
+                    val currentStation = updatedState.currentStation
+                    val needsCodec = currentStation?.codec.isNullOrBlank() || currentStation?.codec?.uppercase() == "UNKNOWN"
+                    val needsBitrate = currentStation?.bitrate == null || currentStation.bitrate == 0
+                    
+                    if (currentStation != null && (needsCodec || needsBitrate)) {
+                        val url = currentStation.url
+                        scope.launch {
+                            val probeResult = com.armanmaurya.internetradio.player.StreamFormatUtils.probeStream(url, okHttpClient)
+                            if (probeResult != null) {
+                                _playbackState.update { s ->
+                                    if (s.currentStation?.stationUuid == currentStation.stationUuid) {
+                                        s.copy(
+                                            streamCodec = probeResult.codec.takeIf { it.isNotBlank() },
+                                            streamBitrate = probeResult.bitrate.takeIf { it > 0 }
+                                        )
+                                    } else {
+                                        s
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                updatedState
             }
         }
 
@@ -656,5 +686,7 @@ data class PlaybackState(
     val volume: Float = 1f,
     val sessionActiveDurationMs: Long = 0L,
     val sessionResumeTimeMs: Long? = null,
-    val playbackSource: PlaybackSource = PlaybackSource.None
+    val playbackSource: PlaybackSource = PlaybackSource.None,
+    val streamCodec: String? = null,
+    val streamBitrate: Int? = null
 )
