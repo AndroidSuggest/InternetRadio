@@ -1,5 +1,9 @@
 package com.armanmaurya.internetradio.crash
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -34,6 +38,12 @@ class CrashActivity : ComponentActivity() {
             InternetRadioTheme {
                 CrashScreen(
                     crashLog = crashLog,
+                    onCopyClick = {
+                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("Crash Log", crashLog)
+                        clipboard.setPrimaryClip(clip)
+                        Toast.makeText(this@CrashActivity, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                    },
                     onShareClick = {
                         val encodedBody = URLEncoder.encode("```\n$crashLog\n```", "UTF-8")
                         val url = "https://github.com/armanmaurya/InternetRadio/issues/new?title=App+Crash&body=$encodedBody"
@@ -57,6 +67,7 @@ class CrashActivity : ComponentActivity() {
 @Composable
 fun CrashScreen(
     crashLog: String,
+    onCopyClick: () -> Unit,
     onShareClick: () -> Unit,
     onRestartClick: () -> Unit
 ) {
@@ -81,6 +92,13 @@ fun CrashScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Share crash logs")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                FilledTonalButton(
+                    onClick = onCopyClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Copy to clipboard")
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(

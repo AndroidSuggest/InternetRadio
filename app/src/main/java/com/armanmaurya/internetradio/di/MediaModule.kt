@@ -22,4 +22,10 @@ object MediaModule {
         .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
         .build()
+        
+    @Provides
+    @Singleton
+    fun provideStreamProber(): com.armanmaurya.internetradio.domain.media.StreamProber {
+        return com.armanmaurya.internetradio.data.media.FFmpegStreamProber()
+    }
 }

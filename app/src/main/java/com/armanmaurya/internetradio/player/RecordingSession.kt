@@ -6,6 +6,8 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.core.utils.AudioFormatUtils
+import com.armanmaurya.internetradio.core.utils.AudioFormat
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +53,7 @@ class RecordingSession(
                 val response = okHttpClient.newCall(request).execute()
                 val contentType = response.header("Content-Type", "") ?: ""
 
-                if (StreamFormatUtils.isHlsContentType(contentType)) {
+                if (AudioFormatUtils.isHlsContentType(contentType)) {
                     var playlistContent = response.body?.string() ?: ""
                     response.close()
 
@@ -92,11 +94,11 @@ class RecordingSession(
             bodyStream.unread(magic, 0, magicRead)
         }
         
-        val format = StreamFormatUtils.audioFormatFromMagicBytes(magic)
+        val format = AudioFormatUtils.audioFormatFromMagicBytes(magic)
         val sink = openSink(format.extension) ?: return
         
         try {
-            if (format == StreamFormatUtils.AudioFormat.OGG) {
+            if (format == AudioFormat.OGG) {
                 OggRewriter.remuxStream(bodyStream, sink.outputStream, scope, job) { written ->
                     bytesWritten += written
                 }

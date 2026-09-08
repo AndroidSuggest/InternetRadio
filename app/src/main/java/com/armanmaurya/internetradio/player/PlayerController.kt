@@ -35,7 +35,8 @@ class PlayerController @Inject constructor(
     private val recentRepository: RecentRepository,
     private val libraryRepository: com.armanmaurya.internetradio.data.repository.LibraryRepository,
     private val recordingManager: RecordingManager,
-    private val okHttpClient: okhttp3.OkHttpClient
+    private val okHttpClient: okhttp3.OkHttpClient,
+    private val streamProber: com.armanmaurya.internetradio.domain.media.StreamProber
 ) {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private val controller: MediaController? get() = if (controllerFuture?.isDone == true) controllerFuture?.get() else null
@@ -109,7 +110,7 @@ class PlayerController @Inject constructor(
                     if (currentStation != null && (needsCodec || needsBitrate)) {
                         val url = currentStation.url
                         scope.launch {
-                            val probeResult = com.armanmaurya.internetradio.player.StreamFormatUtils.probeStream(url, okHttpClient)
+                            val probeResult = streamProber.probe(url)
                             if (probeResult != null) {
                                 _playbackState.update { s ->
                                     if (s.currentStation?.stationUuid == currentStation.stationUuid) {
