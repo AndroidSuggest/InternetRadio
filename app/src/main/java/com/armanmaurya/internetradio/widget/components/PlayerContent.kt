@@ -56,10 +56,12 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     val iconFilter = androidx.glance.ColorFilter.tint(
         state.titleColor ?: GlanceTheme.colors.onPrimary
     )
-    
-    val isSmallHeight = size.height < 70.dp
+    val isVerySmallHeight = size.height < 75.dp
+    val isTallHeight = size.height >= 110.dp
+    val twoCellArtDimension = androidx.compose.ui.unit.max(48.dp, size.height - 68.dp)
 
-    if (isSmallHeight) {
+    if (isVerySmallHeight) {
+        // Realme Launcher 1-cell (Very short height): 3-column layout
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically
@@ -83,47 +85,55 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     modifier = GlanceModifier.defaultWeight()
                 )
             }
+            WidgetControls(
+                state = state,
+                showExtraControls = showExtraControls,
+                iconFilter = iconFilter,
+                playPauseAction = playPauseAction,
+                prevAction = prevAction,
+                nextAction = nextAction,
+                modifier = GlanceModifier.padding(end = 4.dp)
+            )
+        }
+    } else if (isTallHeight) {
+        // 2-cell height layout: TrackInfo on top, CoverArt and Controls below
+        Column(
+            modifier = modifier,
+            verticalAlignment = Alignment.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
+            NowPlayingTrackInfo(
+                title = state.title,
+                artist = state.artist,
+                titleColor = state.titleColor,
+                artistColor = state.artistColor,
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+                    .clickable(openAppAction)
+            )
+            
             Row(
-                modifier = GlanceModifier.padding(end = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (showExtraControls && state.hasPrev) {
-                    Image(
-                        provider = ImageProvider(R.drawable.ic_widget_prev),
-                        contentDescription = "Previous",
-                        colorFilter = iconFilter,
-                        modifier = GlanceModifier.size(36.dp).clickable(prevAction)
-                    )
-                } else if (showExtraControls) {
-                    androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
-                }
-
-                Image(
-                    provider = ImageProvider(
-                        if (state.isPlaying) R.drawable.ic_widget_pause
-                        else R.drawable.ic_widget_play
-                    ),
-                    contentDescription = if (state.isPlaying) "Pause" else "Play",
-                    colorFilter = iconFilter,
-                    modifier = GlanceModifier
-                        .size(40.dp)
-                        .padding(horizontal = 4.dp)
-                        .clickable(playPauseAction)
+                ArtWork(
+                    art = state.artwork,
+                    modifier = GlanceModifier.size(twoCellArtDimension).clickable(openAppAction)
                 )
-
-                if (showExtraControls && state.hasNext) {
-                    Image(
-                        provider = ImageProvider(R.drawable.ic_widget_next),
-                        contentDescription = "Next",
-                        colorFilter = iconFilter,
-                        modifier = GlanceModifier.size(36.dp).clickable(nextAction)
-                    )
-                } else if (showExtraControls) {
-                    androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
-                }
+                WidgetControls(
+                    state = state,
+                    showExtraControls = showExtraControls,
+                    iconFilter = iconFilter,
+                    playPauseAction = playPauseAction,
+                    prevAction = prevAction,
+                    nextAction = nextAction,
+                    modifier = GlanceModifier.defaultWeight().fillMaxHeight()
+                )
             }
         }
     } else {
+        // Pixel Launcher 1-cell (Medium height): CoverArt on left, TrackInfo & Controls stacked on right
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically
@@ -143,48 +153,68 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     artistColor = state.artistColor,
                     modifier = GlanceModifier.fillMaxWidth().defaultWeight().clickable(openAppAction)
                 )
-                
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth().padding(top = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (showExtraControls && state.hasPrev) {
-                        Image(
-                            provider = ImageProvider(R.drawable.ic_widget_prev),
-                            contentDescription = "Previous",
-                            colorFilter = iconFilter,
-                            modifier = GlanceModifier.size(36.dp).clickable(prevAction)
-                        )
-                    } else if (showExtraControls) {
-                        androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
-                    }
-
-                    Image(
-                        provider = ImageProvider(
-                            if (state.isPlaying) R.drawable.ic_widget_pause
-                            else R.drawable.ic_widget_play
-                        ),
-                        contentDescription = if (state.isPlaying) "Pause" else "Play",
-                        colorFilter = iconFilter,
-                        modifier = GlanceModifier
-                            .size(40.dp)
-                            .padding(horizontal = 4.dp)
-                            .clickable(playPauseAction)
-                    )
-
-                    if (showExtraControls && state.hasNext) {
-                        Image(
-                            provider = ImageProvider(R.drawable.ic_widget_next),
-                            contentDescription = "Next",
-                            colorFilter = iconFilter,
-                            modifier = GlanceModifier.size(36.dp).clickable(nextAction)
-                        )
-                    } else if (showExtraControls) {
-                        androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
-                    }
-                }
+                WidgetControls(
+                    state = state,
+                    showExtraControls = showExtraControls,
+                    iconFilter = iconFilter,
+                    playPauseAction = playPauseAction,
+                    prevAction = prevAction,
+                    nextAction = nextAction,
+                    modifier = GlanceModifier.fillMaxWidth().padding(top = 4.dp)
+                )
             }
+        }
+    }
+}
+
+@Composable
+fun WidgetControls(
+    state: NowPlayingWidgetState,
+    showExtraControls: Boolean,
+    iconFilter: androidx.glance.ColorFilter,
+    playPauseAction: androidx.glance.action.Action,
+    prevAction: androidx.glance.action.Action,
+    nextAction: androidx.glance.action.Action,
+    modifier: GlanceModifier = GlanceModifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (showExtraControls && state.hasPrev) {
+            Image(
+                provider = ImageProvider(R.drawable.ic_widget_prev),
+                contentDescription = "Previous",
+                colorFilter = iconFilter,
+                modifier = GlanceModifier.size(36.dp).clickable(prevAction)
+            )
+        } else if (showExtraControls) {
+            androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
+        }
+
+        Image(
+            provider = ImageProvider(
+                if (state.isPlaying) R.drawable.ic_widget_pause
+                else R.drawable.ic_widget_play
+            ),
+            contentDescription = if (state.isPlaying) "Pause" else "Play",
+            colorFilter = iconFilter,
+            modifier = GlanceModifier
+                .size(40.dp)
+                .padding(horizontal = 4.dp)
+                .clickable(playPauseAction)
+        )
+
+        if (showExtraControls && state.hasNext) {
+            Image(
+                provider = ImageProvider(R.drawable.ic_widget_next),
+                contentDescription = "Next",
+                colorFilter = iconFilter,
+                modifier = GlanceModifier.size(36.dp).clickable(nextAction)
+            )
+        } else if (showExtraControls) {
+            androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
         }
     }
 }

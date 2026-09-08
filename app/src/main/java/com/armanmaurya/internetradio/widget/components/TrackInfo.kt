@@ -21,7 +21,7 @@ fun NowPlayingTrackInfo(
     artistColor: ColorProvider?,
     modifier: GlanceModifier = GlanceModifier
 ) {
-    Column(modifier = modifier.padding(horizontal = 12.dp)) {
+    Column() {
         Text(
             text = title,
             style = TextStyle(
