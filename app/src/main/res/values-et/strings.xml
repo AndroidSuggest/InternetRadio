@@ -339,4 +339,14 @@
     <string name="schedule_listen_while_recording_subtitle">Taustal salvestamise ajal võimalda kuulata ka voogedastust</string>
     <string name="action_create_shortcut">Lisa viide</string>
     <string name="player_original_stream_metadata">Voogedastuse algne metateave</string>
+    <string name="settings_about_foss_edition">Vaba tarkvara versioon</string>
+    <string name="settings_about_play_edition">Google Play versioon</string>
+    <string name="settings_update_up_to_date">Rakendus on uuendatud viimase versioonini</string>
+    <string name="settings_update_failed">Uuenduste olemasolu kontrollimine ei õnnestunud</string>
+    <string name="settings_support_app">Toeta rakenduse arendust</string>
+    <string name="review_message_foss">Kas see internetiraadiorakendus meeldib sulle? Kui see on nii, siis näiteks märgi projekt GitHubis tähekesega. Sinu tugi on meile oluline!</string>
+    <string name="review_message_play">Kas see internetiraadiorakendus meeldib sulle? Kui see on nii, siis näiteks koosta rakenduse arvustus. Sinu tugi on meile oluline!</string>
+    <string name="review_rate_now">Arvusta kohe</string>
+    <string name="review_star_github">Märgi GitHubis tärniga</string>
+    <string name="review_no_thanks">Tänan, ei</string>
 </resources>
