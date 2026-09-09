@@ -233,8 +233,8 @@ class PlayerController @Inject constructor(
             val cleanArtistName = mediaMetadata.extras?.getString("clean_artist_name")
             val rawTrackName = mediaMetadata.extras?.getString("icy_raw_title")
             val trackInfo = mediaMetadata.extras?.getString("icy_title") 
-                ?: if (mediaMetadata.title != null && mediaMetadata.artist != null) {
-                    "${mediaMetadata.title} - ${mediaMetadata.artist}"
+                ?: if (mediaMetadata.artist != null && mediaMetadata.title != null) {
+                    "${mediaMetadata.artist} - ${mediaMetadata.title}"
                 } else {
                     mediaMetadata.title?.toString() ?: mediaMetadata.artist?.toString()
                 }

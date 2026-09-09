@@ -60,17 +60,18 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     val isTallHeight = size.height >= 110.dp
     val twoCellArtDimension = androidx.compose.ui.unit.max(48.dp, size.height - 68.dp)
 
+    val rootModifier = modifier.clickable(openAppAction)
+
     if (isVerySmallHeight) {
         // Realme Launcher 1-cell (Very short height): 3-column layout
         Row(
-            modifier = modifier,
+            modifier = rootModifier,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 modifier = GlanceModifier
                     .defaultWeight()
-                    .fillMaxHeight()
-                    .clickable(openAppAction),
+                    .fillMaxHeight(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ArtWork(
@@ -98,7 +99,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     } else if (isTallHeight) {
         // 2-cell height layout: TrackInfo on top, CoverArt and Controls below
         Column(
-            modifier = modifier,
+            modifier = rootModifier,
             verticalAlignment = Alignment.Top,
             horizontalAlignment = Alignment.Start
         ) {
@@ -110,7 +111,6 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 modifier = GlanceModifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp)
-                    .clickable(openAppAction)
             )
             
             Row(
@@ -119,7 +119,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
             ) {
                 ArtWork(
                     art = state.artwork,
-                    modifier = GlanceModifier.size(twoCellArtDimension).clickable(openAppAction)
+                    modifier = GlanceModifier.size(twoCellArtDimension)
                 )
                 WidgetControls(
                     state = state,
@@ -135,12 +135,12 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     } else {
         // Pixel Launcher 1-cell (Medium height): CoverArt on left, TrackInfo & Controls stacked on right
         Row(
-            modifier = modifier,
+            modifier = rootModifier,
             verticalAlignment = Alignment.CenterVertically
         ) {
             ArtWork(
                 art = state.artwork,
-                modifier = GlanceModifier.size(artDimension).clickable(openAppAction)
+                modifier = GlanceModifier.size(artDimension)
             )
             Column(
                 modifier = GlanceModifier.defaultWeight().fillMaxHeight().padding(start = 8.dp),
@@ -151,7 +151,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     artist = state.artist,
                     titleColor = state.titleColor,
                     artistColor = state.artistColor,
-                    modifier = GlanceModifier.fillMaxWidth().defaultWeight().clickable(openAppAction)
+                    modifier = GlanceModifier.fillMaxWidth().defaultWeight()
                 )
                 WidgetControls(
                     state = state,

@@ -15,6 +15,8 @@ import coil3.request.SuccessResult
 import coil3.toBitmap
 import kotlinx.coroutines.withTimeoutOrNull
 
+private const val MAX_WIDGET_ARTWORK_SIZE = 256
+
 suspend fun resolveArtwork(context: Context, url: String?): Bitmap? {
     if (url.isNullOrBlank()) return null
 
@@ -22,15 +24,31 @@ suspend fun resolveArtwork(context: Context, url: String?): Bitmap? {
         val loader = context.imageLoader
         val request = ImageRequest.Builder(context)
             .data(url)
+            .size(MAX_WIDGET_ARTWORK_SIZE)
             .build()
 
-        // Removed the strict timeout so high-res or slow-network artwork doesn't fail
         val result = loader.execute(request)
-        // toBitmap() may return a hardware-backed bitmap; RemoteViews can't hold those
-        val rawBitmap = (result as? SuccessResult)?.image?.toBitmap()
-        rawBitmap?.let { bmp ->
-            if (bmp.config == Bitmap.Config.HARDWARE) bmp.copy(Bitmap.Config.ARGB_8888, false)
-            else bmp
+        val rawBitmap = (result as? SuccessResult)?.image?.toBitmap() ?: return null
+        
+        // RemoteViews cannot hold hardware-backed bitmaps
+        val swBitmap = if (rawBitmap.config == Bitmap.Config.HARDWARE) {
+            rawBitmap.copy(Bitmap.Config.ARGB_8888, false) ?: rawBitmap
+        } else {
+            rawBitmap
+        }
+
+        // Guarantee bitmap dimensions do not exceed MAX_WIDGET_ARTWORK_SIZE
+        // to prevent TransactionTooLargeException in RemoteViews / Glance IPC
+        if (swBitmap.width > MAX_WIDGET_ARTWORK_SIZE || swBitmap.height > MAX_WIDGET_ARTWORK_SIZE) {
+            val scale = minOf(
+                MAX_WIDGET_ARTWORK_SIZE.toFloat() / swBitmap.width,
+                MAX_WIDGET_ARTWORK_SIZE.toFloat() / swBitmap.height
+            )
+            val targetWidth = (swBitmap.width * scale).toInt().coerceAtLeast(1)
+            val targetHeight = (swBitmap.height * scale).toInt().coerceAtLeast(1)
+            Bitmap.createScaledBitmap(swBitmap, targetWidth, targetHeight, true)
+        } else {
+            swBitmap
         }
     } catch (e: Exception) {
         Log.e("NowPlayingWidget", "Failed to load artwork", e)

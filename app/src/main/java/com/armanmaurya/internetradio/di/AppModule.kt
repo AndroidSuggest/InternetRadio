@@ -2,7 +2,7 @@ package com.armanmaurya.internetradio.di
 
 import android.content.Context
 import androidx.room.Room
-import com.armanmaurya.internetradio.data.local.database.RadioDatabase
+import com.armanmaurya.internetradio.data.local.RadioDatabase
 import com.armanmaurya.internetradio.data.remote.RadioBrowserApi
 import dagger.Module
 import dagger.Provides

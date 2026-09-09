@@ -1,6 +1,7 @@
-package com.armanmaurya.internetradio.data.local.database
+package com.armanmaurya.internetradio.data.local.converter
 
 import androidx.room.TypeConverter
+import com.armanmaurya.internetradio.data.local.entity.ScheduleType
 
 class Converters {
     @TypeConverter
@@ -14,12 +15,12 @@ class Converters {
     }
 
     @TypeConverter
-    fun fromScheduleType(type: com.armanmaurya.internetradio.data.local.entity.ScheduleType): String {
+    fun fromScheduleType(type: ScheduleType): String {
         return type.name
     }
 
     @TypeConverter
-    fun toScheduleType(name: String): com.armanmaurya.internetradio.data.local.entity.ScheduleType {
-        return com.armanmaurya.internetradio.data.local.entity.ScheduleType.valueOf(name)
+    fun toScheduleType(name: String): ScheduleType {
+        return ScheduleType.valueOf(name)
     }
 }

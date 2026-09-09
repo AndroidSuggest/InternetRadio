@@ -21,13 +21,13 @@ fun NowPlayingTrackInfo(
     artistColor: ColorProvider?,
     modifier: GlanceModifier = GlanceModifier
 ) {
-    Column() {
+    Column(modifier = modifier) {
         Text(
             text = title,
             style = TextStyle(
                 color = titleColor ?: GlanceTheme.colors.onPrimary,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 14.sp
             ),
             maxLines = 1
         )
@@ -35,7 +35,7 @@ fun NowPlayingTrackInfo(
             text = artist,
             style = TextStyle(
                 color = artistColor ?: GlanceTheme.colors.onPrimary,
-                fontSize = 14.sp
+                fontSize = 12.sp
             ),
             maxLines = 1
         )

@@ -145,31 +145,10 @@ class PlaybackService : MediaLibraryService() {
             }
 
             if (!rawTrackTitle.isNullOrBlank()) {
-                val trackName: String
-                val artistName: String?
-                
-                if (rawArtist != null) {
-                    trackName = rawTrackTitle
-                    artistName = rawArtist
-                } else if (rawTrackTitle.contains(" - ")) {
-                    val parts = rawTrackTitle.split(" - ", limit = 2)
-                    if (parts.size == 2) {
-                        artistName = parts[0].trim()
-                        trackName = parts[1].trim()
-                    } else {
-                        artistName = null
-                        trackName = rawTrackTitle
-                    }
-                } else {
-                    artistName = null
-                    trackName = rawTrackTitle
-                }
-
-                val trackTitle = if (artistName != null) {
-                    "$trackName - $artistName"
-                } else {
-                    trackName
-                }
+                val parsed = com.armanmaurya.internetradio.core.utils.MetadataSanitizer.cleanAndParse(rawTrackTitle, rawArtist)
+                val trackName = parsed.title
+                val artistName = parsed.artist
+                val trackTitle = parsed.combinedDisplay
 
                 val currentPlayer = player ?: return
                 val currentMediaItem = currentPlayer.currentMediaItem ?: return
@@ -178,7 +157,7 @@ class PlaybackService : MediaLibraryService() {
                 val currentExtras = currentMediaItem.mediaMetadata.extras
                 val previousRawTitle = currentExtras?.getString("icy_raw_title")
                 
-                if (previousRawTitle == trackTitle) return
+                if (previousRawTitle == rawTrackTitle) return
                 
                 activeTrackTitle = trackTitle
                 
@@ -192,7 +171,7 @@ class PlaybackService : MediaLibraryService() {
                 }
 
                 val newExtras = android.os.Bundle(currentExtras ?: android.os.Bundle.EMPTY).apply {
-                    putString("icy_raw_title", trackTitle)
+                    putString("icy_raw_title", rawTrackTitle)
                     putString("icy_title", trackTitle)
                     putString("is_fetching_artwork", "true")
                     remove("track_cover_art_url") // Clear old cover art for the new track
@@ -222,7 +201,7 @@ class PlaybackService : MediaLibraryService() {
                 // Log the track history
                 val stationUuid = currentMediaItem.mediaId
                 serviceScope.launch {
-                    val trackId = trackHistoryRepository.logTrack(stationUuid, trackTitle)
+                    val trackId = trackHistoryRepository.logTrack(stationUuid, trackTitle, rawTrackTitle)
                     
                     // Fetch track cover art and cleaned metadata
                     val metadata = coverArtRepository.getTrackMetadata(trackName, artistName)
@@ -232,7 +211,7 @@ class PlaybackService : MediaLibraryService() {
                         val cTrack = metadata.trackName
                         val cArtist = metadata.artistName
                         when {
-                            cTrack != null && cArtist != null -> "$cTrack - $cArtist"
+                            cTrack != null && cArtist != null -> "$cArtist - $cTrack"
                             cTrack != null -> cTrack
                             else -> trackTitle
                         }

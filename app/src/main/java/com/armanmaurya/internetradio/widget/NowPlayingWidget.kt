@@ -93,8 +93,12 @@ class NowPlayingWidget : GlanceAppWidget() {
                     if (bmp != null) {
                         artwork = ImageProvider(bmp)
                         
-                        val palette = androidx.palette.graphics.Palette.from(bmp).generate()
-                        val swatch = palette.vibrantSwatch ?: palette.dominantSwatch
+                        val palette = try {
+                            androidx.palette.graphics.Palette.from(bmp).generate()
+                        } catch (e: Exception) {
+                            null
+                        }
+                        val swatch = palette?.vibrantSwatch ?: palette?.dominantSwatch
                         
                         if (swatch != null && swatch.rgb != android.graphics.Color.TRANSPARENT) {
                             bgColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.rgb))

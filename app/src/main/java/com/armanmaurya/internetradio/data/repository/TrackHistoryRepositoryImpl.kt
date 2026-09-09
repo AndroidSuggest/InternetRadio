@@ -19,7 +19,7 @@ class TrackHistoryRepositoryImpl @Inject constructor(
     private val trackHistoryDao: TrackHistoryDao,
     private val settingsRepository: SettingsRepository
 ) : TrackHistoryRepository {
-    override suspend fun logTrack(stationUuid: String, trackTitle: String): Long? = withContext(Dispatchers.IO) {
+    override suspend fun logTrack(stationUuid: String, trackTitle: String, rawTrackTitle: String): Long? = withContext(Dispatchers.IO) {
         val latestTrack = trackHistoryDao.getLatestTrackForStation(stationUuid)
         
         // Use rawTrackTitle for duplicate detection to avoid inserting duplicates 
@@ -30,11 +30,11 @@ class TrackHistoryRepositoryImpl @Inject constructor(
             latestTrack?.trackTitle // Fallback for old rows before migration
         }
 
-        if (latestRawTitle != trackTitle) {
+        if (latestRawTitle != rawTrackTitle) {
             val newTrack = TrackHistoryEntity(
                 stationUuid = stationUuid,
                 trackTitle = trackTitle,
-                rawTrackTitle = trackTitle,
+                rawTrackTitle = rawTrackTitle,
                 timestamp = System.currentTimeMillis()
             )
             val id = trackHistoryDao.insert(newTrack)
