@@ -19,6 +19,7 @@ import androidx.media3.session.MediaSession
 import com.armanmaurya.internetradio.ui.mobile.MobileActivity
 import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
+import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.widget.pushWidgetUpdate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -674,9 +675,9 @@ class PlaybackService : MediaLibraryService() {
         // If actively playing -> push live track info
         // If paused -> instantly push base station info
         val title = if (isPlaying) {
-            metadata?.title?.toString() ?: "Nothing playing"
+            metadata?.title?.toString() ?: getString(R.string.widget_nothing_playing)
         } else {
-            metadata?.extras?.getString("stationName") ?: metadata?.title?.toString() ?: "Nothing playing"
+            metadata?.extras?.getString("stationName") ?: metadata?.title?.toString() ?: getString(R.string.widget_nothing_playing)
         }
         
         val artworkUrl = if (isPlaying) {
@@ -715,7 +716,7 @@ class PlaybackService : MediaLibraryService() {
         serviceScope.launch(Dispatchers.IO) {
             pushWidgetUpdate(
                 context    = applicationContext,
-                title      = "Nothing playing",
+                title      = getString(R.string.widget_nothing_playing),
                 artist     = "",
                 artworkUrl = null,
                 isPlaying  = false,

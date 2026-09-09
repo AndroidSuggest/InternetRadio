@@ -125,7 +125,7 @@ class MobileActivity : AppCompatActivity() {
             if (!com.armanmaurya.internetradio.player.PlaybackService.isRunning) {
                 com.armanmaurya.internetradio.widget.pushWidgetUpdate(
                     context = applicationContext,
-                    title = "Nothing playing",
+                    title = getString(R.string.widget_nothing_playing),
                     artist = "",
                     artworkUrl = null,
                     isPlaying = false,

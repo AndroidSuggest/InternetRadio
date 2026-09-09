@@ -17,7 +17,7 @@ data class NowPlayingWidgetState(
 ) {
     companion object {
         val Empty = NowPlayingWidgetState(
-            title      = "Nothing playing",
+            title      = "",
             artist     = "",
             artworkUrl = null,
             artwork    = null,

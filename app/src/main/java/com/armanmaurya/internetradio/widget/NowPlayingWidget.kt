@@ -29,6 +29,7 @@ import androidx.glance.currentState
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.widget.components.PlayerContent
 import com.armanmaurya.internetradio.widget.state.NowPlayingWidgetState
 
@@ -56,12 +57,13 @@ class NowPlayingWidget : GlanceAppWidget() {
             // Read state reactively inside provideContent
             val prefs = currentState<Preferences>()
             val savedTitle = prefs[WidgetStateKeys.TITLE]
+            val nothingPlaying = context.getString(R.string.widget_nothing_playing)
             
             // Fetch DB reactively ONLY if the saved file is empty/Nothing playing
             var lastStation by remember { mutableStateOf<com.armanmaurya.internetradio.data.model.RadioStation?>(null) }
             
             LaunchedEffect(savedTitle) {
-                if (savedTitle == null || savedTitle == "Nothing playing") {
+                if (savedTitle.isNullOrBlank() || savedTitle == "Nothing playing" || savedTitle == nothingPlaying) {
                     val entryPoint = EntryPointAccessors.fromApplication(context, WidgetEntryPoint::class.java)
                     lastStation = entryPoint.recentRepository().getAllRecent().first().firstOrNull()
                 }
@@ -71,9 +73,9 @@ class NowPlayingWidget : GlanceAppWidget() {
             val isPlaying = if (isServiceRunning) prefs[WidgetStateKeys.IS_PLAYING] ?: false else false
             
             // Trust the saved preferences first. If missing, use the fresh DB query.
-            val title = savedTitle?.takeIf { it != "Nothing playing" } 
+            val title = savedTitle?.takeIf { it.isNotBlank() && it != "Nothing playing" && it != nothingPlaying } 
                 ?: lastStation?.name 
-                ?: "Nothing playing"
+                ?: nothingPlaying
                 
             val artworkUrl = prefs[WidgetStateKeys.ARTWORK_URL]?.takeIf { it.isNotBlank() } 
                 ?: lastStation?.favicon
