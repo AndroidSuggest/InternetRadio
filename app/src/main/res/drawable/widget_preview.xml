@@ -1,0 +1,46 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="250dp"
+    android:height="72dp"
+    android:viewportWidth="250"
+    android:viewportHeight="72">
+
+    <!-- Rounded widget background -->
+    <path
+        android:fillColor="#F21E1E1E"
+        android:pathData="M16,0 L234,0 A16,16 0 0,1 250,16 L250,56 A16,16 0 0,1 234,72 L16,72 A16,16 0 0,1 0,56 L0,16 A16,16 0 0,1 16,0 Z" />
+
+    <!-- Cover art background (56x56 square taking full height inside 8dp padding) -->
+    <path
+        android:fillColor="#26FFFFFF"
+        android:pathData="M16,8 L56,8 A8,8 0 0,1 64,16 L64,56 A8,8 0 0,1 56,64 L16,64 A8,8 0 0,1 8,56 L8,16 A8,8 0 0,1 16,8 Z" />
+
+    <!-- Radio / music icon centered in 56x56 cover art -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M36,28 C31.58,28 28,31.58 28,36 C28,40.42 31.58,44 36,44 C40.42,44 44,40.42 44,36 C44,31.58 40.42,28 36,28 Z M34,33.5 L34,38.5 L39,36 Z" />
+
+    <!-- Title placeholder bar -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M76,14 L180,14 A4,4 0 0,1 184,18 L184,18 A4,4 0 0,1 180,22 L76,22 A4,4 0 0,1 72,18 L72,18 A4,4 0 0,1 76,14 Z" />
+
+    <!-- Artist subtitle placeholder bar -->
+    <path
+        android:fillColor="#88FFFFFF"
+        android:pathData="M76,28 L140,28 A3,3 0 0,1 143,31 L143,31 A3,3 0 0,1 140,34 L76,34 A3,3 0 0,1 73,31 L73,31 A3,3 0 0,1 76,28 Z" />
+
+    <!-- Prev button -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M84,46 L84,62 L74,54 Z M72,46 L74,46 L74,62 L72,62 Z" />
+
+    <!-- Play button -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M106,44 C100.48,44 96,48.48 96,54 C96,59.52 100.48,64 106,64 C111.52,64 116,59.52 116,54 C116,48.48 111.52,44 106,44 Z M104,48.5 L110,54 L104,59.5 Z" />
+
+    <!-- Next button -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M126,46 L126,62 L136,54 Z M136,46 L138,46 L138,62 L136,62 Z" />
+</vector>
