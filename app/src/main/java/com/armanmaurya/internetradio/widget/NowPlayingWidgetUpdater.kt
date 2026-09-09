@@ -17,14 +17,14 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 private const val MAX_WIDGET_ARTWORK_SIZE = 256
 
-suspend fun resolveArtwork(context: Context, url: String?): Bitmap? {
+suspend fun resolveArtwork(context: Context, url: String?, maxDimension: Int = MAX_WIDGET_ARTWORK_SIZE): Bitmap? {
     if (url.isNullOrBlank()) return null
 
     return try {
         val loader = context.imageLoader
         val request = ImageRequest.Builder(context)
             .data(url)
-            .size(MAX_WIDGET_ARTWORK_SIZE)
+            .size(maxDimension)
             .build()
 
         val result = loader.execute(request)
@@ -37,12 +37,12 @@ suspend fun resolveArtwork(context: Context, url: String?): Bitmap? {
             rawBitmap
         }
 
-        // Guarantee bitmap dimensions do not exceed MAX_WIDGET_ARTWORK_SIZE
+        // Guarantee bitmap dimensions do not exceed maxDimension
         // to prevent TransactionTooLargeException in RemoteViews / Glance IPC
-        if (swBitmap.width > MAX_WIDGET_ARTWORK_SIZE || swBitmap.height > MAX_WIDGET_ARTWORK_SIZE) {
+        if (swBitmap.width > maxDimension || swBitmap.height > maxDimension) {
             val scale = minOf(
-                MAX_WIDGET_ARTWORK_SIZE.toFloat() / swBitmap.width,
-                MAX_WIDGET_ARTWORK_SIZE.toFloat() / swBitmap.height
+                maxDimension.toFloat() / swBitmap.width,
+                maxDimension.toFloat() / swBitmap.height
             )
             val targetWidth = (swBitmap.width * scale).toInt().coerceAtLeast(1)
             val targetHeight = (swBitmap.height * scale).toInt().coerceAtLeast(1)
@@ -68,6 +68,9 @@ suspend fun pushWidgetUpdate(
     isPlaying: Boolean,
     hasNext: Boolean,
     hasPrev: Boolean,
+    stationName: String? = null,
+    stationThumbnailUrl: String? = null,
+    isCoverArtFetched: Boolean = false,
 ) {
     try {
         val manager = GlanceAppWidgetManager(context)
@@ -76,12 +79,15 @@ suspend fun pushWidgetUpdate(
         manager.getGlanceIds(NowPlayingWidget::class.java).forEach { glanceId ->
             // Use the Preferences-specific overload of updateAppWidgetState
             updateAppWidgetState(context, glanceId) { prefs ->
-                prefs[WidgetStateKeys.TITLE]       = title
-                prefs[WidgetStateKeys.ARTIST]      = artist
-                prefs[WidgetStateKeys.ARTWORK_URL] = artworkUrl ?: ""
-                prefs[WidgetStateKeys.IS_PLAYING]  = isPlaying
-                prefs[WidgetStateKeys.HAS_NEXT]    = hasNext
-                prefs[WidgetStateKeys.HAS_PREV]    = hasPrev
+                prefs[WidgetStateKeys.TITLE]                 = title
+                prefs[WidgetStateKeys.ARTIST]                = artist
+                prefs[WidgetStateKeys.STATION_NAME]          = stationName ?: ""
+                prefs[WidgetStateKeys.ARTWORK_URL]           = artworkUrl ?: ""
+                prefs[WidgetStateKeys.STATION_THUMBNAIL_URL]  = stationThumbnailUrl ?: ""
+                prefs[WidgetStateKeys.IS_COVER_ART_FETCHED]   = isCoverArtFetched
+                prefs[WidgetStateKeys.IS_PLAYING]            = isPlaying
+                prefs[WidgetStateKeys.HAS_NEXT]              = hasNext
+                prefs[WidgetStateKeys.HAS_PREV]              = hasPrev
             }
             
             widget.update(context, glanceId)

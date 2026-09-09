@@ -5,8 +5,12 @@ import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
+import androidx.glance.text.FontWeight
+import androidx.glance.text.Text
+import androidx.glance.text.TextStyle
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
@@ -58,12 +62,21 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     )
     val isVerySmallHeight = size.height < 75.dp
     val isTallHeight = size.height >= 110.dp
-    val twoCellArtDimension = androidx.compose.ui.unit.max(48.dp, size.height - 68.dp)
+    val showStationBottom = state.artist.isNotBlank() && 
+        !state.stationName.isNullOrBlank() && 
+        state.stationName != state.title
+    val showStationFloating = state.isCoverArtFetched && state.stationThumbnail != null
+    val twoCellArtDimension = if (showStationBottom) {
+        androidx.compose.ui.unit.max(40.dp, size.height - 86.dp)
+    } else {
+        androidx.compose.ui.unit.max(48.dp, size.height - 68.dp)
+    }
 
     val rootModifier = modifier.clickable(openAppAction)
 
     if (isVerySmallHeight) {
         // Realme Launcher 1-cell (Very short height): 3-column layout
+        val thumbDimension = (artDimension * 0.35f).coerceIn(14.dp, 20.dp)
         Row(
             modifier = rootModifier,
             verticalAlignment = Alignment.CenterVertically
@@ -76,6 +89,9 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
             ) {
                 ArtWork(
                     art = state.artwork,
+                    stationArt = state.stationThumbnail,
+                    showStationFloating = showStationFloating,
+                    floatingThumbDimension = thumbDimension,
                     modifier = GlanceModifier.size(artDimension)
                 )
                 NowPlayingTrackInfo(
@@ -97,7 +113,8 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
             )
         }
     } else if (isTallHeight) {
-        // 2-cell height layout: TrackInfo on top, CoverArt and Controls below
+        // 2-cell height layout: TrackInfo on top, CoverArt and Controls below, Station on bottom when Track Info is present
+        val thumbDimension = (twoCellArtDimension * 0.32f).coerceIn(16.dp, 24.dp)
         Column(
             modifier = rootModifier,
             verticalAlignment = Alignment.Top,
@@ -110,7 +127,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 artistColor = state.artistColor,
                 modifier = GlanceModifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp)
+                    .padding(bottom = if (showStationBottom) 4.dp else 8.dp)
             )
             
             Row(
@@ -119,6 +136,9 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
             ) {
                 ArtWork(
                     art = state.artwork,
+                    stationArt = state.stationThumbnail,
+                    showStationFloating = showStationFloating,
+                    floatingThumbDimension = thumbDimension,
                     modifier = GlanceModifier.size(twoCellArtDimension)
                 )
                 WidgetControls(
@@ -131,15 +151,34 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     modifier = GlanceModifier.defaultWeight().fillMaxHeight()
                 )
             }
+
+            if (showStationBottom) {
+                Text(
+                    text = state.stationName,
+                    style = TextStyle(
+                        color = state.artistColor ?: GlanceTheme.colors.onPrimary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    maxLines = 1,
+                    modifier = GlanceModifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                )
+            }
         }
     } else {
         // Pixel Launcher 1-cell (Medium height): CoverArt on left, TrackInfo & Controls stacked on right
+        val thumbDimension = (artDimension * 0.32f).coerceIn(16.dp, 24.dp)
         Row(
             modifier = rootModifier,
             verticalAlignment = Alignment.CenterVertically
         ) {
             ArtWork(
                 art = state.artwork,
+                stationArt = state.stationThumbnail,
+                showStationFloating = showStationFloating,
+                floatingThumbDimension = thumbDimension,
                 modifier = GlanceModifier.size(artDimension)
             )
             Column(

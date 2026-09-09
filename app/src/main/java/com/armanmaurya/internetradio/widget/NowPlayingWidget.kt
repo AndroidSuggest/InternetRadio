@@ -34,12 +34,15 @@ import com.armanmaurya.internetradio.widget.components.PlayerContent
 import com.armanmaurya.internetradio.widget.state.NowPlayingWidgetState
 
 object WidgetStateKeys {
-    val TITLE       = stringPreferencesKey("title")
-    val ARTIST      = stringPreferencesKey("artist")
-    val ARTWORK_URL = stringPreferencesKey("artwork_url")
-    val IS_PLAYING  = booleanPreferencesKey("is_playing")
-    val HAS_NEXT    = booleanPreferencesKey("has_next")
-    val HAS_PREV    = booleanPreferencesKey("has_prev")
+    val TITLE                 = stringPreferencesKey("title")
+    val ARTIST                = stringPreferencesKey("artist")
+    val ARTWORK_URL           = stringPreferencesKey("artwork_url")
+    val IS_PLAYING            = booleanPreferencesKey("is_playing")
+    val HAS_NEXT              = booleanPreferencesKey("has_next")
+    val HAS_PREV              = booleanPreferencesKey("has_prev")
+    val STATION_NAME          = stringPreferencesKey("station_name")
+    val STATION_THUMBNAIL_URL = stringPreferencesKey("station_thumbnail_url")
+    val IS_COVER_ART_FETCHED  = booleanPreferencesKey("is_cover_art_fetched")
 }
 
 @EntryPoint
@@ -71,6 +74,7 @@ class NowPlayingWidget : GlanceAppWidget() {
             
             val isServiceRunning = com.armanmaurya.internetradio.player.PlaybackService.isRunning
             val isPlaying = if (isServiceRunning) prefs[WidgetStateKeys.IS_PLAYING] ?: false else false
+            val isCoverArtFetched = if (isServiceRunning) prefs[WidgetStateKeys.IS_COVER_ART_FETCHED] ?: false else false
             
             // Trust the saved preferences first. If missing, use the fresh DB query.
             val title = savedTitle?.takeIf { it.isNotBlank() && it != "Nothing playing" && it != nothingPlaying } 
@@ -80,11 +84,18 @@ class NowPlayingWidget : GlanceAppWidget() {
             val artworkUrl = prefs[WidgetStateKeys.ARTWORK_URL]?.takeIf { it.isNotBlank() } 
                 ?: lastStation?.favicon
                 
+            val stationThumbnailUrl = if (isCoverArtFetched) {
+                prefs[WidgetStateKeys.STATION_THUMBNAIL_URL]?.takeIf { it.isNotBlank() } ?: lastStation?.favicon
+            } else null
+                
             val artist     = prefs[WidgetStateKeys.ARTIST] ?: ""
+            val savedStationName = prefs[WidgetStateKeys.STATION_NAME]?.takeIf { it.isNotBlank() }
+            val stationName = savedStationName ?: lastStation?.name
             val hasNext    = prefs[WidgetStateKeys.HAS_NEXT] ?: false
             val hasPrev    = prefs[WidgetStateKeys.HAS_PREV] ?: false
 
             var artwork by remember(artworkUrl) { mutableStateOf<ImageProvider?>(null) }
+            var stationThumbnail by remember(stationThumbnailUrl) { mutableStateOf<ImageProvider?>(null) }
             var bgColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
             var titleColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
             var artistColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
@@ -125,17 +136,30 @@ class NowPlayingWidget : GlanceAppWidget() {
                 }
             }
 
+            LaunchedEffect(stationThumbnailUrl) {
+                if (stationThumbnailUrl != null) {
+                    val bmp = resolveArtwork(context, stationThumbnailUrl, maxDimension = 96)
+                    stationThumbnail = if (bmp != null) ImageProvider(bmp) else null
+                } else {
+                    stationThumbnail = null
+                }
+            }
+
             val state = NowPlayingWidgetState(
-                title           = title,
-                artist          = artist,
-                artworkUrl      = artworkUrl,
-                artwork         = artwork,
-                isPlaying       = isPlaying,
-                hasNext         = hasNext,
-                hasPrev         = hasPrev,
-                backgroundColor = bgColor,
-                titleColor      = titleColor,
-                artistColor     = artistColor,
+                title               = title,
+                artist              = artist,
+                stationName         = stationName,
+                artworkUrl          = artworkUrl,
+                artwork             = artwork,
+                stationThumbnailUrl = stationThumbnailUrl,
+                stationThumbnail    = stationThumbnail,
+                isCoverArtFetched   = isCoverArtFetched,
+                isPlaying           = isPlaying,
+                hasNext             = hasNext,
+                hasPrev             = hasPrev,
+                backgroundColor     = bgColor,
+                titleColor          = titleColor,
+                artistColor         = artistColor,
             )
 
             GlanceTheme {

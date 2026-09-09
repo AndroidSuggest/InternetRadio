@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.widget.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -12,14 +13,22 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import com.armanmaurya.internetradio.R
 
 @Composable
-fun ArtWork(art: ImageProvider?, modifier: GlanceModifier) {
+fun ArtWork(
+    art: ImageProvider?,
+    modifier: GlanceModifier,
+    stationArt: ImageProvider? = null,
+    showStationFloating: Boolean = false,
+    floatingThumbDimension: Dp = 20.dp,
+) {
     if (art != null) {
         Box(
             modifier = modifier.cornerRadius(8.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.TopStart
         ) {
             Image(
                 provider = art,
@@ -27,6 +36,30 @@ fun ArtWork(art: ImageProvider?, modifier: GlanceModifier) {
                 contentScale = ContentScale.Crop,
                 modifier = GlanceModifier.fillMaxSize().cornerRadius(8.dp)
             )
+            if (showStationFloating && stationArt != null) {
+                Box(
+                    modifier = GlanceModifier.padding(3.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = GlanceModifier
+                            .size(floatingThumbDimension)
+                            .cornerRadius(4.dp)
+                            .background(GlanceTheme.colors.surface),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            provider = stationArt,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = GlanceModifier
+                                .fillMaxSize()
+                                .padding(2.dp)
+                                .cornerRadius(3.dp)
+                        )
+                    }
+                }
+            }
         }
     } else {
         Box(

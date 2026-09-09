@@ -680,11 +680,22 @@ class PlaybackService : MediaLibraryService() {
             metadata?.extras?.getString("stationName") ?: metadata?.title?.toString() ?: getString(R.string.widget_nothing_playing)
         }
         
-        val artworkUrl = if (isPlaying) {
-            metadata?.extras?.getString("track_cover_art_url") ?: metadata?.extras?.getString("stationFavicon")
+        val trackCoverArtUrl = if (isPlaying) {
+            metadata?.extras?.getString("track_cover_art_url")?.takeIf { it.isNotBlank() }
+        } else null
+        
+        val stationFavicon = metadata?.extras?.getString("stationFavicon")?.takeIf { it.isNotBlank() }
+        val isCoverArtFetched = isPlaying && trackCoverArtUrl != null
+        
+        val artworkUrl = if (isCoverArtFetched) {
+            trackCoverArtUrl
         } else {
-            metadata?.extras?.getString("stationFavicon")
+            stationFavicon
         }
+        
+        val stationThumbnailUrl = if (isCoverArtFetched) {
+            stationFavicon
+        } else null
         
         val artist = if (isPlaying) {
             metadata?.artist?.toString() ?: ""
@@ -694,16 +705,20 @@ class PlaybackService : MediaLibraryService() {
 
         val hasNext    = p.hasNextMediaItem()
         val hasPrev    = p.hasPreviousMediaItem()
+        val stationName = metadata?.extras?.getString("stationName")
 
         serviceScope.launch(Dispatchers.IO) {
             pushWidgetUpdate(
-                context    = applicationContext,
-                title      = title,
-                artist     = artist,
-                artworkUrl = artworkUrl,
-                isPlaying  = isPlaying,
-                hasNext    = hasNext,
-                hasPrev    = hasPrev,
+                context             = applicationContext,
+                title               = title,
+                artist              = artist,
+                artworkUrl          = artworkUrl,
+                isPlaying           = isPlaying,
+                hasNext             = hasNext,
+                hasPrev             = hasPrev,
+                stationName         = stationName,
+                stationThumbnailUrl = stationThumbnailUrl,
+                isCoverArtFetched   = isCoverArtFetched,
             )
         }
     }
@@ -715,13 +730,16 @@ class PlaybackService : MediaLibraryService() {
     private fun pushStoppedWidgetUpdate() {
         serviceScope.launch(Dispatchers.IO) {
             pushWidgetUpdate(
-                context    = applicationContext,
-                title      = getString(R.string.widget_nothing_playing),
-                artist     = "",
-                artworkUrl = null,
-                isPlaying  = false,
-                hasNext    = false,
-                hasPrev    = false,
+                context             = applicationContext,
+                title               = getString(R.string.widget_nothing_playing),
+                artist              = "",
+                artworkUrl          = null,
+                isPlaying           = false,
+                hasNext             = false,
+                hasPrev             = false,
+                stationName         = null,
+                stationThumbnailUrl = null,
+                isCoverArtFetched   = false,
             )
         }
     }
