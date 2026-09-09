@@ -16,18 +16,23 @@ import com.armanmaurya.internetradio.R
 
 @Composable
 fun ArtWork(art: ImageProvider?, modifier: GlanceModifier) {
-    Box(
-        modifier = modifier.background(GlanceTheme.colors.surfaceVariant).cornerRadius(8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        if (art != null) {
+    if (art != null) {
+        Box(
+            modifier = modifier.cornerRadius(8.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Image(
                 provider = art,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = GlanceModifier.fillMaxSize()
+                modifier = GlanceModifier.fillMaxSize().cornerRadius(8.dp)
             )
-        } else {
+        }
+    } else {
+        Box(
+            modifier = modifier.background(GlanceTheme.colors.surfaceVariant).cornerRadius(8.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Image(
                 provider = ImageProvider(R.drawable.ic_launcher_foreground),
                 contentDescription = null,
