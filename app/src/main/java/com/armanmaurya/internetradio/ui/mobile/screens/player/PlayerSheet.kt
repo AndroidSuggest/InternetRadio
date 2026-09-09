@@ -189,17 +189,14 @@ fun PlayerSheetContent(
         }
     }
 
-    val displayCodec = (if (!isFavorite) playbackState.streamCodec else null) ?: station.codec
-    val displayBitrate = (if (!isFavorite) playbackState.streamBitrate else null) ?: station.bitrate
+    val displayCodec = (if (!isFavorite || station.codec.isBlank() || station.codec.equals("UNKNOWN", ignoreCase = true)) playbackState.streamCodec else null) ?: station.codec
+    val displayBitrate = (if (!isFavorite || station.bitrate <= 0) playbackState.streamBitrate else null) ?: station.bitrate
 
     val hasBitrate = displayBitrate > 0
     val hasCodec = displayCodec.isNotBlank() && displayCodec.uppercase() != "UNKNOWN"
     val hasInfo = hasBitrate || hasCodec
-    var showTimer by rememberSaveable(station.stationUuid) { mutableStateOf(!hasInfo) }
-
-    LaunchedEffect(station.stationUuid) {
-        showTimer = !hasInfo
-    }
+    var userToggledTimer by rememberSaveable(station.stationUuid) { mutableStateOf(false) }
+    val showTimer = if (hasInfo) userToggledTimer else true
 
     var showVolumeDialog by remember { mutableStateOf(false) }
     val volumeLevel = if (connectedCastDevice != null) volume else playbackState.volume
@@ -711,15 +708,15 @@ fun PlayerSheetContent(
                     
                     var timerSeconds by remember { mutableLongStateOf(0L) }
 
-                    LaunchedEffect(sessionActiveDurationMs, sessionResumeTimeMs, playbackState.isPlaying) {
-                        if (playbackState.isPlaying && sessionResumeTimeMs != null) {
+                    LaunchedEffect(sessionActiveDurationMs, sessionResumeTimeMs, playbackState.isPlaying, playbackState.isLoading) {
+                        if (playbackState.isPlaying && !playbackState.isLoading && sessionResumeTimeMs != null) {
                             while (true) {
                                 val currentElapsedMs = sessionActiveDurationMs + (System.currentTimeMillis() - sessionResumeTimeMs)
-                                timerSeconds = currentElapsedMs / 1000
+                                timerSeconds = (currentElapsedMs / 1000).coerceAtLeast(0L)
                                 delay(1000L)
                             }
                         } else {
-                            timerSeconds = sessionActiveDurationMs / 1000
+                            timerSeconds = (sessionActiveDurationMs / 1000).coerceAtLeast(0L)
                         }
                     }
 
@@ -741,7 +738,7 @@ fun PlayerSheetContent(
                                 shape = RoundedCornerShape(16.dp)
                             )
                             .clip(RoundedCornerShape(16.dp))
-                            .clickable(enabled = hasInfo) { showTimer = !showTimer }
+                            .clickable(enabled = hasInfo) { userToggledTimer = !userToggledTimer }
                             .animateContentSize()
                             .padding(
                                 start = 12.dp,

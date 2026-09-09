@@ -174,7 +174,7 @@ class PlayerController @Inject constructor(
                         isFetchingArtwork = false,
                         lyricsSyncOffsetMs = 0L,
                         sessionActiveDurationMs = 0L,
-                        sessionResumeTimeMs = if (it.isPlaying) System.currentTimeMillis() else null
+                        sessionResumeTimeMs = null
                     ) 
                 }
                 scope.launch { recentRepository.addRecentStation(tagStation) }
@@ -337,7 +337,7 @@ class PlayerController @Inject constructor(
                                         activeStation = station
                                         _playbackState.update { state ->
                                             state.copy(
-                                                isPlaying = true,
+                                                isLoading = true,
                                                 currentStation = station,
                                                 currentPlaylist = currentPlaylist,
                                                 currentPlaylistIndex = libraryIndex,
@@ -353,7 +353,7 @@ class PlayerController @Inject constructor(
                                         activeStation = station
                                         _playbackState.update { state ->
                                             state.copy(
-                                                isPlaying = true,
+                                                isLoading = true,
                                                 currentStation = station,
                                                 currentPlaylist = currentPlaylist,
                                                 currentPlaylistIndex = recentIndex,
@@ -394,6 +394,8 @@ class PlayerController @Inject constructor(
         activeStation = station
         _playbackState.update { 
             it.copy(
+                isPlaying = false,
+                isLoading = playWhenReady,
                 currentStation = station, 
                 currentPlaylist = currentPlaylist, 
                 currentPlaylistIndex = startIndex, 
@@ -402,7 +404,7 @@ class PlayerController @Inject constructor(
                 lyricsSyncOffsetMs = 0L, 
                 playbackSource = currentPlaybackSource,
                 sessionActiveDurationMs = 0L,
-                sessionResumeTimeMs = if (playWhenReady) System.currentTimeMillis() else null
+                sessionResumeTimeMs = null
             ) 
         }
         
@@ -505,6 +507,13 @@ class PlayerController @Inject constructor(
         player.stop()
         player.clearMediaItems()
         cancelSleepTimer()
+        _playbackState.update {
+            it.copy(
+                isPlaying = false,
+                sessionActiveDurationMs = 0L,
+                sessionResumeTimeMs = null
+            )
+        }
     }
 
     private var timerJob: Job? = null
