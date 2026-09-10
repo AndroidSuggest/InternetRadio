@@ -67,7 +67,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
         state.stationName != state.title
     val showStationFloating = state.isCoverArtFetched && state.stationThumbnail != null
     val twoCellArtDimension = if (showStationBottom) {
-        androidx.compose.ui.unit.max(40.dp, size.height - 86.dp)
+        androidx.compose.ui.unit.max(40.dp, size.height - 90.dp)
     } else {
         androidx.compose.ui.unit.max(48.dp, size.height - 68.dp)
     }
@@ -157,8 +157,8 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     text = state.stationName,
                     style = TextStyle(
                         color = state.artistColor ?: GlanceTheme.colors.onPrimary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Normal
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
                     ),
                     maxLines = 1,
                     modifier = GlanceModifier
