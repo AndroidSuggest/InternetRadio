@@ -357,4 +357,8 @@
     <string name="review_rate_now">Valuta ora</string>
     <string name="review_star_github">Metti una stella su GitHub</string>
     <string name="review_no_thanks">No, grazie</string>
+    <string name="widget_preview_title">Internet Radio</string>
+    <string name="widget_preview_artist">In riproduzione</string>
+    <string name="widget_description">Accesso rapido alla riproduzione e ai controlli della radio</string>
+    <string name="widget_nothing_playing">Nessuna riproduzione</string>
 </resources>
