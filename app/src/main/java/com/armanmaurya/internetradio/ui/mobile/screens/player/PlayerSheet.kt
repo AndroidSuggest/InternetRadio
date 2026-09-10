@@ -669,14 +669,17 @@ fun PlayerSheetContent(
                         .collapseHeight(historyProgress)
                         .alpha(1f - historyProgress)
                 ) {
-                    IconButton(
+                    FilledTonalIconButton(
                         onClick = onCollapse,
-                        modifier = Modifier.align(Alignment.CenterStart)
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(start = 16.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = stringResource(R.string.player_cd_collapse),
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(28.dp)
                         )
                     }
 

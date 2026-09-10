@@ -6,9 +6,9 @@ import androidx.tv.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
 
 private val TvDarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
+    primary = Color(0xFFD0BCFF),
+    secondary = Color(0xFFCCC2DC),
+    tertiary = Color(0xFFEFB8C8),
     background = Color.Black,
     onBackground = Color.White,
     surface = Color.Black,

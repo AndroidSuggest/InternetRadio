@@ -3,6 +3,7 @@ package com.armanmaurya.internetradio.ui.mobile.screens.settings
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -53,6 +54,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -75,8 +79,12 @@ import com.armanmaurya.internetradio.ui.shared.viewmodels.SettingsViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.ExpandableItem
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.Item
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.OptionItem
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.PalettePickerItem
+import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.CustomColorPickerBottomSheet
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.Section
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.ToggleItem
+import com.armanmaurya.internetradio.ui.shared.theme.AppColor
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import java.util.Locale
 
@@ -131,9 +139,13 @@ fun SettingsScreen(
     val bottomShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
     val singleShape = RoundedCornerShape(24.dp)
 
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
-        modifier = Modifier.padding(bottom = contentPadding.calculateBottomPadding()),
-        topBar = { SettingsTopBar(onBackClick) }
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .padding(bottom = contentPadding.calculateBottomPadding()),
+        topBar = { SettingsTopBar(onBackClick = onBackClick, scrollBehavior = scrollBehavior) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -148,6 +160,8 @@ fun SettingsScreen(
                 expandedItem = expandedItem,
                 onExpandedItemChange = { expandedItem = it },
                 onSetDynamicTheme = viewModel::setDynamicTheme,
+                onSetAppColor = viewModel::setAppColor,
+                onSetCustomColor = viewModel::setCustomColor,
                 onSetTheme = viewModel::setAppTheme,
                 onSetPureBlack = viewModel::setPureBlack,
                 topShape = topShape,
@@ -233,7 +247,10 @@ fun SettingsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsTopBar(onBackClick: () -> Unit) {
+private fun SettingsTopBar(
+    onBackClick: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior? = null
+) {
     CenterAlignedTopAppBar(
         title = { Text(stringResource(R.string.settings_title)) },
         navigationIcon = {
@@ -243,7 +260,8 @@ private fun SettingsTopBar(onBackClick: () -> Unit) {
                     contentDescription = stringResource(R.string.cd_back)
                 )
             }
-        }
+        },
+        scrollBehavior = scrollBehavior
     )
 }
 
@@ -254,20 +272,66 @@ private fun AppearanceSection(
     expandedItem: String?,
     onExpandedItemChange: (String?) -> Unit,
     onSetDynamicTheme: (Boolean) -> Unit,
+    onSetAppColor: (AppColor) -> Unit,
+    onSetCustomColor: (Int) -> Unit,
     onSetTheme: (AppTheme) -> Unit,
     onSetPureBlack: (Boolean) -> Unit,
     topShape: RoundedCornerShape,
     middleShape: RoundedCornerShape,
     bottomShape: RoundedCornerShape
 ) {
+    val isDynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val isDynamicActive = isDynamicColorSupported && uiState.useDynamicColor
+    val darkTheme = when (uiState.themeMode) {
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+    }
+
+    var showColorPickerSheet by remember { mutableStateOf(false) }
+
+    if (showColorPickerSheet) {
+        CustomColorPickerBottomSheet(
+            initialColorArgb = uiState.customColorArgb,
+            darkTheme = darkTheme,
+            onColorApplied = { colorArgb ->
+                onSetCustomColor(colorArgb)
+                onSetAppColor(AppColor.CUSTOM)
+                if (uiState.useDynamicColor) {
+                    onSetDynamicTheme(false)
+                }
+            },
+            onDismissRequest = { showColorPickerSheet = false }
+        )
+    }
+
     Section(title = stringResource(R.string.settings_appearance_section)) {
-        ToggleItem(
-            title = stringResource(R.string.settings_dynamic_theme_title),
-            subtitle = stringResource(R.string.settings_dynamic_theme_subtitle),
-            isEnabled = uiState.useDynamicColor,
-            onToggle = onSetDynamicTheme,
-            icon = Icons.Default.AutoAwesome,
-            shape = topShape
+        if (isDynamicColorSupported) {
+            ToggleItem(
+                title = stringResource(R.string.settings_dynamic_theme_title),
+                subtitle = stringResource(R.string.settings_dynamic_theme_subtitle),
+                isEnabled = uiState.useDynamicColor,
+                onToggle = onSetDynamicTheme,
+                icon = Icons.Default.AutoAwesome,
+                shape = topShape
+            )
+
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+        }
+
+        PalettePickerItem(
+            selectedColor = uiState.appColor,
+            isDynamicActive = isDynamicActive,
+            onColorSelected = { color ->
+                onSetAppColor(color)
+                if (uiState.useDynamicColor) {
+                    onSetDynamicTheme(false)
+                }
+            },
+            darkTheme = darkTheme,
+            customColorArgb = uiState.customColorArgb,
+            onOpenCustomColorPicker = { showColorPickerSheet = true },
+            shape = if (isDynamicColorSupported) middleShape else topShape
         )
 
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
@@ -293,11 +357,16 @@ private fun AppearanceSection(
 
         ToggleItem(
             title = stringResource(R.string.settings_pure_black_title),
-            subtitle = stringResource(R.string.settings_pure_black_subtitle),
+            subtitle = if (darkTheme) {
+                stringResource(R.string.settings_pure_black_subtitle)
+            } else {
+                stringResource(R.string.settings_pure_black_disabled_subtitle)
+            },
             isEnabled = uiState.pureBlack,
             onToggle = onSetPureBlack,
             icon = Icons.Default.Contrast,
-            shape = bottomShape
+            shape = bottomShape,
+            enabled = darkTheme
         )
     }
 }

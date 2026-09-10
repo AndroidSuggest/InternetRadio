@@ -4,6 +4,7 @@ import com.armanmaurya.internetradio.data.model.AppPreferences
 import com.armanmaurya.internetradio.data.model.ConflictStrategy
 import com.armanmaurya.internetradio.data.model.LibrarySortOption
 import com.armanmaurya.internetradio.data.model.StartOfWeek
+import com.armanmaurya.internetradio.ui.shared.theme.AppColor
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import kotlinx.coroutines.flow.Flow
 
@@ -22,6 +23,8 @@ interface SettingsRepository {
     suspend fun setUseFilterOnAdded(enabled: Boolean)
     suspend fun setThemeMode(themeMode: AppTheme)
     suspend fun setDynamicColor(enabled: Boolean)
+    suspend fun setAppColor(appColor: AppColor)
+    suspend fun setCustomColor(colorArgb: Int)
     suspend fun setPureBlack(enabled: Boolean)
     suspend fun setAppLanguage(language: String)
     suspend fun getSavedAppLanguage(): String?

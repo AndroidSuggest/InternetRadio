@@ -14,6 +14,7 @@ import com.armanmaurya.internetradio.data.model.LibraryBackup
 import com.armanmaurya.internetradio.data.model.toBackupStation
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
+import com.armanmaurya.internetradio.ui.shared.theme.AppColor
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -60,6 +61,18 @@ class SettingsViewModel @Inject constructor(
     fun setDynamicTheme(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setDynamicColor(enabled)
+        }
+    }
+
+    fun setAppColor(color: AppColor) {
+        viewModelScope.launch {
+            settingsRepository.setAppColor(color)
+        }
+    }
+
+    fun setCustomColor(colorArgb: Int) {
+        viewModelScope.launch {
+            settingsRepository.setCustomColor(colorArgb)
         }
     }
 

@@ -11,6 +11,7 @@ import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.preferencesDataStore
 import com.armanmaurya.internetradio.data.model.AppPreferences
 import com.armanmaurya.internetradio.data.model.ConflictStrategy
+import com.armanmaurya.internetradio.ui.shared.theme.AppColor
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -36,6 +37,8 @@ class SettingsRepositoryImpl @Inject constructor(
     private object PreferencesKeys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
+        val APP_COLOR = stringPreferencesKey("app_color")
+        val CUSTOM_COLOR_ARGB = androidx.datastore.preferences.core.intPreferencesKey("custom_color_argb")
         val PURE_BLACK = booleanPreferencesKey("pure_black")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val SELECTED_COUNTRY_CODE = stringPreferencesKey("selected_country_code")
@@ -84,6 +87,12 @@ class SettingsRepositoryImpl @Inject constructor(
             val themeMode = AppTheme.entries.find { it.name == themeModeName } ?: AppTheme.SYSTEM
             
             val useDynamicColor = preferences[PreferencesKeys.DYNAMIC_COLOR] ?: true
+            val appColorName = preferences[PreferencesKeys.APP_COLOR]
+            val appColor = when (appColorName) {
+                "ORANGE" -> AppColor.PINK
+                else -> AppColor.entries.find { it.name == appColorName } ?: AppColor.PURPLE
+            }
+            val customColorArgb = preferences[PreferencesKeys.CUSTOM_COLOR_ARGB] ?: 0xFF00BCD4.toInt()
             val pureBlack = preferences[PreferencesKeys.PURE_BLACK] ?: false
             val appLanguage = preferences[PreferencesKeys.APP_LANGUAGE] ?: "System"
             val selectedCountryCode = preferences[PreferencesKeys.SELECTED_COUNTRY_CODE]
@@ -124,6 +133,8 @@ class SettingsRepositoryImpl @Inject constructor(
             AppPreferences(
                 themeMode = themeMode, 
                 useDynamicColor = useDynamicColor, 
+                appColor = appColor,
+                customColorArgb = customColorArgb,
                 pureBlack = pureBlack, 
                 appLanguage = appLanguage,
                 selectedCountryCode = selectedCountryCode,
@@ -213,6 +224,18 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setDynamicColor(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.DYNAMIC_COLOR] = enabled
+        }
+    }
+
+    override suspend fun setAppColor(appColor: AppColor) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_COLOR] = appColor.name
+        }
+    }
+
+    override suspend fun setCustomColor(colorArgb: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CUSTOM_COLOR_ARGB] = colorArgb
         }
     }
 

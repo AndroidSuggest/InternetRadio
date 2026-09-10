@@ -1,10 +1,13 @@
 package com.armanmaurya.internetradio.data.model
 
+import com.armanmaurya.internetradio.ui.shared.theme.AppColor
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 
 data class AppPreferences(
     val themeMode: AppTheme = AppTheme.SYSTEM,
     val useDynamicColor: Boolean = true,
+    val appColor: AppColor = AppColor.PURPLE,
+    val customColorArgb: Int = 0xFF00BCD4.toInt(),
     val pureBlack: Boolean = false,
     val appLanguage: String = "System",
     val selectedCountryCode: String? = null,

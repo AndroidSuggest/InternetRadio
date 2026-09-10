@@ -29,19 +29,29 @@ fun ToggleItem(
     isEnabled: Boolean,
     onToggle: (Boolean) -> Unit,
     icon: ImageVector? = null,
-    shape: Shape = RectangleShape
+    shape: Shape = RectangleShape,
+    enabled: Boolean = true
 ) {
     androidx.compose.material3.ListItem(
-        modifier = Modifier.clip(shape).clickable { onToggle(!isEnabled) },
+        modifier = Modifier
+            .clip(shape)
+            .then(
+                if (enabled) Modifier.clickable { onToggle(!isEnabled) }
+                else Modifier
+            ),
         colors = androidx.compose.material3.ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            headlineColor = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            supportingColor = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+            leadingIconColor = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
         ),
         supportingContent = { Text(text = subtitle) },
         leadingContent = icon?.let { { Icon(it, contentDescription = null) } },
         trailingContent = {
             Switch(
                 checked = isEnabled,
-                onCheckedChange = onToggle
+                onCheckedChange = onToggle,
+                enabled = enabled
             )
         },
         headlineContent = { Text(text = title) }

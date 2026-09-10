@@ -19,7 +19,8 @@ fun OptionItem(
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    subtitle: String? = null
+    subtitle: String? = null,
+    leadingContent: (@Composable () -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -33,6 +34,7 @@ fun OptionItem(
             selected = isSelected,
             onClick = onClick
         )
+        leadingContent?.invoke()
         Column {
             Text(text = label, style = MaterialTheme.typography.bodyMedium)
             if (subtitle != null) {
