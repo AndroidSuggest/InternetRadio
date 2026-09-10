@@ -366,4 +366,8 @@
     <string name="review_rate_now">Oceń teraz</string>
     <string name="review_star_github">Gwiazdka na GitHubie</string>
     <string name="review_no_thanks">Nie, dziękuję</string>
+    <string name="widget_preview_title">Radio internetowe</string>
+    <string name="widget_preview_artist">Teraz odtwarzane</string>
+    <string name="widget_description">Szybki dostęp do odtwarzania radia i elementów sterujących</string>
+    <string name="widget_nothing_playing">Nic nie jest odtwarzane</string>
 </resources>
