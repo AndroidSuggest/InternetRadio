@@ -43,6 +43,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -74,6 +75,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.glance.appwidget.updateAll
 import com.armanmaurya.internetradio.core.config.StoreConfig
@@ -235,6 +237,19 @@ class MobileActivity : AppCompatActivity() {
                 BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                     scope.launch {
                         scaffoldState.bottomSheetState.partialExpand()
+                    }
+                }
+
+                val isPlayerExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                val shouldKeepScreenOn = appPreferences.keepScreenOn && isPlayerExpanded
+                DisposableEffect(shouldKeepScreenOn) {
+                    if (shouldKeepScreenOn) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    }
+                    onDispose {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                     }
                 }
 

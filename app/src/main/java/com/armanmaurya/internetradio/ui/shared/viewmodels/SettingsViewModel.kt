@@ -118,6 +118,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setKeepScreenOn(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setKeepScreenOn(enabled)
+        }
+    }
+
     fun setAppLanguage(language: String) {
         viewModelScope.launch {
             settingsRepository.setAppLanguage(language)

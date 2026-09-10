@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Favorite
 import com.armanmaurya.internetradio.core.config.StoreConfig
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.AlertDialog
@@ -189,6 +190,7 @@ fun SettingsScreen(
                 onSetAutoPlayOnStart = viewModel::setAutoPlayOnStart,
                 onSetStopOnAudioBecomingNoisy = viewModel::setStopOnAudioBecomingNoisy,
                 onSetPauseOnVolumeZero = viewModel::setPauseOnVolumeZero,
+                onSetKeepScreenOn = viewModel::setKeepScreenOn,
                 onSetShowCoverArtInNotification = viewModel::setShowCoverArtInNotification,
                 showHistoryLimitDialog = showHistoryLimitDialog,
                 onToggleHistoryLimitDialog = { showHistoryLimitDialog = !showHistoryLimitDialog },
@@ -496,6 +498,7 @@ private fun PlayerSection(
     onSetAutoPlayOnStart: (Boolean) -> Unit,
     onSetStopOnAudioBecomingNoisy: (Boolean) -> Unit,
     onSetPauseOnVolumeZero: (Boolean) -> Unit,
+    onSetKeepScreenOn: (Boolean) -> Unit,
     onSetShowCoverArtInNotification: (Boolean) -> Unit,
     showHistoryLimitDialog: Boolean,
     onToggleHistoryLimitDialog: () -> Unit,
@@ -535,6 +538,17 @@ private fun PlayerSection(
             isEnabled = uiState.pauseOnVolumeZero,
             onToggle = onSetPauseOnVolumeZero,
             icon = Icons.AutoMirrored.Filled.VolumeOff,
+            shape = middleShape
+        )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
+        ToggleItem(
+            title = stringResource(R.string.settings_keep_screen_on_title),
+            subtitle = stringResource(R.string.settings_keep_screen_on_desc),
+            isEnabled = uiState.keepScreenOn,
+            onToggle = onSetKeepScreenOn,
+            icon = Icons.Default.Lightbulb,
             shape = middleShape
         )
 
