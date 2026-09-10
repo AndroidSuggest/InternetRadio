@@ -365,4 +365,8 @@
     <string name="review_rate_now">Оценить сейчас</string>
     <string name="review_star_github">Звёздочка на GitHub</string>
     <string name="review_no_thanks">Нет, спасибо</string>
+    <string name="widget_preview_title">Интернет Радио</string>
+    <string name="widget_preview_artist">Играет</string>
+    <string name="widget_description">Быстрый доступ к воспроизведению радио и управлению</string>
+    <string name="widget_nothing_playing">Ничего не играет</string>
 </resources>
