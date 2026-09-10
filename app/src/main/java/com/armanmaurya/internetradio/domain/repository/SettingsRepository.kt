@@ -48,4 +48,5 @@ interface SettingsRepository {
     suspend fun setShowCoverArtInNotification(enabled: Boolean)
     suspend fun setAlarmVolumeTransitionSeconds(seconds: Int)
     suspend fun setAlarmVolumeTransitionEnabled(enabled: Boolean)
+    suspend fun setKeepScreenOn(enabled: Boolean)
 }

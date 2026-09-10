@@ -72,6 +72,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val ALARM_VOLUME_TRANSITION_SECONDS = androidx.datastore.preferences.core.intPreferencesKey("alarm_volume_transition_seconds")
         val SELECT_ALL_TEXT_ON_FOCUS = booleanPreferencesKey("select_all_text_on_focus")
         val PAUSE_ON_VOLUME_ZERO = booleanPreferencesKey("pause_on_volume_zero")
+        val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
     }
 
     override val appPreferencesFlow: Flow<AppPreferences> = context.dataStore.data
@@ -101,6 +102,7 @@ class SettingsRepositoryImpl @Inject constructor(
             val selectedTags = preferences[PreferencesKeys.SELECTED_TAGS] ?: emptySet()
             val stopOnAudioBecomingNoisy = preferences[PreferencesKeys.STOP_ON_AUDIO_BECOMING_NOISY] ?: true
             val pauseOnVolumeZero = preferences[PreferencesKeys.PAUSE_ON_VOLUME_ZERO] ?: false
+            val keepScreenOn = preferences[PreferencesKeys.KEEP_SCREEN_ON] ?: false
             val order = preferences[PreferencesKeys.SORT_ORDER] ?: "votes"
             val reverse = preferences[PreferencesKeys.SORT_REVERSE] ?: true
             val useFilterOnRecent = preferences[PreferencesKeys.USE_FILTER_ON_RECENT] ?: false
@@ -143,6 +145,7 @@ class SettingsRepositoryImpl @Inject constructor(
                 selectedTags = selectedTags,
                 stopOnAudioBecomingNoisy = stopOnAudioBecomingNoisy,
                 pauseOnVolumeZero = pauseOnVolumeZero,
+                keepScreenOn = keepScreenOn,
                 order = order,
                 reverse = reverse,
                 useFilterOnRecent = useFilterOnRecent,
@@ -384,6 +387,12 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAlarmVolumeTransitionEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_ALARM_VOLUME_TRANSITION_ENABLED] = enabled
+        }
+    }
+
+    override suspend fun setKeepScreenOn(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.KEEP_SCREEN_ON] = enabled
         }
     }
 }
