@@ -531,15 +531,20 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        // Force clear the widget right before the OS kills the process
-        pushStoppedWidgetUpdate()
-        
         val player = player
-        if (player != null) {
-            if (!player.playWhenReady || player.mediaItemCount == 0) {
-                stopSelf()
-            }
+        val isActivelyPlaying = player != null && 
+            player.mediaItemCount > 0 && 
+            (player.isPlaying || (player.playWhenReady && player.playbackState == androidx.media3.common.Player.STATE_BUFFERING))
+
+        if (isActivelyPlaying) {
+            // Keep playback and widget active in foreground while audio is playing
+            updateWidget()
+        } else {
+            // Not playing - clear widget state and stop service
+            pushStoppedWidgetUpdate()
+            stopSelf()
         }
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
