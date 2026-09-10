@@ -91,6 +91,8 @@
     <string name="settings_support_app">Unterstütze die App</string>
     <string name="settings_pause_on_volume_zero">Anhalten bei keiner Lautstärke</string>
     <string name="settings_pause_on_volume_zero_desc">Die Wiedergabe anhalten, wenn das Gerät stumm ist (Gilt nicht für Aufnahmen)</string>
+    <string name="settings_keep_screen_on_title">Bildschirm eingeschaltet lassen</string>
+    <string name="settings_keep_screen_on_desc">Verhindere, dass der Bildschirm ausgeht, wenn der Player maximiert ist</string>
     <string name="settings_show_cover_art">Titelbild des Songs</string>
     <string name="settings_show_cover_art_desc">Zeige im Sperrbildschirm und in Benachrichtigungen das Titelbild des Songs anstatt des Senderlogos an</string>
     <string name="settings_max_retry_duration">Maximale Verbindungsversuchsdauer</string>
