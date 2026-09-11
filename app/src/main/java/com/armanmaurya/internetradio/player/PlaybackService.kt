@@ -28,6 +28,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
+import android.util.Log
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -202,58 +204,84 @@ class PlaybackService : MediaLibraryService() {
                 // Log the track history
                 val stationUuid = currentMediaItem.mediaId
                 serviceScope.launch {
-                    val trackId = trackHistoryRepository.logTrack(stationUuid, trackTitle, rawTrackTitle)
-                    
-                    // Fetch track cover art and cleaned metadata
-                    val metadata = coverArtRepository.getTrackMetadata(trackName, artistName)
-                    
-                    // Determine the cleaned title
-                    val cleanedTitle = if (metadata != null) {
-                        val cTrack = metadata.trackName
-                        val cArtist = metadata.artistName
-                        when {
-                            cTrack != null && cArtist != null -> "$cArtist - $cTrack"
-                            cTrack != null -> cTrack
-                            else -> trackTitle
+                    try {
+                        val trackId = trackHistoryRepository.logTrack(stationUuid, trackTitle, rawTrackTitle)
+                        
+                        // Fetch track cover art and cleaned metadata with a safe timeout
+                        val metadata = withTimeoutOrNull(4000L) {
+                            coverArtRepository.getTrackMetadata(trackName, artistName)
                         }
-                    } else {
-                        trackTitle
-                    }
+                        
+                        // Determine the cleaned title
+                        val cleanedTitle = if (metadata != null) {
+                            val cTrack = metadata.trackName
+                            val cArtist = metadata.artistName
+                            when {
+                                cTrack != null && cArtist != null -> "$cArtist - $cTrack"
+                                cTrack != null -> cTrack
+                                else -> trackTitle
+                            }
+                        } else {
+                            trackTitle
+                        }
 
-                    if (trackId != null) {
-                        trackHistoryRepository.updateTrackMetadata(trackId, cleanedTitle, metadata?.coverArtUrl)
-                    }
-                    
-                    // Ensure track hasn't changed while fetching
-                    if (activeTrackTitle == trackTitle) {
-                        val updatedExtras = android.os.Bundle(newExtras).apply {
-                            putString("is_fetching_artwork", "false")
-                            putString("icy_title", cleanedTitle)
-                            if (metadata?.trackName != null) putString("clean_track_name", metadata.trackName)
-                            if (metadata?.artistName != null) putString("clean_artist_name", metadata.artistName)
-                            if (metadata?.coverArtUrl != null) {
-                                putString("track_cover_art_url", metadata.coverArtUrl) // Make cover art available to internal UI
+                        if (trackId != null) {
+                            trackHistoryRepository.updateTrackMetadata(trackId, cleanedTitle, metadata?.coverArtUrl)
+                        }
+                        
+                        // Ensure track hasn't changed while fetching
+                        if (activeTrackTitle == trackTitle) {
+                            val updatedExtras = android.os.Bundle(newExtras).apply {
+                                putString("is_fetching_artwork", "false")
+                                putString("icy_title", cleanedTitle)
+                                if (metadata?.trackName != null) putString("clean_track_name", metadata.trackName)
+                                if (metadata?.artistName != null) putString("clean_artist_name", metadata.artistName)
+                                if (metadata?.coverArtUrl != null) {
+                                    putString("track_cover_art_url", metadata.coverArtUrl) // Make cover art available to internal UI
+                                }
+                            }
+                            val metadataWithArt = newMetadataBuilder
+                                .setTitle(metadata?.trackName ?: trackName)
+                                .setArtist(metadata?.artistName ?: artistName)
+                                .setArtworkUri(if (showCoverArtInNotification && metadata?.coverArtUrl != null) android.net.Uri.parse(metadata.coverArtUrl) else stationFaviconUri)
+                                .setExtras(updatedExtras)
+                                .setDescription(System.currentTimeMillis().toString()) // Force ExoPlayer to detect a metadata change
+                                .build()
+                            val itemWithArt = newMediaItem.buildUpon()
+                                .setMediaMetadata(metadataWithArt)
+                                .build()
+                                
+                            player?.let { p ->
+                                for (i in 0 until p.mediaItemCount) {
+                                    if (p.getMediaItemAt(i).mediaId == stationUuid) {
+                                        val currentItemAtI = p.getMediaItemAt(i)
+                                        val updatedItem = currentItemAtI.buildUpon()
+                                            .setMediaMetadata(metadataWithArt)
+                                            .build()
+                                        p.replaceMediaItem(i, updatedItem)
+                                    }
+                                }
                             }
                         }
-                        val metadataWithArt = newMetadataBuilder
-                            .setTitle(metadata?.trackName ?: trackName)
-                            .setArtist(metadata?.artistName ?: artistName)
-                            .setArtworkUri(if (showCoverArtInNotification && metadata?.coverArtUrl != null) android.net.Uri.parse(metadata.coverArtUrl) else stationFaviconUri)
-                            .setExtras(updatedExtras)
-                            .setDescription(System.currentTimeMillis().toString()) // Force ExoPlayer to detect a metadata change
-                            .build()
-                        val itemWithArt = newMediaItem.buildUpon()
-                            .setMediaMetadata(metadataWithArt)
-                            .build()
-                            
-                        player?.let { p ->
-                            for (i in 0 until p.mediaItemCount) {
-                                if (p.getMediaItemAt(i).mediaId == stationUuid) {
-                                    val currentItemAtI = p.getMediaItemAt(i)
-                                    val updatedItem = currentItemAtI.buildUpon()
-                                        .setMediaMetadata(metadataWithArt)
-                                        .build()
-                                    p.replaceMediaItem(i, updatedItem)
+                    } catch (e: Exception) {
+                        Log.e("PlaybackService", "Error during cover art fetching", e)
+                        if (activeTrackTitle == trackTitle) {
+                            val fallbackExtras = android.os.Bundle(newExtras).apply {
+                                putString("is_fetching_artwork", "false")
+                            }
+                            val fallbackMetadata = newMetadataBuilder
+                                .setExtras(fallbackExtras)
+                                .setDescription(System.currentTimeMillis().toString())
+                                .build()
+                            player?.let { p ->
+                                for (i in 0 until p.mediaItemCount) {
+                                    if (p.getMediaItemAt(i).mediaId == stationUuid) {
+                                        val currentItemAtI = p.getMediaItemAt(i)
+                                        val updatedItem = currentItemAtI.buildUpon()
+                                            .setMediaMetadata(fallbackMetadata)
+                                            .build()
+                                        p.replaceMediaItem(i, updatedItem)
+                                    }
                                 }
                             }
                         }
@@ -490,6 +518,11 @@ class PlaybackService : MediaLibraryService() {
                 }
 
                 override fun onMediaMetadataChanged(mediaMetadata: androidx.media3.common.MediaMetadata) {
+                    val isFetchingArtwork = mediaMetadata.extras?.getString("is_fetching_artwork") == "true"
+                    val isPlaying = player?.let { it.isPlaying || (it.playbackState == androidx.media3.common.Player.STATE_BUFFERING && it.playWhenReady) } ?: false
+                    if (isPlaying && isFetchingArtwork) {
+                        return
+                    }
                     updateWidget()
                 }
             })
@@ -694,6 +727,14 @@ class PlaybackService : MediaLibraryService() {
         // Read ExoPlayer state on the main thread
         val metadata   = p.currentMediaItem?.mediaMetadata
         val isPlaying = p.isPlaying || (p.playbackState == androidx.media3.common.Player.STATE_BUFFERING && p.playWhenReady)
+        
+        // Skip intermediate widget updates while artwork is being fetched for a live track.
+        // Once artwork resolution finishes (or confirms none), is_fetching_artwork is set to "false",
+        // triggering a single clean update with the resolved image and background palette.
+        val isFetchingArtwork = metadata?.extras?.getString("is_fetching_artwork") == "true"
+        if (isPlaying && isFetchingArtwork) {
+            return
+        }
         
         // If actively playing -> push live track info
         // If paused -> instantly push base station info
