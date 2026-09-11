@@ -9,6 +9,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.appwidget.updateAll
+import androidx.palette.graphics.Palette
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -56,6 +57,31 @@ suspend fun resolveArtwork(context: Context, url: String?, maxDimension: Int = M
     }
 }
 
+data class ExtractedPaletteColors(
+    val backgroundColor: Int,
+    val titleTextColor: Int,
+    val artistTextColor: Int
+)
+
+fun extractPaletteFromBitmap(bitmap: Bitmap?): ExtractedPaletteColors? {
+    if (bitmap == null) return null
+    return try {
+        val palette = Palette.from(bitmap).generate()
+        val swatch = palette.vibrantSwatch ?: palette.dominantSwatch
+        if (swatch != null && swatch.rgb != android.graphics.Color.TRANSPARENT) {
+            ExtractedPaletteColors(
+                backgroundColor = swatch.rgb,
+                titleTextColor = swatch.titleTextColor,
+                artistTextColor = swatch.bodyTextColor
+            )
+        } else {
+            null
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
 data class WidgetPlaybackPayload(
     val title: String,
     val artist: String,
@@ -66,6 +92,9 @@ data class WidgetPlaybackPayload(
     val stationName: String? = null,
     val stationThumbnailUrl: String? = null,
     val isCoverArtFetched: Boolean = false,
+    val bgColor: Int? = null,
+    val titleColor: Int? = null,
+    val artistColor: Int? = null,
 )
 
 @Volatile
@@ -88,6 +117,13 @@ suspend fun pushWidgetUpdate(
     stationThumbnailUrl: String? = null,
     isCoverArtFetched: Boolean = false,
 ) {
+    // Pre-resolve artwork and extract palette in background before updating widget (Spotify pattern)
+    val resolvedBmp = resolveArtwork(context, artworkUrl)
+    val paletteColors = extractPaletteFromBitmap(resolvedBmp)
+        ?: if (!artworkUrl.isNullOrBlank() && artworkUrl != stationThumbnailUrl) {
+            extractPaletteFromBitmap(resolveArtwork(context, stationThumbnailUrl, maxDimension = 96))
+        } else null
+
     latestWidgetPayload = WidgetPlaybackPayload(
         title = title,
         artist = artist,
@@ -97,7 +133,10 @@ suspend fun pushWidgetUpdate(
         hasPrev = hasPrev,
         stationName = stationName,
         stationThumbnailUrl = stationThumbnailUrl,
-        isCoverArtFetched = isCoverArtFetched
+        isCoverArtFetched = isCoverArtFetched,
+        bgColor = paletteColors?.backgroundColor,
+        titleColor = paletteColors?.titleTextColor,
+        artistColor = paletteColors?.artistTextColor,
     )
 
     try {
@@ -116,6 +155,21 @@ suspend fun pushWidgetUpdate(
                 prefs[WidgetStateKeys.IS_PLAYING]            = isPlaying
                 prefs[WidgetStateKeys.HAS_NEXT]              = hasNext
                 prefs[WidgetStateKeys.HAS_PREV]              = hasPrev
+                if (paletteColors?.backgroundColor != null) {
+                    prefs[WidgetStateKeys.BG_COLOR] = paletteColors.backgroundColor
+                } else {
+                    prefs.remove(WidgetStateKeys.BG_COLOR)
+                }
+                if (paletteColors?.titleTextColor != null) {
+                    prefs[WidgetStateKeys.TITLE_COLOR] = paletteColors.titleTextColor
+                } else {
+                    prefs.remove(WidgetStateKeys.TITLE_COLOR)
+                }
+                if (paletteColors?.artistTextColor != null) {
+                    prefs[WidgetStateKeys.ARTIST_COLOR] = paletteColors.artistTextColor
+                } else {
+                    prefs.remove(WidgetStateKeys.ARTIST_COLOR)
+                }
             }
             
             widget.update(context, glanceId)
@@ -139,6 +193,8 @@ suspend fun cleanStaleWidgetState(
         val widget = NowPlayingWidget()
         val fallbackTitle = stationName ?: context.getString(com.armanmaurya.internetradio.R.string.widget_nothing_playing)
         latestWidgetPayload = null
+        val stationBmp = resolveArtwork(context, favicon)
+        val paletteColors = extractPaletteFromBitmap(stationBmp)
         val glanceIds = if (targetGlanceId != null) listOf(targetGlanceId) else manager.getGlanceIds(NowPlayingWidget::class.java)
         glanceIds.forEach { glanceId ->
             updateAppWidgetState(context, glanceId) { prefs ->
@@ -151,6 +207,21 @@ suspend fun cleanStaleWidgetState(
                 prefs[WidgetStateKeys.IS_PLAYING]            = false
                 prefs[WidgetStateKeys.HAS_NEXT]              = false
                 prefs[WidgetStateKeys.HAS_PREV]              = false
+                if (paletteColors?.backgroundColor != null) {
+                    prefs[WidgetStateKeys.BG_COLOR] = paletteColors.backgroundColor
+                } else {
+                    prefs.remove(WidgetStateKeys.BG_COLOR)
+                }
+                if (paletteColors?.titleTextColor != null) {
+                    prefs[WidgetStateKeys.TITLE_COLOR] = paletteColors.titleTextColor
+                } else {
+                    prefs.remove(WidgetStateKeys.TITLE_COLOR)
+                }
+                if (paletteColors?.artistTextColor != null) {
+                    prefs[WidgetStateKeys.ARTIST_COLOR] = paletteColors.artistTextColor
+                } else {
+                    prefs.remove(WidgetStateKeys.ARTIST_COLOR)
+                }
             }
             widget.update(context, glanceId)
         }

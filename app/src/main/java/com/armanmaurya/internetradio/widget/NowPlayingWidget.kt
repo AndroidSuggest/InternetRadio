@@ -14,6 +14,7 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -43,6 +44,9 @@ object WidgetStateKeys {
     val STATION_NAME          = stringPreferencesKey("station_name")
     val STATION_THUMBNAIL_URL = stringPreferencesKey("station_thumbnail_url")
     val IS_COVER_ART_FETCHED  = booleanPreferencesKey("is_cover_art_fetched")
+    val BG_COLOR              = intPreferencesKey("bg_color")
+    val TITLE_COLOR           = intPreferencesKey("title_color")
+    val ARTIST_COLOR          = intPreferencesKey("artist_color")
 }
 
 @EntryPoint
@@ -124,45 +128,42 @@ class NowPlayingWidget : GlanceAppWidget() {
             val hasNext = if (isServiceRunning) (prefs[WidgetStateKeys.HAS_NEXT] ?: latest?.hasNext ?: false) else false
             val hasPrev = if (isServiceRunning) (prefs[WidgetStateKeys.HAS_PREV] ?: latest?.hasPrev ?: false) else false
 
+            // Pre-computed atomic palette colors (Spotify pattern)
+            val precomputedBgColorInt = prefs[WidgetStateKeys.BG_COLOR] ?: latest?.bgColor
+            val precomputedTitleColorInt = prefs[WidgetStateKeys.TITLE_COLOR] ?: latest?.titleColor
+            val precomputedArtistColorInt = prefs[WidgetStateKeys.ARTIST_COLOR] ?: latest?.artistColor
+
             var artwork by remember(artworkUrl) { mutableStateOf<ImageProvider?>(null) }
             var stationThumbnail by remember(stationThumbnailUrl) { mutableStateOf<ImageProvider?>(null) }
-            var bgColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
-            var titleColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
-            var artistColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
             
+            // Dynamic palette fallback if prefs didn't have precomputed colors (e.g. legacy/initial load)
+            var dynamicBgColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
+            var dynamicTitleColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
+            var dynamicArtistColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
+
             LaunchedEffect(artworkUrl) {
                 if (artworkUrl != null) {
                     val bmp = resolveArtwork(context, artworkUrl)
                     if (bmp != null) {
                         artwork = ImageProvider(bmp)
-                        
-                        val palette = try {
-                            androidx.palette.graphics.Palette.from(bmp).generate()
-                        } catch (e: Exception) {
-                            null
-                        }
-                        val swatch = palette?.vibrantSwatch ?: palette?.dominantSwatch
-                        
-                        if (swatch != null && swatch.rgb != android.graphics.Color.TRANSPARENT) {
-                            bgColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.rgb))
-                            titleColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.titleTextColor))
-                            artistColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.bodyTextColor))
-                        } else {
-                            bgColor = null
-                            titleColor = null
-                            artistColor = null
+                        if (precomputedBgColorInt == null) {
+                            val palette = try {
+                                androidx.palette.graphics.Palette.from(bmp).generate()
+                            } catch (e: Exception) {
+                                null
+                            }
+                            val swatch = palette?.vibrantSwatch ?: palette?.dominantSwatch
+                            if (swatch != null && swatch.rgb != android.graphics.Color.TRANSPARENT) {
+                                dynamicBgColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.rgb))
+                                dynamicTitleColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.titleTextColor))
+                                dynamicArtistColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.bodyTextColor))
+                            }
                         }
                     } else {
                         artwork = null
-                        bgColor = null
-                        titleColor = null
-                        artistColor = null
                     }
                 } else {
                     artwork = null
-                    bgColor = null
-                    titleColor = null
-                    artistColor = null
                 }
             }
 
@@ -174,6 +175,18 @@ class NowPlayingWidget : GlanceAppWidget() {
                     stationThumbnail = null
                 }
             }
+
+            val bgColor = precomputedBgColorInt?.let {
+                androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(it))
+            } ?: dynamicBgColor ?: GlanceTheme.colors.widgetBackground
+
+            val titleColor = precomputedTitleColorInt?.let {
+                androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(it))
+            } ?: dynamicTitleColor ?: GlanceTheme.colors.onSurface
+
+            val artistColor = precomputedArtistColorInt?.let {
+                androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(it))
+            } ?: dynamicArtistColor ?: GlanceTheme.colors.onSurfaceVariant
 
             val state = NowPlayingWidgetState(
                 title               = title,
@@ -198,7 +211,7 @@ class NowPlayingWidget : GlanceAppWidget() {
                     modifier = GlanceModifier
                         .fillMaxSize()
                         .appWidgetBackground()
-                        .background(bgColor ?: GlanceTheme.colors.primary)
+                        .background(bgColor)
                         .cornerRadius(8.dp)
                         .padding(horizontal = 8.dp, vertical = 8.dp)
                 )
