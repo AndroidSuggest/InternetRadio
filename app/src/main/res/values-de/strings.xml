@@ -442,4 +442,10 @@
     <string name="widget_preview_artist">Aktuelle Wiedergabe</string>
     <string name="widget_description">Schnellzugriff auf Wiedergabe und Bedienelemente</string>
     <string name="widget_nothing_playing">Keine Wiedergabe</string>
+    <string name="widget_configure_title">Widget-Einstellungen</string>
+    <string name="widget_configure_apply">Anwenden</string>
+    <string name="widget_configure_preview">Vorschau</string>
+    <string name="widget_configure_presets">Voreinstellungen</string>
+    <string name="settings_widget_appearance_title">Widget-Erscheinungsbild</string>
+    <string name="settings_widget_appearance_subtitle">Passe Transparenz des Startbildschirm-Widgets mittels Vorschau an</string>
 </resources>
