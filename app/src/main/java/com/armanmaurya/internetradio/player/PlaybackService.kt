@@ -527,7 +527,11 @@ class PlaybackService : MediaLibraryService() {
                 }
             })
 
-            val intent = Intent(this, MobileActivity::class.java)
+            val intent = Intent(this, MobileActivity::class.java).apply {
+                action = "com.armanmaurya.internetradio.ACTION_OPEN_PLAYER"
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("open_player_sheet", true)
+            }
             val pendingIntent = PendingIntent.getActivity(
                 this,
                 0,

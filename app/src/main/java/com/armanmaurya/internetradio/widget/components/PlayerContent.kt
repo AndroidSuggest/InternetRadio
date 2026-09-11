@@ -47,6 +47,14 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
         }
     )
 
+    val openPlayerAction = actionStartActivity(
+        Intent(context, MobileActivity::class.java).apply {
+            action = "com.armanmaurya.internetradio.ACTION_OPEN_PLAYER"
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("open_player_sheet", true)
+        }
+    )
+
     val playPauseAction = actionSendBroadcast(
         Intent("com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE").setComponent(receiverComponent)
     )
@@ -84,7 +92,8 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
             Row(
                 modifier = GlanceModifier
                     .defaultWeight()
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .clickable(openPlayerAction),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ArtWork(
@@ -128,6 +137,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 modifier = GlanceModifier
                     .fillMaxWidth()
                     .padding(bottom = if (showStationBottom) 4.dp else 8.dp)
+                    .clickable(openPlayerAction)
             )
             
             Row(
@@ -139,7 +149,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     stationArt = state.stationThumbnail,
                     showStationFloating = showStationFloating,
                     floatingThumbDimension = thumbDimension,
-                    modifier = GlanceModifier.size(twoCellArtDimension)
+                    modifier = GlanceModifier.size(twoCellArtDimension).clickable(openPlayerAction)
                 )
                 WidgetControls(
                     state = state,
@@ -164,6 +174,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     modifier = GlanceModifier
                         .fillMaxWidth()
                         .padding(top = 4.dp)
+                        .clickable(openPlayerAction)
                 )
             }
         }
@@ -179,7 +190,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 stationArt = state.stationThumbnail,
                 showStationFloating = showStationFloating,
                 floatingThumbDimension = thumbDimension,
-                modifier = GlanceModifier.size(artDimension)
+                modifier = GlanceModifier.size(artDimension).clickable(openPlayerAction)
             )
             Column(
                 modifier = GlanceModifier.defaultWeight().fillMaxHeight().padding(start = 8.dp),
@@ -190,7 +201,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     artist = state.artist,
                     titleColor = state.titleColor,
                     artistColor = state.artistColor,
-                    modifier = GlanceModifier.fillMaxWidth().defaultWeight()
+                    modifier = GlanceModifier.fillMaxWidth().defaultWeight().clickable(openPlayerAction)
                 )
                 WidgetControls(
                     state = state,

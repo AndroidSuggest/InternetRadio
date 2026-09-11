@@ -67,6 +67,8 @@ import com.armanmaurya.internetradio.ui.shared.viewmodels.PlayerViewModel
 import com.armanmaurya.internetradio.ui.shared.theme.InternetRadioTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.flow.first
 import androidx.lifecycle.lifecycleScope
 import javax.inject.Inject
 
@@ -96,6 +98,7 @@ class MobileActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        setIntent(intent)
         intent?.let { _intentFlow.tryEmit(it) }
     }
 
@@ -191,6 +194,37 @@ class MobileActivity : AppCompatActivity() {
                 val navController = rememberNavController()
                 val homeViewModel: com.armanmaurya.internetradio.ui.mobile.screens.home.HomeViewModel = hiltViewModel()
                 val playerViewModel: PlayerViewModel = hiltViewModel()
+                val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
+
+                val scope = rememberCoroutineScope()
+                val scaffoldState = rememberBottomSheetScaffoldState(
+                    bottomSheetState = rememberStandardBottomSheetState(
+                        initialValue = SheetValue.PartiallyExpanded,
+                        skipHiddenState = false
+                    )
+                )
+
+                fun expandPlayerSheet() {
+                    scope.launch {
+                        if (playerViewModel.playbackState.value.currentStation == null) {
+                            withTimeoutOrNull(2500L) {
+                                playerViewModel.playbackState.first { it.currentStation != null }
+                            }
+                        }
+                        if (playerViewModel.playbackState.value.currentStation != null) {
+                            kotlinx.coroutines.delay(100)
+                            try {
+                                scaffoldState.bottomSheetState.expand()
+                            } catch (e: Exception) {
+                                kotlinx.coroutines.delay(150)
+                                try {
+                                    scaffoldState.bottomSheetState.expand()
+                                } catch (_: Exception) {}
+                            }
+                        }
+                    }
+                }
+
                 LaunchedEffect(Unit) {
                     _intentFlow.collect { intent ->
                         if (intent.action == com.armanmaurya.internetradio.ui.shared.utils.ShortcutHelper.ACTION_PLAY_STATION) {
@@ -208,18 +242,13 @@ class MobileActivity : AppCompatActivity() {
                             intent.removeExtra("open_tab")
                             navController.popBackStack(AppDestination.Discover.route, inclusive = false)
                             homeViewModel.onTabSelected(3)
+                        } else if (intent.action == "com.armanmaurya.internetradio.ACTION_OPEN_PLAYER" || intent.getBooleanExtra("open_player_sheet", false)) {
+                            intent.action = null
+                            intent.removeExtra("open_player_sheet")
+                            expandPlayerSheet()
                         }
                     }
                 }
-                val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
-
-                val scope = rememberCoroutineScope()
-                val scaffoldState = rememberBottomSheetScaffoldState(
-                    bottomSheetState = rememberStandardBottomSheetState(
-                        initialValue = SheetValue.PartiallyExpanded,
-                        skipHiddenState = false
-                    )
-                )
                 
                 val notificationPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
                     contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
@@ -276,7 +305,9 @@ class MobileActivity : AppCompatActivity() {
                 // Handle Re-appearing (Show player when a station starts playing) and Hiding (when playback stops)
                 LaunchedEffect(playbackState.currentStation) {
                     if (playbackState.currentStation != null && scaffoldState.bottomSheetState.currentValue == SheetValue.Hidden) {
-                        scaffoldState.bottomSheetState.partialExpand()
+                        if (scaffoldState.bottomSheetState.targetValue != SheetValue.Expanded) {
+                            scaffoldState.bottomSheetState.partialExpand()
+                        }
                     } else if (playbackState.currentStation == null && scaffoldState.bottomSheetState.currentValue != SheetValue.Hidden) {
                         scaffoldState.bottomSheetState.hide()
                     }
