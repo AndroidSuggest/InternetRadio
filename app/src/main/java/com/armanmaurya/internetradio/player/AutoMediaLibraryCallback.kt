@@ -581,6 +581,7 @@ fun RadioStation.toMediaItem(context: android.content.Context, parentId: String?
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(name)
+                .setAlbumTitle(name)
                 .setArtworkUri(artworkUri)
                 .setIsBrowsable(false)
                 .setIsPlayable(true)
