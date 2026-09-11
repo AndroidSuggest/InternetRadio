@@ -12,5 +12,7 @@
     android:description="@string/widget_description"
     android:previewLayout="@layout/widget_now_playing_preview"
     android:previewImage="@drawable/widget_preview"
-    android:initialLayout="@layout/glance_default_loading_layout">
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:configure="com.armanmaurya.internetradio.widget.NowPlayingWidgetConfigureActivity"
+    android:widgetFeatures="reconfigurable|configuration_optional">
 </appwidget-provider>

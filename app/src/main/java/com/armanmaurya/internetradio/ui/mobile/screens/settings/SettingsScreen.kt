@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +26,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
@@ -207,13 +207,6 @@ fun SettingsScreen(
                 middleShape = middleShape,
                 bottomShape = bottomShape,
                 singleShape = singleShape
-            )
-            WidgetSection(
-                uiState = uiState,
-                expandedItem = expandedItem,
-                onExpandedItemChange = { expandedItem = it },
-                onSetWidgetBackgroundAlpha = viewModel::setWidgetBackgroundAlpha,
-                shape = singleShape
             )
             ScheduleSection(
                 uiState = uiState,
@@ -650,117 +643,6 @@ private fun PlayerSection(
                     }
                 }
             )
-        }
-    }
-}
-
-@Composable
-private fun WidgetSection(
-    uiState: AppPreferences,
-    expandedItem: String?,
-    onExpandedItemChange: (String?) -> Unit,
-    onSetWidgetBackgroundAlpha: (Float) -> Unit,
-    shape: RoundedCornerShape
-) {
-    Section(title = stringResource(R.string.settings_widget_section)) {
-        var lastSliderValue by remember { mutableStateOf(uiState.widgetBackgroundAlpha) }
-
-        LaunchedEffect(uiState.widgetBackgroundAlpha) {
-            lastSliderValue = uiState.widgetBackgroundAlpha
-        }
-
-        val percentageInt = (lastSliderValue * 100f).roundToInt()
-        val opacitySubtitle = when (percentageInt) {
-            100 -> stringResource(R.string.settings_widget_opacity_opaque)
-            0 -> stringResource(R.string.settings_widget_opacity_transparent)
-            else -> stringResource(R.string.settings_widget_opacity_percent, percentageInt)
-        }
-
-        ExpandableItem(
-            title = stringResource(R.string.settings_widget_transparency_title),
-            subtitle = opacitySubtitle,
-            isExpanded = expandedItem == "WidgetOpacity",
-            onToggle = { onExpandedItemChange(if (expandedItem == "WidgetOpacity") null else "WidgetOpacity") },
-            icon = Icons.Default.Widgets,
-            shape = shape
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, top = 4.dp, bottom = 16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.settings_widget_transparency_title),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "$percentageInt%",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Slider(
-                    value = lastSliderValue,
-                    onValueChange = { lastSliderValue = it },
-                    onValueChangeFinished = { onSetWidgetBackgroundAlpha(lastSliderValue) },
-                    valueRange = 0f..1f,
-                    steps = 19
-                )
-
-                androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val presets = listOf(
-                        0f to "0%",
-                        0.4f to "40%",
-                        0.6f to "60%",
-                        0.8f to "80%",
-                        1.0f to "100%"
-                    )
-                    presets.forEach { (presetAlpha, label) ->
-                        val isSelected = (lastSliderValue * 100f).roundToInt() == (presetAlpha * 100f).roundToInt()
-                        OutlinedButton(
-                            onClick = {
-                                lastSliderValue = presetAlpha
-                                onSetWidgetBackgroundAlpha(presetAlpha)
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(36.dp),
-                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 0.dp),
-                            colors = if (isSelected) {
-                                ButtonDefaults.outlinedButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            } else {
-                                ButtonDefaults.outlinedButtonColors()
-                            },
-                            border = if (isSelected) {
-                                BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                            } else {
-                                ButtonDefaults.outlinedButtonBorder
-                            }
-                        ) {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    }
-                }
-            }
         }
     }
 }

@@ -31,6 +31,9 @@ import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.widget.WidgetControlReceiver
 import com.armanmaurya.internetradio.widget.state.NowPlayingWidgetState
 
+private fun GlanceModifier.clickableNoRipple(action: androidx.glance.action.Action): GlanceModifier =
+    this.clickable(onClick = action, rippleOverride = R.drawable.widget_no_ripple)
+
 @Composable
 fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     val size = LocalSize.current
@@ -80,7 +83,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
         androidx.compose.ui.unit.max(48.dp, size.height - 68.dp)
     }
 
-    val rootModifier = modifier.clickable(openAppAction)
+    val rootModifier = modifier.clickableNoRipple(openAppAction)
 
     if (isVerySmallHeight) {
         // Realme Launcher 1-cell (Very short height): 3-column layout
@@ -93,7 +96,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 modifier = GlanceModifier
                     .defaultWeight()
                     .fillMaxHeight()
-                    .clickable(openPlayerAction),
+                    .clickableNoRipple(openPlayerAction),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ArtWork(
@@ -137,7 +140,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 modifier = GlanceModifier
                     .fillMaxWidth()
                     .padding(bottom = if (showStationBottom) 4.dp else 8.dp)
-                    .clickable(openPlayerAction)
+                    .clickableNoRipple(openPlayerAction)
             )
             
             Row(
@@ -149,7 +152,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     stationArt = state.stationThumbnail,
                     showStationFloating = showStationFloating,
                     floatingThumbDimension = thumbDimension,
-                    modifier = GlanceModifier.size(twoCellArtDimension).clickable(openPlayerAction)
+                    modifier = GlanceModifier.size(twoCellArtDimension).clickableNoRipple(openPlayerAction)
                 )
                 WidgetControls(
                     state = state,
@@ -174,7 +177,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     modifier = GlanceModifier
                         .fillMaxWidth()
                         .padding(top = 4.dp)
-                        .clickable(openPlayerAction)
+                        .clickableNoRipple(openPlayerAction)
                 )
             }
         }
@@ -190,7 +193,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 stationArt = state.stationThumbnail,
                 showStationFloating = showStationFloating,
                 floatingThumbDimension = thumbDimension,
-                modifier = GlanceModifier.size(artDimension).clickable(openPlayerAction)
+                modifier = GlanceModifier.size(artDimension).clickableNoRipple(openPlayerAction)
             )
             Column(
                 modifier = GlanceModifier.defaultWeight().fillMaxHeight().padding(start = 8.dp),
@@ -201,7 +204,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     artist = state.artist,
                     titleColor = state.titleColor,
                     artistColor = state.artistColor,
-                    modifier = GlanceModifier.fillMaxWidth().defaultWeight().clickable(openPlayerAction)
+                    modifier = GlanceModifier.fillMaxWidth().defaultWeight().clickableNoRipple(openPlayerAction)
                 )
                 WidgetControls(
                     state = state,
@@ -237,7 +240,7 @@ fun WidgetControls(
                 provider = ImageProvider(R.drawable.ic_widget_prev),
                 contentDescription = "Previous",
                 colorFilter = iconFilter,
-                modifier = GlanceModifier.size(36.dp).clickable(prevAction)
+                modifier = GlanceModifier.size(36.dp).clickableNoRipple(prevAction)
             )
         } else if (showExtraControls) {
             androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))
@@ -253,7 +256,7 @@ fun WidgetControls(
             modifier = GlanceModifier
                 .size(40.dp)
                 .padding(horizontal = 4.dp)
-                .clickable(playPauseAction)
+                .clickableNoRipple(playPauseAction)
         )
 
         if (showExtraControls && state.hasNext) {
@@ -261,7 +264,7 @@ fun WidgetControls(
                 provider = ImageProvider(R.drawable.ic_widget_next),
                 contentDescription = "Next",
                 colorFilter = iconFilter,
-                modifier = GlanceModifier.size(36.dp).clickable(nextAction)
+                modifier = GlanceModifier.size(36.dp).clickableNoRipple(nextAction)
             )
         } else if (showExtraControls) {
             androidx.glance.layout.Spacer(modifier = GlanceModifier.width(36.dp))

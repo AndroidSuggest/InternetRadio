@@ -105,6 +105,15 @@
             </intent-filter>
         </receiver>
 
+        <activity
+            android:name=".widget.NowPlayingWidgetConfigureActivity"
+            android:exported="true"
+            android:theme="@style/Theme.InternetRadio">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <receiver android:name=".widget.NowPlayingWidgetReceiver"
             android:exported="true">
             <intent-filter>
