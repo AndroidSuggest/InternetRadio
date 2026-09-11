@@ -7,7 +7,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.asSharedFlow
+import android.media.MediaMetadataRetriever
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.armanmaurya.internetradio.domain.model.RecordingFile
@@ -19,6 +21,37 @@ class RecordingRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade
 ) : RecordingRepository {
+
+    private data class FileCacheKey(val lastModified: Long, val sizeBytes: Long)
+    private val durationCache = ConcurrentHashMap<String, Pair<FileCacheKey, Long>>()
+
+    private fun getAudioDurationMs(file: File): Long {
+        val currentKey = FileCacheKey(file.lastModified(), file.length())
+        val cached = durationCache[file.absolutePath]
+        if (cached != null && cached.first == currentKey) {
+            return cached.second
+        }
+
+        var durationMs = 0L
+        val retriever = MediaMetadataRetriever()
+        try {
+            retriever.setDataSource(file.absolutePath)
+            val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            durationMs = durationStr?.toLongOrNull() ?: 0L
+        } catch (e: Exception) {
+            // Fallback gracefully to 0L for unreadable or partially recorded files
+        } finally {
+            try {
+                retriever.release()
+            } catch (e: Exception) {
+                // Ignore release errors
+            }
+        }
+
+        durationCache[file.absolutePath] = Pair(currentKey, durationMs)
+        return durationMs
+    }
+
     override suspend fun getRecordingFolders(): List<RecordingFolder> = withContext(Dispatchers.IO) {
         val rootDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "InternetRadio")
         if (!rootDir.exists() || !rootDir.isDirectory) return@withContext emptyList()
@@ -38,7 +71,8 @@ class RecordingRepositoryImpl @Inject constructor(
                         file = it,
                         uri = Uri.fromFile(it),
                         lastModified = it.lastModified(),
-                        sizeBytes = it.length()
+                        sizeBytes = it.length(),
+                        durationMs = getAudioDurationMs(it)
                     )
                 }.sortedByDescending { it.lastModified }
                 
@@ -64,7 +98,8 @@ class RecordingRepositoryImpl @Inject constructor(
                 file = it,
                 uri = Uri.fromFile(it),
                 lastModified = it.lastModified(),
-                sizeBytes = it.length()
+                sizeBytes = it.length(),
+                durationMs = getAudioDurationMs(it)
             )
         }.sortedByDescending { it.lastModified }
     }
@@ -79,6 +114,7 @@ class RecordingRepositoryImpl @Inject constructor(
     override suspend fun deleteRecording(recording: RecordingFile): Boolean = withContext(Dispatchers.IO) {
         val deleted = fileSystemFacade.deleteAudioRecording(recording.uri)
         if (deleted) {
+            durationCache.remove(recording.file.absolutePath)
             val parent = recording.file.parentFile
             if (parent != null && parent.isDirectory) {
                 val files = parent.listFiles()
@@ -96,6 +132,7 @@ class RecordingRepositoryImpl @Inject constructor(
         recordings.forEach { recording ->
             val deleted = fileSystemFacade.deleteAudioRecording(recording.uri)
             if (deleted) {
+                durationCache.remove(recording.file.absolutePath)
                 val parent = recording.file.parentFile
                 if (parent != null && parent.isDirectory) {
                     val files = parent.listFiles()
@@ -116,7 +153,18 @@ class RecordingRepositoryImpl @Inject constructor(
         stationNames.forEach { stationName ->
             val safeStationName = stationName.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
             val deleted = fileSystemFacade.deleteAudioRecordingFolder(safeStationName)
-            if (!deleted) {
+            if (deleted) {
+                val folderPrefix = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                    "InternetRadio/$safeStationName"
+                ).absolutePath
+                val iterator = durationCache.keys.iterator()
+                while (iterator.hasNext()) {
+                    if (iterator.next().startsWith(folderPrefix)) {
+                        iterator.remove()
+                    }
+                }
+            } else {
                 // If it failed to delete (e.g. not empty, or doesn't exist), maybe it's fine.
                 // We'll trust the caller to refresh.
             }

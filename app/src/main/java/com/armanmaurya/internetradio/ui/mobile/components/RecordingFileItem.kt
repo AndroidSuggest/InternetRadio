@@ -97,8 +97,16 @@ fun RecordingFileItem(
                 )
             },
             supportingContent = {
+                val durationStr = if (recording.durationMs > 0L) {
+                    DateUtils.formatElapsedTime(recording.durationMs / 1000L)
+                } else null
+                val detailsStr = if (durationStr != null) {
+                    String.format(Locale.getDefault(), "%s • %.1f MB • %s", durationStr, sizeMb, timeStr)
+                } else {
+                    String.format(Locale.getDefault(), "%.1f MB • %s", sizeMb, timeStr)
+                }
                 Text(
-                    text = String.format(Locale.getDefault(), "%.1f MB • %s", sizeMb, timeStr),
+                    text = detailsStr,
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -149,17 +157,25 @@ fun RecordingFileItem(
         )
         
         if (isExpanded && !selectionMode) {
-            InlineMediaPlayer(uri = recording.uri)
+            InlineMediaPlayer(
+                uri = recording.uri,
+                initialDurationMs = recording.durationMs
+            )
         }
     }
 }
 
 @Composable
-fun InlineMediaPlayer(uri: android.net.Uri) {
+fun InlineMediaPlayer(
+    uri: android.net.Uri,
+    initialDurationMs: Long = 0L
+) {
     val context = LocalContext.current
     var isPlaying by remember { mutableStateOf(false) }
     var progress by remember { mutableStateOf(0f) }
-    var duration by remember { mutableStateOf(1L) }
+    var duration by remember(uri, initialDurationMs) { 
+        mutableStateOf(if (initialDurationMs > 0L) initialDurationMs else 1L) 
+    }
     var currentPosition by remember { mutableStateOf(0L) }
     
     val exoPlayer = remember(uri) {
@@ -179,11 +195,15 @@ fun InlineMediaPlayer(uri: android.net.Uri) {
                 }
                 override fun onPlaybackStateChanged(state: Int) {
                     if (state == Player.STATE_READY) {
-                        duration = this@apply.duration.coerceAtLeast(1L)
+                        val exoDuration = this@apply.duration
+                        if (exoDuration > 0) {
+                            duration = exoDuration
+                        }
                     } else if (state == Player.STATE_ENDED) {
                         isPlaying = false
                         seekTo(0)
                         progress = 0f
+                        currentPosition = 0L
                     }
                 }
             })
@@ -227,7 +247,7 @@ fun InlineMediaPlayer(uri: android.net.Uri) {
         }
         
         Slider(
-            value = progress,
+            value = progress.coerceIn(0f, 1f),
             onValueChange = { 
                 progress = it
                 val newPosition = (it * duration).toLong()
@@ -241,9 +261,11 @@ fun InlineMediaPlayer(uri: android.net.Uri) {
             )
         )
         
-        val formattedTime = DateUtils.formatElapsedTime(currentPosition / 1000L)
+        val formattedCurrent = DateUtils.formatElapsedTime(currentPosition / 1000L)
+        val formattedTotal = if (duration > 1L) DateUtils.formatElapsedTime(duration / 1000L) else null
+        val timeText = if (formattedTotal != null) "$formattedCurrent / $formattedTotal" else formattedCurrent
         Text(
-            text = formattedTime, 
+            text = timeText, 
             style = MaterialTheme.typography.labelMedium, 
             modifier = Modifier.padding(start = 12.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant

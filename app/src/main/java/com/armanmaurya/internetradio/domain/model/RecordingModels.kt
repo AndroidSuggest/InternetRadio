@@ -13,5 +13,6 @@ data class RecordingFile(
     val file: File,
     val uri: Uri,
     val lastModified: Long,
-    val sizeBytes: Long
+    val sizeBytes: Long,
+    val durationMs: Long = 0L
 )
