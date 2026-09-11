@@ -104,6 +104,12 @@
     <string name="settings_check_updates">Auf Aktualisierungen prüfen</string>
     <string name="settings_rate_review">Bewerten &amp; Rezensieren</string>
     <string name="settings_track_history_limit">Titel-Verlauf Begrenzung</string>
+    <string name="settings_widget_section">Widget</string>
+    <string name="settings_widget_transparency_title">Hintergrund-Deckkraft</string>
+    <string name="settings_widget_transparency_subtitle">Passe die Deckkraft des Widgets auf dem Startbildschirm an</string>
+    <string name="settings_widget_opacity_opaque">100% (Opak)</string>
+    <string name="settings_widget_opacity_transparent">0% (Transparent)</string>
+    <string name="settings_widget_opacity_percent">%1$d%%</string>
     <string name="settings_system_default">Systemstandard</string>
     <string name="settings_start_week_title">Erster Tag der Woche</string>
     <string name="settings_start_week_sunday">Sonntag</string>
