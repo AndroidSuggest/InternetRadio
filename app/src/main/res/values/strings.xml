@@ -445,4 +445,10 @@
     <string name="widget_preview_artist">Now Playing</string>
     <string name="widget_description">Quick access to radio playback and controls</string>
     <string name="widget_nothing_playing">Nothing playing</string>
+    <string name="widget_configure_title">Widget Configuration</string>
+    <string name="widget_configure_apply">Apply</string>
+    <string name="widget_configure_preview">Live Preview</string>
+    <string name="widget_configure_presets">Presets</string>
+    <string name="settings_widget_appearance_title">Widget Appearance</string>
+    <string name="settings_widget_appearance_subtitle">Customize home screen widget transparency and preview</string>
 </resources>

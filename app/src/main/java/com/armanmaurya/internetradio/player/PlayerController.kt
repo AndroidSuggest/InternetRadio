@@ -555,6 +555,7 @@ class PlayerController @Inject constructor(
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(this.name)
+                    .setAlbumTitle(this.name)
                     .setArtworkUri(artworkUri)
                     .setExtras(android.os.Bundle().apply {
                         putString("stationName", this@toMediaItem.name)

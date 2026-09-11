@@ -191,6 +191,7 @@ class PlaybackService : MediaLibraryService() {
                 val newMetadataBuilder = currentMediaItem.mediaMetadata.buildUpon()
                     .setTitle(trackName)
                     .setArtist(artistName)
+                    .setAlbumTitle(stationName)
                     .setArtworkUri(stationFaviconUri) // Show station thumbnail while fetching track cover art
                     .setExtras(newExtras)
                     
@@ -833,6 +834,7 @@ class PlaybackService : MediaLibraryService() {
             .setMediaMetadata(
                 androidx.media3.common.MediaMetadata.Builder()
                     .setTitle(stationName)
+                    .setAlbumTitle(stationName)
                     .setArtworkUri(artworkUri)
                     .setExtras(android.os.Bundle().apply {
                         putString("stationName", stationName)
@@ -955,6 +957,7 @@ class PlaybackService : MediaLibraryService() {
             .setMediaMetadata(
                 androidx.media3.common.MediaMetadata.Builder()
                     .setTitle(station.name)
+                    .setAlbumTitle(station.name)
                     .setArtworkUri(artworkUri)
                     .setExtras(android.os.Bundle().apply {
                         putString("stationName", station.name)
