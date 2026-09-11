@@ -73,6 +73,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val SELECT_ALL_TEXT_ON_FOCUS = booleanPreferencesKey("select_all_text_on_focus")
         val PAUSE_ON_VOLUME_ZERO = booleanPreferencesKey("pause_on_volume_zero")
         val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
+        val WIDGET_BACKGROUND_ALPHA = androidx.datastore.preferences.core.floatPreferencesKey("widget_background_alpha")
     }
 
     override val appPreferencesFlow: Flow<AppPreferences> = context.dataStore.data
@@ -131,6 +132,7 @@ class SettingsRepositoryImpl @Inject constructor(
             val isAlarmVolumeTransitionEnabled = preferences[PreferencesKeys.IS_ALARM_VOLUME_TRANSITION_ENABLED] ?: false
             val alarmVolumeTransitionSeconds = preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] ?: 15
             val selectAllTextOnFocus = preferences[PreferencesKeys.SELECT_ALL_TEXT_ON_FOCUS] ?: true
+            val widgetBackgroundAlpha = preferences[PreferencesKeys.WIDGET_BACKGROUND_ALPHA] ?: 1.0f
 
             AppPreferences(
                 themeMode = themeMode, 
@@ -170,7 +172,8 @@ class SettingsRepositoryImpl @Inject constructor(
                 startOfWeek = startOfWeek,
                 showCoverArtInNotification = showCoverArtInNotification,
                 isAlarmVolumeTransitionEnabled = isAlarmVolumeTransitionEnabled,
-                alarmVolumeTransitionSeconds = alarmVolumeTransitionSeconds
+                alarmVolumeTransitionSeconds = alarmVolumeTransitionSeconds,
+                widgetBackgroundAlpha = widgetBackgroundAlpha
             )
         }
 
@@ -393,6 +396,12 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setKeepScreenOn(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.KEEP_SCREEN_ON] = enabled
+        }
+    }
+
+    override suspend fun setWidgetBackgroundAlpha(alpha: Float) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.WIDGET_BACKGROUND_ALPHA] = alpha.coerceIn(0f, 1f)
         }
     }
 }

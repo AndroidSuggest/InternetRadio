@@ -41,5 +41,6 @@ data class AppPreferences(
     val startOfWeek: StartOfWeek = StartOfWeek.SUNDAY,
     val showCoverArtInNotification: Boolean = true,
     val isAlarmVolumeTransitionEnabled: Boolean = false,
-    val alarmVolumeTransitionSeconds: Int = 15
+    val alarmVolumeTransitionSeconds: Int = 15,
+    val widgetBackgroundAlpha: Float = 1.0f
 )

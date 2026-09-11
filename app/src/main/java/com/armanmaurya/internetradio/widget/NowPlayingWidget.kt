@@ -47,12 +47,14 @@ object WidgetStateKeys {
     val BG_COLOR              = intPreferencesKey("bg_color")
     val TITLE_COLOR           = intPreferencesKey("title_color")
     val ARTIST_COLOR          = intPreferencesKey("artist_color")
+    val BG_ALPHA              = androidx.datastore.preferences.core.floatPreferencesKey("bg_alpha")
 }
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface WidgetEntryPoint {
     fun recentRepository(): com.armanmaurya.internetradio.domain.repository.RecentRepository
+    fun settingsRepository(): com.armanmaurya.internetradio.domain.repository.SettingsRepository
 }
 
 class NowPlayingWidget : GlanceAppWidget() {
@@ -60,9 +62,17 @@ class NowPlayingWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val entryPoint = EntryPointAccessors.fromApplication(context, WidgetEntryPoint::class.java)
+        val savedAlpha = try {
+            entryPoint.settingsRepository().appPreferencesFlow.first().widgetBackgroundAlpha
+        } catch (e: Exception) {
+            1.0f
+        }
+
         provideContent {
             // Read state reactively inside provideContent
             val prefs = currentState<Preferences>()
+            val widgetAlpha = prefs[WidgetStateKeys.BG_ALPHA] ?: latestWidgetPayload?.bgAlpha ?: savedAlpha
             val isServiceRunning = com.armanmaurya.internetradio.player.PlaybackService.isRunning
             val latest = if (isServiceRunning) latestWidgetPayload else null
 
@@ -176,9 +186,12 @@ class NowPlayingWidget : GlanceAppWidget() {
                 }
             }
 
-            val bgColor = precomputedBgColorInt?.let {
+            val rawBgColor = precomputedBgColorInt?.let {
                 androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(it))
             } ?: dynamicBgColor ?: GlanceTheme.colors.widgetBackground
+
+            val resolvedColor = rawBgColor.getColor(context)
+            val bgColor = androidx.glance.unit.ColorProvider(resolvedColor.copy(alpha = widgetAlpha))
 
             val titleColor = precomputedTitleColorInt?.let {
                 androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(it))

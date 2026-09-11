@@ -104,6 +104,12 @@
     <string name="settings_check_updates">Check for updates</string>
     <string name="settings_rate_review">Rate &amp; Review</string>
     <string name="settings_track_history_limit">Track History Limit</string>
+    <string name="settings_widget_section">Widget</string>
+    <string name="settings_widget_transparency_title">Background opacity</string>
+    <string name="settings_widget_transparency_subtitle">Adjust home screen widget background opacity</string>
+    <string name="settings_widget_opacity_opaque">100% (Opaque)</string>
+    <string name="settings_widget_opacity_transparent">0% (Transparent)</string>
+    <string name="settings_widget_opacity_percent">%1$d%%</string>
     <string name="settings_system_default">System Default</string>
     <string name="settings_start_week_title">Start Week on</string>
     <string name="settings_start_week_sunday">Sunday</string>

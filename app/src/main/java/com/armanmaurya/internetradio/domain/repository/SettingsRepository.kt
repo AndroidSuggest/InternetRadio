@@ -49,4 +49,5 @@ interface SettingsRepository {
     suspend fun setAlarmVolumeTransitionSeconds(seconds: Int)
     suspend fun setAlarmVolumeTransitionEnabled(enabled: Boolean)
     suspend fun setKeepScreenOn(enabled: Boolean)
+    suspend fun setWidgetBackgroundAlpha(alpha: Float)
 }

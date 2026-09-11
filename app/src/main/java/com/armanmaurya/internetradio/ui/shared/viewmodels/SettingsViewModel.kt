@@ -19,6 +19,7 @@ import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,7 +40,8 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val libraryRepository: LibraryRepository,
     private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade,
-    private val systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade
+    private val systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     val uiState: StateFlow<AppPreferences> = settingsRepository.appPreferencesFlow
@@ -97,6 +99,15 @@ class SettingsViewModel @Inject constructor(
     fun setSelectAllTextOnFocus(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setSelectAllTextOnFocus(enabled)
+        }
+    }
+
+    fun setWidgetBackgroundAlpha(alpha: Float) {
+        viewModelScope.launch {
+            settingsRepository.setWidgetBackgroundAlpha(alpha)
+            withContext(Dispatchers.IO) {
+                com.armanmaurya.internetradio.widget.updateWidgetAlpha(context, alpha)
+            }
         }
     }
 

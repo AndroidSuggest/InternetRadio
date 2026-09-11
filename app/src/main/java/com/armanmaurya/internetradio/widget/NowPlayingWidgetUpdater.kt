@@ -95,6 +95,7 @@ data class WidgetPlaybackPayload(
     val bgColor: Int? = null,
     val titleColor: Int? = null,
     val artistColor: Int? = null,
+    val bgAlpha: Float? = null,
 )
 
 @Volatile
@@ -137,6 +138,7 @@ suspend fun pushWidgetUpdate(
         bgColor = paletteColors?.backgroundColor,
         titleColor = paletteColors?.titleTextColor,
         artistColor = paletteColors?.artistTextColor,
+        bgAlpha = latestWidgetPayload?.bgAlpha,
     )
 
     try {
@@ -176,6 +178,25 @@ suspend fun pushWidgetUpdate(
         }
     } catch (e: Exception) {
         Log.e("NowPlayingWidget", "Failed to update widget", e)
+    }
+}
+
+/**
+ * Updates the background opacity/alpha for all active instances of [NowPlayingWidget].
+ */
+suspend fun updateWidgetAlpha(context: Context, alpha: Float) {
+    latestWidgetPayload = latestWidgetPayload?.copy(bgAlpha = alpha)
+    try {
+        val manager = GlanceAppWidgetManager(context)
+        val widget = NowPlayingWidget()
+        manager.getGlanceIds(NowPlayingWidget::class.java).forEach { glanceId ->
+            updateAppWidgetState(context, glanceId) { prefs ->
+                prefs[WidgetStateKeys.BG_ALPHA] = alpha
+            }
+            widget.update(context, glanceId)
+        }
+    } catch (e: Exception) {
+        Log.e("NowPlayingWidget", "Failed to update widget alpha", e)
     }
 }
 
