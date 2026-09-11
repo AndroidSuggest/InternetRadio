@@ -21,11 +21,27 @@ class BootReceiver : BroadcastReceiver() {
     @Inject
     lateinit var scheduleManager: ScheduleManager
 
+    @Inject
+    lateinit var recentRepository: com.armanmaurya.internetradio.domain.repository.RecentRepository
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             scope.launch {
+                if (!PlaybackService.isRunning) {
+                    try {
+                        val lastStation = recentRepository.getAllRecent().first().firstOrNull()
+                        com.armanmaurya.internetradio.widget.cleanStaleWidgetState(
+                            context = context.applicationContext,
+                            stationName = lastStation?.name,
+                            favicon = lastStation?.favicon
+                        )
+                    } catch (e: Exception) {
+                        com.armanmaurya.internetradio.widget.cleanStaleWidgetState(context.applicationContext, null, null)
+                    }
+                }
+
                 val schedules = scheduleRepository.getAllSchedules().first()
                 schedules.filter { it.isEnabled }.forEach { schedule ->
                     scheduleManager.schedule(schedule)

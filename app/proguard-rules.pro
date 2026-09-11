@@ -31,3 +31,21 @@
 -keep class org.fcast.** { *; }
 -keepclassmembers class org.fcast.** { *; }
 -dontwarn com.sun.jna.**
+
+# Hilt EntryPoint interfaces accessed dynamically via EntryPointAccessors
+-keep @dagger.hilt.EntryPoint interface * { *; }
+-keep interface com.armanmaurya.internetradio.widget.WidgetEntryPoint { *; }
+
+# Glance & App Widget components
+-keep class com.armanmaurya.internetradio.widget.** { *; }
+-keep class * extends androidx.glance.appwidget.GlanceAppWidget { *; }
+-keep class * extends androidx.glance.appwidget.GlanceAppWidgetReceiver { *; }
+
+# Playback Service and Broadcast Receivers
+-keep class com.armanmaurya.internetradio.player.PlaybackService { *; }
+-keep class com.armanmaurya.internetradio.player.PlaybackService$* { *; }
+-keep class com.armanmaurya.internetradio.player.BootReceiver { *; }
+-keep class com.armanmaurya.internetradio.player.ScheduleReceiver { *; }
+-keepclassmembers class * extends android.content.BroadcastReceiver {
+    @javax.inject.Inject <fields>;
+}

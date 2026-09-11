@@ -265,6 +265,19 @@ class PlaybackService : MediaLibraryService() {
 
     companion object {
         var isRunning = false
+        @Volatile
+        private var instance: PlaybackService? = null
+
+        fun requestWidgetUpdate() {
+            val service = instance ?: return
+            if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+                service.updateWidget()
+            } else {
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    instance?.updateWidget()
+                }
+            }
+        }
     }
 
     /** Receives widget control broadcasts when the service is already running in the foreground.
@@ -291,6 +304,7 @@ class PlaybackService : MediaLibraryService() {
     override fun onCreate() {
         super.onCreate()
         isRunning = true
+        instance = this
 
         // Register the widget broadcast receiver so buttons work on all OEM launchers
         val widgetFilter = android.content.IntentFilter().apply {
@@ -504,6 +518,10 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onDestroy() {
         isRunning = false
+        com.armanmaurya.internetradio.widget.latestWidgetPayload = null
+        if (instance == this) {
+            instance = null
+        }
         // Push a final stopped-state widget update before tearing down
         pushStoppedWidgetUpdate()
         serviceScope.cancel()
