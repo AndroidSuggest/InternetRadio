@@ -26,8 +26,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import kotlinx.coroutines.flow.first
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -81,6 +83,38 @@ class NowPlayingWidgetConfigureActivity : ComponentActivity() {
             val latest = latestWidgetPayload
             val lastStation = recentStations.firstOrNull()
 
+            val initialAlphaState = produceState<Float?>(initialValue = null, key1 = appWidgetId) {
+                var loadedAlpha: Float? = null
+
+                // 1. Try reading from the specific widget instance if valid
+                if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                    try {
+                        val manager = GlanceAppWidgetManager(applicationContext)
+                        val glanceId = manager.getGlanceIdBy(appWidgetId)
+                        val prefs = getAppWidgetState(
+                            applicationContext,
+                            PreferencesGlanceStateDefinition,
+                            glanceId
+                        )
+                        loadedAlpha = prefs[WidgetStateKeys.BG_ALPHA]
+                    } catch (e: Exception) {
+                        // Ignore if glanceId not yet created or failed
+                    }
+                }
+
+                // 2. If not found in widget instance, fallback to latestWidgetPayload or saved DataStore setting
+                if (loadedAlpha == null) {
+                    loadedAlpha = latestWidgetPayload?.bgAlpha
+                        ?: try {
+                            settingsRepository.appPreferencesFlow.first().widgetBackgroundAlpha
+                        } catch (e: Exception) {
+                            1.0f
+                        }
+                }
+
+                value = loadedAlpha
+            }
+
             val previewTitle = latest?.title?.takeIf { it.isNotBlank() }
                 ?: lastStation?.name
                 ?: stringResource(R.string.widget_preview_title)
@@ -101,29 +135,42 @@ class NowPlayingWidgetConfigureActivity : ComponentActivity() {
             val previewTitleColor = latest?.titleColor?.let { Color(it) }
             val previewArtistColor = latest?.artistColor?.let { Color(it) }
 
+            val initialAlpha = initialAlphaState.value
+
             InternetRadioTheme(appPreferences = appPreferences) {
-                WidgetConfigureScreen(
-                    appWidgetId = appWidgetId,
-                    initialAlpha = appPreferences.widgetBackgroundAlpha,
-                    previewTitle = previewTitle,
-                    previewArtist = previewArtist,
-                    previewArtworkUrl = previewArtworkUrl,
-                    previewStationThumbUrl = previewStationThumbUrl,
-                    isCoverArtFetched = isCoverArtFetched,
-                    isPlaying = isPlaying,
-                    extractedBgColor = previewBgColor,
-                    extractedTitleColor = previewTitleColor,
-                    extractedArtistColor = previewArtistColor,
-                    onApply = { chosenAlpha ->
-                        // Launch on main scope to save and complete
-                        CoroutineScope(Dispatchers.Main).launch {
-                            saveWidgetConfiguration(chosenAlpha)
+                if (initialAlpha != null) {
+                    WidgetConfigureScreen(
+                        appWidgetId = appWidgetId,
+                        initialAlpha = initialAlpha,
+                        previewTitle = previewTitle,
+                        previewArtist = previewArtist,
+                        previewArtworkUrl = previewArtworkUrl,
+                        previewStationThumbUrl = previewStationThumbUrl,
+                        isCoverArtFetched = isCoverArtFetched,
+                        isPlaying = isPlaying,
+                        extractedBgColor = previewBgColor,
+                        extractedTitleColor = previewTitleColor,
+                        extractedArtistColor = previewArtistColor,
+                        onApply = { chosenAlpha ->
+                            // Launch on main scope to save and complete
+                            CoroutineScope(Dispatchers.Main).launch {
+                                saveWidgetConfiguration(chosenAlpha)
+                            }
+                        },
+                        onCancel = {
+                            finish()
                         }
-                    },
-                    onCancel = {
-                        finish()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
-                )
+                }
             }
         }
     }
@@ -177,7 +224,7 @@ fun WidgetConfigureScreen(
     onApply: (Float) -> Unit,
     onCancel: () -> Unit
 ) {
-    var alpha by remember { mutableStateOf(initialAlpha) }
+    var alpha by remember(initialAlpha) { mutableStateOf(initialAlpha) }
     val percentageInt = (alpha * 100f).roundToInt()
 
     val presets = listOf(
