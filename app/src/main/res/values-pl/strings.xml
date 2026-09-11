@@ -370,4 +370,19 @@
     <string name="widget_preview_artist">Teraz odtwarzane</string>
     <string name="widget_description">Szybki dostęp do odtwarzania radia i elementów sterujących</string>
     <string name="widget_nothing_playing">Nic nie jest odtwarzane</string>
+    <string name="settings_pure_black_disabled_subtitle">Dostępne tylko przy włączonym ciemnym motywie</string>
+    <string name="settings_color_purple">Fioletowy</string>
+    <string name="settings_color_blue">Niebieski</string>
+    <string name="settings_color_teal">Cyjan</string>
+    <string name="settings_color_green">Zielony</string>
+    <string name="settings_color_yellow">Żółty</string>
+    <string name="settings_color_pink">Różowy</string>
+    <string name="settings_color_red">Czerwony</string>
+    <string name="settings_color_custom">Niestandardowy</string>
+    <string name="settings_custom_color_title">Niestandardowy kolor</string>
+    <string name="settings_custom_color_hex">Kod Hex</string>
+    <string name="settings_custom_color_apply">Zastosuj</string>
+    <string name="settings_custom_color_cancel">Anuluj</string>
+    <string name="settings_keep_screen_on_title">Nie wygaszaj ekranu</string>
+    <string name="settings_keep_screen_on_desc">Zapobiega wygaszaniu ekranu, gdy jest on rozwinięty</string>
 </resources>
