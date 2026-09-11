@@ -48,6 +48,8 @@ import com.armanmaurya.internetradio.core.config.StoreConfig
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Widgets
+import com.armanmaurya.internetradio.widget.NowPlayingWidgetConfigureActivity
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.AlertDialog
@@ -172,6 +174,9 @@ fun SettingsScreen(
                 onSetCustomColor = viewModel::setCustomColor,
                 onSetTheme = viewModel::setAppTheme,
                 onSetPureBlack = viewModel::setPureBlack,
+                onOpenWidgetConfig = {
+                    context.startActivity(Intent(context, NowPlayingWidgetConfigureActivity::class.java))
+                },
                 topShape = topShape,
                 middleShape = middleShape,
                 bottomShape = bottomShape
@@ -285,6 +290,7 @@ private fun AppearanceSection(
     onSetCustomColor: (Int) -> Unit,
     onSetTheme: (AppTheme) -> Unit,
     onSetPureBlack: (Boolean) -> Unit,
+    onOpenWidgetConfig: () -> Unit,
     topShape: RoundedCornerShape,
     middleShape: RoundedCornerShape,
     bottomShape: RoundedCornerShape
@@ -374,8 +380,18 @@ private fun AppearanceSection(
             isEnabled = uiState.pureBlack,
             onToggle = onSetPureBlack,
             icon = Icons.Default.Contrast,
-            shape = bottomShape,
+            shape = middleShape,
             enabled = darkTheme
+        )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
+        Item(
+            title = stringResource(R.string.settings_widget_appearance_title),
+            subtitle = stringResource(R.string.settings_widget_appearance_subtitle),
+            icon = Icons.Default.Widgets,
+            onClick = onOpenWidgetConfig,
+            shape = bottomShape
         )
     }
 }
