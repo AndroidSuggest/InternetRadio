@@ -446,14 +446,14 @@ private fun ScheduleConfigurationForm(
                             style = MaterialTheme.typography.titleLarge,
                             color = Color.White,
                             maxLines = 1,
-                            modifier = Modifier.basicMarquee()
+                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                         )
                         Text(
                             text = subtitleText,
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.8f),
                             maxLines = 1,
-                            modifier = Modifier.basicMarquee()
+                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                         )
                     }
                 }

@@ -574,7 +574,7 @@ fun PlayerSheetContent(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
-                        modifier = Modifier.basicMarquee()
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                     )
                     val currentTrackText = if (retryCountdown != null) {
                         stringResource(R.string.player_retrying_in, retryCountdown)
@@ -590,7 +590,7 @@ fun PlayerSheetContent(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .basicMarquee()
+                            .basicMarquee(iterations = Int.MAX_VALUE)
                             .pointerInput(currentTrackText) {
                                 detectTapGestures(
                                     onTap = {
@@ -843,7 +843,7 @@ fun PlayerSheetContent(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     maxLines = 1,
-                                    modifier = Modifier.basicMarquee()
+                                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                                 )
                                 val currentTrackText = if (playbackState.isLoading) stringResource(R.string.player_buffering) else playbackState.currentTrack ?: stringResource(R.string.player_no_track_data)
                                 Text(
@@ -852,7 +852,7 @@ fun PlayerSheetContent(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.basicMarquee()
+                                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                                 )
                             }
 
@@ -931,7 +931,7 @@ fun PlayerSheetContent(
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .basicMarquee()
+                                    .basicMarquee(iterations = Int.MAX_VALUE)
                             )
                             
                             if (isFavorite) {

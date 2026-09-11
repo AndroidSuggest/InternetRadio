@@ -233,7 +233,7 @@ fun StationListCard(
                     style = MaterialTheme.typography.titleMedium,
                     color = if (isCurrentlyPlaying) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified,
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee()
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -241,7 +241,7 @@ fun StationListCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (isCurrentlyPlaying) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee()
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                 )
             }
 

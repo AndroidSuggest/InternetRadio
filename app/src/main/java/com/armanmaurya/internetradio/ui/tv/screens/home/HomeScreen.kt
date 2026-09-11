@@ -225,14 +225,14 @@ fun HomeScreen(
                                                 Text(
                                                     text = playbackState.currentStation!!.name,
                                                     maxLines = 1,
-                                                    modifier = Modifier.basicMarquee(),
+                                                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                     style = MaterialTheme.typography.bodyLarge
                                                 )
                                                 if (!playbackState.currentTrack.isNullOrEmpty()) {
                                                     Text(
                                                         text = playbackState.currentTrack!!,
                                                         maxLines = 1,
-                                                        modifier = Modifier.basicMarquee(),
+                                                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                                                         style = MaterialTheme.typography.bodyMedium,
                                                         color = androidx.tv.material3.LocalContentColor.current.copy(alpha = 0.7f)
                                                     )

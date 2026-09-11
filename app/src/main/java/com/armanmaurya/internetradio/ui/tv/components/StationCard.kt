@@ -134,7 +134,7 @@ fun StationCard(
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee()
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                 )
                 Text(
                     text = buildString {
@@ -168,7 +168,7 @@ fun StationCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.8f),
                     maxLines = 1,
-                    modifier = Modifier.basicMarquee()
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                 )
             }
         }

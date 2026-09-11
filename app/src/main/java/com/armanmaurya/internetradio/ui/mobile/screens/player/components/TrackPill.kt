@@ -151,7 +151,7 @@ fun SharedTransitionScope.TrackPill(
                         )
                         .weight(1f)
                         .padding(vertical = 4.dp)
-                        .basicMarquee()
+                        .basicMarquee(iterations = Int.MAX_VALUE)
                 )
                 // Decorative icons — no click, the whole pill row handles tap
                 Box(

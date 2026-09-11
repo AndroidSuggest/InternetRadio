@@ -81,7 +81,7 @@ fun AboutTab(
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Public,
@@ -131,7 +131,7 @@ fun AboutTab(
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Public,
@@ -177,7 +177,7 @@ fun AboutTab(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.basicMarquee()
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Translate,

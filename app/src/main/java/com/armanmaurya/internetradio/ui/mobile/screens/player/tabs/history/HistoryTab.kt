@@ -114,7 +114,7 @@ fun HistoryTab(
                                 text = title,
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                             )
                         },
                         supportingContent = if (subtitle.isNotEmpty()) {
@@ -123,7 +123,7 @@ fun HistoryTab(
                                     text = subtitle,
                                     style = MaterialTheme.typography.bodyMedium,
                                     maxLines = 1,
-                                    modifier = Modifier.basicMarquee()
+                                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                                 )
                             }
                         } else null,
@@ -189,7 +189,7 @@ fun HistoryTab(
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             maxLines = 2,
-                                            modifier = Modifier.basicMarquee()
+                                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                                         )
                                     }
                                     IconButton(

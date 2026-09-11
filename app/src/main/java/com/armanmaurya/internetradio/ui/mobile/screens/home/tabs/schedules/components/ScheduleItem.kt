@@ -135,7 +135,7 @@ fun ScheduleItem(
                         fontWeight = FontWeight.Bold,
                         color = if (schedule.isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        modifier = Modifier.basicMarquee()
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -143,7 +143,7 @@ fun ScheduleItem(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        modifier = Modifier.basicMarquee()
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                     )
                 }
 

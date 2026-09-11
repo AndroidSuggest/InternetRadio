@@ -208,7 +208,7 @@ fun PlayerScreen(
                         text = station.name,
                         style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
                         maxLines = 1,
-                        modifier = Modifier.basicMarquee()
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                     )
                     
                     if (playbackState.isLoading) {
@@ -226,7 +226,7 @@ fun PlayerScreen(
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                             maxLines = 1,
-                            modifier = Modifier.basicMarquee()
+                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                         )
                     }
 

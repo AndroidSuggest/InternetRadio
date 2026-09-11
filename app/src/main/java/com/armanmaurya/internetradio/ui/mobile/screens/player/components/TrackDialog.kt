@@ -172,7 +172,7 @@ fun SharedTransitionScope.TrackDialog(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
-                            modifier = Modifier.basicMarquee()
+                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                         )
                         
                         if (trackParts.size > 1) {
@@ -181,7 +181,7 @@ fun SharedTransitionScope.TrackDialog(
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                             )
                         }
 
@@ -219,7 +219,7 @@ fun SharedTransitionScope.TrackDialog(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 2,
-                                modifier = Modifier.basicMarquee()
+                                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                             )
                         }
                         IconButton(
