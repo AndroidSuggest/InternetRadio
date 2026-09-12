@@ -113,18 +113,15 @@ fun BrowseScreen(
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.Sort,
                                     contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.padding(end = 8.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = orderOptions.find { it.first == uiState.order }?.second ?: uiState.order,
-                                    style = MaterialTheme.typography.labelMedium
+                                    text = orderOptions.find { it.first == uiState.order }?.second ?: uiState.order
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
                                 Icon(
                                     imageVector = if (uiState.reverse) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
                                     contentDescription = if (uiState.reverse) stringResource(R.string.home_descending) else stringResource(R.string.home_ascending),
-                                    modifier = Modifier.size(14.dp)
+                                    modifier = Modifier.padding(start = 6.dp).size(18.dp)
                                 )
                             }
                             DropdownMenu(
@@ -166,6 +163,7 @@ fun BrowseScreen(
                     StationCard(
                         station = station,
                         onClick = { onStationClick(uiState.stations, index, "tv_browse") },
+                        modifier = Modifier.animateItem(),
                         isCurrentlyPlaying = station.stationUuid == playingStationUuid,
                         isPlaybackActive = isPlaybackActive && station.stationUuid == playingStationUuid,
                         isFavorite = station.stationUuid in libraryUuids

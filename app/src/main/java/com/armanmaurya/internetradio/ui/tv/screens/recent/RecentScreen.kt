@@ -89,6 +89,7 @@ fun RecentScreen(
                     StationCard(
                         station = station,
                         onClick = { onStationClick(safeStations, index, "tv_recent") },
+                        modifier = Modifier.animateItem(),
                         isCurrentlyPlaying = station.stationUuid == playingStationUuid,
                         isPlaybackActive = isPlaybackActive && station.stationUuid == playingStationUuid,
                         isFavorite = station.stationUuid in libraryUuids

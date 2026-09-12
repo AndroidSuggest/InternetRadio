@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,12 +43,15 @@ fun StationCard(
     isCurrentlyPlaying: Boolean = false,
     isPlaybackActive: Boolean = false,
     isFavorite: Boolean = false,
+    isMoving: Boolean = false,
     onLongClick: (() -> Unit)? = null
 ) {
+    val cardModifier = modifier.aspectRatio(1f)
+
     Card(
         onClick = onClick,
         onLongClick = onLongClick,
-        modifier = modifier.aspectRatio(1f),
+        modifier = cardModifier,
         shape = CardDefaults.shape(shape = RoundedCornerShape(12.dp))
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -81,7 +86,7 @@ fun StationCard(
             )
 
             // Top-Right Corner Gradient for Icon Visibility
-            if (isFavorite) {
+            if (isFavorite || isMoving) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -109,7 +114,24 @@ fun StationCard(
                 }
             }
 
-            if (isFavorite) {
+            if (isMoving) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.35f))
+                )
+            }
+
+            if (isMoving) {
+                Icon(
+                    imageVector = Icons.Default.DragIndicator,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                )
+            } else if (isFavorite) {
                 val isLight = androidx.compose.material3.MaterialTheme.colorScheme.surface.luminance() > 0.5f
                 val playingColor = if (isLight) androidx.compose.material3.MaterialTheme.colorScheme.inversePrimary else androidx.compose.material3.MaterialTheme.colorScheme.primary
 
