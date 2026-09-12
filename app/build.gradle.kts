@@ -13,8 +13,8 @@ android {
         applicationId = "com.armanmaurya.internetradio"
         minSdk = 26
         targetSdk = 36
-        val baseVersionCode = 16
-        val baseVersionName = "0.8.1"
+        val baseVersionCode = 17
+        val baseVersionName = "0.8.2"
 
         if (System.getenv("IS_NIGHTLY_BUILD") == "true") {
             versionCode = baseVersionCode + (System.getenv("NIGHTLY_RUN_NUMBER")?.toIntOrNull() ?: 0)
