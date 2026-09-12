@@ -11,4 +11,17 @@
     <string name="general_reset">Resetar</string>
     <string name="general_discard">Descartar</string>
     <string name="general_save">Salvar</string>
+    <string name="general_add">Adicionar</string>
+    <string name="cd_back">Voltar</string>
+    <string name="cd_close_search">Fechar pesquisa</string>
+    <string name="cd_search">Pesquisar</string>
+    <string name="cd_clear_search">Limpar pesquisa</string>
+    <string name="cd_delete">Apagar</string>
+    <string name="general_name">Nome</string>
+    <string name="general_hours">Horas</string>
+    <string name="general_minutes">Minutos</string>
+    <string name="general_unknown">Desconhecido</string>
+    <string name="general_station_count_msg">%1$d rádios</string>
+    <string name="general_no_recordings">Não há gravações ainda</string>
+    <string name="error_unknown">Erro desconhecido</string>
 </resources>
