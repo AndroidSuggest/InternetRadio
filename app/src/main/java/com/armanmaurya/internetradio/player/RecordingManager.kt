@@ -1,7 +1,7 @@
 package com.armanmaurya.internetradio.player
 
 import android.content.Context
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.RecordingRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope

@@ -23,7 +23,7 @@ import coil3.compose.AsyncImage
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
 import com.armanmaurya.internetradio.data.local.entity.ScheduleType
-import com.armanmaurya.internetradio.data.model.StartOfWeek
+import com.armanmaurya.internetradio.domain.model.StartOfWeek
 import java.util.Locale
 import java.util.Calendar
 import androidx.compose.ui.res.stringResource

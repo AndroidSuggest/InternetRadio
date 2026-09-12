@@ -1,12 +1,6 @@
-package com.armanmaurya.internetradio.data.model
+package com.armanmaurya.internetradio.data.backup
 
 import com.armanmaurya.internetradio.data.local.entity.LibraryStationEntity
-
-enum class ConflictStrategy {
-    SKIP,
-    OVERWRITE,
-    KEEP_NEWER
-}
 
 data class LibraryBackup(
     val schemaVersion: Int = 2,

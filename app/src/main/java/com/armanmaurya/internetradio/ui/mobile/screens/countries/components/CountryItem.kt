@@ -17,7 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.Country
+import com.armanmaurya.internetradio.domain.model.Country
 
 @Composable
 fun CountryItem(

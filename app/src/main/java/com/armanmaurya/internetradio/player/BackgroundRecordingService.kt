@@ -10,7 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

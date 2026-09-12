@@ -15,7 +15,8 @@ import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.LibrarySortOption
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.RecentRepository
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
@@ -481,13 +482,13 @@ class AutoMediaLibraryCallback @Inject constructor(
         val prefs = settingsRepository.appPreferencesFlow.first()
         
         val stations = when (prefs.librarySortOption) {
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded().first()
+            LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName().first()
+            LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending().first()
+            LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed().first()
+            LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed().first()
+            LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder().first()
+            LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations().first()
+            LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded().first()
         }
 
         return if (prefs.useFilterOnFavorites) {

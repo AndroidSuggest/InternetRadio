@@ -30,7 +30,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.drawscope.clipPath
-import com.armanmaurya.internetradio.data.model.LyricsState
+import com.armanmaurya.internetradio.domain.model.LrcLine
+import com.armanmaurya.internetradio.domain.model.LyricsState
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.background
@@ -278,7 +279,7 @@ fun PlainLyricsView(
 
 @Composable
 fun SyncedLyricsView(
-    lines: List<com.armanmaurya.internetradio.data.model.LrcLine>,
+    lines: List<LrcLine>,
     listState: LazyListState,
     trackStartTime: Long,
     syncOffsetMs: Long,

@@ -3,9 +3,9 @@ package com.armanmaurya.internetradio.core.utils
 import android.content.Context
 import android.net.Uri
 import com.armanmaurya.internetradio.data.local.entity.toLibraryEntity
-import com.armanmaurya.internetradio.data.model.LibraryBackup
-import com.armanmaurya.internetradio.data.model.RadioStation
-import com.armanmaurya.internetradio.data.model.toBackupStation
+import com.armanmaurya.internetradio.data.backup.LibraryBackup
+import com.armanmaurya.internetradio.data.backup.toBackupStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Date

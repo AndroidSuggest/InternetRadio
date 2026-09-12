@@ -1,12 +1,13 @@
 package com.armanmaurya.internetradio.data.repository
 
 import android.content.Context
-import com.armanmaurya.internetradio.data.model.Country
-import com.armanmaurya.internetradio.data.model.Language
-import com.armanmaurya.internetradio.data.model.RadioStation
-import com.armanmaurya.internetradio.data.model.Tag
-import com.armanmaurya.internetradio.data.remote.AddStationResponse
+import com.armanmaurya.internetradio.domain.model.Country
+import com.armanmaurya.internetradio.domain.model.Language
+import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.Tag
+import com.armanmaurya.internetradio.domain.model.StationAddResult
 import com.armanmaurya.internetradio.data.remote.RadioBrowserApi
+import com.armanmaurya.internetradio.data.remote.toDomain
 import com.armanmaurya.internetradio.data.remote.dto.toDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -153,7 +154,7 @@ class StationRepositoryImpl @Inject constructor(
         tags: String?,
         geoLat: Double?,
         geoLong: Double?,
-    ): Result<AddStationResponse> = runCatching {
+    ): Result<StationAddResult> = runCatching {
         api.addStation(
             name = name,
             url = url,
@@ -165,6 +166,6 @@ class StationRepositoryImpl @Inject constructor(
             tags = tags,
             geoLat = geoLat,
             geoLong = geoLong
-        )
+        ).toDomain()
     }
 }

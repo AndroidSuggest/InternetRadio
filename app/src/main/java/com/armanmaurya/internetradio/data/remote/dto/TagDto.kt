@@ -1,6 +1,6 @@
 package com.armanmaurya.internetradio.data.remote.dto
 
-import com.armanmaurya.internetradio.data.model.Tag
+import com.armanmaurya.internetradio.domain.model.Tag
 import com.google.gson.annotations.SerializedName
 
 data class TagDto(

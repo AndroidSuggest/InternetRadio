@@ -1,6 +1,6 @@
 package com.armanmaurya.internetradio.data.remote.dto
 
-import com.armanmaurya.internetradio.data.model.Country
+import com.armanmaurya.internetradio.domain.model.Country
 import com.google.gson.annotations.SerializedName
 
 data class CountryDto(

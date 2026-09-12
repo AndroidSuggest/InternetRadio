@@ -2,7 +2,7 @@ package com.armanmaurya.internetradio.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 
 @Entity(tableName = "library_stations")
 data class LibraryStationEntity(

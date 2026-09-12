@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.data.remote
 
 import androidx.annotation.Keep
+import com.armanmaurya.internetradio.domain.model.StationAddResult
 import com.armanmaurya.internetradio.data.remote.dto.CountryDto
 import com.armanmaurya.internetradio.data.remote.dto.LanguageDto
 import com.armanmaurya.internetradio.data.remote.dto.StationDto
@@ -126,4 +127,10 @@ data class AddStationResponse(
     @SerializedName("ok") val ok: Boolean,
     @SerializedName("message") val message: String?,
     @SerializedName("uuid") val uuid: String?
+)
+
+fun AddStationResponse.toDomain(): StationAddResult = StationAddResult(
+    ok = ok,
+    message = message,
+    uuid = uuid
 )

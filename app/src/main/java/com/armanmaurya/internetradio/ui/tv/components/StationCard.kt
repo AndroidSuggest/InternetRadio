@@ -32,7 +32,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.PlayingVisualizer
 
 @Composable

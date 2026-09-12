@@ -1,6 +1,6 @@
 package com.armanmaurya.internetradio.data.remote.dto
 
-import com.armanmaurya.internetradio.data.model.Language
+import com.armanmaurya.internetradio.domain.model.Language
 import com.google.gson.annotations.SerializedName
 
 data class LanguageDto(

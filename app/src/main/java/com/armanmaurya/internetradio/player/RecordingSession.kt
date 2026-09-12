@@ -5,7 +5,7 @@ import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.core.utils.AudioFormatUtils
 import com.armanmaurya.internetradio.core.utils.AudioFormat
 import kotlinx.coroutines.CancellationException

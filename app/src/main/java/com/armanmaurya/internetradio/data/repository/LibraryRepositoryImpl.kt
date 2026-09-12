@@ -4,7 +4,7 @@ import com.armanmaurya.internetradio.data.local.dao.LibraryStationDao
 import com.armanmaurya.internetradio.data.local.entity.LibraryStationEntity
 import com.armanmaurya.internetradio.data.local.entity.toDomain
 import com.armanmaurya.internetradio.data.local.entity.toLibraryEntity
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID

@@ -57,7 +57,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.ui.mobile.navigation.AppNavHost
 import com.armanmaurya.internetradio.ui.mobile.navigation.AppDestination
@@ -146,7 +147,7 @@ class MobileActivity : AppCompatActivity() {
             val updateAvailable by mainViewModel.updateAvailable.collectAsStateWithLifecycle()
             
             val appPreferences by settingsRepository.appPreferencesFlow
-                .collectAsStateWithLifecycle(initialValue = com.armanmaurya.internetradio.data.model.AppPreferences())
+                .collectAsStateWithLifecycle(initialValue = AppPreferences())
 
             LaunchedEffect(appPreferences.disableUpdateCheck) {
                 if (!appPreferences.disableUpdateCheck) {
@@ -232,7 +233,7 @@ class MobileActivity : AppCompatActivity() {
                             val json = intent.getStringExtra(com.armanmaurya.internetradio.ui.shared.utils.ShortcutHelper.EXTRA_STATION_JSON)
                             if (json != null) {
                                 try {
-                                    val station = com.google.gson.Gson().fromJson(json, com.armanmaurya.internetradio.data.model.RadioStation::class.java)
+                                    val station = com.google.gson.Gson().fromJson(json, RadioStation::class.java)
                                     playerViewModel.play(listOf(station), 0)
                                 } catch (e: Exception) {
                                     e.printStackTrace()

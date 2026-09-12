@@ -2,7 +2,7 @@ package com.armanmaurya.internetradio.ui.shared.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.armanmaurya.internetradio.data.model.GithubRelease
+import com.armanmaurya.internetradio.domain.model.GithubRelease
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.domain.repository.UpdateRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

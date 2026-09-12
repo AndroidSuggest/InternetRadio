@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.model.RecordingFile
 import com.armanmaurya.internetradio.domain.model.RecordingFolder
 import com.armanmaurya.internetradio.ui.shared.viewmodels.RecordingsViewModel
@@ -54,9 +55,9 @@ fun RecordingsContent(
     viewModel: RecordingsViewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel(),
     activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
     onStopRecording: (String) -> Unit = {},
-    onStationClick: (List<com.armanmaurya.internetradio.data.model.RadioStation>, Int, com.armanmaurya.internetradio.player.PlaybackSource) -> Unit = { _, _, _ -> },
+    onStationClick: (List<RadioStation>, Int, com.armanmaurya.internetradio.player.PlaybackSource) -> Unit = { _, _, _ -> },
     onEditStation: (String) -> Unit = {},
-    onExportStation: ((com.armanmaurya.internetradio.data.model.RadioStation) -> Unit)? = null,
+    onExportStation: ((RadioStation) -> Unit)? = null,
     playingStationUuid: String? = null,
     isPlaybackActive: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(0.dp)

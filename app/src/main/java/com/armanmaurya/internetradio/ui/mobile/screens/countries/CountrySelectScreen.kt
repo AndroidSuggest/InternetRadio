@@ -28,7 +28,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.Country
+import com.armanmaurya.internetradio.domain.model.Country
 import com.armanmaurya.internetradio.ui.mobile.screens.countries.components.CountryItem
 import com.armanmaurya.internetradio.ui.shared.viewmodels.CountrySelectViewModel
 

@@ -24,7 +24,7 @@ import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
-import com.armanmaurya.internetradio.data.model.Country
+import com.armanmaurya.internetradio.domain.model.Country
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.tv.material3.Icon

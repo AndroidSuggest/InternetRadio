@@ -1,6 +1,6 @@
 package com.armanmaurya.internetradio.data.repository
 
-import com.armanmaurya.internetradio.data.model.GithubRelease
+import com.armanmaurya.internetradio.domain.model.GithubRelease
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

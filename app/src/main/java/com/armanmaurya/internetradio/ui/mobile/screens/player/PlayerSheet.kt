@@ -77,7 +77,8 @@ import androidx.compose.ui.graphics.FilterQuality
 import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.LyricsState
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.data.local.entity.TrackHistoryEntity
 import com.armanmaurya.internetradio.player.PlaybackState
 import kotlinx.coroutines.delay
@@ -111,7 +112,7 @@ fun PlayerSheetContent(
     stationRecordings: List<com.armanmaurya.internetradio.domain.model.RecordingFile>? = null,
     activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
     retryCountdown: Int? = null,
-    lyricsState: com.armanmaurya.internetradio.data.model.LyricsState = com.armanmaurya.internetradio.data.model.LyricsState.Loading,
+    lyricsState: LyricsState = LyricsState.Loading,
     progress: Float, // 0.0 (collapsed) to 1.0 (expanded)
     onTogglePlayPause: () -> Unit,
     onToggleFavorite: () -> Unit,

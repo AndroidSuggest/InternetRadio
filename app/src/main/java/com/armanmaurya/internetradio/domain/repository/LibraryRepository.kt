@@ -1,7 +1,7 @@
 package com.armanmaurya.internetradio.domain.repository
 
 import com.armanmaurya.internetradio.data.local.entity.LibraryStationEntity
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import kotlinx.coroutines.flow.Flow
 
 interface LibraryRepository {

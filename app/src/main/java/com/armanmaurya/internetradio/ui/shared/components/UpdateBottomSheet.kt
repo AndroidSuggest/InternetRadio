@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
-import com.armanmaurya.internetradio.data.model.GithubRelease
+import com.armanmaurya.internetradio.domain.model.GithubRelease
 import dev.jeziellago.compose.markdowntext.MarkdownText
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -17,7 +17,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import com.armanmaurya.internetradio.ui.mobile.MobileActivity
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.widget.pushWidgetUpdate
@@ -922,7 +922,7 @@ class PlaybackService : MediaLibraryService() {
     /**
      * Builds a MediaItem from a RadioStation, handling SVG artwork proxying.
      */
-    private fun buildMediaItem(station: com.armanmaurya.internetradio.data.model.RadioStation): androidx.media3.common.MediaItem {
+    private fun buildMediaItem(station: RadioStation): androidx.media3.common.MediaItem {
         val artworkUri = when {
             station.favicon.endsWith(".svg", ignoreCase = true) ->
                 android.net.Uri.parse(SvgProxyProvider.createProxyUri(this, station.favicon))

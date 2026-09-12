@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.data.model
+package com.armanmaurya.internetradio.domain.model
 
 import java.util.Calendar
 

@@ -2,7 +2,12 @@ package com.armanmaurya.internetradio.ui.shared.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.core.media.prober.StreamProbeResult
+import com.armanmaurya.internetradio.core.media.prober.StreamProber
+import com.armanmaurya.internetradio.domain.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.LibrarySortOption
+import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.Tag
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.domain.repository.StationRepository
@@ -37,7 +42,7 @@ class LibraryViewModel @Inject constructor(
     private val okHttpClient: OkHttpClient,
     private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade,
     private val systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade,
-    private val streamProber: com.armanmaurya.internetradio.domain.media.StreamProber
+    private val streamProber: StreamProber
 ) : ViewModel() {
 
     // Using useFilterOnFavorites and isGridViewFavorites for now, maybe we can rename these in Settings later
@@ -49,11 +54,11 @@ class LibraryViewModel @Inject constructor(
         .map { it.isGridViewFavorites }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    val sortOption: StateFlow<com.armanmaurya.internetradio.data.model.LibrarySortOption> = settingsRepository.appPreferencesFlow
+    val sortOption: StateFlow<LibrarySortOption> = settingsRepository.appPreferencesFlow
         .map { it.librarySortOption }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), LibrarySortOption.RECENTLY_ADDED)
 
-    fun setSortOption(option: com.armanmaurya.internetradio.data.model.LibrarySortOption) {
+    fun setSortOption(option: LibrarySortOption) {
         viewModelScope.launch {
             settingsRepository.setLibrarySortOption(option)
         }
@@ -69,7 +74,7 @@ class LibraryViewModel @Inject constructor(
     private val _tagSearchQuery = MutableStateFlow("")
     
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.FlowPreview::class)
-    val fetchedTags: StateFlow<List<com.armanmaurya.internetradio.data.model.Tag>> = _tagSearchQuery
+    val fetchedTags: StateFlow<List<Tag>> = _tagSearchQuery
         .debounce(500)
         .flatMapLatest { query ->
             flow {
@@ -94,19 +99,19 @@ class LibraryViewModel @Inject constructor(
         .distinctUntilChanged()
         .flatMapLatest { sortOpt ->
             when (sortOpt) {
-                com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName()
-                com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending()
-                com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed()
-                com.armanmaurya.internetradio.data.model.LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed()
-                com.armanmaurya.internetradio.data.model.LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder()
-                com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations()
-                com.armanmaurya.internetradio.data.model.LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded()
+                LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName()
+                LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending()
+                LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed()
+                LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed()
+                LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder()
+                LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations()
+                LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded()
             }
         }
 
     private fun filterStations(
         stationsList: List<RadioStation>,
-        preferences: com.armanmaurya.internetradio.data.model.AppPreferences,
+        preferences: AppPreferences,
         query: String
     ): List<RadioStation> {
         val hasQuery = query.isNotBlank()
@@ -249,7 +254,7 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    suspend fun probeStream(url: String): com.armanmaurya.internetradio.domain.model.StreamProbeResult? {
+    suspend fun probeStream(url: String): StreamProbeResult? {
         return streamProber.probe(url)
     }
 

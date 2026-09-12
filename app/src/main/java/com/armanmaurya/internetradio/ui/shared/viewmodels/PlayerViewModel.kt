@@ -2,7 +2,8 @@ package com.armanmaurya.internetradio.ui.shared.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.LyricsState
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.RecentRepository
 import com.armanmaurya.internetradio.domain.repository.StationRepository
@@ -66,9 +67,9 @@ class PlayerViewModel @Inject constructor(
     }
         .flatMapLatest { data ->
             if (data.track.isNullOrBlank()) {
-                flowOf(com.armanmaurya.internetradio.data.model.LyricsState.NotAvailable)
+                flowOf(LyricsState.NotAvailable)
             } else if (data.isFetching) {
-                flowOf(com.armanmaurya.internetradio.data.model.LyricsState.Loading)
+                flowOf(LyricsState.Loading)
             } else {
                 if (data.cleanTrack != null) {
                     lyricsRepository.getLyricsForTrack(data.cleanTrack, data.cleanArtist)
@@ -80,7 +81,7 @@ class PlayerViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = com.armanmaurya.internetradio.data.model.LyricsState.Loading
+            initialValue = LyricsState.Loading
         )
 
     val activeSessions = recordingManager.sessionsFlow

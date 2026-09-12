@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.data.model
+package com.armanmaurya.internetradio.domain.model
 
 import com.armanmaurya.internetradio.ui.shared.theme.AppColor
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme

@@ -8,10 +8,11 @@ import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.AppPreferences
-import com.armanmaurya.internetradio.data.model.ConflictStrategy
-import com.armanmaurya.internetradio.data.model.LibraryBackup
-import com.armanmaurya.internetradio.data.model.toBackupStation
+import com.armanmaurya.internetradio.domain.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.ConflictStrategy
+import com.armanmaurya.internetradio.domain.model.StartOfWeek
+import com.armanmaurya.internetradio.data.backup.LibraryBackup
+import com.armanmaurya.internetradio.data.backup.toBackupStation
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.ui.shared.theme.AppColor
@@ -171,7 +172,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun setStartOfWeek(startOfWeek: com.armanmaurya.internetradio.data.model.StartOfWeek) {
+    fun setStartOfWeek(startOfWeek: StartOfWeek) {
         viewModelScope.launch {
             settingsRepository.setStartOfWeek(startOfWeek)
         }

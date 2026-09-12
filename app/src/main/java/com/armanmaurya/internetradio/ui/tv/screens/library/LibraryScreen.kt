@@ -53,8 +53,8 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.LibrarySortOption
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.LibrarySortOption
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.ui.tv.components.StationCard
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
 

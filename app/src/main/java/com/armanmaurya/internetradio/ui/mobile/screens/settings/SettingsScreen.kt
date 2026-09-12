@@ -82,9 +82,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.AppPreferences
-import com.armanmaurya.internetradio.data.model.ConflictStrategy
-import com.armanmaurya.internetradio.data.model.StartOfWeek
+import com.armanmaurya.internetradio.domain.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.ConflictStrategy
+import com.armanmaurya.internetradio.domain.model.StartOfWeek
 import com.armanmaurya.internetradio.ui.shared.viewmodels.SettingsViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.ExpandableItem
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.Item

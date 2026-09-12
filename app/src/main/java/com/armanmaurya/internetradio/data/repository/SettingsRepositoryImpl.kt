@@ -9,8 +9,10 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.preferencesDataStore
-import com.armanmaurya.internetradio.data.model.AppPreferences
-import com.armanmaurya.internetradio.data.model.ConflictStrategy
+import com.armanmaurya.internetradio.domain.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.ConflictStrategy
+import com.armanmaurya.internetradio.domain.model.LibrarySortOption
+import com.armanmaurya.internetradio.domain.model.StartOfWeek
 import com.armanmaurya.internetradio.ui.shared.theme.AppColor
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -125,9 +127,9 @@ class SettingsRepositoryImpl @Inject constructor(
             val conflictStrategyName = preferences[PreferencesKeys.CONFLICT_STRATEGY]
             val conflictStrategy = ConflictStrategy.entries.find { it.name == conflictStrategyName } ?: ConflictStrategy.SKIP
             val librarySortOptionName = preferences[PreferencesKeys.LIBRARY_SORT_OPTION]
-            val librarySortOption = com.armanmaurya.internetradio.data.model.LibrarySortOption.entries.find { it.name == librarySortOptionName } ?: com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED
+            val librarySortOption = LibrarySortOption.entries.find { it.name == librarySortOptionName } ?: LibrarySortOption.RECENTLY_ADDED
             val startOfWeekName = preferences[PreferencesKeys.START_OF_WEEK]
-            val startOfWeek = com.armanmaurya.internetradio.data.model.StartOfWeek.entries.find { it.name == startOfWeekName } ?: com.armanmaurya.internetradio.data.model.StartOfWeek.SUNDAY
+            val startOfWeek = StartOfWeek.entries.find { it.name == startOfWeekName } ?: StartOfWeek.SUNDAY
             val showCoverArtInNotification = preferences[PreferencesKeys.SHOW_COVER_ART_IN_NOTIFICATION] ?: true
             val isAlarmVolumeTransitionEnabled = preferences[PreferencesKeys.IS_ALARM_VOLUME_TRANSITION_ENABLED] ?: false
             val alarmVolumeTransitionSeconds = preferences[PreferencesKeys.ALARM_VOLUME_TRANSITION_SECONDS] ?: 15
@@ -363,13 +365,13 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun setLibrarySortOption(option: com.armanmaurya.internetradio.data.model.LibrarySortOption) {
+    override suspend fun setLibrarySortOption(option: LibrarySortOption) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.LIBRARY_SORT_OPTION] = option.name
         }
     }
 
-    override suspend fun setStartOfWeek(startOfWeek: com.armanmaurya.internetradio.data.model.StartOfWeek) {
+    override suspend fun setStartOfWeek(startOfWeek: StartOfWeek) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.START_OF_WEEK] = startOfWeek.name
         }

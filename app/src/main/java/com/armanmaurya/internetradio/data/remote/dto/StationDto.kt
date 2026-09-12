@@ -1,6 +1,6 @@
 package com.armanmaurya.internetradio.data.remote.dto
 
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.core.utils.LanguageMapper
 import com.google.gson.annotations.SerializedName
 

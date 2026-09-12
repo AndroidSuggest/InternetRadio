@@ -1,10 +1,10 @@
 package com.armanmaurya.internetradio.domain.repository
 
-import com.armanmaurya.internetradio.data.model.Country
-import com.armanmaurya.internetradio.data.model.Language
-import com.armanmaurya.internetradio.data.model.RadioStation
-import com.armanmaurya.internetradio.data.model.Tag
-import com.armanmaurya.internetradio.data.remote.AddStationResponse
+import com.armanmaurya.internetradio.domain.model.Country
+import com.armanmaurya.internetradio.domain.model.Language
+import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.Tag
+import com.armanmaurya.internetradio.domain.model.StationAddResult
 
 interface StationRepository {
     suspend fun filterStations(
@@ -49,5 +49,5 @@ interface StationRepository {
         tags: String? = null,
         geoLat: Double? = null,
         geoLong: Double? = null,
-    ): Result<AddStationResponse>
+    ): Result<StationAddResult>
 }

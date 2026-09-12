@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.data.model
+package com.armanmaurya.internetradio.domain.model
 
 data class LrcLine(val timestampMs: Long, val text: String)
 

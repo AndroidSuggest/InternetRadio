@@ -1,7 +1,5 @@
-package com.armanmaurya.internetradio.data.media
+package com.armanmaurya.internetradio.core.media.prober
 
-import com.armanmaurya.internetradio.domain.media.StreamProber
-import com.armanmaurya.internetradio.domain.model.StreamProbeResult
 import com.arthenica.ffmpegkit.FFprobeKit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

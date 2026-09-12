@@ -52,7 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.RadioSearchBar
 import kotlinx.coroutines.launch
 

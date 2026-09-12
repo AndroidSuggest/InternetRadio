@@ -54,14 +54,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.player.PlaybackSource
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.ToggleChip
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
-import com.armanmaurya.internetradio.data.model.LibrarySortOption
+import com.armanmaurya.internetradio.domain.model.LibrarySortOption
 import sh.calvin.reorderable.*
 
 

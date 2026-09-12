@@ -31,7 +31,8 @@ import android.widget.Toast
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.core.media.prober.StreamProbeResult
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
 import kotlinx.coroutines.launch
@@ -134,9 +135,9 @@ fun EditStationScreen(
         var probedBitrate by remember(station) { mutableStateOf(station?.bitrate ?: 0) }
         
         var showOverwriteDialog by remember { mutableStateOf(false) }
-        var pendingProbeResult by remember { mutableStateOf<com.armanmaurya.internetradio.domain.model.StreamProbeResult?>(null) }
+        var pendingProbeResult by remember { mutableStateOf<StreamProbeResult?>(null) }
         var probeErrorMessage by remember { mutableStateOf<String?>(null) }
-        val handleProbeResult: (com.armanmaurya.internetradio.domain.model.StreamProbeResult) -> Unit = { result ->
+        val handleProbeResult: (StreamProbeResult) -> Unit = { result ->
             probedCodec = result.codec
             probedBitrate = result.bitrate
             

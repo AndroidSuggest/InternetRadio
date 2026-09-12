@@ -45,7 +45,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
 import com.armanmaurya.internetradio.data.local.entity.ScheduleType
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.StartOfWeek
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.SchedulesViewModel
 import java.util.Calendar
@@ -159,7 +160,7 @@ private fun ScheduleConfigurationForm(
     modifier: Modifier = Modifier,
     station: RadioStation?,
     initialSchedule: ScheduleEntity?,
-    startOfWeek: com.armanmaurya.internetradio.data.model.StartOfWeek,
+    startOfWeek: StartOfWeek,
     onStationClick: () -> Unit,
     onSave: (ScheduleEntity) -> Unit,
     onNavigateBack: () -> Unit,

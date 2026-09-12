@@ -3,7 +3,7 @@ package com.armanmaurya.internetradio.data.repository
 import com.armanmaurya.internetradio.data.local.dao.RecentStationDao
 import com.armanmaurya.internetradio.data.local.entity.toDomain
 import com.armanmaurya.internetradio.data.local.entity.toRecentEntity
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

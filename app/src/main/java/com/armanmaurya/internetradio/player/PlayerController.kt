@@ -7,10 +7,13 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.LibrarySortOption
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.armanmaurya.internetradio.core.media.prober.StreamProber
 import com.armanmaurya.internetradio.domain.repository.RecentRepository
 import com.armanmaurya.internetradio.domain.repository.StationRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,7 +39,7 @@ class PlayerController @Inject constructor(
     private val libraryRepository: com.armanmaurya.internetradio.domain.repository.LibraryRepository,
     private val recordingManager: RecordingManager,
     private val okHttpClient: okhttp3.OkHttpClient,
-    private val streamProber: com.armanmaurya.internetradio.domain.media.StreamProber
+    private val streamProber: StreamProber
 ) {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private val controller: MediaController? get() = if (controllerFuture?.isDone == true) controllerFuture?.get() else null
@@ -567,15 +570,15 @@ class PlayerController @Inject constructor(
             .build()
     }
 
-    private suspend fun getFilteredLibraryStations(prefs: com.armanmaurya.internetradio.data.model.AppPreferences): List<RadioStation> {
+    private suspend fun getFilteredLibraryStations(prefs: AppPreferences): List<RadioStation> {
         val stations = when (prefs.librarySortOption) {
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations().first()
-            com.armanmaurya.internetradio.data.model.LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded().first()
+            LibrarySortOption.NAME_A_Z -> libraryRepository.getStationsByName().first()
+            LibrarySortOption.NAME_Z_A -> libraryRepository.getStationsByNameDescending().first()
+            LibrarySortOption.RECENTLY_PLAYED -> libraryRepository.getStationsByRecentlyPlayed().first()
+            LibrarySortOption.LEAST_RECENTLY_PLAYED -> libraryRepository.getStationsByLeastRecentlyPlayed().first()
+            LibrarySortOption.CUSTOM -> libraryRepository.getStationsByCustomOrder().first()
+            LibrarySortOption.RECENTLY_ADDED -> libraryRepository.getAllStations().first()
+            LibrarySortOption.OLDEST_ADDED -> libraryRepository.getStationsByOldestAdded().first()
         }
 
         return if (prefs.useFilterOnFavorites) {

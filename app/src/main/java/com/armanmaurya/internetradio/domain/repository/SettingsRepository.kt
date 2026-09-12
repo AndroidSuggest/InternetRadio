@@ -1,9 +1,9 @@
 package com.armanmaurya.internetradio.domain.repository
 
-import com.armanmaurya.internetradio.data.model.AppPreferences
-import com.armanmaurya.internetradio.data.model.ConflictStrategy
-import com.armanmaurya.internetradio.data.model.LibrarySortOption
-import com.armanmaurya.internetradio.data.model.StartOfWeek
+import com.armanmaurya.internetradio.domain.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.ConflictStrategy
+import com.armanmaurya.internetradio.domain.model.LibrarySortOption
+import com.armanmaurya.internetradio.domain.model.StartOfWeek
 import com.armanmaurya.internetradio.ui.shared.theme.AppColor
 import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import kotlinx.coroutines.flow.Flow

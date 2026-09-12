@@ -1,6 +1,6 @@
 package com.armanmaurya.internetradio.domain.repository
 
-import com.armanmaurya.internetradio.data.model.LyricsState
+import com.armanmaurya.internetradio.domain.model.LyricsState
 import kotlinx.coroutines.flow.Flow
 
 interface LyricsRepository {

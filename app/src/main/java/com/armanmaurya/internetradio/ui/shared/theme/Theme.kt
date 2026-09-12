@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.LocalContext
-import com.armanmaurya.internetradio.data.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.AppPreferences
 
 private fun ColorScheme.applyPureBlack(): ColorScheme = copy(
     background = Color.Black,

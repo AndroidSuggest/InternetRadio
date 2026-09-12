@@ -1,7 +1,7 @@
 package com.armanmaurya.internetradio.data.repository
 
-import com.armanmaurya.internetradio.data.model.LrcLine
-import com.armanmaurya.internetradio.data.model.LyricsState
+import com.armanmaurya.internetradio.domain.model.LrcLine
+import com.armanmaurya.internetradio.domain.model.LyricsState
 import com.armanmaurya.internetradio.data.remote.LrcLibApi
 import com.armanmaurya.internetradio.core.utils.TrackSanitizer
 import kotlinx.coroutines.flow.Flow

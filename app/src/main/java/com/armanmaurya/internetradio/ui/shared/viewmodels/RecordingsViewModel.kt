@@ -3,6 +3,7 @@ package com.armanmaurya.internetradio.ui.shared.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armanmaurya.internetradio.domain.model.RecordingFolder
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.RecordingRepository
 import com.armanmaurya.internetradio.domain.model.RecordingFile
 import com.armanmaurya.internetradio.player.PlaybackService
@@ -65,7 +66,7 @@ class RecordingsViewModel @Inject constructor(
         }
     }
 
-    fun toggleLibrary(station: com.armanmaurya.internetradio.data.model.RadioStation) {
+    fun toggleLibrary(station: RadioStation) {
         viewModelScope.launch {
             if (libraryStationUuids.value.contains(station.stationUuid)) {
                 libraryRepository.removeStationFromLibrary(station.stationUuid)

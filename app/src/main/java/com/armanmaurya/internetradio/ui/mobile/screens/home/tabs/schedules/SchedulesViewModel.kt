@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
 import com.armanmaurya.internetradio.domain.repository.ScheduleRepository
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
-import com.armanmaurya.internetradio.data.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.player.ScheduleManager
-import com.armanmaurya.internetradio.data.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.AppPreferences
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
