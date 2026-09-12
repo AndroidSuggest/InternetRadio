@@ -61,6 +61,9 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     val playPauseAction = actionSendBroadcast(
         Intent("com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE").setComponent(receiverComponent)
     )
+    val isIdleEmpty = (state.title == context.getString(R.string.widget_nothing_playing) || state.title.isBlank()) &&
+        state.stationName.isNullOrBlank()
+    val effectivePlayPauseAction = if (isIdleEmpty) openAppAction else playPauseAction
     val nextAction = actionSendBroadcast(
         Intent("com.armanmaurya.internetradio.ACTION_WIDGET_NEXT").setComponent(receiverComponent)
     )
@@ -118,7 +121,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 state = state,
                 showExtraControls = showExtraControls,
                 iconFilter = iconFilter,
-                playPauseAction = playPauseAction,
+                playPauseAction = effectivePlayPauseAction,
                 prevAction = prevAction,
                 nextAction = nextAction,
                 modifier = GlanceModifier.padding(end = 4.dp)
@@ -158,7 +161,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     state = state,
                     showExtraControls = showExtraControls,
                     iconFilter = iconFilter,
-                    playPauseAction = playPauseAction,
+                    playPauseAction = effectivePlayPauseAction,
                     prevAction = prevAction,
                     nextAction = nextAction,
                     modifier = GlanceModifier.defaultWeight().fillMaxHeight()
@@ -210,7 +213,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     state = state,
                     showExtraControls = showExtraControls,
                     iconFilter = iconFilter,
-                    playPauseAction = playPauseAction,
+                    playPauseAction = effectivePlayPauseAction,
                     prevAction = prevAction,
                     nextAction = nextAction,
                     modifier = GlanceModifier.fillMaxWidth().padding(top = 4.dp)

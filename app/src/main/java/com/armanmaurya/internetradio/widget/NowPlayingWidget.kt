@@ -68,6 +68,11 @@ class NowPlayingWidget : GlanceAppWidget() {
         } catch (e: Exception) {
             1.0f
         }
+        val initialRecent = try {
+            entryPoint.recentRepository().getAllRecent().first().firstOrNull()
+        } catch (e: Exception) {
+            null
+        }
 
         provideContent {
             // Read state reactively inside provideContent
@@ -79,64 +84,72 @@ class NowPlayingWidget : GlanceAppWidget() {
             val savedTitle = prefs[WidgetStateKeys.TITLE] ?: latest?.title
             val nothingPlaying = context.getString(R.string.widget_nothing_playing)
             
-            var lastStation by remember { mutableStateOf<com.armanmaurya.internetradio.data.model.RadioStation?>(null) }
-            var hasCleanedStaleState by remember { mutableStateOf(false) }
+            var lastStation by remember { mutableStateOf(initialRecent) }
+            var cleanedStationUuid by remember { mutableStateOf<String?>(null) }
 
-            LaunchedEffect(savedTitle, isServiceRunning) {
-                if (isServiceRunning) {
-                    if (prefs[WidgetStateKeys.TITLE] == null) {
+            LaunchedEffect(Unit) {
+                entryPoint.recentRepository().getAllRecent().collect { list ->
+                    lastStation = list.firstOrNull()
+                }
+            }
+
+            val isPlaying = prefs[WidgetStateKeys.IS_PLAYING] ?: latest?.isPlaying ?: false
+            val isCoverArtFetched = if (isPlaying) (prefs[WidgetStateKeys.IS_COVER_ART_FETCHED] ?: latest?.isCoverArtFetched ?: false) else false
+
+            LaunchedEffect(savedTitle, isPlaying, lastStation) {
+                if (isPlaying) {
+                    if (prefs[WidgetStateKeys.TITLE] == null && isServiceRunning) {
                         com.armanmaurya.internetradio.player.PlaybackService.requestWidgetUpdate()
                     }
                 } else {
-                    val entryPoint = EntryPointAccessors.fromApplication(context, WidgetEntryPoint::class.java)
-                    val recent = entryPoint.recentRepository().getAllRecent().first().firstOrNull()
-                    lastStation = recent
-                    if (!hasCleanedStaleState && (
-                        prefs[WidgetStateKeys.IS_PLAYING] == true || 
-                        !prefs[WidgetStateKeys.ARTIST].isNullOrBlank() || 
-                        prefs[WidgetStateKeys.IS_COVER_ART_FETCHED] == true ||
-                        (savedTitle != null && savedTitle != recent?.name && savedTitle != nothingPlaying)
-                    )) {
-                        hasCleanedStaleState = true
-                        cleanStaleWidgetState(context.applicationContext, recent?.name, recent?.favicon, id)
+                    val currentUuid = lastStation?.stationUuid ?: ""
+                    val expectedTitle = lastStation?.name ?: nothingPlaying
+                    val expectedStationName = lastStation?.name ?: ""
+                    val isPrefsStale = prefs[WidgetStateKeys.TITLE] != expectedTitle ||
+                        prefs[WidgetStateKeys.STATION_NAME] != expectedStationName ||
+                        prefs[WidgetStateKeys.IS_PLAYING] == true ||
+                        !prefs[WidgetStateKeys.ARTIST].isNullOrBlank() ||
+                        prefs[WidgetStateKeys.IS_COVER_ART_FETCHED] == true
+
+                    if (cleanedStationUuid != currentUuid && isPrefsStale) {
+                        cleanedStationUuid = currentUuid
+                        cleanStaleWidgetState(context.applicationContext, lastStation?.name, lastStation?.favicon, id)
                     }
                 }
             }
             
-            val isPlaying = if (isServiceRunning) (prefs[WidgetStateKeys.IS_PLAYING] ?: latest?.isPlaying ?: false) else false
-            val isCoverArtFetched = if (isServiceRunning) (prefs[WidgetStateKeys.IS_COVER_ART_FETCHED] ?: latest?.isCoverArtFetched ?: false) else false
+            val stationName = if (isPlaying) {
+                prefs[WidgetStateKeys.STATION_NAME]?.takeIf { it.isNotBlank() } ?: latest?.stationName ?: lastStation?.name
+            } else {
+                lastStation?.name
+            }
             
-            val savedStationName = prefs[WidgetStateKeys.STATION_NAME]?.takeIf { it.isNotBlank() } ?: latest?.stationName
-            val stationName = savedStationName ?: lastStation?.name
-            
-            val title = if (isServiceRunning) {
+            val title = if (isPlaying) {
                 savedTitle?.takeIf { it.isNotBlank() && it != "Nothing playing" && it != nothingPlaying } 
                     ?: stationName 
                     ?: nothingPlaying
             } else {
-                stationName ?: nothingPlaying
+                lastStation?.name ?: nothingPlaying
             }
                 
-            val artist = if (isServiceRunning) {
+            val artist = if (isPlaying) {
                 prefs[WidgetStateKeys.ARTIST] ?: latest?.artist ?: ""
             } else {
                 ""
             }
 
-            val artworkUrl = if (isServiceRunning) {
+            val artworkUrl = if (isPlaying) {
                 (prefs[WidgetStateKeys.ARTWORK_URL] ?: latest?.artworkUrl)?.takeIf { it.isNotBlank() } ?: lastStation?.favicon
             } else {
-                lastStation?.favicon 
-                    ?: if (prefs[WidgetStateKeys.IS_COVER_ART_FETCHED] == true) prefs[WidgetStateKeys.STATION_THUMBNAIL_URL]?.takeIf { it.isNotBlank() }
-                       else prefs[WidgetStateKeys.ARTWORK_URL]?.takeIf { it.isNotBlank() }
+                lastStation?.favicon
             }
                 
             val stationThumbnailUrl = if (isCoverArtFetched) {
                 (prefs[WidgetStateKeys.STATION_THUMBNAIL_URL] ?: latest?.stationThumbnailUrl)?.takeIf { it.isNotBlank() } ?: lastStation?.favicon
             } else null
                 
-            val hasNext = if (isServiceRunning) (prefs[WidgetStateKeys.HAS_NEXT] ?: latest?.hasNext ?: false) else false
-            val hasPrev = if (isServiceRunning) (prefs[WidgetStateKeys.HAS_PREV] ?: latest?.hasPrev ?: false) else false
+            val hasNext = if (isPlaying) (prefs[WidgetStateKeys.HAS_NEXT] ?: latest?.hasNext ?: false) else false
+            val hasPrev = if (isPlaying) (prefs[WidgetStateKeys.HAS_PREV] ?: latest?.hasPrev ?: false) else false
 
             // Pre-computed atomic palette colors (Spotify pattern)
             val precomputedBgColorInt = prefs[WidgetStateKeys.BG_COLOR] ?: latest?.bgColor

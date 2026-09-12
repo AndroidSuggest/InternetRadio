@@ -31,13 +31,15 @@ fun NowPlayingTrackInfo(
             ),
             maxLines = 1
         )
-        Text(
-            text = artist,
-            style = TextStyle(
-                color = artistColor ?: GlanceTheme.colors.onPrimary,
-                fontSize = 12.sp
-            ),
-            maxLines = 1
-        )
+        if (artist.isNotBlank()) {
+            Text(
+                text = artist,
+                style = TextStyle(
+                    color = artistColor ?: GlanceTheme.colors.onPrimary,
+                    fontSize = 12.sp
+                ),
+                maxLines = 1
+            )
+        }
     }
 }

@@ -183,6 +183,10 @@ class NowPlayingWidgetConfigureActivity : ComponentActivity() {
             try {
                 val manager = GlanceAppWidgetManager(context)
                 val glanceId = manager.getGlanceIdBy(appWidgetId)
+                if (!com.armanmaurya.internetradio.player.PlaybackService.isRunning) {
+                    val lastStation = recentRepository.getAllRecent().first().firstOrNull()
+                    cleanStaleWidgetState(context, lastStation?.name, lastStation?.favicon, glanceId)
+                }
                 updateAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId) { prefs ->
                     prefs.toMutablePreferences().apply {
                         this[WidgetStateKeys.BG_ALPHA] = alpha

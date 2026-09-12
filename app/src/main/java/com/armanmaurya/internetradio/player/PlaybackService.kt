@@ -21,6 +21,7 @@ import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.widget.pushWidgetUpdate
+import com.armanmaurya.internetradio.widget.cleanStaleWidgetState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -334,6 +335,9 @@ class PlaybackService : MediaLibraryService() {
         super.onCreate()
         isRunning = true
         instance = this
+        try {
+            getSystemService(android.app.NotificationManager::class.java)?.cancel(2001)
+        } catch (_: Exception) {}
 
         // Register the widget broadcast receiver so buttons work on all OEM launchers
         val widgetFilter = android.content.IntentFilter().apply {
@@ -606,24 +610,9 @@ class PlaybackService : MediaLibraryService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         if (action == "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE" || action == "com.armanmaurya.internetradio.ACTION_PLAY_STATION") {
-            // Instantly elevate to foreground to bypass Android 12+ background network restrictions
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                val channelId = "schedule_channel"
-                val nm = getSystemService(android.app.NotificationManager::class.java)
-                if (nm.getNotificationChannel(channelId) == null) {
-                    val channel = android.app.NotificationChannel(
-                        channelId, "Scheduled Playback",
-                        android.app.NotificationManager.IMPORTANCE_LOW
-                    ).apply { setShowBadge(false) }
-                    nm.createNotificationChannel(channel)
-                }
-                val notification = android.app.Notification.Builder(this, channelId)
-                    .setSmallIcon(com.armanmaurya.internetradio.R.drawable.media3_notification_small_icon)
-                    .setContentTitle("Connecting to station...")
-                    .setOngoing(true)
-                    .build()
-                startForeground(2001, notification)
-            }
+            try {
+                getSystemService(android.app.NotificationManager::class.java)?.cancel(2001)
+            } catch (_: Exception) {}
 
             if (action == "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE") {
                 val scheduleId = intent.getIntExtra(ScheduleReceiver.EXTRA_SCHEDULE_ID, -1)
@@ -675,31 +664,9 @@ class PlaybackService : MediaLibraryService() {
         } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" ||
                    action == "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" ||
                    action == "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS") {
-            // Satisfy Android 12+ requirement: startForegroundService must be followed by
-            // startForeground within 5 seconds. If already in foreground, this is a no-op.
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                val channelId = "schedule_channel"
-                val nm = getSystemService(android.app.NotificationManager::class.java)
-                if (nm.getNotificationChannel(channelId) == null) {
-                    val channel = android.app.NotificationChannel(
-                        channelId, "Scheduled Playback",
-                        android.app.NotificationManager.IMPORTANCE_LOW
-                    ).apply { setShowBadge(false) }
-                    nm.createNotificationChannel(channel)
-                }
-                val note = android.app.Notification.Builder(this, channelId)
-                    .setSmallIcon(com.armanmaurya.internetradio.R.drawable.media3_notification_small_icon)
-                    .setContentTitle("Updating player...")
-                    .setOngoing(false)
-                    .build()
-                startForeground(2001, note)
-                // Media3 will immediately replace this with its proper notification.
-                // Stop the dummy to avoid it showing when paused.
-                serviceScope.launch {
-                    kotlinx.coroutines.delay(300)
-                    stopForeground(true)
-                }
-            }
+            try {
+                getSystemService(android.app.NotificationManager::class.java)?.cancel(2001)
+            } catch (_: Exception) {}
             when (action) {
                 "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" -> {
                     val p = player
@@ -711,10 +678,26 @@ class PlaybackService : MediaLibraryService() {
                         }
                     }
                 }
-                "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" ->
-                    player?.takeIf { it.hasNextMediaItem() }?.seekToNextMediaItem()
-                "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS" ->
-                    player?.takeIf { it.hasPreviousMediaItem() }?.seekToPreviousMediaItem()
+                "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" -> {
+                    val p = player
+                    if (p != null) {
+                        if (p.mediaItemCount == 0) {
+                            serviceScope.launch { restoreAndPlayLastStation() }
+                        } else if (p.hasNextMediaItem()) {
+                            p.seekToNextMediaItem()
+                        }
+                    }
+                }
+                "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS" -> {
+                    val p = player
+                    if (p != null) {
+                        if (p.mediaItemCount == 0) {
+                            serviceScope.launch { restoreAndPlayLastStation() }
+                        } else if (p.hasPreviousMediaItem()) {
+                            p.seekToPreviousMediaItem()
+                        }
+                    }
+                }
             }
         } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_UPDATE") {
             updateWidget()
@@ -797,19 +780,9 @@ class PlaybackService : MediaLibraryService() {
      * Call this when the service is about to be destroyed or when playback stops.
      */
     private fun pushStoppedWidgetUpdate() {
-        serviceScope.launch(Dispatchers.IO) {
-            pushWidgetUpdate(
-                context             = applicationContext,
-                title               = getString(R.string.widget_nothing_playing),
-                artist              = "",
-                artworkUrl          = null,
-                isPlaying           = false,
-                hasNext             = false,
-                hasPrev             = false,
-                stationName         = null,
-                stationThumbnailUrl = null,
-                isCoverArtFetched   = false,
-            )
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            val lastStation = recentRepository.getAllRecent().first().firstOrNull()
+            cleanStaleWidgetState(applicationContext, lastStation?.name, lastStation?.favicon)
         }
     }
 
@@ -908,6 +881,12 @@ class PlaybackService : MediaLibraryService() {
     private suspend fun restoreAndPlayLastStation() {
         val p = player ?: return
         val lastStation = recentRepository.getAllRecent().first().firstOrNull() ?: run {
+            cleanStaleWidgetState(applicationContext, null, null)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+            } else {
+                stopForeground(true)
+            }
             stopSelf()
             return
         }

@@ -1,15 +1,21 @@
 package com.armanmaurya.internetradio.ui.shared.viewmodels
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armanmaurya.internetradio.data.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.RecentRepository
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
+import com.armanmaurya.internetradio.player.PlayerController
+import com.armanmaurya.internetradio.player.PlaybackService
+import com.armanmaurya.internetradio.widget.cleanStaleWidgetState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,9 +25,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RecentViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val recentRepository: RecentRepository,
     private val settingsRepository: SettingsRepository,
-    private val libraryRepository: LibraryRepository
+    private val libraryRepository: LibraryRepository,
+    private val playerController: PlayerController
 ) : ViewModel() {
 
     val useFilter: StateFlow<Boolean> = settingsRepository.appPreferencesFlow
@@ -99,12 +107,19 @@ class RecentViewModel @Inject constructor(
     fun removeRecent(stationUuid: String) {
         viewModelScope.launch {
             recentRepository.removeRecent(stationUuid)
+            if (!playerController.playbackState.value.isPlaying) {
+                val nextStation = recentRepository.getAllRecent().first().firstOrNull()
+                cleanStaleWidgetState(context, nextStation?.name, nextStation?.favicon)
+            }
         }
     }
 
     fun clearAllRecent() {
         viewModelScope.launch {
             recentRepository.clearAllRecent()
+            if (!playerController.playbackState.value.isPlaying) {
+                cleanStaleWidgetState(context, null, null)
+            }
         }
     }
 

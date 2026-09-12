@@ -33,6 +33,13 @@ class NowPlayingWidgetReceiver : GlanceAppWidgetReceiver() {
                         WidgetEntryPoint::class.java
                     )
                     val lastStation = entryPoint.recentRepository().getAllRecent().first().firstOrNull()
+                    val manager = androidx.glance.appwidget.GlanceAppWidgetManager(context.applicationContext)
+                    for (appWidgetId in appWidgetIds) {
+                        try {
+                            val glanceId = manager.getGlanceIdBy(appWidgetId)
+                            cleanStaleWidgetState(context.applicationContext, lastStation?.name, lastStation?.favicon, glanceId)
+                        } catch (_: Exception) {}
+                    }
                     cleanStaleWidgetState(context.applicationContext, lastStation?.name, lastStation?.favicon)
                 } catch (e: Exception) {
                     cleanStaleWidgetState(context.applicationContext, null, null)
@@ -45,10 +52,17 @@ class NowPlayingWidgetReceiver : GlanceAppWidgetReceiver() {
 class WidgetControlReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         val action = intent?.action ?: return
-        context.startForegroundService(
-            Intent(context, PlaybackService::class.java).apply {
-                this.action = action
+        val serviceIntent = Intent(context, PlaybackService::class.java).apply {
+            this.action = action
+        }
+        try {
+            if (PlaybackService.isRunning) {
+                context.startService(serviceIntent)
+            } else {
+                context.startForegroundService(serviceIntent)
             }
-        )
+        } catch (e: Exception) {
+            android.util.Log.e("WidgetControlReceiver", "Failed to start service for widget action: $action", e)
+        }
     }
 }
