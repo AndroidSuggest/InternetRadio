@@ -385,4 +385,16 @@
     <string name="settings_custom_color_cancel">Anuluj</string>
     <string name="settings_keep_screen_on_title">Nie wygaszaj ekranu</string>
     <string name="settings_keep_screen_on_desc">Zapobiega wygaszaniu ekranu, gdy jest on rozwinięty</string>
+    <string name="settings_widget_section">Widżet</string>
+    <string name="settings_widget_transparency_title">Nieprzezroczystość tła</string>
+    <string name="settings_widget_transparency_subtitle">Dostosuj przezroczystość tła widżetu na ekranie głównym</string>
+    <string name="settings_widget_opacity_opaque">100% (Nieprzezroczyste)</string>
+    <string name="settings_widget_opacity_transparent">0% (Przezroczysty)</string>
+    <string name="settings_widget_opacity_percent">%1$d%%</string>
+    <string name="widget_configure_title">Konfiguracja widżetu</string>
+    <string name="widget_configure_apply">Zastosuj</string>
+    <string name="widget_configure_preview">Podgląd na żywo</string>
+    <string name="widget_configure_presets">Szablony</string>
+    <string name="settings_widget_appearance_title">Wygląd widżetu</string>
+    <string name="settings_widget_appearance_subtitle">Dostosuj przezroczystość i podgląd widżetu ekranu głównego</string>
 </resources>
