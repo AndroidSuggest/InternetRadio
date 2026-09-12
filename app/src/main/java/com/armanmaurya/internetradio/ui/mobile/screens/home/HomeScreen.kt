@@ -426,8 +426,8 @@ fun HomeScreen(
                         3 -> com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.RecordingsContent(
                             activeSessions = activeSessions,
                             onStopRecording = { uuid ->
-                                val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
-                                    action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_STOP
+                                val intent = android.content.Intent(context, com.armanmaurya.internetradio.recording.RecordingService::class.java).apply {
+                                    action = com.armanmaurya.internetradio.recording.RecordingService.ACTION_STOP
                                     putExtra("UUID", uuid)
                                 }
                                 context.startService(intent)

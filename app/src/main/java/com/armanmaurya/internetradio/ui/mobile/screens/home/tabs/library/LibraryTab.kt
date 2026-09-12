@@ -79,7 +79,7 @@ fun LibraryContent(
     playingStationUuid: String? = null,
     isPlaybackActive: Boolean = false,
     searchQuery: String = "",
-    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
     onToggleRecording: (RadioStation) -> Unit = {},
     onDragStateChange: (Boolean) -> Unit = {}
 ) {

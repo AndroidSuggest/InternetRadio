@@ -110,7 +110,7 @@ fun PlayerSheetContent(
     isFavorite: Boolean,
     trackHistory: List<TrackHistoryEntity> = emptyList(),
     stationRecordings: List<com.armanmaurya.internetradio.domain.model.RecordingFile>? = null,
-    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
     retryCountdown: Int? = null,
     lyricsState: LyricsState = LyricsState.Loading,
     progress: Float, // 0.0 (collapsed) to 1.0 (expanded)
@@ -1290,8 +1290,8 @@ fun PlayerSheetContent(
                                 listState = recordingsListState,
                                 nestedScrollConnection = nestedScrollConnection,
                                 onStopRecording = { uuid ->
-                                    val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
-                                        action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_STOP
+                                    val intent = android.content.Intent(context, com.armanmaurya.internetradio.recording.RecordingService::class.java).apply {
+                                        action = com.armanmaurya.internetradio.recording.RecordingService.ACTION_STOP
                                         putExtra("UUID", uuid)
                                     }
                                     context.startService(intent)

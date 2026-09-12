@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 import kotlin.math.sqrt
 
 import androidx.media3.common.audio.AudioProcessor.AudioFormat
+import com.armanmaurya.internetradio.recording.RecordingManager
 
 class AmplitudeAudioProcessor(
     private val recordingManager: RecordingManager

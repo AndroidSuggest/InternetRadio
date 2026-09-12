@@ -86,7 +86,7 @@ internal fun ExpandedHomeLayout(
     tabs: List<String>,
     pagerState: androidx.compose.foundation.pager.PagerState,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
-    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
     onToggleRecording: (RadioStation) -> Unit = {}
 ) {
     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black
@@ -384,7 +384,7 @@ private fun ExpandedSearchOverlay(
     onBrowseStationClick: (RadioStation) -> Unit,
     onLibraryHeaderClick: () -> Unit = {},
     onBrowseHeaderClick: () -> Unit = {},
-    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
     onToggleRecording: (RadioStation) -> Unit = {},
     modifier: Modifier = Modifier.fillMaxSize()
 ) {

@@ -91,7 +91,7 @@ fun BrowseContent(
     viewModel: BrowseViewModel = hiltViewModel(),
     playingStationUuid: String? = null,
     isPlaybackActive: Boolean = false,
-    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
     onToggleRecording: (RadioStation) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

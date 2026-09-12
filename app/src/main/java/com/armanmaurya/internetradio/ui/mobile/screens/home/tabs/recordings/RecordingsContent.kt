@@ -53,7 +53,7 @@ import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCa
 @Composable
 fun RecordingsContent(
     viewModel: RecordingsViewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel(),
-    activeSessions: Map<String, com.armanmaurya.internetradio.player.RecordingSession> = emptyMap(),
+    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
     onStopRecording: (String) -> Unit = {},
     onStationClick: (List<RadioStation>, Int, com.armanmaurya.internetradio.player.PlaybackSource) -> Unit = { _, _, _ -> },
     onEditStation: (String) -> Unit = {},

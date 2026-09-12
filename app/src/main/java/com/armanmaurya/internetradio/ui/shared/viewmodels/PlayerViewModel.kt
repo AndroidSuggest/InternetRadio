@@ -10,7 +10,8 @@ import com.armanmaurya.internetradio.domain.repository.StationRepository
 import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
 import com.armanmaurya.internetradio.player.PlaybackSource
 import com.armanmaurya.internetradio.player.PlayerController
-import com.armanmaurya.internetradio.player.RecordingManager
+import com.armanmaurya.internetradio.recording.RecordingService
+import com.armanmaurya.internetradio.recording.RecordingManager
 import com.armanmaurya.internetradio.player.SvgProxyProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -259,8 +260,8 @@ class PlayerViewModel @Inject constructor(
     var pendingRecordingStation: RadioStation? = null
 
     private fun startRecordingIntent(st: RadioStation) {
-        val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
-            action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_START
+        val intent = android.content.Intent(context, RecordingService::class.java).apply {
+            action = RecordingService.ACTION_START
             putExtra("STATION_JSON", com.google.gson.Gson().toJson(st))
         }
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -280,8 +281,8 @@ class PlayerViewModel @Inject constructor(
     fun toggleRecording(station: RadioStation? = playbackState.value.currentStation) {
         val st = station ?: return
         if (activeSessions.value.containsKey(st.stationUuid)) {
-            val intent = android.content.Intent(context, com.armanmaurya.internetradio.player.BackgroundRecordingService::class.java).apply {
-                action = com.armanmaurya.internetradio.player.BackgroundRecordingService.ACTION_STOP
+            val intent = android.content.Intent(context, RecordingService::class.java).apply {
+                action = RecordingService.ACTION_STOP
                 putExtra("UUID", st.stationUuid)
             }
             context.startService(intent)

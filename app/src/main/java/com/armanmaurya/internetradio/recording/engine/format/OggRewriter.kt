@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.player
+package com.armanmaurya.internetradio.recording.engine.format
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
@@ -43,10 +43,10 @@ object OggRewriter {
         val segmentTable = ByteArray(255)
         var pageData = ByteArray(65536)
 
-        while (scope.isActive && job?.isActive == true) {
+        while (scope.isActive && (job == null || job.isActive)) {
             // Find OggS sync
             var synced = false
-            while (scope.isActive && job?.isActive == true) {
+            while (scope.isActive && (job == null || job.isActive)) {
                 val b = input.read()
                 if (b == -1) return
                 if (b == 0x4F) { // 'O'

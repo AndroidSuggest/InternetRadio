@@ -94,7 +94,7 @@
         </service>
 
         <service
-            android:name=".player.BackgroundRecordingService"
+            android:name=".recording.RecordingService"
             android:foregroundServiceType="dataSync"
             android:exported="false" />
 

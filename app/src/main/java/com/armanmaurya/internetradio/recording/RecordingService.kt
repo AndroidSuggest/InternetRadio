@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.player
+package com.armanmaurya.internetradio.recording
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -11,22 +11,27 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.domain.repository.LibraryRepository
+import com.armanmaurya.internetradio.domain.repository.ScheduleRepository
+import com.armanmaurya.internetradio.player.ScheduleReceiver
+import com.armanmaurya.internetradio.ui.mobile.MobileActivity
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class BackgroundRecordingService : Service() {
+class RecordingService : Service() {
     @Inject lateinit var recordingManager: RecordingManager
-    @Inject lateinit var scheduleRepository: com.armanmaurya.internetradio.domain.repository.ScheduleRepository
-    @Inject lateinit var libraryRepository: com.armanmaurya.internetradio.domain.repository.LibraryRepository
+    @Inject lateinit var scheduleRepository: ScheduleRepository
+    @Inject lateinit var libraryRepository: LibraryRepository
     private var notificationJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Main)
 
@@ -35,14 +40,14 @@ class BackgroundRecordingService : Service() {
             ACTION_START -> {
                 val stationJson = intent.getStringExtra("STATION_JSON")
                 val station = if (stationJson != null) {
-                    com.google.gson.Gson().fromJson(stationJson, RadioStation::class.java)
+                    Gson().fromJson(stationJson, RadioStation::class.java)
                 } else null
                 station?.let { recordingManager.startRecording(it) }
                 startForeground(NOTIF_ID, buildGroupSummaryNotification(recordingManager.sessionsFlow.value))
                 observeSessions()
             }
             ACTION_START_FROM_SCHEDULE -> {
-                val scheduleId = intent.getIntExtra(com.armanmaurya.internetradio.player.ScheduleReceiver.EXTRA_SCHEDULE_ID, -1)
+                val scheduleId = intent.getIntExtra(ScheduleReceiver.EXTRA_SCHEDULE_ID, -1)
                 
                 if (scheduleId != -1) {
                     startForeground(NOTIF_ID, buildGroupSummaryNotification(recordingManager.sessionsFlow.value))
@@ -54,12 +59,17 @@ class BackgroundRecordingService : Service() {
                         
                         if (schedule.durationMinutes > 0) {
                             val alarmManager = getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
-                            val stopIntent = Intent(this@BackgroundRecordingService, com.armanmaurya.internetradio.player.ScheduleReceiver::class.java).apply {
-                                this.action = com.armanmaurya.internetradio.player.ScheduleReceiver.ACTION_STOP_RECORDING
+                            val stopIntent = Intent(this@RecordingService, ScheduleReceiver::class.java).apply {
+                                this.action = ScheduleReceiver.ACTION_STOP_RECORDING
                                 putExtra("KEEP_PLAYBACK", schedule.keepPlayback)
                                 putExtra("UUID", station.stationUuid)
                             }
-                            val pendingIntent = android.app.PendingIntent.getBroadcast(this@BackgroundRecordingService, station.stationUuid.hashCode(), stopIntent, android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE)
+                            val pendingIntent = PendingIntent.getBroadcast(
+                                this@RecordingService,
+                                station.stationUuid.hashCode(),
+                                stopIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                            )
                             val stopAt = System.currentTimeMillis() + (schedule.durationMinutes * 60 * 1000L)
                             alarmManager.setAlarmClock(android.app.AlarmManager.AlarmClockInfo(stopAt, pendingIntent), pendingIntent)
                         }
@@ -117,7 +127,7 @@ class BackgroundRecordingService : Service() {
         }.launchIn(scope)
     }
 
-    private fun buildGroupSummaryNotification(sessions: Map<String, RecordingSession>): Notification {
+    private fun buildGroupSummaryNotification(sessions: Map<String, RecordingState>): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "recording_channel",
@@ -127,7 +137,7 @@ class BackgroundRecordingService : Service() {
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
 
-        val contentIntent = Intent(this, com.armanmaurya.internetradio.ui.mobile.MobileActivity::class.java).apply {
+        val contentIntent = Intent(this, MobileActivity::class.java).apply {
             putExtra("open_tab", "recordings")
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -148,8 +158,8 @@ class BackgroundRecordingService : Service() {
             .build()
     }
 
-    private fun buildChildNotification(session: RecordingSession): Notification {
-        val stopIntent = Intent(this, BackgroundRecordingService::class.java).apply {
+    private fun buildChildNotification(session: RecordingState): Notification {
+        val stopIntent = Intent(this, RecordingService::class.java).apply {
             action = ACTION_STOP
             putExtra("UUID", session.station.stationUuid)
         }
@@ -160,7 +170,7 @@ class BackgroundRecordingService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val contentIntent = Intent(this, com.armanmaurya.internetradio.ui.mobile.MobileActivity::class.java).apply {
+        val contentIntent = Intent(this, MobileActivity::class.java).apply {
             putExtra("open_tab", "recordings")
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }

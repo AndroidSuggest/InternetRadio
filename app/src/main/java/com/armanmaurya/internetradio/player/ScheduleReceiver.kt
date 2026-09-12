@@ -9,6 +9,8 @@ import android.os.Build
 import com.armanmaurya.internetradio.data.local.entity.ScheduleType
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.ScheduleRepository
+import com.armanmaurya.internetradio.recording.RecordingService
+import com.armanmaurya.internetradio.recording.RecordingManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,8 +48,8 @@ class ScheduleReceiver : BroadcastReceiver() {
         if (action == ACTION_STOP_RECORDING) {
             val uuid = intent.getStringExtra("UUID")
             if (uuid != null) {
-                val stopIntent = Intent(context, BackgroundRecordingService::class.java).apply {
-                    this.action = BackgroundRecordingService.ACTION_STOP
+                val stopIntent = Intent(context, RecordingService::class.java).apply {
+                    this.action = RecordingService.ACTION_STOP
                     putExtra("UUID", uuid)
                 }
                 context.startService(stopIntent)
@@ -73,8 +75,8 @@ class ScheduleReceiver : BroadcastReceiver() {
         val isRecord = type == ScheduleType.RECORD.name
 
         if (isRecord) {
-            val recordIntent = Intent(context, BackgroundRecordingService::class.java).apply {
-                this.action = BackgroundRecordingService.ACTION_START_FROM_SCHEDULE
+            val recordIntent = Intent(context, RecordingService::class.java).apply {
+                this.action = RecordingService.ACTION_START_FROM_SCHEDULE
                 putExtra(EXTRA_SCHEDULE_ID, scheduleId)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
