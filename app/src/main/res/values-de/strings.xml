@@ -104,6 +104,12 @@
     <string name="settings_check_updates">Auf Aktualisierungen prüfen</string>
     <string name="settings_rate_review">Bewerten &amp; Rezensieren</string>
     <string name="settings_track_history_limit">Titel-Verlauf Begrenzung</string>
+    <string name="settings_widget_section">Widget</string>
+    <string name="settings_widget_transparency_title">Hintergrund-Deckkraft</string>
+    <string name="settings_widget_transparency_subtitle">Passe die Deckkraft des Widgets auf dem Startbildschirm an</string>
+    <string name="settings_widget_opacity_opaque">100% (Opak)</string>
+    <string name="settings_widget_opacity_transparent">0% (Transparent)</string>
+    <string name="settings_widget_opacity_percent">%1$d%%</string>
     <string name="settings_system_default">Systemstandard</string>
     <string name="settings_start_week_title">Erster Tag der Woche</string>
     <string name="settings_start_week_sunday">Sonntag</string>
@@ -436,4 +442,10 @@
     <string name="widget_preview_artist">Aktuelle Wiedergabe</string>
     <string name="widget_description">Schnellzugriff auf Wiedergabe und Bedienelemente</string>
     <string name="widget_nothing_playing">Keine Wiedergabe</string>
+    <string name="widget_configure_title">Widget-Einstellungen</string>
+    <string name="widget_configure_apply">Anwenden</string>
+    <string name="widget_configure_preview">Vorschau</string>
+    <string name="widget_configure_presets">Voreinstellungen</string>
+    <string name="settings_widget_appearance_title">Widget-Erscheinungsbild</string>
+    <string name="settings_widget_appearance_subtitle">Passe Transparenz des Startbildschirm-Widgets mittels Vorschau an</string>
 </resources>
