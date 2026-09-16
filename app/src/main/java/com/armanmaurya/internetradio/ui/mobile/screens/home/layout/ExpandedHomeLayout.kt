@@ -36,8 +36,6 @@ import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
@@ -53,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.RecordingSession
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.RadioSearchBar
 import kotlinx.coroutines.launch
 
@@ -86,7 +85,7 @@ internal fun ExpandedHomeLayout(
     tabs: List<String>,
     pagerState: androidx.compose.foundation.pager.PagerState,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
-    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
+    activeSessions: Map<String, RecordingSession> = emptyMap(),
     onToggleRecording: (RadioStation) -> Unit = {}
 ) {
     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black
@@ -384,7 +383,7 @@ private fun ExpandedSearchOverlay(
     onBrowseStationClick: (RadioStation) -> Unit,
     onLibraryHeaderClick: () -> Unit = {},
     onBrowseHeaderClick: () -> Unit = {},
-    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
+    activeSessions: Map<String, RecordingSession> = emptyMap(),
     onToggleRecording: (RadioStation) -> Unit = {},
     modifier: Modifier = Modifier.fillMaxSize()
 ) {

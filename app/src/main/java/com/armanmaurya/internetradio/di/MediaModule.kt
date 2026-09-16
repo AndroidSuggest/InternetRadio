@@ -14,6 +14,10 @@ import javax.inject.Singleton
 
 import com.armanmaurya.internetradio.core.media.prober.StreamProber
 import com.armanmaurya.internetradio.core.media.prober.FFmpegStreamProber
+import com.armanmaurya.internetradio.core.media.recorder.DefaultStreamRecorder
+import com.armanmaurya.internetradio.core.media.recorder.StreamRecorder
+import com.armanmaurya.internetradio.core.system.FileSystemFacade
+import okhttp3.OkHttpClient
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -31,4 +35,14 @@ object MediaModule {
     fun provideStreamProber(): StreamProber {
         return FFmpegStreamProber()
     }
+
+    @Provides
+    @Singleton
+    fun provideStreamRecorder(
+        okHttpClient: OkHttpClient,
+        fileSystemFacade: FileSystemFacade
+    ): StreamRecorder {
+        return DefaultStreamRecorder(okHttpClient, fileSystemFacade)
+    }
 }
+

@@ -3,22 +3,16 @@ package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
-import android.content.Intent
-import android.text.format.DateUtils
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -38,14 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.model.RecordingFile
-import com.armanmaurya.internetradio.domain.model.RecordingFolder
 import com.armanmaurya.internetradio.ui.shared.viewmodels.RecordingsViewModel
-import java.util.Locale
 import androidx.compose.animation.*
-import androidx.compose.animation.animateContentSize
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Pause
-import android.media.MediaPlayer
+import com.armanmaurya.internetradio.domain.model.RecordingSession
 import com.armanmaurya.internetradio.ui.mobile.components.RecordingFileItem
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 
@@ -53,8 +42,8 @@ import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCa
 @Composable
 fun RecordingsContent(
     viewModel: RecordingsViewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel(),
-    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
-    onStopRecording: (String) -> Unit = {},
+    activeSessions: Map<String, RecordingSession>? = null,
+    onStopRecording: ((String) -> Unit)? = null,
     onStationClick: (List<RadioStation>, Int, com.armanmaurya.internetradio.player.PlaybackSource) -> Unit = { _, _, _ -> },
     onEditStation: (String) -> Unit = {},
     onExportStation: ((RadioStation) -> Unit)? = null,
@@ -63,6 +52,8 @@ fun RecordingsContent(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val folders by viewModel.folders.collectAsStateWithLifecycle()
+    val vmActiveSessions by viewModel.activeSessions.collectAsStateWithLifecycle()
+    val currentActiveSessions = activeSessions ?: vmActiveSessions
     var selectedStationName by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
@@ -226,7 +217,7 @@ fun RecordingsContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-            if (activeSessions.isNotEmpty()) {
+            if (currentActiveSessions.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(
                         modifier = Modifier
@@ -248,7 +239,7 @@ fun RecordingsContent(
                     }
                 }
                 
-                val sessionsList = activeSessions.values.toList()
+                val sessionsList = currentActiveSessions.values.toList()
                 items(
                     items = sessionsList,
                     key = { "session_" + it.station.stationUuid }
@@ -259,7 +250,7 @@ fun RecordingsContent(
                         onClick = { onStationClick(sessionsList.map { it.station }, sessionsList.indexOf(session), com.armanmaurya.internetradio.player.PlaybackSource.None) },
                         isRecordingOverlay = true,
                         recordingDuration = duration,
-                        onStopRecordingClick = { onStopRecording(session.station.stationUuid) },
+                        onStopRecordingClick = { (onStopRecording ?: viewModel::stopRecording)(session.station.stationUuid) },
                         isFavorite = libraryStationUuids.contains(session.station.stationUuid),
                         onToggleFavoriteClick = { viewModel.toggleLibrary(session.station) },
                         onEditClick = if (libraryStationUuids.contains(session.station.stationUuid)) { { onEditStation(session.station.stationUuid) } } else null,
@@ -467,7 +458,7 @@ fun RecordingsContent(
             }
         }
         
-        if (folders.isEmpty() && activeSessions.isEmpty()) {
+        if (folders.isEmpty() && currentActiveSessions.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center

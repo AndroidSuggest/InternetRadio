@@ -519,6 +519,7 @@ class MobileActivity : AppCompatActivity() {
                                     onConnectCastDevice = playerViewModel::connectToCastDevice,
                                     onDisconnectCastDevice = playerViewModel::disconnectCastDevice,
                                     onDeleteRecording = playerViewModel::deleteRecording,
+                                    onStopRecording = playerViewModel::stopRecording,
                                     getCurrentPosition = { playerViewModel.currentPosition }
                                 )
                             }

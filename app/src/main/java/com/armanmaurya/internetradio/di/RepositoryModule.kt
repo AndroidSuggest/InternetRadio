@@ -55,6 +55,11 @@ abstract class RepositoryModule {
     ): RecordingRepository
 
     @Binds
+    abstract fun bindRecordingController(
+        impl: com.armanmaurya.internetradio.data.recording.RecordingControllerImpl
+    ): com.armanmaurya.internetradio.domain.controller.RecordingController
+
+    @Binds
     abstract fun bindScheduleRepository(
         impl: ScheduleRepositoryImpl
     ): ScheduleRepository

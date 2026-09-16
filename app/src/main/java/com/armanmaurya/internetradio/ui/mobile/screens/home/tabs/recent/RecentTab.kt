@@ -22,13 +22,11 @@ import com.armanmaurya.internetradio.ui.mobile.screens.home.components.ToggleChi
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.DeleteSweep
 import kotlinx.coroutines.launch
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -38,6 +36,7 @@ import com.armanmaurya.internetradio.player.PlaybackSource
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import com.armanmaurya.internetradio.R
+import com.armanmaurya.internetradio.domain.model.RecordingSession
 import com.armanmaurya.internetradio.ui.shared.viewmodels.RecentViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,7 +51,7 @@ fun RecentContent(
     playingStationUuid: String? = null,
     isPlaybackActive: Boolean = false,
     searchQuery: String = "",
-    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
+    activeSessions: Map<String, RecordingSession> = emptyMap(),
     onToggleRecording: (RadioStation) -> Unit = {}
 ) {
     val recentStations by viewModel.recentStations.collectAsStateWithLifecycle()

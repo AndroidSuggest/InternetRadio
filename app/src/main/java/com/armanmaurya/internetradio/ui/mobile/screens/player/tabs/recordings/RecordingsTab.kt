@@ -19,13 +19,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.domain.model.RecordingFile
-import com.armanmaurya.internetradio.recording.RecordingState
+import com.armanmaurya.internetradio.domain.model.RecordingSession
 import com.armanmaurya.internetradio.ui.mobile.components.RecordingFileItem
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 
 @Composable
 fun RecordingsTab(
-    activeSessions: Map<String, RecordingState>,
+    activeSessions: Map<String, RecordingSession>,
     stationRecordings: List<RecordingFile>?,
     listState: LazyListState,
     nestedScrollConnection: NestedScrollConnection,

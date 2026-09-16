@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.recording.engine
+package com.armanmaurya.internetradio.core.media.recorder
 
 import android.net.Uri
 import android.os.ParcelFileDescriptor
@@ -9,6 +9,7 @@ import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
 class RecordingSink(
     private val fileSystemFacade: FileSystemFacade,
     private val title: String

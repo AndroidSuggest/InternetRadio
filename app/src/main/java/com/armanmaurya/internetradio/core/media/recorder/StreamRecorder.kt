@@ -1,38 +1,38 @@
-package com.armanmaurya.internetradio.recording.engine
+package com.armanmaurya.internetradio.core.media.recorder
 
+import com.armanmaurya.internetradio.core.media.recorder.backend.DirectStreamRecorder
+import com.armanmaurya.internetradio.core.media.recorder.backend.HlsStreamRecorder
 import com.armanmaurya.internetradio.core.system.FileSystemFacade
 import com.armanmaurya.internetradio.core.utils.AudioFormatUtils
-import com.armanmaurya.internetradio.recording.engine.recorder.DirectStreamRecorder
-import com.armanmaurya.internetradio.recording.engine.recorder.HlsStreamRecorder
-import com.armanmaurya.internetradio.recording.engine.recorder.StreamRecorder
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface StreamRecorder {
+    suspend fun record(
+        config: RecordingConfig,
+        onBytesWritten: (bytes: Long) -> Unit
+    )
+}
+
 @Singleton
-class RecordingEngine @Inject constructor(
+class DefaultStreamRecorder @Inject constructor(
     private val okHttpClient: OkHttpClient,
     private val fileSystemFacade: FileSystemFacade
-) {
-    suspend fun record(
-        url: String,
-        title: String,
-        onBytesWritten: (Long) -> Unit
-    ) {
-        val sink = RecordingSink(fileSystemFacade, title)
-        val recorder: StreamRecorder = if (isHls(url)) {
-            HlsStreamRecorder(okHttpClient)
-        } else {
-            DirectStreamRecorder(okHttpClient)
-        }
+) : StreamRecorder {
 
+    override suspend fun record(
+        config: RecordingConfig,
+        onBytesWritten: (bytes: Long) -> Unit
+    ) {
+        val sink = RecordingSink(fileSystemFacade, config.title)
         try {
-            recorder.record(
-                url = url,
-                sink = sink,
-                onBytesWritten = onBytesWritten
-            )
+            if (isHls(config.url)) {
+                HlsStreamRecorder(okHttpClient).record(config, sink, onBytesWritten)
+            } else {
+                DirectStreamRecorder(okHttpClient).record(config, sink, onBytesWritten)
+            }
         } finally {
             sink.close()
         }

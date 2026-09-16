@@ -19,7 +19,7 @@ import androidx.media3.session.MediaSession
 import com.armanmaurya.internetradio.ui.mobile.MobileActivity
 import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
-import com.armanmaurya.internetradio.recording.RecordingManager
+import com.armanmaurya.internetradio.domain.controller.RecordingController
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.widget.pushWidgetUpdate
 import com.armanmaurya.internetradio.widget.cleanStaleWidgetState
@@ -47,7 +47,7 @@ class PlaybackService : MediaLibraryService() {
     lateinit var trackHistoryRepository: TrackHistoryRepository
 
     @Inject
-    lateinit var recordingManager: RecordingManager
+    lateinit var recordingController: RecordingController
 
     @Inject
     lateinit var retryStateTracker: RetryStateTracker
@@ -401,7 +401,7 @@ class PlaybackService : MediaLibraryService() {
                 enableAudioTrackPlaybackParams: Boolean
             ): AudioSink? {
                 return DefaultAudioSink.Builder(context)
-                    .setAudioProcessors(arrayOf(AmplitudeAudioProcessor(recordingManager)))
+                    .setAudioProcessors(arrayOf(AmplitudeAudioProcessor(recordingController)))
                     .build()
             }
         }

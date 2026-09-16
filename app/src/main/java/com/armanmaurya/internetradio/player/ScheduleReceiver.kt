@@ -3,19 +3,15 @@ package com.armanmaurya.internetradio.player
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.app.PendingIntent
-import android.app.AlarmManager
 import android.os.Build
 import com.armanmaurya.internetradio.data.local.entity.ScheduleType
+import com.armanmaurya.internetradio.domain.controller.RecordingController
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.ScheduleRepository
-import com.armanmaurya.internetradio.recording.RecordingService
-import com.armanmaurya.internetradio.recording.RecordingManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,19 +22,16 @@ class ScheduleReceiver : BroadcastReceiver() {
     lateinit var scheduleRepository: ScheduleRepository
 
     @Inject
-    lateinit var settingsRepository: com.armanmaurya.internetradio.domain.repository.SettingsRepository
-
-    @Inject
     lateinit var libraryRepository: LibraryRepository
 
     @Inject
     lateinit var scheduleManager: ScheduleManager
 
     @Inject
-    lateinit var recordingManager: RecordingManager
+    lateinit var playerController: PlayerController
 
     @Inject
-    lateinit var playerController: PlayerController
+    lateinit var recordingController: RecordingController
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -48,11 +41,7 @@ class ScheduleReceiver : BroadcastReceiver() {
         if (action == ACTION_STOP_RECORDING) {
             val uuid = intent.getStringExtra("UUID")
             if (uuid != null) {
-                val stopIntent = Intent(context, RecordingService::class.java).apply {
-                    this.action = RecordingService.ACTION_STOP
-                    putExtra("UUID", uuid)
-                }
-                context.startService(stopIntent)
+                recordingController.stopRecording(uuid)
             }
             val keepPlayback = intent.getBooleanExtra("KEEP_PLAYBACK", false)
             if (!keepPlayback) {
@@ -74,18 +63,6 @@ class ScheduleReceiver : BroadcastReceiver() {
         val isPlayback = type == ScheduleType.PLAYBACK.name || (type == ScheduleType.RECORD.name && playOnRecording)
         val isRecord = type == ScheduleType.RECORD.name
 
-        if (isRecord) {
-            val recordIntent = Intent(context, RecordingService::class.java).apply {
-                this.action = RecordingService.ACTION_START_FROM_SCHEDULE
-                putExtra(EXTRA_SCHEDULE_ID, scheduleId)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(recordIntent)
-            } else {
-                context.startService(recordIntent)
-            }
-        }
-
         if (isPlayback) {
             val playIntent = Intent(context, PlaybackService::class.java).apply {
                 this.action = "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE"
@@ -98,12 +75,27 @@ class ScheduleReceiver : BroadcastReceiver() {
             }
         }
 
-        // Reschedule in background using goAsync
+        // Handle recording and rescheduling in background using goAsync
         val pendingResult = goAsync()
         scope.launch {
             try {
                 val schedule = scheduleRepository.getScheduleById(scheduleId)
                 if (schedule != null) {
+                    if (isRecord) {
+                        val station = libraryRepository.getStationById(schedule.stationUuid)
+                        if (station != null) {
+                            recordingController.startRecording(station)
+
+                            if (schedule.durationMinutes > 0) {
+                                scheduleManager.scheduleRecordingStop(
+                                    stationUuid = station.stationUuid,
+                                    durationMinutes = schedule.durationMinutes,
+                                    keepPlayback = schedule.keepPlayback
+                                )
+                            }
+                        }
+                    }
+
                     if (schedule.isRecurring) {
                         scheduleManager.schedule(schedule)
                     } else {
@@ -111,6 +103,11 @@ class ScheduleReceiver : BroadcastReceiver() {
                     }
                 }
             } finally {
+                try {
+                    if (wakeLock.isHeld) {
+                        wakeLock.release()
+                    }
+                } catch (_: Exception) {}
                 pendingResult.finish()
             }
         }

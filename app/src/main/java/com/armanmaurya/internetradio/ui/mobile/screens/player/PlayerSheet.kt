@@ -14,7 +14,6 @@ import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.recordings.Re
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.about.AboutTab
 import com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.lyrics.LyricsTab
 import com.armanmaurya.internetradio.ui.shared.components.shimmerEffect
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.ui.zIndex
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Animatable
@@ -46,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
@@ -74,7 +72,6 @@ import com.armanmaurya.internetradio.player.PlaybackSource
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.graphics.FilterQuality
-import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.domain.model.LyricsState
@@ -88,11 +85,7 @@ import kotlin.math.roundToInt
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import android.Manifest
-import android.os.Build
+import com.armanmaurya.internetradio.domain.model.RecordingSession
 
 fun Modifier.collapseHeight(progress: Float) = this.layout { measurable, constraints ->
     val placeable = measurable.measure(constraints)
@@ -110,7 +103,7 @@ fun PlayerSheetContent(
     isFavorite: Boolean,
     trackHistory: List<TrackHistoryEntity> = emptyList(),
     stationRecordings: List<com.armanmaurya.internetradio.domain.model.RecordingFile>? = null,
-    activeSessions: Map<String, com.armanmaurya.internetradio.recording.RecordingState> = emptyMap(),
+    activeSessions: Map<String, RecordingSession> = emptyMap(),
     retryCountdown: Int? = null,
     lyricsState: LyricsState = LyricsState.Loading,
     progress: Float, // 0.0 (collapsed) to 1.0 (expanded)
@@ -136,6 +129,7 @@ fun PlayerSheetContent(
     onConnectCastDevice: (org.fcast.sender_sdk.DeviceInfo) -> Unit = {},
     onDisconnectCastDevice: () -> Unit = {},
     onDeleteRecording: (com.armanmaurya.internetradio.domain.model.RecordingFile) -> Unit,
+    onStopRecording: (String) -> Unit = {},
     getCurrentPosition: () -> Long,
     modifier: Modifier = Modifier
 ) {
@@ -1289,13 +1283,7 @@ fun PlayerSheetContent(
                                 stationRecordings = stationRecordings,
                                 listState = recordingsListState,
                                 nestedScrollConnection = nestedScrollConnection,
-                                onStopRecording = { uuid ->
-                                    val intent = android.content.Intent(context, com.armanmaurya.internetradio.recording.RecordingService::class.java).apply {
-                                        action = com.armanmaurya.internetradio.recording.RecordingService.ACTION_STOP
-                                        putExtra("UUID", uuid)
-                                    }
-                                    context.startService(intent)
-                                },
+                                onStopRecording = onStopRecording,
                                 onDeleteRecording = onDeleteRecording
                             )
                         } else if (page == 2) {

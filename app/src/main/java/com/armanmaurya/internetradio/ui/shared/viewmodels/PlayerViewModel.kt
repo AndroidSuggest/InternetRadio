@@ -6,12 +6,13 @@ import com.armanmaurya.internetradio.domain.model.LyricsState
 import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.RecentRepository
-import com.armanmaurya.internetradio.domain.repository.StationRepository
 import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
 import com.armanmaurya.internetradio.player.PlaybackSource
 import com.armanmaurya.internetradio.player.PlayerController
-import com.armanmaurya.internetradio.recording.RecordingService
-import com.armanmaurya.internetradio.recording.RecordingManager
+import com.armanmaurya.internetradio.domain.controller.RecordingController
+import com.armanmaurya.internetradio.domain.usecase.recording.GetActiveRecordingsUseCase
+import com.armanmaurya.internetradio.domain.usecase.recording.StartRecordingUseCase
+import com.armanmaurya.internetradio.domain.usecase.recording.StopRecordingUseCase
 import com.armanmaurya.internetradio.player.SvgProxyProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,7 +40,10 @@ class PlayerViewModel @Inject constructor(
     private val recentRepository: RecentRepository,
     private val stationRepository: com.armanmaurya.internetradio.domain.repository.StationRepository,
     private val trackHistoryRepository: TrackHistoryRepository,
-    private val recordingManager: RecordingManager,
+    private val recordingController: RecordingController,
+    private val getActiveRecordingsUseCase: GetActiveRecordingsUseCase,
+    private val startRecordingUseCase: StartRecordingUseCase,
+    private val stopRecordingUseCase: StopRecordingUseCase,
     private val recordingRepository: com.armanmaurya.internetradio.domain.repository.RecordingRepository,
     private val lyricsRepository: com.armanmaurya.internetradio.domain.repository.LyricsRepository,
     retryStateTracker: com.armanmaurya.internetradio.player.RetryStateTracker
@@ -85,7 +89,7 @@ class PlayerViewModel @Inject constructor(
             initialValue = LyricsState.Loading
         )
 
-    val activeSessions = recordingManager.sessionsFlow
+    val activeSessions = getActiveRecordingsUseCase()
 
     val isCurrentStationRecording = combine(playbackState.map { it.currentStation }, activeSessions) { station, sessions ->
         station != null && sessions.containsKey(station.stationUuid)
@@ -98,8 +102,8 @@ class PlayerViewModel @Inject constructor(
         session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
-    val amplitude = recordingManager.amplitude
-    val recordingSavedEvent = recordingManager.recordingSavedEvent
+    val amplitude = recordingController.amplitude
+    val recordingSavedEvent = recordingController.recordingSavedEvent
 
     val discoveredCastDevices = castController.discoveredDevices
     val connectedCastDevice = castController.connectedDevice
@@ -259,21 +263,13 @@ class PlayerViewModel @Inject constructor(
     
     var pendingRecordingStation: RadioStation? = null
 
-    private fun startRecordingIntent(st: RadioStation) {
-        val intent = android.content.Intent(context, RecordingService::class.java).apply {
-            action = RecordingService.ACTION_START
-            putExtra("STATION_JSON", com.google.gson.Gson().toJson(st))
-        }
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            context.startForegroundService(intent)
-        } else {
-            context.startService(intent)
-        }
+    fun stopRecording(uuid: String) {
+        stopRecordingUseCase(uuid)
     }
 
     fun proceedWithRecording() {
         pendingRecordingStation?.let {
-            startRecordingIntent(it)
+            startRecordingUseCase(it)
             pendingRecordingStation = null
         }
     }
@@ -281,18 +277,14 @@ class PlayerViewModel @Inject constructor(
     fun toggleRecording(station: RadioStation? = playbackState.value.currentStation) {
         val st = station ?: return
         if (activeSessions.value.containsKey(st.stationUuid)) {
-            val intent = android.content.Intent(context, RecordingService::class.java).apply {
-                action = RecordingService.ACTION_STOP
-                putExtra("UUID", st.stationUuid)
-            }
-            context.startService(intent)
+            stopRecordingUseCase(st.stationUuid)
         } else {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
                 val permissionStatus = androidx.core.content.ContextCompat.checkSelfPermission(
                     context, android.Manifest.permission.POST_NOTIFICATIONS
                 )
                 if (permissionStatus == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    startRecordingIntent(st)
+                    startRecordingUseCase(st)
                 } else {
                     pendingRecordingStation = st
                     viewModelScope.launch {
@@ -300,7 +292,7 @@ class PlayerViewModel @Inject constructor(
                     }
                 }
             } else {
-                startRecordingIntent(st)
+                startRecordingUseCase(st)
             }
         }
     }

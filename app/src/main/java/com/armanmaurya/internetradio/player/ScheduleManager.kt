@@ -64,6 +64,46 @@ class ScheduleManager @Inject constructor(
         }
     }
 
+    fun scheduleRecordingStop(stationUuid: String, durationMinutes: Int, keepPlayback: Boolean) {
+        if (durationMinutes <= 0) return
+
+        val stopIntent = Intent(context, ScheduleReceiver::class.java).apply {
+            action = ScheduleReceiver.ACTION_STOP_RECORDING
+            putExtra("KEEP_PLAYBACK", keepPlayback)
+            putExtra("UUID", stationUuid)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            stationUuid.hashCode(),
+            stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val stopAt = System.currentTimeMillis() + (durationMinutes * 60 * 1000L)
+        try {
+            val alarmClockInfo = AlarmManager.AlarmClockInfo(stopAt, pendingIntent)
+            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
+    }
+
+    fun cancelRecordingStop(stationUuid: String) {
+        val stopIntent = Intent(context, ScheduleReceiver::class.java).apply {
+            action = ScheduleReceiver.ACTION_STOP_RECORDING
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            stationUuid.hashCode(),
+            stopIntent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
+    }
+
     private fun getNextTriggerTime(entity: ScheduleEntity): Long {
         if (!entity.isRecurring && entity.triggerTimeInMillis > System.currentTimeMillis()) {
             return entity.triggerTimeInMillis
