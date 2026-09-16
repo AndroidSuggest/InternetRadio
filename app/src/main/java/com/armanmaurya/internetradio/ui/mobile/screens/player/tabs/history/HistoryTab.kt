@@ -45,6 +45,8 @@ fun HistoryTab(
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val trackCopiedMessage = stringResource(R.string.player_copied_track_to_clipboard)
+    val copiedToClipboardMessage = stringResource(R.string.player_copied_to_clipboard)
     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerLow == androidx.compose.ui.graphics.Color.Black
 
     LazyColumn(
@@ -106,7 +108,7 @@ fun HistoryTab(
                                 onClick = { isExpanded = !isExpanded },
                                 onLongClick = {
                                     clipboardManager.setText(AnnotatedString(track.trackTitle))
-                                    Toast.makeText(context, context.getString(R.string.player_copied_track_to_clipboard), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, trackCopiedMessage, Toast.LENGTH_SHORT).show()
                                 }
                             ),
                         headlineContent = {
@@ -195,7 +197,7 @@ fun HistoryTab(
                                     IconButton(
                                         onClick = {
                                             clipboardManager.setText(AnnotatedString(track.rawTrackTitle))
-                                            Toast.makeText(context, context.getString(R.string.player_copied_to_clipboard), Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, copiedToClipboardMessage, Toast.LENGTH_SHORT).show()
                                         }
                                     ) {
                                         Icon(
@@ -218,7 +220,7 @@ fun HistoryTab(
                             IconButton(
                                 onClick = {
                                     clipboardManager.setText(AnnotatedString(track.trackTitle))
-                                    Toast.makeText(context, context.getString(R.string.player_copied_to_clipboard), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, copiedToClipboardMessage, Toast.LENGTH_SHORT).show()
                                     isExpanded = false
                                 }
                             ) {

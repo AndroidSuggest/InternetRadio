@@ -60,6 +60,7 @@ fun LanguageSelectScreen(
     }
 
     val context = LocalContext.current
+    val allLanguagesName = stringResource(R.string.select_language_all)
 
     Scaffold(
         modifier = Modifier,
@@ -108,7 +109,7 @@ fun LanguageSelectScreen(
                 },
                 actions = {
                     if (!uiState.isSearchActive && !selectedLanguage.isNullOrBlank()) {
-                        TextButton(onClick = { onLanguageSelected(Language(name = context.getString(R.string.select_language_all), isoCode = "", stationCount = 0)) }) {
+                        TextButton(onClick = { onLanguageSelected(Language(name = allLanguagesName, isoCode = "", stationCount = 0)) }) {
                             Text(stringResource(R.string.general_clear))
                         }
                     }
@@ -151,9 +152,9 @@ fun LanguageSelectScreen(
                 ) {
                     item(key = "all_languages") {
                         LanguageItem(
-                            language = Language(name = stringResource(R.string.select_language_all), isoCode = "", stationCount = 0),
+                            language = Language(name = allLanguagesName, isoCode = "", stationCount = 0),
                             isSelected = selectedLanguage.isNullOrBlank(),
-                            onClick = { onLanguageSelected(Language(name = context.getString(R.string.select_language_all), isoCode = "", stationCount = 0)) },
+                            onClick = { onLanguageSelected(Language(name = allLanguagesName, isoCode = "", stationCount = 0)) },
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }

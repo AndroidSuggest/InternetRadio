@@ -26,6 +26,8 @@ class MainViewModel @Inject constructor(
     private val _showReviewPrompt = MutableStateFlow(false)
     val showReviewPrompt: StateFlow<Boolean> = _showReviewPrompt.asStateFlow()
 
+    val appPreferences = settingsRepository.appPreferencesFlow
+
     init {
         viewModelScope.launch {
             val prefs = settingsRepository.appPreferencesFlow.first()
@@ -46,6 +48,10 @@ class MainViewModel @Inject constructor(
                 settingsRepository.setHasRatedApp(true)
             }
         }
+    }
+
+    fun checkForUpdates(force: Boolean = false, onResult: ((Boolean) -> Unit)? = null) {
+        checkForUpdates(systemFacade.getAppVersionName(), force, onResult)
     }
 
     fun checkForUpdates(currentVersion: String, force: Boolean = false, onResult: ((Boolean) -> Unit)? = null) {

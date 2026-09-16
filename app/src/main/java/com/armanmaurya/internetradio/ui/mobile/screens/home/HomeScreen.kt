@@ -107,13 +107,19 @@ fun HomeScreen(
     )
     
     val context = LocalContext.current
+    val exportSuccessTemplate = stringResource(R.string.export_success)
+    val exportFailedTemplate = stringResource(R.string.export_failed)
     var stationToExport by remember { mutableStateOf<RadioStation?>(null) }
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
         if (uri != null && stationToExport != null) {
             libraryViewModel.exportStation(context, uri, stationToExport!!) { result ->
-                val message = if (result.isSuccess) context.getString(R.string.export_success, stationToExport!!.name) else context.getString(R.string.export_failed, result.exceptionOrNull()?.localizedMessage)
+                val message = if (result.isSuccess) {
+                    java.lang.String.format(exportSuccessTemplate, stationToExport!!.name)
+                } else {
+                    java.lang.String.format(exportFailedTemplate, result.exceptionOrNull()?.localizedMessage)
+                }
                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 stationToExport = null
             }

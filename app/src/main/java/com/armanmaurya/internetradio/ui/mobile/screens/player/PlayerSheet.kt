@@ -87,11 +87,248 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import com.armanmaurya.internetradio.domain.model.RecordingSession
 
+import androidx.compose.ui.unit.Dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.armanmaurya.internetradio.ui.shared.viewmodels.PlayerViewModel
+import android.view.WindowManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+
 fun Modifier.collapseHeight(progress: Float) = this.layout { measurable, constraints ->
     val placeable = measurable.measure(constraints)
     val height = (placeable.height * (1f - progress)).toInt().coerceAtLeast(0)
     layout(placeable.width, height) {
         placeable.placeRelative(0, (height - placeable.height) / 2) // center vertically while collapsing
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun rememberPlayerSheetProgress(
+    scaffoldState: BottomSheetScaffoldState,
+    bottomInset: Dp
+): State<Float> {
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
+    val imeInsets = WindowInsets.ime
+    val peekHeightPx = with(density) { (72.dp + bottomInset).toPx() }
+
+    return remember(scaffoldState, screenHeightPx, peekHeightPx, imeInsets) {
+        derivedStateOf {
+            val imeHeightPx = imeInsets.getBottom(density).toFloat()
+            val fullHeight = screenHeightPx - imeHeightPx
+
+            val currentOffset = try {
+                scaffoldState.bottomSheetState.requireOffset()
+            } catch (e: Exception) {
+                fullHeight - peekHeightPx
+            }
+
+            val totalRange = fullHeight - peekHeightPx
+            if (totalRange > 0) {
+                (1f - (currentOffset / totalRange)).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlayerBottomSheet(
+    scaffoldState: BottomSheetScaffoldState,
+    progress: Float,
+    isWidescreen: Boolean,
+    bottomInset: Dp,
+    onEditStation: (RadioStation) -> Unit,
+    modifier: Modifier = Modifier,
+    keepScreenOn: Boolean = false,
+    playerViewModel: PlayerViewModel = hiltViewModel()
+) {
+    val scope = rememberCoroutineScope()
+    val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
+    val isFavorite by playerViewModel.isFavorite.collectAsStateWithLifecycle()
+    val trackHistory by playerViewModel.trackHistory.collectAsStateWithLifecycle()
+    val stationRecordings by playerViewModel.stationRecordings.collectAsStateWithLifecycle()
+    val activeSessions by playerViewModel.activeSessions.collectAsStateWithLifecycle()
+    val isRecording by playerViewModel.isCurrentStationRecording.collectAsStateWithLifecycle()
+    val recordingDuration by playerViewModel.currentRecordingDuration.collectAsStateWithLifecycle()
+    val amplitude by playerViewModel.amplitude.collectAsStateWithLifecycle()
+    val retryCountdown by playerViewModel.retryCountdown.collectAsStateWithLifecycle()
+    val discoveredCastDevices by playerViewModel.discoveredCastDevices.collectAsStateWithLifecycle()
+    val connectedCastDevice by playerViewModel.connectedCastDevice.collectAsStateWithLifecycle()
+    val castPlaybackState by playerViewModel.castPlaybackState.collectAsStateWithLifecycle()
+    val castVolume by playerViewModel.castVolume.collectAsStateWithLifecycle()
+    val lyricsState by playerViewModel.lyricsState.collectAsStateWithLifecycle()
+
+    val effectivePlaybackState = if (connectedCastDevice != null) {
+        val stateName = castPlaybackState?.toString()?.uppercase() ?: ""
+        playbackState.copy(
+            isPlaying = stateName.contains("PLAY"),
+            isLoading = stateName.contains("BUFFER")
+        )
+    } else {
+        playbackState
+    }
+
+    // BackHandler to collapse sheet when expanded
+    BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+        scope.launch {
+            scaffoldState.bottomSheetState.partialExpand()
+        }
+    }
+
+    // Keep screen awake when player is expanded if setting is enabled
+    val isPlayerExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+    val shouldKeepScreenOn = keepScreenOn && isPlayerExpanded
+    val context = LocalContext.current
+    DisposableEffect(shouldKeepScreenOn) {
+        val window = (context as? android.app.Activity)?.window
+        if (shouldKeepScreenOn) {
+            window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
+    // Handle Swipe to Dismiss (Stop playback when swiped away)
+    LaunchedEffect(scaffoldState.bottomSheetState.currentValue) {
+        if (scaffoldState.bottomSheetState.currentValue == SheetValue.Hidden && playbackState.currentStation != null) {
+            playerViewModel.stop()
+        }
+    }
+
+    // Handle Re-appearing (Show player when a station starts playing) and Hiding (when playback stops)
+    LaunchedEffect(playbackState.currentStation) {
+        if (playbackState.currentStation != null && scaffoldState.bottomSheetState.currentValue == SheetValue.Hidden) {
+            if (scaffoldState.bottomSheetState.targetValue != SheetValue.Expanded) {
+                scaffoldState.bottomSheetState.partialExpand()
+            }
+        } else if (playbackState.currentStation == null && scaffoldState.bottomSheetState.currentValue != SheetValue.Hidden) {
+            scaffoldState.bottomSheetState.hide()
+        }
+    }
+
+    // Hide software keyboard when sheet expands
+    val keyboardController = LocalSoftwareKeyboardController.current
+    LaunchedEffect(scaffoldState.bottomSheetState.targetValue) {
+        if (scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded) {
+            keyboardController?.hide()
+        }
+    }
+
+    val enableSwipeToDismiss by remember(
+        progress,
+        scaffoldState.bottomSheetState.currentValue,
+        scaffoldState.bottomSheetState.targetValue
+    ) {
+        derivedStateOf {
+            progress == 0f && scaffoldState.bottomSheetState.currentValue == SheetValue.PartiallyExpanded && scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded
+        }
+    }
+    val currentSwipeAllowed by rememberUpdatedState(enableSwipeToDismiss)
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.Settled) {
+                true
+            } else {
+                currentSwipeAllowed
+            }
+        }
+    )
+
+    LaunchedEffect(playbackState.currentStation) {
+        if (playbackState.currentStation != null) {
+            dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .heightIn(min = 72.dp + bottomInset)
+    ) {
+        SwipeToDismissBox(
+            state = dismissState,
+            enableDismissFromStartToEnd = enableSwipeToDismiss,
+            enableDismissFromEndToStart = enableSwipeToDismiss,
+            gesturesEnabled = enableSwipeToDismiss,
+            onDismiss = {
+                scope.launch { scaffoldState.bottomSheetState.hide() }
+            },
+            backgroundContent = {
+                if (dismissState.dismissDirection != SwipeToDismissBoxValue.Settled) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(72.dp)
+                            .padding(start = 16.dp, end = 16.dp)
+                            .alpha(1f - (progress * 5f).coerceIn(0f, 1f)),
+                        contentAlignment = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
+                            Alignment.CenterStart
+                        } else if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+                            Alignment.CenterEnd
+                        } else {
+                            Alignment.Center
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Stop,
+                            contentDescription = stringResource(R.string.player_cd_stop),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        ) {
+            PlayerSheetContent(
+                isWidescreen = isWidescreen,
+                playbackState = effectivePlaybackState,
+                isFavorite = isFavorite,
+                trackHistory = trackHistory,
+                stationRecordings = stationRecordings,
+                activeSessions = activeSessions,
+                retryCountdown = retryCountdown,
+                lyricsState = lyricsState,
+                progress = progress,
+                onTogglePlayPause = playerViewModel::togglePlayPause,
+                onToggleFavorite = playerViewModel::toggleFavorite,
+                onSetSleepTimer = playerViewModel::setSleepTimer,
+                onCancelSleepTimer = playerViewModel::cancelSleepTimer,
+                onCollapse = {
+                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                },
+                onExpand = {
+                    scope.launch { scaffoldState.bottomSheetState.expand() }
+                },
+                onNext = playerViewModel::next,
+                onPrevious = playerViewModel::previous,
+                onPlayIndex = playerViewModel::playIndex,
+                onEditStation = { station ->
+                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                    onEditStation(station)
+                },
+                isRecording = isRecording,
+                recordingDuration = recordingDuration,
+                amplitude = amplitude,
+                onToggleRecording = playerViewModel::toggleRecording,
+                onSyncOffsetChange = playerViewModel::setLyricsSyncOffset,
+                discoveredCastDevices = discoveredCastDevices,
+                volume = castVolume.toFloat(),
+                onVolumeChange = playerViewModel::setVolume,
+                connectedCastDevice = connectedCastDevice,
+                onConnectCastDevice = playerViewModel::connectToCastDevice,
+                onDisconnectCastDevice = playerViewModel::disconnectCastDevice,
+                onDeleteRecording = playerViewModel::deleteRecording,
+                onStopRecording = playerViewModel::stopRecording,
+                getCurrentPosition = { playerViewModel.currentPosition }
+            )
+        }
     }
 }
 
@@ -141,6 +378,8 @@ fun PlayerSheetContent(
     val clipboardManager = LocalClipboardManager.current
     val context = androidx.compose.ui.platform.LocalContext.current
     val uriHandler = LocalUriHandler.current
+    val castConnectedMessage = stringResource(R.string.player_cast_connected)
+    val trackCopiedMessage = stringResource(R.string.player_copied_track_to_clipboard)
 
     var showSleepTimerDialog by remember { mutableStateOf(false) }
     var searchDialogTrack by remember { mutableStateOf<String?>(null) }
@@ -167,7 +406,7 @@ fun PlayerSheetContent(
 
     LaunchedEffect(connectedCastDevice) {
         if (connectedCastDevice != null) {
-            android.widget.Toast.makeText(context, context.getString(R.string.player_cast_connected), android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(context, castConnectedMessage, android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -594,7 +833,7 @@ fun PlayerSheetContent(
                                     onLongPress = {
                                         if (playbackState.currentTrack != null) {
                                             clipboardManager.setText(AnnotatedString(currentTrackText))
-                                            Toast.makeText(context, context.getString(R.string.player_copied_track_to_clipboard), Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, trackCopiedMessage, Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 )

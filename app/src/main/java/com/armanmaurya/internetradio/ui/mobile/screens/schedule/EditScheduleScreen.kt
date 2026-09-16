@@ -76,6 +76,8 @@ fun EditScheduleScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val scheduleSavedMessage = stringResource(R.string.schedule_saved)
+    val scheduleDeletedMessage = stringResource(R.string.schedule_deleted)
 
     val filteredStations = remember(searchQuery, libraryStations) {
         if (searchQuery.isBlank()) {
@@ -141,13 +143,13 @@ fun EditScheduleScreen(
         onStationClick = { isSheetOpen = true },
         onSave = { entity ->
             viewModel.saveSchedule(entity)
-            Toast.makeText(context, context.getString(R.string.schedule_saved), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, scheduleSavedMessage, Toast.LENGTH_SHORT).show()
             onNavigateBack()
         },
         onNavigateBack = onNavigateBack,
         onDelete = if (scheduleToEdit != null) { {
             viewModel.deleteSchedule(scheduleToEdit)
-            Toast.makeText(context, context.getString(R.string.schedule_deleted), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, scheduleDeletedMessage, Toast.LENGTH_SHORT).show()
             onNavigateBack()
         } } else null,
         contentPadding = contentPadding
@@ -168,6 +170,7 @@ private fun ScheduleConfigurationForm(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val context = LocalContext.current
+    val exactAlarmPermissionMessage = stringResource(R.string.schedule_grant_exact_alarm_permission)
     val alarmManager = remember { context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager }
 
     val startCalendar = remember { Calendar.getInstance().apply { add(Calendar.MINUTE, 1) } }
@@ -295,7 +298,7 @@ private fun ScheduleConfigurationForm(
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
                                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                                 context.startActivity(intent)
-                                Toast.makeText(context, context.getString(R.string.schedule_grant_exact_alarm_permission), Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, exactAlarmPermissionMessage, Toast.LENGTH_LONG).show()
                                 return@TextButton
                             }
                             

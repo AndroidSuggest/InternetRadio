@@ -12,7 +12,7 @@ import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 @HiltAndroidApp
-class InternetRadioApp : Application(), SingletonImageLoader.Factory {
+class RadioApplication : Application(), SingletonImageLoader.Factory {
 
     @Inject
     lateinit var okHttpClient: OkHttpClient

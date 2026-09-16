@@ -37,6 +37,11 @@ fun AboutTab(
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerLow == androidx.compose.ui.graphics.Color.Black
+    val cannotOpenWebsiteMsg = stringResource(R.string.error_cannot_open_website)
+    val websiteCopiedMsg = stringResource(R.string.player_website_copied)
+    val cannotOpenUrlMsg = stringResource(R.string.error_cannot_open_url)
+    val streamUrlCopiedMsg = stringResource(R.string.player_stream_url_copied)
+    val faviconUrlCopiedMsg = stringResource(R.string.player_favicon_url_copied)
 
     LazyColumn(
         state = listState,
@@ -254,12 +259,12 @@ fun AboutTab(
                                 try {
                                     context.startActivity(intent)
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, context.getString(R.string.error_cannot_open_website), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, cannotOpenWebsiteMsg, Toast.LENGTH_SHORT).show()
                                 }
                             },
                             onLongClick = {
                                 clipboardManager.setText(AnnotatedString(station.homepage))
-                                Toast.makeText(context, context.getString(R.string.player_website_copied), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, websiteCopiedMsg, Toast.LENGTH_SHORT).show()
                             }
                         )
                         .padding(top = 4.dp, bottom = 8.dp)
@@ -288,12 +293,12 @@ fun AboutTab(
                                 try {
                                     context.startActivity(intent)
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, context.getString(R.string.error_cannot_open_url), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, cannotOpenUrlMsg, Toast.LENGTH_SHORT).show()
                                 }
                             },
                             onLongClick = {
                                 clipboardManager.setText(AnnotatedString(station.url))
-                                Toast.makeText(context, context.getString(R.string.player_stream_url_copied), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, streamUrlCopiedMsg, Toast.LENGTH_SHORT).show()
                             }
                         )
                         .padding(top = 4.dp, bottom = 8.dp)
@@ -322,12 +327,12 @@ fun AboutTab(
                                 try {
                                     context.startActivity(intent)
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, context.getString(R.string.error_cannot_open_url), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, cannotOpenUrlMsg, Toast.LENGTH_SHORT).show()
                                 }
                             },
                             onLongClick = {
                                 clipboardManager.setText(AnnotatedString(station.favicon))
-                                Toast.makeText(context, context.getString(R.string.player_favicon_url_copied), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, faviconUrlCopiedMsg, Toast.LENGTH_SHORT).show()
                             }
                         )
                         .padding(top = 4.dp, bottom = 32.dp)

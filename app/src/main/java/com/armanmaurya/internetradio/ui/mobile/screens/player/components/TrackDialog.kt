@@ -65,6 +65,7 @@ fun SharedTransitionScope.TrackDialog(
 ) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
+    val copiedToClipboardMessage = stringResource(R.string.player_copied_to_clipboard)
 
     AnimatedVisibility(
         visible = searchDialogTrack != null,
@@ -189,7 +190,7 @@ fun SharedTransitionScope.TrackDialog(
                     IconButton(
                         onClick = {
                             clipboardManager.setText(AnnotatedString(trackToSearch))
-                            Toast.makeText(context, context.getString(R.string.player_copied_to_clipboard), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, copiedToClipboardMessage, Toast.LENGTH_SHORT).show()
                         }
                     ) {
                         Icon(
@@ -225,7 +226,7 @@ fun SharedTransitionScope.TrackDialog(
                         IconButton(
                             onClick = {
                                 clipboardManager.setText(AnnotatedString(rawTrackName))
-                                Toast.makeText(context, context.getString(R.string.player_copied_to_clipboard), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, copiedToClipboardMessage, Toast.LENGTH_SHORT).show()
                             }
                         ) {
                             Icon(

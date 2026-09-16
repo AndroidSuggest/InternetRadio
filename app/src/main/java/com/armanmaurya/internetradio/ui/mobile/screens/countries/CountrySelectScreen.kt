@@ -67,6 +67,7 @@ fun CountrySelectScreen(
         uiState.countries.sumOf { it.stationCount }
     }
     val context = LocalContext.current
+    val allCountriesName = stringResource(R.string.select_country_all)
 
     Scaffold(
         modifier = Modifier,
@@ -115,7 +116,7 @@ fun CountrySelectScreen(
                 },
                 actions = {
                     if (!uiState.isSearchActive && !selectedCountryCode.isNullOrBlank()) {
-                        TextButton(onClick = { onCountrySelected(Country(name = context.getString(R.string.select_country_all), isoCode = "", stationCount = totalStations), null) }) {
+                        TextButton(onClick = { onCountrySelected(Country(name = allCountriesName, isoCode = "", stationCount = totalStations), null) }) {
                             Text(stringResource(R.string.general_clear))
                         }
                     }
@@ -158,9 +159,9 @@ fun CountrySelectScreen(
                 ) {
                     item {
                         CountryItem(
-                            country = Country(name = stringResource(R.string.select_country_all), isoCode = "", stationCount = totalStations),
+                            country = Country(name = allCountriesName, isoCode = "", stationCount = totalStations),
                             isSelected = selectedCountryCode.isNullOrBlank(),
-                            onClick = { onCountrySelected(Country(name = context.getString(R.string.select_country_all), isoCode = "", stationCount = totalStations), null) }
+                            onClick = { onCountrySelected(Country(name = allCountriesName, isoCode = "", stationCount = totalStations), null) }
                         )
                     }
                     itemsIndexed(filteredCountries, key = { _, country -> country.isoCode }) { _, country ->

@@ -47,6 +47,11 @@ fun EditStationScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val context = LocalContext.current
+    val fieldsResetMessage = stringResource(R.string.edit_station_fields_reset_message)
+    val failedFetchOriginalDataMessage = stringResource(R.string.edit_station_failed_fetch_original_data)
+    val uploadedSuccessfullyMessage = stringResource(R.string.edit_station_uploaded_successfully)
+    val savedMessage = stringResource(R.string.edit_station_saved_message)
+    val uploadFailedTemplate = stringResource(R.string.edit_station_upload_failed)
     val stations by viewModel.stations.collectAsStateWithLifecycle()
     val station = if (stationUuid != null) stations?.find { it.stationUuid == stationUuid } else null
 
@@ -324,9 +329,9 @@ fun EditStationScreen(
                                                         languageCodes = freshStation.languageCodes.joinToString(", ")
                                                         homepage = freshStation.homepage
                                                         uploadMode = false
-                                                        Toast.makeText(context, context.getString(R.string.edit_station_fields_reset_message), Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, fieldsResetMessage, Toast.LENGTH_SHORT).show()
                                                     } else {
-                                                        Toast.makeText(context, context.getString(R.string.edit_station_failed_fetch_original_data), Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, failedFetchOriginalDataMessage, Toast.LENGTH_SHORT).show()
                                                     }
                                                 }
                                             }
@@ -381,12 +386,12 @@ fun EditStationScreen(
                                             bitrate = probedBitrate,
                                             onSuccess = {
                                                 isUploading = false
-                                                Toast.makeText(context, context.getString(R.string.edit_station_uploaded_successfully), Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, uploadedSuccessfullyMessage, Toast.LENGTH_SHORT).show()
                                                 onNavigateBack()
                                             },
                                             onError = { error ->
                                                 isUploading = false
-                                                Toast.makeText(context, context.getString(R.string.edit_station_upload_failed, error), Toast.LENGTH_LONG).show()
+                                                Toast.makeText(context, java.lang.String.format(uploadFailedTemplate, error), Toast.LENGTH_LONG).show()
                                             }
                                         )
                                     } else {
@@ -420,7 +425,7 @@ fun EditStationScreen(
                                                 bitrate = probedBitrate
                                             )
                                         }
-                                        Toast.makeText(context, context.getString(R.string.edit_station_saved_message), Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, savedMessage, Toast.LENGTH_SHORT).show()
                                         onNavigateBack()
                                     }
                                 },
