@@ -18,7 +18,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
+import androidx.glance.GlanceTheme
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import kotlinx.coroutines.flow.first
 import androidx.compose.ui.layout.ContentScale
@@ -232,11 +236,11 @@ fun WidgetConfigureScreen(
     val percentageInt = (alpha * 100f).roundToInt()
 
     val presets = listOf(
-        Pair(1.0f, stringResource(R.string.settings_widget_opacity_opaque)),
-        Pair(0.75f, "75%"),
-        Pair(0.50f, "50%"),
+        Pair(0.0f, stringResource(R.string.settings_widget_opacity_transparent)),
         Pair(0.25f, "25%"),
-        Pair(0.0f, stringResource(R.string.settings_widget_opacity_transparent))
+        Pair(0.50f, "50%"),
+        Pair(0.75f, "75%"),
+        Pair(1.0f, stringResource(R.string.settings_widget_opacity_opaque))
     )
 
     Scaffold(
@@ -323,7 +327,7 @@ fun WidgetConfigureScreen(
                     val baseBgColor = extractedBgColor ?: if (isPureBlack) {
                         Color.Black
                     } else {
-                        MaterialTheme.colorScheme.surfaceVariant
+                        GlanceTheme.colors.widgetBackground.getColor(LocalContext.current)
                     }
                     val widgetBgColor = baseBgColor.copy(alpha = alpha)
 
@@ -374,22 +378,29 @@ fun WidgetConfigureScreen(
                             if (isCoverArtFetched && !previewStationThumbUrl.isNullOrBlank()) {
                                 Box(
                                     modifier = Modifier
-                                        .align(Alignment.TopStart)
+                                        .align(Alignment.BottomStart)
                                         .padding(3.dp)
                                         .size(20.dp)
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(MaterialTheme.colorScheme.surface)
-                                        .padding(2.dp),
+                                        .clip(RoundedCornerShape(5.dp))
+                                        .background(MaterialTheme.colorScheme.surface),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    AsyncImage(
-                                        model = previewStationThumbUrl,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Fit,
+                                    Box(
                                         modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(RoundedCornerShape(2.dp))
-                                    )
+                                            .size(20.dp - 2.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        AsyncImage(
+                                            model = previewStationThumbUrl,
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Fit,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(RoundedCornerShape(2.dp))
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -513,7 +524,36 @@ fun WidgetConfigureScreen(
                         colors = SliderDefaults.colors(
                             thumbColor = MaterialTheme.colorScheme.primary,
                             activeTrackColor = MaterialTheme.colorScheme.primary
-                        )
+                        ),
+                        track = { sliderState ->
+                            val sliderColors = SliderDefaults.colors()
+                            SliderDefaults.Track(
+                                sliderState = sliderState,
+                                colors = sliderColors,
+                                modifier = Modifier.drawWithContent {
+                                    drawContent()
+                                    
+                                    presets.drop(1).dropLast(1).forEach { (presetAlpha, _) ->
+                                        val distance = kotlin.math.abs(sliderState.value - presetAlpha)
+
+                                        if (distance >= 0.03f) {
+                                            val x = size.width * presetAlpha
+
+                                            val color = when {
+                                                presetAlpha < sliderState.value -> sliderColors.activeTickColor
+                                                else -> sliderColors.inactiveTickColor
+                                            }
+
+                                            drawCircle(
+                                                color = color,
+                                                radius = 2.dp.toPx(),
+                                                center = Offset(x, center.y)
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                        }
                     )
 
                     // Presets
@@ -542,8 +582,8 @@ private fun OptInFlowRow(
     onSelect: (Float) -> Unit
 ) {
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         presets.forEach { (presetAlpha, label) ->
@@ -551,7 +591,13 @@ private fun OptInFlowRow(
             FilterChip(
                 selected = isSelected,
                 onClick = { onSelect(presetAlpha) },
-                label = { Text(label) },
+                label = {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
+                contentPadding = PaddingValues(horizontal = 2.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
