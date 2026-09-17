@@ -27,8 +27,10 @@ fun ArtWork(
 ) {
     if (art != null) {
         Box(
-            modifier = modifier.cornerRadius(8.dp),
-            contentAlignment = Alignment.TopStart
+            modifier = modifier
+                .cornerRadius(8.dp)
+                .background(GlanceTheme.colors.surfaceVariant),
+            contentAlignment = Alignment.BottomStart
         ) {
             Image(
                 provider = art,
@@ -38,25 +40,36 @@ fun ArtWork(
             )
             if (showStationFloating && stationArt != null) {
                 Box(
-                    modifier = GlanceModifier.padding(3.dp),
+                    modifier = GlanceModifier
+                        .padding(3.dp)
+                        .size(floatingThumbDimension + 3.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = GlanceModifier
+                            .padding(3.dp)
                             .size(floatingThumbDimension)
-                            .cornerRadius(4.dp)
+                            .cornerRadius(5.dp)
                             .background(GlanceTheme.colors.surface),
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            provider = stationArt,
-                            contentDescription = null,
-                            contentScale = ContentScale.Fit,
+                        Box(
                             modifier = GlanceModifier
-                                .fillMaxSize()
-                                .padding(2.dp)
-                                .cornerRadius(3.dp)
-                        )
+                                .size(floatingThumbDimension - 1.dp)
+                                .cornerRadius(4.5.dp)
+                                .background(GlanceTheme.colors.surfaceVariant),
+                            contentAlignment = Alignment.Center
+                        ) {
+                             Image(
+                                 provider = stationArt,
+                                 contentDescription = null,
+                                 contentScale = ContentScale.Fit,
+                                 modifier = GlanceModifier
+                                     .fillMaxSize()
+                                     .padding(2.dp)
+                                     .cornerRadius(2.dp)
+                             )
+                        }
                     }
                 }
             }
