@@ -47,6 +47,10 @@ object WidgetStateKeys {
     val BG_COLOR              = intPreferencesKey("bg_color")
     val TITLE_COLOR           = intPreferencesKey("title_color")
     val ARTIST_COLOR          = intPreferencesKey("artist_color")
+    val DAY_BG_COLOR          = intPreferencesKey("day_bg_color")
+    val DAY_TITLE_COLOR       = intPreferencesKey("day_title_color")
+    val DAY_ARTIST_COLOR      = intPreferencesKey("day_artist_color")
+    val SEED_COLOR            = intPreferencesKey("seed_color")
     val BG_ALPHA              = androidx.datastore.preferences.core.floatPreferencesKey("bg_alpha")
 }
 
@@ -155,6 +159,9 @@ class NowPlayingWidget : GlanceAppWidget() {
             val precomputedBgColorInt = prefs[WidgetStateKeys.BG_COLOR] ?: latest?.bgColor
             val precomputedTitleColorInt = prefs[WidgetStateKeys.TITLE_COLOR] ?: latest?.titleColor
             val precomputedArtistColorInt = prefs[WidgetStateKeys.ARTIST_COLOR] ?: latest?.artistColor
+            val precomputedDayBgColorInt = prefs[WidgetStateKeys.DAY_BG_COLOR] ?: latest?.dayBgColor
+            val precomputedDayTitleColorInt = prefs[WidgetStateKeys.DAY_TITLE_COLOR] ?: latest?.dayTitleColor
+            val precomputedDayArtistColorInt = prefs[WidgetStateKeys.DAY_ARTIST_COLOR] ?: latest?.dayArtistColor
 
             var artwork by remember(artworkUrl) { mutableStateOf<ImageProvider?>(null) }
             var stationThumbnail by remember(stationThumbnailUrl) { mutableStateOf<ImageProvider?>(null) }
@@ -170,16 +177,20 @@ class NowPlayingWidget : GlanceAppWidget() {
                     if (bmp != null) {
                         artwork = ImageProvider(bmp)
                         if (precomputedBgColorInt == null) {
-                            val palette = try {
-                                androidx.palette.graphics.Palette.from(bmp).generate()
-                            } catch (e: Exception) {
-                                null
-                            }
-                            val swatch = palette?.vibrantSwatch ?: palette?.dominantSwatch
-                            if (swatch != null && swatch.rgb != android.graphics.Color.TRANSPARENT) {
-                                dynamicBgColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.rgb))
-                                dynamicTitleColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.titleTextColor))
-                                dynamicArtistColor = androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(swatch.bodyTextColor))
+                            val extracted = extractPaletteFromBitmap(bmp)
+                            if (extracted != null) {
+                                dynamicBgColor = androidx.glance.color.ColorProvider(
+                                    day = androidx.compose.ui.graphics.Color(extracted.dayBackgroundColor),
+                                    night = androidx.compose.ui.graphics.Color(extracted.backgroundColor)
+                                )
+                                dynamicTitleColor = androidx.glance.color.ColorProvider(
+                                    day = androidx.compose.ui.graphics.Color(extracted.dayTitleTextColor),
+                                    night = androidx.compose.ui.graphics.Color(extracted.titleTextColor)
+                                )
+                                dynamicArtistColor = androidx.glance.color.ColorProvider(
+                                    day = androidx.compose.ui.graphics.Color(extracted.dayArtistTextColor),
+                                    night = androidx.compose.ui.graphics.Color(extracted.artistTextColor)
+                                )
                             }
                         }
                     } else {
@@ -199,20 +210,42 @@ class NowPlayingWidget : GlanceAppWidget() {
                 }
             }
 
-            val rawBgColor = precomputedBgColorInt?.let {
-                androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(it))
-            } ?: dynamicBgColor ?: GlanceTheme.colors.widgetBackground
+            val bgColor = if (precomputedBgColorInt != null && precomputedDayBgColorInt != null) {
+                androidx.glance.color.ColorProvider(
+                    day = androidx.compose.ui.graphics.Color(precomputedDayBgColorInt).copy(alpha = widgetAlpha),
+                    night = androidx.compose.ui.graphics.Color(precomputedBgColorInt).copy(alpha = widgetAlpha)
+                )
+            } else if (precomputedBgColorInt != null) {
+                androidx.glance.unit.ColorProvider(
+                    androidx.compose.ui.graphics.Color(precomputedBgColorInt).copy(alpha = widgetAlpha)
+                )
+            } else {
+                val base = dynamicBgColor ?: GlanceTheme.colors.widgetBackground
+                val resolved = base.getColor(context)
+                androidx.glance.unit.ColorProvider(resolved.copy(alpha = widgetAlpha))
+            }
 
-            val resolvedColor = rawBgColor.getColor(context)
-            val bgColor = androidx.glance.unit.ColorProvider(resolvedColor.copy(alpha = widgetAlpha))
+            val titleColor = if (precomputedTitleColorInt != null && precomputedDayTitleColorInt != null) {
+                androidx.glance.color.ColorProvider(
+                    day = androidx.compose.ui.graphics.Color(precomputedDayTitleColorInt),
+                    night = androidx.compose.ui.graphics.Color(precomputedTitleColorInt)
+                )
+            } else if (precomputedTitleColorInt != null) {
+                androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(precomputedTitleColorInt))
+            } else {
+                dynamicTitleColor ?: GlanceTheme.colors.onSurface
+            }
 
-            val titleColor = precomputedTitleColorInt?.let {
-                androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(it))
-            } ?: dynamicTitleColor ?: GlanceTheme.colors.onSurface
-
-            val artistColor = precomputedArtistColorInt?.let {
-                androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(it))
-            } ?: dynamicArtistColor ?: GlanceTheme.colors.onSurfaceVariant
+            val artistColor = if (precomputedArtistColorInt != null && precomputedDayArtistColorInt != null) {
+                androidx.glance.color.ColorProvider(
+                    day = androidx.compose.ui.graphics.Color(precomputedDayArtistColorInt),
+                    night = androidx.compose.ui.graphics.Color(precomputedArtistColorInt)
+                )
+            } else if (precomputedArtistColorInt != null) {
+                androidx.glance.unit.ColorProvider(androidx.compose.ui.graphics.Color(precomputedArtistColorInt))
+            } else {
+                dynamicArtistColor ?: GlanceTheme.colors.onSurfaceVariant
+            }
 
             val state = NowPlayingWidgetState(
                 title               = title,

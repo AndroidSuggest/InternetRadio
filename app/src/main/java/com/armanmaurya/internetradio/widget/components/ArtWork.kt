@@ -42,35 +42,18 @@ fun ArtWork(
                 Box(
                     modifier = GlanceModifier
                         .padding(3.dp)
-                        .size(floatingThumbDimension + 3.dp),
+                        .size(floatingThumbDimension)
+                        .cornerRadius(8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Box(
+                    Image(
+                        provider = stationArt,
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
                         modifier = GlanceModifier
-                            .padding(3.dp)
-                            .size(floatingThumbDimension)
-                            .cornerRadius(5.dp)
-                            .background(GlanceTheme.colors.surface),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(
-                            modifier = GlanceModifier
-                                .size(floatingThumbDimension - 1.dp)
-                                .cornerRadius(4.5.dp)
-                                .background(GlanceTheme.colors.surfaceVariant),
-                            contentAlignment = Alignment.Center
-                        ) {
-                             Image(
-                                 provider = stationArt,
-                                 contentDescription = null,
-                                 contentScale = ContentScale.Fit,
-                                 modifier = GlanceModifier
-                                     .fillMaxSize()
-                                     .padding(2.dp)
-                                     .cornerRadius(2.dp)
-                             )
-                        }
-                    }
+                            .fillMaxSize()
+                            .cornerRadius(8.dp)
+                    )
                 }
             }
         }

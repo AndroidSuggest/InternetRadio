@@ -54,6 +54,27 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
+
+private data class WidgetConfigureData(
+    val initialAlpha: Float,
+    val savedBgColor: Color?,
+    val savedTitleColor: Color?,
+    val savedArtistColor: Color?,
+    val savedTitle: String?,
+    val savedArtist: String?,
+    val savedArtworkUrl: String?,
+    val savedStationThumbUrl: String?,
+    val savedIsCoverArtFetched: Boolean?,
+    val savedIsPlaying: Boolean?
+)
+
+private fun extractPaletteColorsSafely(bitmap: android.graphics.Bitmap?): ExtractedPaletteColors? {
+    if (bitmap == null) return null
+    return extractPaletteFromBitmap(bitmap)
+}
+
 @AndroidEntryPoint
 class NowPlayingWidgetConfigureActivity : ComponentActivity() {
 
@@ -81,71 +102,138 @@ class NowPlayingWidgetConfigureActivity : ComponentActivity() {
             val appPreferences by settingsRepository.appPreferencesFlow.collectAsStateWithLifecycle(
                 initialValue = AppPreferences()
             )
+            val isDark = when (appPreferences.themeMode) {
+                AppTheme.LIGHT -> false
+                AppTheme.DARK -> true
+                AppTheme.SYSTEM -> isSystemInDarkTheme()
+            }
             val recentStations by recentRepository.getAllRecent().collectAsStateWithLifecycle(
                 initialValue = emptyList<RadioStation>()
             )
-            val latest = latestWidgetPayload
+            val isServiceRunning = com.armanmaurya.internetradio.player.PlaybackService.isRunning
+            val latest = if (isServiceRunning) latestWidgetPayload else null
             val lastStation = recentStations.firstOrNull()
 
-            val initialAlphaState = produceState<Float?>(initialValue = null, key1 = appWidgetId) {
-                var loadedAlpha: Float? = null
+            val widgetConfigState = produceState<WidgetConfigureData?>(
+                initialValue = null,
+                key1 = appWidgetId,
+                key2 = lastStation?.stationUuid,
+                key3 = isDark
+            ) {
+                var loadedPrefs: androidx.datastore.preferences.core.Preferences? = null
+                val manager = GlanceAppWidgetManager(applicationContext)
 
-                // 1. Try reading from the specific widget instance if valid
                 if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                     try {
-                        val manager = GlanceAppWidgetManager(applicationContext)
                         val glanceId = manager.getGlanceIdBy(appWidgetId)
-                        val prefs = getAppWidgetState(
+                        loadedPrefs = getAppWidgetState(
                             applicationContext,
                             PreferencesGlanceStateDefinition,
                             glanceId
                         )
-                        loadedAlpha = prefs[WidgetStateKeys.BG_ALPHA]
                     } catch (e: Exception) {
                         // Ignore if glanceId not yet created or failed
                     }
-                }
-
-                // 2. If not found in widget instance, fallback to latestWidgetPayload or saved DataStore setting
-                if (loadedAlpha == null) {
-                    loadedAlpha = latestWidgetPayload?.bgAlpha
-                        ?: try {
-                            settingsRepository.appPreferencesFlow.first().widgetBackgroundAlpha
-                        } catch (e: Exception) {
-                            1.0f
+                } else {
+                    try {
+                        val firstGlanceId = manager.getGlanceIds(NowPlayingWidget::class.java).firstOrNull()
+                        if (firstGlanceId != null) {
+                            loadedPrefs = getAppWidgetState(
+                                applicationContext,
+                                PreferencesGlanceStateDefinition,
+                                firstGlanceId
+                            )
                         }
+                    } catch (e: Exception) {
+                        // Ignore
+                    }
                 }
 
-                value = loadedAlpha
+                val loadedAlpha = loadedPrefs?.get(WidgetStateKeys.BG_ALPHA)
+                    ?: latest?.bgAlpha
+                    ?: try {
+                        settingsRepository.appPreferencesFlow.first().widgetBackgroundAlpha
+                    } catch (e: Exception) {
+                        1.0f
+                    }
+
+                var bgColorInt = if (isDark) {
+                    latest?.bgColor ?: loadedPrefs?.get(WidgetStateKeys.BG_COLOR)
+                } else {
+                    latest?.dayBgColor ?: loadedPrefs?.get(WidgetStateKeys.DAY_BG_COLOR) ?: latest?.bgColor ?: loadedPrefs?.get(WidgetStateKeys.BG_COLOR)
+                }
+                var titleColorInt = if (isDark) {
+                    latest?.titleColor ?: loadedPrefs?.get(WidgetStateKeys.TITLE_COLOR)
+                } else {
+                    latest?.dayTitleColor ?: loadedPrefs?.get(WidgetStateKeys.DAY_TITLE_COLOR) ?: latest?.titleColor ?: loadedPrefs?.get(WidgetStateKeys.TITLE_COLOR)
+                }
+                var artistColorInt = if (isDark) {
+                    latest?.artistColor ?: loadedPrefs?.get(WidgetStateKeys.ARTIST_COLOR)
+                } else {
+                    latest?.dayArtistColor ?: loadedPrefs?.get(WidgetStateKeys.DAY_ARTIST_COLOR) ?: latest?.artistColor ?: loadedPrefs?.get(WidgetStateKeys.ARTIST_COLOR)
+                }
+
+                val candidateArtUrl = latest?.artworkUrl?.takeIf { it.isNotBlank() }
+                    ?: loadedPrefs?.get(WidgetStateKeys.ARTWORK_URL)?.takeIf { it.isNotBlank() }
+                    ?: lastStation?.favicon
+
+                val candidateThumbUrl = latest?.stationThumbnailUrl?.takeIf { it.isNotBlank() }
+                    ?: loadedPrefs?.get(WidgetStateKeys.STATION_THUMBNAIL_URL)?.takeIf { it.isNotBlank() }
+
+                if (bgColorInt == null && !candidateArtUrl.isNullOrBlank()) {
+                    val bmp = resolveArtwork(applicationContext, candidateArtUrl)
+                    var paletteColors = extractPaletteColorsSafely(bmp)
+                    if (paletteColors == null && !candidateThumbUrl.isNullOrBlank() && candidateThumbUrl != candidateArtUrl) {
+                        paletteColors = extractPaletteColorsSafely(resolveArtwork(applicationContext, candidateThumbUrl, maxDimension = 96))
+                    }
+                    if (paletteColors != null) {
+                        bgColorInt = if (isDark) paletteColors.backgroundColor else paletteColors.dayBackgroundColor
+                        titleColorInt = if (isDark) paletteColors.titleTextColor else paletteColors.dayTitleTextColor
+                        artistColorInt = if (isDark) paletteColors.artistTextColor else paletteColors.dayArtistTextColor
+                    }
+                }
+
+                value = WidgetConfigureData(
+                    initialAlpha = loadedAlpha,
+                    savedBgColor = bgColorInt?.let { Color(it) },
+                    savedTitleColor = titleColorInt?.let { Color(it) },
+                    savedArtistColor = artistColorInt?.let { Color(it) },
+                    savedTitle = latest?.title ?: loadedPrefs?.get(WidgetStateKeys.TITLE),
+                    savedArtist = latest?.artist ?: loadedPrefs?.get(WidgetStateKeys.ARTIST),
+                    savedArtworkUrl = latest?.artworkUrl ?: loadedPrefs?.get(WidgetStateKeys.ARTWORK_URL),
+                    savedStationThumbUrl = latest?.stationThumbnailUrl ?: loadedPrefs?.get(WidgetStateKeys.STATION_THUMBNAIL_URL),
+                    savedIsCoverArtFetched = latest?.isCoverArtFetched ?: loadedPrefs?.get(WidgetStateKeys.IS_COVER_ART_FETCHED),
+                    savedIsPlaying = latest?.isPlaying ?: loadedPrefs?.get(WidgetStateKeys.IS_PLAYING)
+                )
             }
 
-            val previewTitle = latest?.title?.takeIf { it.isNotBlank() }
+            val configData = widgetConfigState.value
+
+            val previewTitle = configData?.savedTitle?.takeIf { it.isNotBlank() && it != "Nothing playing" }
                 ?: lastStation?.name
                 ?: stringResource(R.string.widget_preview_title)
 
-            val previewArtist = latest?.artist?.takeIf { it.isNotBlank() }
+            val previewArtist = configData?.savedArtist?.takeIf { it.isNotBlank() }
                 ?: (if (lastStation != null) "" else stringResource(R.string.widget_preview_artist))
 
-            val previewArtworkUrl = latest?.artworkUrl?.takeIf { it.isNotBlank() }
+            val previewArtworkUrl = configData?.savedArtworkUrl?.takeIf { it.isNotBlank() }
                 ?: lastStation?.favicon
 
-            val previewStationThumbUrl = latest?.stationThumbnailUrl?.takeIf { it.isNotBlank() }
-                ?: if (latest?.isCoverArtFetched == true) lastStation?.favicon else null
+            val previewStationThumbUrl = configData?.savedStationThumbUrl?.takeIf { it.isNotBlank() }
+                ?: if (configData?.savedIsCoverArtFetched == true) lastStation?.favicon else null
 
-            val isCoverArtFetched = latest?.isCoverArtFetched ?: false
-            val isPlaying = latest?.isPlaying ?: false
+            val isCoverArtFetched = configData?.savedIsCoverArtFetched ?: false
+            val isPlaying = configData?.savedIsPlaying ?: false
 
-            val previewBgColor = latest?.bgColor?.let { Color(it) }
-            val previewTitleColor = latest?.titleColor?.let { Color(it) }
-            val previewArtistColor = latest?.artistColor?.let { Color(it) }
-
-            val initialAlpha = initialAlphaState.value
+            val previewBgColor = configData?.savedBgColor
+            val previewTitleColor = configData?.savedTitleColor
+            val previewArtistColor = configData?.savedArtistColor
 
             InternetRadioTheme(appPreferences = appPreferences) {
-                if (initialAlpha != null) {
+                if (configData != null) {
                     WidgetConfigureScreen(
                         appWidgetId = appWidgetId,
-                        initialAlpha = initialAlpha,
+                        initialAlpha = configData.initialAlpha,
                         previewTitle = previewTitle,
                         previewArtist = previewArtist,
                         previewArtworkUrl = previewArtworkUrl,
@@ -155,6 +243,7 @@ class NowPlayingWidgetConfigureActivity : ComponentActivity() {
                         extractedBgColor = previewBgColor,
                         extractedTitleColor = previewTitleColor,
                         extractedArtistColor = previewArtistColor,
+                        isDark = isDark,
                         onApply = { chosenAlpha ->
                             // Launch on main scope to save and complete
                             CoroutineScope(Dispatchers.Main).launch {
@@ -229,11 +318,43 @@ fun WidgetConfigureScreen(
     extractedBgColor: Color? = null,
     extractedTitleColor: Color? = null,
     extractedArtistColor: Color? = null,
+    isDark: Boolean = true,
     onApply: (Float) -> Unit,
     onCancel: () -> Unit
 ) {
     var alpha by remember(initialAlpha) { mutableStateOf(initialAlpha) }
     val percentageInt = (alpha * 100f).roundToInt()
+
+    var dynamicBgColor by remember(previewArtworkUrl, previewStationThumbUrl) { mutableStateOf<Color?>(null) }
+    var dynamicTitleColor by remember(previewArtworkUrl, previewStationThumbUrl) { mutableStateOf<Color?>(null) }
+    var dynamicArtistColor by remember(previewArtworkUrl, previewStationThumbUrl) { mutableStateOf<Color?>(null) }
+
+    val context = LocalContext.current
+    LaunchedEffect(previewArtworkUrl, previewStationThumbUrl, extractedBgColor) {
+        if (extractedBgColor == null) {
+            val primaryUrl = previewArtworkUrl?.takeIf { it.isNotBlank() }
+            val fallbackUrl = previewStationThumbUrl?.takeIf { it.isNotBlank() }
+            val targetUrl = primaryUrl ?: fallbackUrl
+
+            if (!targetUrl.isNullOrBlank()) {
+                val bmp = resolveArtwork(context, targetUrl)
+                var paletteColors = extractPaletteColorsSafely(bmp)
+                if (paletteColors == null && primaryUrl != null && !fallbackUrl.isNullOrBlank() && primaryUrl != fallbackUrl) {
+                    val fallbackBmp = resolveArtwork(context, fallbackUrl, maxDimension = 96)
+                    paletteColors = extractPaletteColorsSafely(fallbackBmp)
+                }
+                if (paletteColors != null) {
+                    dynamicBgColor = Color(if (isDark) paletteColors.backgroundColor else paletteColors.dayBackgroundColor)
+                    dynamicTitleColor = Color(if (isDark) paletteColors.titleTextColor else paletteColors.dayTitleTextColor)
+                    dynamicArtistColor = Color(if (isDark) paletteColors.artistTextColor else paletteColors.dayArtistTextColor)
+                }
+            }
+        }
+    }
+
+    val effectiveBgColor = extractedBgColor ?: dynamicBgColor
+    val effectiveTitleColor = extractedTitleColor ?: dynamicTitleColor
+    val effectiveArtistColor = extractedArtistColor ?: dynamicArtistColor
 
     val presets = listOf(
         Pair(0.0f, stringResource(R.string.settings_widget_opacity_transparent)),
@@ -324,15 +445,15 @@ fun WidgetConfigureScreen(
                 ) {
                     // Widget Mockup Card matching PlayerContent.kt 1-cell layout
                     val isPureBlack = MaterialTheme.colorScheme.surface == Color.Black
-                    val baseBgColor = extractedBgColor ?: if (isPureBlack) {
+                    val baseBgColor = effectiveBgColor ?: if (isPureBlack) {
                         Color.Black
                     } else {
                         GlanceTheme.colors.widgetBackground.getColor(LocalContext.current)
                     }
                     val widgetBgColor = baseBgColor.copy(alpha = alpha)
 
-                    val titleColor = extractedTitleColor ?: MaterialTheme.colorScheme.onSurface
-                    val artistColor = extractedArtistColor ?: MaterialTheme.colorScheme.onSurfaceVariant
+                    val titleColor = effectiveTitleColor ?: MaterialTheme.colorScheme.onSurface
+                    val artistColor = effectiveArtistColor ?: MaterialTheme.colorScheme.onSurfaceVariant
 
                     Row(
                         modifier = Modifier
@@ -341,7 +462,7 @@ fun WidgetConfigureScreen(
                             .clip(RoundedCornerShape(8.dp))
                             .background(widgetBgColor)
                             .then(
-                                if (isPureBlack && extractedBgColor == null) Modifier.border(
+                                if (isPureBlack && effectiveBgColor == null) Modifier.border(
                                     1.dp,
                                     MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                                     RoundedCornerShape(8.dp)
@@ -381,26 +502,17 @@ fun WidgetConfigureScreen(
                                         .align(Alignment.BottomStart)
                                         .padding(3.dp)
                                         .size(20.dp)
-                                        .clip(RoundedCornerShape(5.dp))
-                                        .background(MaterialTheme.colorScheme.surface),
+                                        .clip(RoundedCornerShape(8.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Box(
+                                    AsyncImage(
+                                        model = previewStationThumbUrl,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Fit,
                                         modifier = Modifier
-                                            .size(20.dp - 2.dp)
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        AsyncImage(
-                                            model = previewStationThumbUrl,
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Fit,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .clip(RoundedCornerShape(2.dp))
-                                        )
-                                    }
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(8.dp))
+                                    )
                                 }
                             }
                         }

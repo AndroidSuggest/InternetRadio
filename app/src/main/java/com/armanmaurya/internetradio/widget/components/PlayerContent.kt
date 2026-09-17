@@ -72,7 +72,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     )
 
     val iconFilter = androidx.glance.ColorFilter.tint(
-        state.titleColor ?: GlanceTheme.colors.onPrimary
+        state.titleColor ?: GlanceTheme.colors.onSurface
     )
     val isVerySmallHeight = size.height < 75.dp
     val isTallHeight = size.height >= 110.dp
@@ -172,7 +172,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                 Text(
                     text = state.stationName,
                     style = TextStyle(
-                        color = state.artistColor ?: GlanceTheme.colors.onPrimary,
+                        color = state.artistColor ?: GlanceTheme.colors.onSurfaceVariant,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     ),

@@ -25,7 +25,7 @@ fun NowPlayingTrackInfo(
         Text(
             text = title,
             style = TextStyle(
-                color = titleColor ?: GlanceTheme.colors.onPrimary,
+                color = titleColor ?: GlanceTheme.colors.onSurface,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             ),
@@ -35,7 +35,7 @@ fun NowPlayingTrackInfo(
             Text(
                 text = artist,
                 style = TextStyle(
-                    color = artistColor ?: GlanceTheme.colors.onPrimary,
+                    color = artistColor ?: GlanceTheme.colors.onSurfaceVariant,
                     fontSize = 12.sp
                 ),
                 maxLines = 1

@@ -9,7 +9,12 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.appwidget.updateAll
-import androidx.palette.graphics.Palette
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamicColorScheme
+import com.materialkolor.ktx.themeColor
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -58,25 +63,42 @@ suspend fun resolveArtwork(context: Context, url: String?, maxDimension: Int = M
 }
 
 data class ExtractedPaletteColors(
+    val seedColor: Int,
     val backgroundColor: Int,
     val titleTextColor: Int,
-    val artistTextColor: Int
+    val artistTextColor: Int,
+    val dayBackgroundColor: Int,
+    val dayTitleTextColor: Int,
+    val dayArtistTextColor: Int,
 )
 
 fun extractPaletteFromBitmap(bitmap: Bitmap?): ExtractedPaletteColors? {
     if (bitmap == null) return null
     return try {
-        val palette = Palette.from(bitmap).generate()
-        val swatch = palette.vibrantSwatch ?: palette.dominantSwatch
-        if (swatch != null && swatch.rgb != android.graphics.Color.TRANSPARENT) {
-            ExtractedPaletteColors(
-                backgroundColor = swatch.rgb,
-                titleTextColor = swatch.titleTextColor,
-                artistTextColor = swatch.bodyTextColor
-            )
-        } else {
-            null
+        val imageBitmap = bitmap.asImageBitmap()
+        val seedColor = imageBitmap.themeColor(fallback = Color.Transparent)
+        if (seedColor == Color.Transparent || seedColor == Color.Unspecified) {
+            return null
         }
+        val darkScheme = dynamicColorScheme(
+            seedColor = seedColor,
+            isDark = true,
+            style = PaletteStyle.Vibrant
+        )
+        val lightScheme = dynamicColorScheme(
+            seedColor = seedColor,
+            isDark = false,
+            style = PaletteStyle.Vibrant
+        )
+        ExtractedPaletteColors(
+            seedColor = seedColor.toArgb(),
+            backgroundColor = darkScheme.surfaceContainer.toArgb(),
+            titleTextColor = darkScheme.onSurface.toArgb(),
+            artistTextColor = darkScheme.onSurfaceVariant.toArgb(),
+            dayBackgroundColor = lightScheme.surfaceContainer.toArgb(),
+            dayTitleTextColor = lightScheme.onSurface.toArgb(),
+            dayArtistTextColor = lightScheme.onSurfaceVariant.toArgb(),
+        )
     } catch (e: Exception) {
         null
     }
@@ -95,6 +117,10 @@ data class WidgetPlaybackPayload(
     val bgColor: Int? = null,
     val titleColor: Int? = null,
     val artistColor: Int? = null,
+    val dayBgColor: Int? = null,
+    val dayTitleColor: Int? = null,
+    val dayArtistColor: Int? = null,
+    val seedColor: Int? = null,
     val bgAlpha: Float? = null,
 )
 
@@ -138,6 +164,10 @@ suspend fun pushWidgetUpdate(
         bgColor = paletteColors?.backgroundColor,
         titleColor = paletteColors?.titleTextColor,
         artistColor = paletteColors?.artistTextColor,
+        dayBgColor = paletteColors?.dayBackgroundColor,
+        dayTitleColor = paletteColors?.dayTitleTextColor,
+        dayArtistColor = paletteColors?.dayArtistTextColor,
+        seedColor = paletteColors?.seedColor,
         bgAlpha = latestWidgetPayload?.bgAlpha,
     )
 
@@ -171,6 +201,26 @@ suspend fun pushWidgetUpdate(
                     prefs[WidgetStateKeys.ARTIST_COLOR] = paletteColors.artistTextColor
                 } else {
                     prefs.remove(WidgetStateKeys.ARTIST_COLOR)
+                }
+                if (paletteColors?.dayBackgroundColor != null) {
+                    prefs[WidgetStateKeys.DAY_BG_COLOR] = paletteColors.dayBackgroundColor
+                } else {
+                    prefs.remove(WidgetStateKeys.DAY_BG_COLOR)
+                }
+                if (paletteColors?.dayTitleTextColor != null) {
+                    prefs[WidgetStateKeys.DAY_TITLE_COLOR] = paletteColors.dayTitleTextColor
+                } else {
+                    prefs.remove(WidgetStateKeys.DAY_TITLE_COLOR)
+                }
+                if (paletteColors?.dayArtistTextColor != null) {
+                    prefs[WidgetStateKeys.DAY_ARTIST_COLOR] = paletteColors.dayArtistTextColor
+                } else {
+                    prefs.remove(WidgetStateKeys.DAY_ARTIST_COLOR)
+                }
+                if (paletteColors?.seedColor != null) {
+                    prefs[WidgetStateKeys.SEED_COLOR] = paletteColors.seedColor
+                } else {
+                    prefs.remove(WidgetStateKeys.SEED_COLOR)
                 }
             }
             
@@ -242,6 +292,26 @@ suspend fun cleanStaleWidgetState(
                     prefs[WidgetStateKeys.ARTIST_COLOR] = paletteColors.artistTextColor
                 } else {
                     prefs.remove(WidgetStateKeys.ARTIST_COLOR)
+                }
+                if (paletteColors?.dayBackgroundColor != null) {
+                    prefs[WidgetStateKeys.DAY_BG_COLOR] = paletteColors.dayBackgroundColor
+                } else {
+                    prefs.remove(WidgetStateKeys.DAY_BG_COLOR)
+                }
+                if (paletteColors?.dayTitleTextColor != null) {
+                    prefs[WidgetStateKeys.DAY_TITLE_COLOR] = paletteColors.dayTitleTextColor
+                } else {
+                    prefs.remove(WidgetStateKeys.DAY_TITLE_COLOR)
+                }
+                if (paletteColors?.dayArtistTextColor != null) {
+                    prefs[WidgetStateKeys.DAY_ARTIST_COLOR] = paletteColors.dayArtistTextColor
+                } else {
+                    prefs.remove(WidgetStateKeys.DAY_ARTIST_COLOR)
+                }
+                if (paletteColors?.seedColor != null) {
+                    prefs[WidgetStateKeys.SEED_COLOR] = paletteColors.seedColor
+                } else {
+                    prefs.remove(WidgetStateKeys.SEED_COLOR)
                 }
             }
             widget.update(context, glanceId)
