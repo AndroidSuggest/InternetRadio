@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="58dp"
+    android:height="16dp"
+    android:viewportWidth="246000"
+    android:viewportHeight="68000">
+    <group
+        android:translateX="-47000"
+        android:translateY="-54000">
+        <!-- UPI text (U, P, I) -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M233961,120588h-12927l17963,-64873h12927l-17963,64873zm-107424,-4064c-707,2562 -3063,4358 -5713,4358H54185c-1826,0 -3180,-619 -4064,-1855 -883,-1238 -1089,-2769 -559,-4594l16255,-58541h12928l-14518,52298h51710l14517,-52298h12928l-16844,60632zm100710,-58777c-883,-1237 -2268,-1855 -4152,-1855h-71027l-3504,12721h64608l-3769,13576h-51680v-30h-12927l-10719,38724h12927l7185,-25973h58100c1826,0 3534,-619 5124,-1855 1590,-1237 2651,-2768 3151,-4594l7185,-25972c559,-1943 383,-3504 -501,-4741z" />
+        <!-- Orange arrow -->
+        <path
+            android:fillColor="#FFE97208"
+            android:pathData="M262762,55833l16343,32510 -34395,32510z" />
+        <!-- Green arrow -->
+        <path
+            android:fillColor="#FF0E8635"
+            android:pathData="M274245,55833l16344,32510 -34365,32510 4087,-14747 18794,-17763 -8941,-17785z" />
+    </group>
+</vector>

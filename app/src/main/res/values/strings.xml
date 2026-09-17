@@ -76,6 +76,7 @@
     <string name="settings_auto_route_search_subtitle">Automatically switch to the Browse tab when searching</string>
     <string name="settings_select_all_text_on_focus_title">Select all text on search</string>
     <string name="settings_select_all_text_on_focus_subtitle">Automatically select search bar text on focus</string>
+    <string name="settings_update_section">Update</string>
     <string name="settings_disable_update_check">Disable update check</string>
     <string name="settings_disable_update_check_desc">Do not automatically check for app updates on startup</string>
     <string name="settings_auto_play">Auto play on start</string>
@@ -103,6 +104,7 @@
     <string name="settings_retry_indefinitely">Indefinitely</string>
     <string name="settings_check_updates">Check for updates</string>
     <string name="settings_rate_review">Rate &amp; Review</string>
+    <string name="settings_view_on_play_store">View on Play Store</string>
     <string name="settings_track_history_limit">Track History Limit</string>
     <string name="settings_widget_section">Widget</string>
     <string name="settings_widget_transparency_title">Background opacity</string>
@@ -164,7 +166,7 @@
     <!-- ========================================== -->
     <string name="about_title">About</string>
     <string name="about_us">About Us</string>
-    <string name="about_app_description">A simple internet radio player that lets you discover and listen to thousands of radio stations from across the globe.</string>
+    <string name="about_app_description">Discover and listen to radio stations worldwide</string>
     <string name="about_view_contributors">View Contributors</string>
     <string name="about_view_github">View on GitHub</string>
     <string name="about_author">Author</string>
@@ -175,6 +177,14 @@
     <string name="about_cd_linkedin">LinkedIn</string>
     <string name="about_cd_github">GitHub</string>
     <string name="about_cd_instagram">Instagram</string>
+    <string name="about_support">Support</string>
+    <string name="about_github_sponsors">GitHub Sponsors</string>
+    <string name="about_buy_me_a_coffee">Buy Me a Coffee</string>
+    <string name="settings_donate_section">Donate</string>
+    <string name="about_upi">UPI</string>
+    <string name="about_donate_via_upi">Donate via UPI</string>
+    <string name="about_upi_copied">UPI ID copied: %1$s</string>
+    <string name="about_cd_copy_upi">Copy UPI ID</string>
 
     <!-- ========================================== -->
     <!-- 7. HOME                                    -->

@@ -9,6 +9,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import org.xmlpull.v1.XmlPullParser
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,12 +20,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.LocalCafe
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.material.icons.filled.ContentCopy
+import coil3.compose.AsyncImage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -103,7 +121,6 @@ import java.util.Locale
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onAboutClick: () -> Unit,
     onCheckUpdatesClick: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
@@ -190,7 +207,6 @@ fun SettingsScreen(
                 onSetDefaultTab = viewModel::setDefaultTab,
                 onSetAutoRouteToBrowseOnSearch = viewModel::setAutoRouteToBrowseOnSearch,
                 onSetSelectAllTextOnFocus = viewModel::setSelectAllTextOnFocus,
-                onSetDisableUpdateCheck = viewModel::setDisableUpdateCheck,
                 topShape = topShape,
                 middleShape = middleShape,
                 bottomShape = bottomShape
@@ -233,27 +249,27 @@ fun SettingsScreen(
                 topShape = topShape,
                 bottomShape = bottomShape
             )
-            AboutSection(
-                onAboutClick = onAboutClick,
+            UpdateSection(
+                uiState = uiState,
                 onCheckUpdatesClick = onCheckUpdatesClick,
-                onRateClick = { viewModel.setHasRatedApp(true) },
+                onSetDisableUpdateCheck = viewModel::setDisableUpdateCheck,
                 topShape = topShape,
-                middleShape = middleShape,
                 bottomShape = bottomShape
             )
-
             val mainViewModel: com.armanmaurya.internetradio.ui.shared.viewmodels.MainViewModel = androidx.hilt.navigation.compose.hiltViewModel()
             val versionName = mainViewModel.systemFacade.getAppVersionName()
             val versionCode = mainViewModel.systemFacade.getAppVersionCode().toString()
 
-            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                text = "v$versionName ($versionCode) • ${stringResource(StoreConfig.storeNameRes)}",
-                style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            AboutSection(
+                shape = singleShape,
+                topShape = topShape,
+                bottomShape = bottomShape,
+                versionName = versionName,
+                versionCode = versionCode
             )
+
+            DonateSection()
+
             androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -421,7 +437,6 @@ private fun GeneralSection(
     onSetDefaultTab: (Int) -> Unit,
     onSetAutoRouteToBrowseOnSearch: (Boolean) -> Unit,
     onSetSelectAllTextOnFocus: (Boolean) -> Unit,
-    onSetDisableUpdateCheck: (Boolean) -> Unit,
     topShape: RoundedCornerShape,
     middleShape: RoundedCornerShape,
     bottomShape: RoundedCornerShape
@@ -497,17 +512,6 @@ private fun GeneralSection(
             isEnabled = uiState.selectAllTextOnFocus,
             onToggle = onSetSelectAllTextOnFocus,
             icon = Icons.Default.Search,
-            shape = middleShape
-        )
-
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
-
-        ToggleItem(
-            title = stringResource(R.string.settings_disable_update_check),
-            subtitle = stringResource(R.string.settings_disable_update_check_desc),
-            isEnabled = uiState.disableUpdateCheck,
-            onToggle = onSetDisableUpdateCheck,
-            icon = Icons.Default.Update,
             shape = bottomShape
         )
     }
@@ -664,51 +668,380 @@ private fun PlayerSection(
 }
 
 @Composable
-private fun AboutSection(
-    onAboutClick: () -> Unit,
+private fun UpdateSection(
+    uiState: AppPreferences,
     onCheckUpdatesClick: () -> Unit,
-    onRateClick: () -> Unit,
+    onSetDisableUpdateCheck: (Boolean) -> Unit,
     topShape: RoundedCornerShape,
-    middleShape: RoundedCornerShape,
     bottomShape: RoundedCornerShape
 ) {
-    val context = LocalContext.current
-
-    Section(title = stringResource(R.string.about_title)) {
-        Item(
-            title = if (StoreConfig.isPlayStoreBuild) stringResource(R.string.settings_rate_review) else stringResource(R.string.settings_support_app),
-            onClick = {
-                onRateClick()
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = if (StoreConfig.isPlayStoreBuild) {
-                            Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
-                        } else {
-                            Uri.parse("https://github.com/armanmaurya/InternetRadio")
-                        }
-                    }
-                    context.startActivity(intent)
-                } catch (_: Exception) {
-                    // Handle error silently
-                }
-            },
-            icon = if (StoreConfig.isPlayStoreBuild) Icons.Default.StarRate else Icons.Default.Favorite,
-            shape = topShape
-        )
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
-        Item(
-            title = stringResource(R.string.about_us),
-            onClick = onAboutClick,
-            icon = Icons.Default.Info,
-            shape = if (StoreConfig.isPlayStoreBuild) middleShape else middleShape // Keep it simple
-        )
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+    Section(title = stringResource(R.string.settings_update_section)) {
         Item(
             title = stringResource(R.string.settings_check_updates),
             onClick = onCheckUpdatesClick,
             icon = Icons.Default.Update,
+            shape = topShape
+        )
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+        ToggleItem(
+            title = stringResource(R.string.settings_disable_update_check),
+            subtitle = stringResource(R.string.settings_disable_update_check_desc),
+            isEnabled = uiState.disableUpdateCheck,
+            onToggle = onSetDisableUpdateCheck,
+            icon = Icons.Default.Update,
             shape = bottomShape
         )
+    }
+}
+
+@Composable
+private fun AboutSection(
+    shape: RoundedCornerShape,
+    topShape: RoundedCornerShape,
+    bottomShape: RoundedCornerShape,
+    versionName: String,
+    versionCode: String
+) {
+    val context = LocalContext.current
+
+    fun openUrl(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            context.startActivity(intent)
+        } catch (_: Exception) {
+            // Handle error silently
+        }
+    }
+
+    // Centered App Branding & Info Card
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // App Icon in center (big squircle)
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .clip(RoundedCornerShape(22.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = stringResource(R.string.about_cd_app_icon),
+                modifier = Modifier.size(120.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        // App Name & Version / Edition
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "v$versionName ($versionCode) • ${stringResource(StoreConfig.storeNameRes)}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // App Description
+        Text(
+            text = stringResource(R.string.about_app_description),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        // Author Profile & Social Links Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+                // Author Profile & "Made with ❤️ by Arman Maurya"
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { openUrl("https://github.com/armanmaurya") }
+                ) {
+                    AsyncImage(
+                        model = "https://github.com/armanmaurya.png",
+                        contentDescription = stringResource(R.string.about_author_name),
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                        fallback = painterResource(id = R.drawable.ic_launcher_foreground),
+                        error = painterResource(id = R.drawable.ic_launcher_foreground)
+                    )
+
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Made with",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Icon(
+                                imageVector = Icons.Filled.Favorite,
+                                contentDescription = "Love",
+                                tint = androidx.compose.ui.graphics.Color(0xFFE53935),
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = "by",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.about_author_name),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
+                // Social Icon Buttons
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                            .clickable { openUrl("https://github.com/armanmaurya/InternetRadio") },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_github),
+                            contentDescription = stringResource(R.string.about_cd_github),
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                            .clickable { openUrl("https://www.linkedin.com/in/arman-maurya-2391aa263/") },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_linkedin),
+                            contentDescription = stringResource(R.string.about_cd_linkedin),
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                            .clickable { openUrl("https://www.instagram.com/param.cs/") },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_instagram),
+                            contentDescription = stringResource(R.string.about_cd_instagram),
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+    }
+
+    Spacer(modifier = Modifier.height(10.dp))
+
+    // Rate & Review (or View on Play Store if FOSS)
+    Item(
+        title = if (StoreConfig.isPlayStoreBuild) {
+            stringResource(R.string.settings_rate_review)
+        } else {
+            stringResource(R.string.settings_view_on_play_store)
+        },
+        onClick = {
+            val packageName = context.packageName
+            try {
+                val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+                context.startActivity(marketIntent)
+            } catch (_: Exception) {
+                openUrl("https://play.google.com/store/apps/details?id=$packageName")
+            }
+        },
+        icon = if (StoreConfig.isPlayStoreBuild) Icons.Default.StarRate else null,
+        iconPainter = if (!StoreConfig.isPlayStoreBuild) painterResource(id = R.drawable.ic_google) else null,
+        shape = topShape
+    )
+
+    Spacer(modifier = Modifier.height(2.dp))
+
+    // Star on GitHub (always there)
+    Item(
+        title = stringResource(R.string.review_star_github),
+        onClick = {
+            openUrl("https://github.com/armanmaurya/InternetRadio")
+        },
+        iconPainter = painterResource(id = R.drawable.ic_github),
+        shape = bottomShape
+    )
+}
+
+@Composable
+private fun DonateSection() {
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+    val upiId = "arman.maurya@ptyes"
+    val upiCopiedMessage = stringResource(R.string.about_upi_copied, upiId)
+
+    fun openUrl(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            context.startActivity(intent)
+        } catch (_: Exception) {
+            // Handle error silently
+        }
+    }
+
+    Section(title = stringResource(R.string.settings_donate_section)) {
+        // GitHub Sponsors Button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFF24292F))
+                .clickable { openUrl("https://github.com/sponsors/armanmaurya") }
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = null,
+                tint = Color(0xFFEA4AAA),
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = stringResource(R.string.about_github_sponsors),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_github),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Buy Me a Coffee Button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFFFFDD00))
+                .clickable { openUrl("https://buymeacoffee.com/mauryaarman") }
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_buymeacoffee),
+                contentDescription = null,
+                tint = Color.Black,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = stringResource(R.string.about_buy_me_a_coffee),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // UPI Button (Click to copy UPI ID)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFF005C8A))
+                .clickable {
+                    clipboardManager.setText(AnnotatedString(upiId))
+                    Toast.makeText(context, upiCopiedMessage, Toast.LENGTH_SHORT).show()
+                }
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_upi),
+                contentDescription = stringResource(R.string.about_upi),
+                tint = Color.Unspecified,
+                modifier = Modifier
+                    .height(20.dp)
+                    .width(70.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(R.string.about_donate_via_upi),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = upiId,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.85f)
+                )
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Icon(
+                imageVector = Icons.Default.ContentCopy,
+                contentDescription = stringResource(R.string.about_cd_copy_upi),
+                tint = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }
 

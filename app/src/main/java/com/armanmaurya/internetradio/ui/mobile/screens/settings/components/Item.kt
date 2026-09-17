@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 
 import androidx.compose.ui.graphics.Shape
@@ -26,8 +27,10 @@ fun Item(
     title: String,
     onClick: () -> Unit,
     icon: ImageVector? = null,
+    iconPainter: Painter? = null,
     subtitle: String? = null,
-    shape: Shape = RectangleShape
+    shape: Shape = RectangleShape,
+    trailingContent: (@Composable () -> Unit)? = null
 ) {
     androidx.compose.material3.ListItem(
         modifier = Modifier.clip(shape).clickable(onClick = onClick),
@@ -35,7 +38,14 @@ fun Item(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
         supportingContent = subtitle?.let { { Text(text = it) } },
-        leadingContent = icon?.let { { Icon(it, contentDescription = null) } },
+        leadingContent = {
+            if (icon != null) {
+                Icon(icon, contentDescription = null)
+            } else if (iconPainter != null) {
+                Icon(iconPainter, contentDescription = null)
+            }
+        },
+        trailingContent = trailingContent,
         headlineContent = { Text(text = title) }
     )
 }

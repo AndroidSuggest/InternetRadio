@@ -15,7 +15,6 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.home.HomeViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.settings.SettingsScreen
-import com.armanmaurya.internetradio.ui.mobile.screens.about.AboutScreen
 import com.armanmaurya.internetradio.ui.mobile.screens.edit.EditStationScreen
 import com.armanmaurya.internetradio.ui.shared.viewmodels.PlayerViewModel
 import com.armanmaurya.internetradio.player.PlaybackSource
@@ -94,14 +93,7 @@ fun AppNavHost(
         composable(AppDestination.Settings.route) {
             SettingsScreen(
                 onBackClick = { navController.popBackStack() },
-                onAboutClick = { navController.navigate(AppDestination.About.route) },
                 onCheckUpdatesClick = onCheckUpdates,
-                contentPadding = contentPadding
-            )
-        }
-        composable(AppDestination.About.route) {
-            AboutScreen(
-                onBackClick = { navController.popBackStack() },
                 contentPadding = contentPadding
             )
         }
