@@ -16,11 +16,11 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import com.armanmaurya.internetradio.R
+import com.armanmaurya.internetradio.domain.controller.WidgetController
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.player.PlaybackService
 import com.armanmaurya.internetradio.ui.tv.TvActivity
-import com.armanmaurya.internetradio.widget.NowPlayingWidget
-import com.armanmaurya.internetradio.widget.pushWidgetUpdate
+import com.armanmaurya.internetradio.ui.widget.NowPlayingWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,6 +32,9 @@ class MobileActivity : AppCompatActivity() {
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
+
+    @Inject
+    lateinit var widgetController: WidgetController
 
     private val _intentFlow = MutableSharedFlow<Intent>(
         replay = 1,
@@ -77,8 +80,7 @@ class MobileActivity : AppCompatActivity() {
             settingsRepository.setAppLanguage(activeTag)
 
             if (!PlaybackService.isRunning) {
-                pushWidgetUpdate(
-                    context = applicationContext,
+                widgetController.updatePlayback(
                     title = getString(R.string.widget_nothing_playing),
                     artist = "",
                     artworkUrl = null,

@@ -21,8 +21,7 @@ import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
 import com.armanmaurya.internetradio.domain.controller.RecordingController
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.widget.pushWidgetUpdate
-import com.armanmaurya.internetradio.widget.cleanStaleWidgetState
+import com.armanmaurya.internetradio.domain.controller.WidgetController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +65,9 @@ class PlaybackService : MediaLibraryService() {
 
     @Inject
     lateinit var coverArtRepository: com.armanmaurya.internetradio.domain.repository.CoverArtRepository
+
+    @Inject
+    lateinit var widgetController: WidgetController
 
     @Inject
     lateinit var okHttpClient: okhttp3.OkHttpClient
@@ -561,7 +563,7 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onDestroy() {
         isRunning = false
-        com.armanmaurya.internetradio.widget.latestWidgetPayload = null
+        widgetController.clearLatestPayload()
         if (instance == this) {
             instance = null
         }
@@ -761,8 +763,7 @@ class PlaybackService : MediaLibraryService() {
         val stationName = metadata?.extras?.getString("stationName")
 
         serviceScope.launch(Dispatchers.IO) {
-            pushWidgetUpdate(
-                context             = applicationContext,
+            widgetController.updatePlayback(
                 title               = title,
                 artist              = artist,
                 artworkUrl          = artworkUrl,
@@ -783,7 +784,7 @@ class PlaybackService : MediaLibraryService() {
     private fun pushStoppedWidgetUpdate() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             val lastStation = recentRepository.getAllRecent().first().firstOrNull()
-            cleanStaleWidgetState(applicationContext, lastStation?.name, lastStation?.favicon)
+            widgetController.cleanStaleWidgetState(lastStation?.name, lastStation?.favicon)
         }
     }
 
@@ -882,7 +883,7 @@ class PlaybackService : MediaLibraryService() {
     private suspend fun restoreAndPlayLastStation() {
         val p = player ?: return
         val lastStation = recentRepository.getAllRecent().first().firstOrNull() ?: run {
-            cleanStaleWidgetState(applicationContext, null, null)
+            widgetController.cleanStaleWidgetState(null, null)
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                 stopForeground(STOP_FOREGROUND_REMOVE)
             } else {

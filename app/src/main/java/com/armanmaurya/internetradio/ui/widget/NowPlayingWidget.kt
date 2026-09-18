@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.widget
+package com.armanmaurya.internetradio.ui.widget
 
 import android.content.Context
 import androidx.compose.runtime.getValue
@@ -8,14 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.first
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -31,34 +23,24 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.widget.components.PlayerContent
-import com.armanmaurya.internetradio.widget.state.NowPlayingWidgetState
-
-object WidgetStateKeys {
-    val TITLE                 = stringPreferencesKey("title")
-    val ARTIST                = stringPreferencesKey("artist")
-    val ARTWORK_URL           = stringPreferencesKey("artwork_url")
-    val IS_PLAYING            = booleanPreferencesKey("is_playing")
-    val HAS_NEXT              = booleanPreferencesKey("has_next")
-    val HAS_PREV              = booleanPreferencesKey("has_prev")
-    val STATION_NAME          = stringPreferencesKey("station_name")
-    val STATION_THUMBNAIL_URL = stringPreferencesKey("station_thumbnail_url")
-    val IS_COVER_ART_FETCHED  = booleanPreferencesKey("is_cover_art_fetched")
-    val BG_COLOR              = intPreferencesKey("bg_color")
-    val TITLE_COLOR           = intPreferencesKey("title_color")
-    val ARTIST_COLOR          = intPreferencesKey("artist_color")
-    val DAY_BG_COLOR          = intPreferencesKey("day_bg_color")
-    val DAY_TITLE_COLOR       = intPreferencesKey("day_title_color")
-    val DAY_ARTIST_COLOR      = intPreferencesKey("day_artist_color")
-    val SEED_COLOR            = intPreferencesKey("seed_color")
-    val BG_ALPHA              = androidx.datastore.preferences.core.floatPreferencesKey("bg_alpha")
-}
+import com.armanmaurya.internetradio.core.utils.extractPaletteFromBitmap
+import com.armanmaurya.internetradio.core.utils.resolveArtwork
+import com.armanmaurya.internetradio.domain.controller.WidgetController
+import com.armanmaurya.internetradio.player.PlaybackService
+import com.armanmaurya.internetradio.ui.widget.components.PlayerContent
+import com.armanmaurya.internetradio.ui.widget.state.NowPlayingWidgetState
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.first
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface WidgetEntryPoint {
     fun recentRepository(): com.armanmaurya.internetradio.domain.repository.RecentRepository
     fun settingsRepository(): com.armanmaurya.internetradio.domain.repository.SettingsRepository
+    fun widgetController(): WidgetController
 }
 
 class NowPlayingWidget : GlanceAppWidget() {
@@ -77,17 +59,18 @@ class NowPlayingWidget : GlanceAppWidget() {
         } catch (e: Exception) {
             null
         }
+        val widgetController = entryPoint.widgetController()
 
         provideContent {
-            // Read state reactively inside provideContent
             val prefs = currentState<Preferences>()
-            val widgetAlpha = prefs[WidgetStateKeys.BG_ALPHA] ?: latestWidgetPayload?.bgAlpha ?: savedAlpha
-            val isServiceRunning = com.armanmaurya.internetradio.player.PlaybackService.isRunning
-            val latest = if (isServiceRunning) latestWidgetPayload else null
+            val latestPayload = widgetController.latestPayload
+            val widgetAlpha = prefs[WidgetPreferenceKeys.BG_ALPHA] ?: latestPayload?.bgAlpha ?: savedAlpha
+            val isServiceRunning = PlaybackService.isRunning
+            val latest = if (isServiceRunning) latestPayload else null
 
-            val savedTitle = prefs[WidgetStateKeys.TITLE] ?: latest?.title
+            val savedTitle = prefs[WidgetPreferenceKeys.TITLE] ?: latest?.title
             val nothingPlaying = context.getString(R.string.widget_nothing_playing)
-            
+
             var lastStation by remember { mutableStateOf(initialRecent) }
             var cleanedStationUuid by remember { mutableStateOf<String?>(null) }
 
@@ -97,75 +80,78 @@ class NowPlayingWidget : GlanceAppWidget() {
                 }
             }
 
-            val isPlaying = prefs[WidgetStateKeys.IS_PLAYING] ?: latest?.isPlaying ?: false
-            val isCoverArtFetched = if (isPlaying) (prefs[WidgetStateKeys.IS_COVER_ART_FETCHED] ?: latest?.isCoverArtFetched ?: false) else false
+            val isPlaying = prefs[WidgetPreferenceKeys.IS_PLAYING] ?: latest?.isPlaying ?: false
+            val isCoverArtFetched = if (isPlaying) (prefs[WidgetPreferenceKeys.IS_COVER_ART_FETCHED] ?: latest?.isCoverArtFetched ?: false) else false
 
             LaunchedEffect(savedTitle, isPlaying, lastStation) {
                 if (isPlaying) {
-                    if (prefs[WidgetStateKeys.TITLE] == null && isServiceRunning) {
-                        com.armanmaurya.internetradio.player.PlaybackService.requestWidgetUpdate()
+                    if (prefs[WidgetPreferenceKeys.TITLE] == null && isServiceRunning) {
+                        PlaybackService.requestWidgetUpdate()
                     }
                 } else {
                     val currentUuid = lastStation?.stationUuid ?: ""
                     val expectedTitle = lastStation?.name ?: nothingPlaying
                     val expectedStationName = lastStation?.name ?: ""
-                    val isPrefsStale = prefs[WidgetStateKeys.TITLE] != expectedTitle ||
-                        prefs[WidgetStateKeys.STATION_NAME] != expectedStationName ||
-                        prefs[WidgetStateKeys.IS_PLAYING] == true ||
-                        !prefs[WidgetStateKeys.ARTIST].isNullOrBlank() ||
-                        prefs[WidgetStateKeys.IS_COVER_ART_FETCHED] == true
+                    val isPrefsStale = prefs[WidgetPreferenceKeys.TITLE] != expectedTitle ||
+                        prefs[WidgetPreferenceKeys.STATION_NAME] != expectedStationName ||
+                        prefs[WidgetPreferenceKeys.IS_PLAYING] == true ||
+                        !prefs[WidgetPreferenceKeys.ARTIST].isNullOrBlank() ||
+                        prefs[WidgetPreferenceKeys.IS_COVER_ART_FETCHED] == true
 
                     if (cleanedStationUuid != currentUuid && isPrefsStale) {
                         cleanedStationUuid = currentUuid
-                        cleanStaleWidgetState(context.applicationContext, lastStation?.name, lastStation?.favicon, id)
+                        widgetController.cleanStaleWidgetState(
+                            stationName = lastStation?.name,
+                            favicon = lastStation?.favicon,
+                        )
                     }
                 }
             }
-            
+
             val stationName = if (isPlaying) {
-                prefs[WidgetStateKeys.STATION_NAME]?.takeIf { it.isNotBlank() } ?: latest?.stationName ?: lastStation?.name
+                prefs[WidgetPreferenceKeys.STATION_NAME]?.takeIf { it.isNotBlank() } ?: latest?.stationName ?: lastStation?.name
             } else {
                 lastStation?.name
             }
-            
+
             val title = if (isPlaying) {
-                savedTitle?.takeIf { it.isNotBlank() && it != "Nothing playing" && it != nothingPlaying } 
-                    ?: stationName 
+                savedTitle?.takeIf { it.isNotBlank() && it != "Nothing playing" && it != nothingPlaying }
+                    ?: stationName
                     ?: nothingPlaying
             } else {
                 lastStation?.name ?: nothingPlaying
             }
-                
+
             val artist = if (isPlaying) {
-                prefs[WidgetStateKeys.ARTIST] ?: latest?.artist ?: ""
+                prefs[WidgetPreferenceKeys.ARTIST] ?: latest?.artist ?: ""
             } else {
                 ""
             }
 
             val artworkUrl = if (isPlaying) {
-                (prefs[WidgetStateKeys.ARTWORK_URL] ?: latest?.artworkUrl)?.takeIf { it.isNotBlank() } ?: lastStation?.favicon
+                (prefs[WidgetPreferenceKeys.ARTWORK_URL] ?: latest?.artworkUrl)?.takeIf { it.isNotBlank() } ?: lastStation?.favicon
             } else {
                 lastStation?.favicon
             }
-                
+
             val stationThumbnailUrl = if (isCoverArtFetched) {
-                (prefs[WidgetStateKeys.STATION_THUMBNAIL_URL] ?: latest?.stationThumbnailUrl)?.takeIf { it.isNotBlank() } ?: lastStation?.favicon
+                (prefs[WidgetPreferenceKeys.STATION_THUMBNAIL_URL] ?: latest?.stationThumbnailUrl)?.takeIf { it.isNotBlank() } ?: lastStation?.favicon
             } else null
-                
-            val hasNext = if (isPlaying) (prefs[WidgetStateKeys.HAS_NEXT] ?: latest?.hasNext ?: false) else false
-            val hasPrev = if (isPlaying) (prefs[WidgetStateKeys.HAS_PREV] ?: latest?.hasPrev ?: false) else false
+
+            val hasNext = if (isPlaying) (prefs[WidgetPreferenceKeys.HAS_NEXT] ?: latest?.hasNext ?: false) else false
+            val hasPrev = if (isPlaying) (prefs[WidgetPreferenceKeys.HAS_PREV] ?: latest?.hasPrev ?: false) else false
 
             // Pre-computed atomic palette colors (Spotify pattern)
-            val precomputedBgColorInt = prefs[WidgetStateKeys.BG_COLOR] ?: latest?.bgColor
-            val precomputedTitleColorInt = prefs[WidgetStateKeys.TITLE_COLOR] ?: latest?.titleColor
-            val precomputedArtistColorInt = prefs[WidgetStateKeys.ARTIST_COLOR] ?: latest?.artistColor
-            val precomputedDayBgColorInt = prefs[WidgetStateKeys.DAY_BG_COLOR] ?: latest?.dayBgColor
-            val precomputedDayTitleColorInt = prefs[WidgetStateKeys.DAY_TITLE_COLOR] ?: latest?.dayTitleColor
-            val precomputedDayArtistColorInt = prefs[WidgetStateKeys.DAY_ARTIST_COLOR] ?: latest?.dayArtistColor
+            val precomputedBgColorInt = prefs[WidgetPreferenceKeys.BG_COLOR] ?: latest?.bgColor
+            val precomputedTitleColorInt = prefs[WidgetPreferenceKeys.TITLE_COLOR] ?: latest?.titleColor
+            val precomputedArtistColorInt = prefs[WidgetPreferenceKeys.ARTIST_COLOR] ?: latest?.artistColor
+            val precomputedDayBgColorInt = prefs[WidgetPreferenceKeys.DAY_BG_COLOR] ?: latest?.dayBgColor
+            val precomputedDayTitleColorInt = prefs[WidgetPreferenceKeys.DAY_TITLE_COLOR] ?: latest?.dayTitleColor
+            val precomputedDayArtistColorInt = prefs[WidgetPreferenceKeys.DAY_ARTIST_COLOR] ?: latest?.dayArtistColor
 
             var artwork by remember(artworkUrl) { mutableStateOf<ImageProvider?>(null) }
             var stationThumbnail by remember(stationThumbnailUrl) { mutableStateOf<ImageProvider?>(null) }
-            
+
             // Dynamic palette fallback if prefs didn't have precomputed colors (e.g. legacy/initial load)
             var dynamicBgColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }
             var dynamicTitleColor by remember(artworkUrl) { mutableStateOf<androidx.glance.unit.ColorProvider?>(null) }

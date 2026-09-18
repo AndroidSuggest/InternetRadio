@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.widget.state
+package com.armanmaurya.internetradio.ui.widget.state
 
 import androidx.glance.ImageProvider
 import androidx.glance.unit.ColorProvider

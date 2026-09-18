@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.widget.actions
+package com.armanmaurya.internetradio.ui.widget.actions
 
 import android.content.Context
 import android.content.Intent

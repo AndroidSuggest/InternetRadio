@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.widget.components
+package com.armanmaurya.internetradio.ui.widget.components
 
 import android.content.ComponentName
 import android.content.Intent
@@ -28,8 +28,8 @@ import androidx.glance.layout.size
 import androidx.glance.layout.width
 import com.armanmaurya.internetradio.ui.mobile.MobileActivity
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.widget.WidgetControlReceiver
-import com.armanmaurya.internetradio.widget.state.NowPlayingWidgetState
+import com.armanmaurya.internetradio.ui.widget.WidgetControlReceiver
+import com.armanmaurya.internetradio.ui.widget.state.NowPlayingWidgetState
 
 private fun GlanceModifier.clickableNoRipple(action: androidx.glance.action.Action): GlanceModifier =
     this.clickable(onClick = action, rippleOverride = R.drawable.widget_no_ripple)
@@ -76,8 +76,8 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
     )
     val isVerySmallHeight = size.height < 75.dp
     val isTallHeight = size.height >= 110.dp
-    val showStationBottom = state.artist.isNotBlank() && 
-        !state.stationName.isNullOrBlank() && 
+    val showStationBottom = state.artist.isNotBlank() &&
+        !state.stationName.isNullOrBlank() &&
         state.stationName != state.title
     val showStationFloating = state.isCoverArtFetched && state.stationThumbnail != null
     val twoCellArtDimension = if (showStationBottom) {
@@ -145,7 +145,7 @@ fun PlayerContent(state: NowPlayingWidgetState, modifier: GlanceModifier) {
                     .padding(bottom = if (showStationBottom) 4.dp else 8.dp)
                     .clickableNoRipple(openPlayerAction)
             )
-            
+
             Row(
                 modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
                 verticalAlignment = Alignment.CenterVertically

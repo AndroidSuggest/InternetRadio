@@ -9,7 +9,7 @@ import com.armanmaurya.internetradio.domain.repository.RecentRepository
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.player.PlayerController
 import com.armanmaurya.internetradio.player.PlaybackService
-import com.armanmaurya.internetradio.widget.cleanStaleWidgetState
+import com.armanmaurya.internetradio.domain.controller.WidgetController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,7 +29,8 @@ class RecentViewModel @Inject constructor(
     private val recentRepository: RecentRepository,
     private val settingsRepository: SettingsRepository,
     private val libraryRepository: LibraryRepository,
-    private val playerController: PlayerController
+    private val playerController: PlayerController,
+    private val widgetController: WidgetController,
 ) : ViewModel() {
 
     val useFilter: StateFlow<Boolean> = settingsRepository.appPreferencesFlow
@@ -109,7 +110,7 @@ class RecentViewModel @Inject constructor(
             recentRepository.removeRecent(stationUuid)
             if (!playerController.playbackState.value.isPlaying) {
                 val nextStation = recentRepository.getAllRecent().first().firstOrNull()
-                cleanStaleWidgetState(context, nextStation?.name, nextStation?.favicon)
+                widgetController.cleanStaleWidgetState(nextStation?.name, nextStation?.favicon)
             }
         }
     }
@@ -118,7 +119,7 @@ class RecentViewModel @Inject constructor(
         viewModelScope.launch {
             recentRepository.clearAllRecent()
             if (!playerController.playbackState.value.isPlaying) {
-                cleanStaleWidgetState(context, null, null)
+                widgetController.cleanStaleWidgetState()
             }
         }
     }

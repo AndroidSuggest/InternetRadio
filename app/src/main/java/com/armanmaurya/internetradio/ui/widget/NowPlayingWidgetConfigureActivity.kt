@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.widget
+package com.armanmaurya.internetradio.ui.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.Intent
@@ -6,8 +6,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,71 +20,37 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.state.getAppWidgetState
-import androidx.glance.appwidget.state.updateAppWidgetState
-import androidx.glance.GlanceTheme
-import androidx.glance.state.PreferencesGlanceStateDefinition
-import kotlinx.coroutines.flow.first
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.domain.model.AppPreferences
-import com.armanmaurya.internetradio.domain.model.RadioStation
-import com.armanmaurya.internetradio.domain.repository.RecentRepository
-import com.armanmaurya.internetradio.domain.repository.SettingsRepository
+import com.armanmaurya.internetradio.core.utils.extractPaletteFromBitmap
+import com.armanmaurya.internetradio.core.utils.resolveArtwork
+import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
 import com.armanmaurya.internetradio.ui.shared.theme.InternetRadioTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import kotlin.math.roundToInt
-
-import androidx.compose.foundation.isSystemInDarkTheme
-import com.armanmaurya.internetradio.ui.shared.theme.AppTheme
-
-private data class WidgetConfigureData(
-    val initialAlpha: Float,
-    val savedBgColor: Color?,
-    val savedTitleColor: Color?,
-    val savedArtistColor: Color?,
-    val savedTitle: String?,
-    val savedArtist: String?,
-    val savedArtworkUrl: String?,
-    val savedStationThumbUrl: String?,
-    val savedIsCoverArtFetched: Boolean?,
-    val savedIsPlaying: Boolean?
-)
-
-private fun extractPaletteColorsSafely(bitmap: android.graphics.Bitmap?): ExtractedPaletteColors? {
-    if (bitmap == null) return null
-    return extractPaletteFromBitmap(bitmap)
-}
 
 @AndroidEntryPoint
 class NowPlayingWidgetConfigureActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var settingsRepository: SettingsRepository
-
-    @Inject
-    lateinit var recentRepository: RecentRepository
+    private val viewModel: WidgetConfigureViewModel by viewModels()
 
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
@@ -99,162 +67,22 @@ class NowPlayingWidgetConfigureActivity : ComponentActivity() {
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
         setContent {
-            val appPreferences by settingsRepository.appPreferencesFlow.collectAsStateWithLifecycle(
-                initialValue = AppPreferences()
-            )
+            val appPreferences by viewModel.appPreferences.collectAsStateWithLifecycle()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
             val isDark = when (appPreferences.themeMode) {
                 AppTheme.LIGHT -> false
                 AppTheme.DARK -> true
                 AppTheme.SYSTEM -> isSystemInDarkTheme()
             }
-            val recentStations by recentRepository.getAllRecent().collectAsStateWithLifecycle(
-                initialValue = emptyList<RadioStation>()
-            )
-            val isServiceRunning = com.armanmaurya.internetradio.player.PlaybackService.isRunning
-            val latest = if (isServiceRunning) latestWidgetPayload else null
-            val lastStation = recentStations.firstOrNull()
 
-            val widgetConfigState = produceState<WidgetConfigureData?>(
-                initialValue = null,
-                key1 = appWidgetId,
-                key2 = lastStation?.stationUuid,
-                key3 = isDark
-            ) {
-                var loadedPrefs: androidx.datastore.preferences.core.Preferences? = null
-                val manager = GlanceAppWidgetManager(applicationContext)
-
-                if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    try {
-                        val glanceId = manager.getGlanceIdBy(appWidgetId)
-                        loadedPrefs = getAppWidgetState(
-                            applicationContext,
-                            PreferencesGlanceStateDefinition,
-                            glanceId
-                        )
-                    } catch (e: Exception) {
-                        // Ignore if glanceId not yet created or failed
-                    }
-                } else {
-                    try {
-                        val firstGlanceId = manager.getGlanceIds(NowPlayingWidget::class.java).firstOrNull()
-                        if (firstGlanceId != null) {
-                            loadedPrefs = getAppWidgetState(
-                                applicationContext,
-                                PreferencesGlanceStateDefinition,
-                                firstGlanceId
-                            )
-                        }
-                    } catch (e: Exception) {
-                        // Ignore
-                    }
-                }
-
-                val loadedAlpha = loadedPrefs?.get(WidgetStateKeys.BG_ALPHA)
-                    ?: latest?.bgAlpha
-                    ?: try {
-                        settingsRepository.appPreferencesFlow.first().widgetBackgroundAlpha
-                    } catch (e: Exception) {
-                        1.0f
-                    }
-
-                var bgColorInt = if (isDark) {
-                    latest?.bgColor ?: loadedPrefs?.get(WidgetStateKeys.BG_COLOR)
-                } else {
-                    latest?.dayBgColor ?: loadedPrefs?.get(WidgetStateKeys.DAY_BG_COLOR) ?: latest?.bgColor ?: loadedPrefs?.get(WidgetStateKeys.BG_COLOR)
-                }
-                var titleColorInt = if (isDark) {
-                    latest?.titleColor ?: loadedPrefs?.get(WidgetStateKeys.TITLE_COLOR)
-                } else {
-                    latest?.dayTitleColor ?: loadedPrefs?.get(WidgetStateKeys.DAY_TITLE_COLOR) ?: latest?.titleColor ?: loadedPrefs?.get(WidgetStateKeys.TITLE_COLOR)
-                }
-                var artistColorInt = if (isDark) {
-                    latest?.artistColor ?: loadedPrefs?.get(WidgetStateKeys.ARTIST_COLOR)
-                } else {
-                    latest?.dayArtistColor ?: loadedPrefs?.get(WidgetStateKeys.DAY_ARTIST_COLOR) ?: latest?.artistColor ?: loadedPrefs?.get(WidgetStateKeys.ARTIST_COLOR)
-                }
-
-                val candidateArtUrl = latest?.artworkUrl?.takeIf { it.isNotBlank() }
-                    ?: loadedPrefs?.get(WidgetStateKeys.ARTWORK_URL)?.takeIf { it.isNotBlank() }
-                    ?: lastStation?.favicon
-
-                val candidateThumbUrl = latest?.stationThumbnailUrl?.takeIf { it.isNotBlank() }
-                    ?: loadedPrefs?.get(WidgetStateKeys.STATION_THUMBNAIL_URL)?.takeIf { it.isNotBlank() }
-
-                if (bgColorInt == null && !candidateArtUrl.isNullOrBlank()) {
-                    val bmp = resolveArtwork(applicationContext, candidateArtUrl)
-                    var paletteColors = extractPaletteColorsSafely(bmp)
-                    if (paletteColors == null && !candidateThumbUrl.isNullOrBlank() && candidateThumbUrl != candidateArtUrl) {
-                        paletteColors = extractPaletteColorsSafely(resolveArtwork(applicationContext, candidateThumbUrl, maxDimension = 96))
-                    }
-                    if (paletteColors != null) {
-                        bgColorInt = if (isDark) paletteColors.backgroundColor else paletteColors.dayBackgroundColor
-                        titleColorInt = if (isDark) paletteColors.titleTextColor else paletteColors.dayTitleTextColor
-                        artistColorInt = if (isDark) paletteColors.artistTextColor else paletteColors.dayArtistTextColor
-                    }
-                }
-
-                value = WidgetConfigureData(
-                    initialAlpha = loadedAlpha,
-                    savedBgColor = bgColorInt?.let { Color(it) },
-                    savedTitleColor = titleColorInt?.let { Color(it) },
-                    savedArtistColor = artistColorInt?.let { Color(it) },
-                    savedTitle = latest?.title ?: loadedPrefs?.get(WidgetStateKeys.TITLE),
-                    savedArtist = latest?.artist ?: loadedPrefs?.get(WidgetStateKeys.ARTIST),
-                    savedArtworkUrl = latest?.artworkUrl ?: loadedPrefs?.get(WidgetStateKeys.ARTWORK_URL),
-                    savedStationThumbUrl = latest?.stationThumbnailUrl ?: loadedPrefs?.get(WidgetStateKeys.STATION_THUMBNAIL_URL),
-                    savedIsCoverArtFetched = latest?.isCoverArtFetched ?: loadedPrefs?.get(WidgetStateKeys.IS_COVER_ART_FETCHED),
-                    savedIsPlaying = latest?.isPlaying ?: loadedPrefs?.get(WidgetStateKeys.IS_PLAYING)
-                )
+            // Trigger data load when dark mode preference is determined
+            LaunchedEffect(appWidgetId, isDark) {
+                viewModel.loadWidgetState(appWidgetId, isDark)
             }
 
-            val configData = widgetConfigState.value
-
-            val previewTitle = configData?.savedTitle?.takeIf { it.isNotBlank() && it != "Nothing playing" }
-                ?: lastStation?.name
-                ?: stringResource(R.string.widget_preview_title)
-
-            val previewArtist = configData?.savedArtist?.takeIf { it.isNotBlank() }
-                ?: (if (lastStation != null) "" else stringResource(R.string.widget_preview_artist))
-
-            val previewArtworkUrl = configData?.savedArtworkUrl?.takeIf { it.isNotBlank() }
-                ?: lastStation?.favicon
-
-            val previewStationThumbUrl = configData?.savedStationThumbUrl?.takeIf { it.isNotBlank() }
-                ?: if (configData?.savedIsCoverArtFetched == true) lastStation?.favicon else null
-
-            val isCoverArtFetched = configData?.savedIsCoverArtFetched ?: false
-            val isPlaying = configData?.savedIsPlaying ?: false
-
-            val previewBgColor = configData?.savedBgColor
-            val previewTitleColor = configData?.savedTitleColor
-            val previewArtistColor = configData?.savedArtistColor
-
             InternetRadioTheme(appPreferences = appPreferences) {
-                if (configData != null) {
-                    WidgetConfigureScreen(
-                        appWidgetId = appWidgetId,
-                        initialAlpha = configData.initialAlpha,
-                        previewTitle = previewTitle,
-                        previewArtist = previewArtist,
-                        previewArtworkUrl = previewArtworkUrl,
-                        previewStationThumbUrl = previewStationThumbUrl,
-                        isCoverArtFetched = isCoverArtFetched,
-                        isPlaying = isPlaying,
-                        extractedBgColor = previewBgColor,
-                        extractedTitleColor = previewTitleColor,
-                        extractedArtistColor = previewArtistColor,
-                        isDark = isDark,
-                        onApply = { chosenAlpha ->
-                            // Launch on main scope to save and complete
-                            CoroutineScope(Dispatchers.Main).launch {
-                                saveWidgetConfiguration(chosenAlpha)
-                            }
-                        },
-                        onCancel = {
-                            finish()
-                        }
-                    )
-                } else {
+                if (uiState.isLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -263,44 +91,48 @@ class NowPlayingWidgetConfigureActivity : ComponentActivity() {
                     ) {
                         CircularProgressIndicator()
                     }
+                } else {
+                    val lastStation = uiState.lastStation
+                    val nothingPlayingStr = stringResource(R.string.widget_preview_title)
+
+                    val previewTitle = uiState.savedTitle?.takeIf { it.isNotBlank() && it != "Nothing playing" }
+                        ?: lastStation?.name
+                        ?: nothingPlayingStr
+                    val previewArtist = uiState.savedArtist?.takeIf { it.isNotBlank() }
+                        ?: (if (lastStation != null) "" else stringResource(R.string.widget_preview_artist))
+                    val previewArtworkUrl = uiState.savedArtworkUrl?.takeIf { it.isNotBlank() }
+                        ?: lastStation?.favicon
+                    val previewStationThumbUrl = uiState.savedStationThumbUrl?.takeIf { it.isNotBlank() }
+                        ?: if (uiState.savedIsCoverArtFetched) lastStation?.favicon else null
+
+                    WidgetConfigureScreen(
+                        appWidgetId = appWidgetId,
+                        initialAlpha = uiState.initialAlpha,
+                        previewTitle = previewTitle,
+                        previewArtist = previewArtist,
+                        previewArtworkUrl = previewArtworkUrl,
+                        previewStationThumbUrl = previewStationThumbUrl,
+                        isCoverArtFetched = uiState.savedIsCoverArtFetched,
+                        isPlaying = uiState.savedIsPlaying,
+                        extractedBgColor = uiState.savedBgColor,
+                        extractedTitleColor = uiState.savedTitleColor,
+                        extractedArtistColor = uiState.savedArtistColor,
+                        isDark = isDark,
+                        onApply = { chosenAlpha ->
+                            CoroutineScope(Dispatchers.Main).launch {
+                                viewModel.saveConfiguration(appWidgetId, chosenAlpha)
+                                val resultValue = Intent().apply {
+                                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                                }
+                                setResult(RESULT_OK, resultValue)
+                                finish()
+                            }
+                        },
+                        onCancel = { finish() }
+                    )
                 }
             }
         }
-    }
-
-    private suspend fun saveWidgetConfiguration(alpha: Float) {
-        val context = applicationContext
-
-        // Update specific widget instance if appWidgetId is valid
-        if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            try {
-                val manager = GlanceAppWidgetManager(context)
-                val glanceId = manager.getGlanceIdBy(appWidgetId)
-                if (!com.armanmaurya.internetradio.player.PlaybackService.isRunning) {
-                    val lastStation = recentRepository.getAllRecent().first().firstOrNull()
-                    cleanStaleWidgetState(context, lastStation?.name, lastStation?.favicon, glanceId)
-                }
-                updateAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId) { prefs ->
-                    prefs.toMutablePreferences().apply {
-                        this[WidgetStateKeys.BG_ALPHA] = alpha
-                    }
-                }
-                NowPlayingWidget().update(context, glanceId)
-            } catch (e: Exception) {
-                // Ignore if glanceId cannot be resolved
-            }
-        }
-
-        // Also update global setting and sync all widgets
-        settingsRepository.setWidgetBackgroundAlpha(alpha)
-        updateWidgetAlpha(context, alpha)
-
-        // Return SUCCESS to launcher
-        val resultValue = Intent().apply {
-            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-        }
-        setResult(RESULT_OK, resultValue)
-        finish()
     }
 }
 
@@ -338,15 +170,14 @@ fun WidgetConfigureScreen(
 
             if (!targetUrl.isNullOrBlank()) {
                 val bmp = resolveArtwork(context, targetUrl)
-                var paletteColors = extractPaletteColorsSafely(bmp)
-                if (paletteColors == null && primaryUrl != null && !fallbackUrl.isNullOrBlank() && primaryUrl != fallbackUrl) {
-                    val fallbackBmp = resolveArtwork(context, fallbackUrl, maxDimension = 96)
-                    paletteColors = extractPaletteColorsSafely(fallbackBmp)
+                var palette = extractPaletteFromBitmap(bmp)
+                if (palette == null && primaryUrl != null && !fallbackUrl.isNullOrBlank() && primaryUrl != fallbackUrl) {
+                    palette = extractPaletteFromBitmap(resolveArtwork(context, fallbackUrl, maxDimension = 96))
                 }
-                if (paletteColors != null) {
-                    dynamicBgColor = Color(if (isDark) paletteColors.backgroundColor else paletteColors.dayBackgroundColor)
-                    dynamicTitleColor = Color(if (isDark) paletteColors.titleTextColor else paletteColors.dayTitleTextColor)
-                    dynamicArtistColor = Color(if (isDark) paletteColors.artistTextColor else paletteColors.dayArtistTextColor)
+                if (palette != null) {
+                    dynamicBgColor = Color(if (isDark) palette.backgroundColor else palette.dayBackgroundColor)
+                    dynamicTitleColor = Color(if (isDark) palette.titleTextColor else palette.dayTitleTextColor)
+                    dynamicArtistColor = Color(if (isDark) palette.artistTextColor else palette.dayArtistTextColor)
                 }
             }
         }
@@ -443,15 +274,14 @@ fun WidgetConfigureScreen(
                         .padding(horizontal = 16.dp, vertical = 20.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Widget Mockup Card matching PlayerContent.kt 1-cell layout
+                    // Widget Mockup Card
                     val isPureBlack = MaterialTheme.colorScheme.surface == Color.Black
                     val baseBgColor = effectiveBgColor ?: if (isPureBlack) {
                         Color.Black
                     } else {
-                        GlanceTheme.colors.widgetBackground.getColor(LocalContext.current)
+                        MaterialTheme.colorScheme.surfaceContainer
                     }
                     val widgetBgColor = baseBgColor.copy(alpha = alpha)
-
                     val titleColor = effectiveTitleColor ?: MaterialTheme.colorScheme.onSurface
                     val artistColor = effectiveArtistColor ?: MaterialTheme.colorScheme.onSurfaceVariant
 
@@ -471,7 +301,7 @@ fun WidgetConfigureScreen(
                             .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Artwork on Left (8.dp corner radius)
+                        // Artwork
                         Box(
                             modifier = Modifier
                                 .size(70.dp)
@@ -517,7 +347,7 @@ fun WidgetConfigureScreen(
                             }
                         }
 
-                        // Right Column: TrackInfo on top, WidgetControls below
+                        // Right column: TrackInfo + Controls
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -526,7 +356,6 @@ fun WidgetConfigureScreen(
                             verticalArrangement = Arrangement.SpaceBetween,
                             horizontalAlignment = Alignment.Start
                         ) {
-                            // NowPlayingTrackInfo
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(
                                     text = previewTitle,
@@ -541,17 +370,13 @@ fun WidgetConfigureScreen(
                                 if (previewArtist.isNotBlank()) {
                                     Text(
                                         text = previewArtist,
-                                        style = TextStyle(
-                                            color = artistColor,
-                                            fontSize = 12.sp
-                                        ),
+                                        style = TextStyle(color = artistColor, fontSize = 12.sp),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
 
-                            // WidgetControls
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -565,23 +390,16 @@ fun WidgetConfigureScreen(
                                     tint = titleColor,
                                     modifier = Modifier.size(36.dp)
                                 )
-
                                 Spacer(modifier = Modifier.width(16.dp))
-
                                 Icon(
                                     painter = painterResource(
-                                        if (isPlaying) R.drawable.ic_widget_pause
-                                        else R.drawable.ic_widget_play
+                                        if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
                                     ),
                                     contentDescription = if (isPlaying) "Pause" else "Play",
                                     tint = titleColor,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .padding(horizontal = 4.dp)
+                                    modifier = Modifier.size(40.dp).padding(horizontal = 4.dp)
                                 )
-
                                 Spacer(modifier = Modifier.width(16.dp))
-
                                 Icon(
                                     painter = painterResource(R.drawable.ic_widget_next),
                                     contentDescription = "Next",
@@ -594,7 +412,7 @@ fun WidgetConfigureScreen(
                 }
             }
 
-            // Section: Controls
+            // Section: Opacity Controls
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
@@ -608,7 +426,6 @@ fun WidgetConfigureScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Title and Percentage
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -627,7 +444,6 @@ fun WidgetConfigureScreen(
                         )
                     }
 
-                    // Slider
                     Slider(
                         value = alpha,
                         onValueChange = { alpha = it },
@@ -644,23 +460,15 @@ fun WidgetConfigureScreen(
                                 colors = sliderColors,
                                 modifier = Modifier.drawWithContent {
                                     drawContent()
-                                    
                                     presets.drop(1).dropLast(1).forEach { (presetAlpha, _) ->
                                         val distance = kotlin.math.abs(sliderState.value - presetAlpha)
-
                                         if (distance >= 0.03f) {
                                             val x = size.width * presetAlpha
-
                                             val color = when {
                                                 presetAlpha < sliderState.value -> sliderColors.activeTickColor
                                                 else -> sliderColors.inactiveTickColor
                                             }
-
-                                            drawCircle(
-                                                color = color,
-                                                radius = 2.dp.toPx(),
-                                                center = Offset(x, center.y)
-                                            )
+                                            drawCircle(color = color, radius = 2.dp.toPx(), center = Offset(x, center.y))
                                         }
                                     }
                                 }
@@ -668,17 +476,13 @@ fun WidgetConfigureScreen(
                         }
                     )
 
-                    // Presets
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
                             text = stringResource(R.string.widget_configure_presets),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-
-                        OptInFlowRow(presets = presets, selectedAlpha = alpha) { chosen ->
-                            alpha = chosen
-                        }
+                        OpacityPresetRow(presets = presets, selectedAlpha = alpha) { chosen -> alpha = chosen }
                     }
                 }
             }
@@ -688,7 +492,7 @@ fun WidgetConfigureScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun OptInFlowRow(
+private fun OpacityPresetRow(
     presets: List<Pair<Float, String>>,
     selectedAlpha: Float,
     onSelect: (Float) -> Unit
@@ -703,12 +507,7 @@ private fun OptInFlowRow(
             FilterChip(
                 selected = isSelected,
                 onClick = { onSelect(presetAlpha) },
-                label = {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                },
+                label = { Text(text = label, style = MaterialTheme.typography.labelSmall) },
                 contentPadding = PaddingValues(horizontal = 2.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = FilterChipDefaults.filterChipColors(

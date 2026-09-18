@@ -67,7 +67,7 @@ import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Widgets
-import com.armanmaurya.internetradio.widget.NowPlayingWidgetConfigureActivity
+import com.armanmaurya.internetradio.ui.widget.NowPlayingWidgetConfigureActivity
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.AlertDialog

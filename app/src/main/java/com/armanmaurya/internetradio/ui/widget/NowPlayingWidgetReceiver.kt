@@ -1,13 +1,14 @@
-package com.armanmaurya.internetradio.widget
+package com.armanmaurya.internetradio.ui.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import com.armanmaurya.internetradio.domain.controller.WidgetController
 import com.armanmaurya.internetradio.player.PlaybackService
-
-import android.appwidget.AppWidgetManager
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,16 +34,19 @@ class NowPlayingWidgetReceiver : GlanceAppWidgetReceiver() {
                         WidgetEntryPoint::class.java
                     )
                     val lastStation = entryPoint.recentRepository().getAllRecent().first().firstOrNull()
-                    val manager = androidx.glance.appwidget.GlanceAppWidgetManager(context.applicationContext)
-                    for (appWidgetId in appWidgetIds) {
-                        try {
-                            val glanceId = manager.getGlanceIdBy(appWidgetId)
-                            cleanStaleWidgetState(context.applicationContext, lastStation?.name, lastStation?.favicon, glanceId)
-                        } catch (_: Exception) {}
-                    }
-                    cleanStaleWidgetState(context.applicationContext, lastStation?.name, lastStation?.favicon)
+                    entryPoint.widgetController().cleanStaleWidgetState(
+                        stationName = lastStation?.name,
+                        favicon = lastStation?.favicon,
+                        appWidgetIds = appWidgetIds,
+                    )
                 } catch (e: Exception) {
-                    cleanStaleWidgetState(context.applicationContext, null, null)
+                    val entryPoint = try {
+                        EntryPointAccessors.fromApplication(
+                            context.applicationContext,
+                            WidgetEntryPoint::class.java
+                        )
+                    } catch (_: Exception) { null }
+                    entryPoint?.widgetController()?.cleanStaleWidgetState()
                 }
             }
         }

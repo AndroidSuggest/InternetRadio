@@ -1,4 +1,4 @@
-package com.armanmaurya.internetradio.widget.components
+package com.armanmaurya.internetradio.ui.widget.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import com.armanmaurya.internetradio.domain.controller.WidgetController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -42,6 +43,7 @@ class SettingsViewModel @Inject constructor(
     private val libraryRepository: LibraryRepository,
     private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade,
     private val systemFacade: com.armanmaurya.internetradio.core.system.SystemFacade,
+    private val widgetController: WidgetController,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -107,7 +109,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setWidgetBackgroundAlpha(alpha)
             withContext(Dispatchers.IO) {
-                com.armanmaurya.internetradio.widget.updateWidgetAlpha(context, alpha)
+                widgetController.updateWidgetAlpha(alpha)
             }
         }
     }

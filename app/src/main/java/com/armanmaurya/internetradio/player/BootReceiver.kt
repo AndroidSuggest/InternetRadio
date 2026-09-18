@@ -3,6 +3,7 @@ package com.armanmaurya.internetradio.player
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.armanmaurya.internetradio.domain.controller.WidgetController
 import com.armanmaurya.internetradio.domain.repository.ScheduleRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +25,9 @@ class BootReceiver : BroadcastReceiver() {
     @Inject
     lateinit var recentRepository: com.armanmaurya.internetradio.domain.repository.RecentRepository
 
+    @Inject
+    lateinit var widgetController: WidgetController
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -32,13 +36,12 @@ class BootReceiver : BroadcastReceiver() {
                 if (!PlaybackService.isRunning) {
                     try {
                         val lastStation = recentRepository.getAllRecent().first().firstOrNull()
-                        com.armanmaurya.internetradio.widget.cleanStaleWidgetState(
-                            context = context.applicationContext,
+                        widgetController.cleanStaleWidgetState(
                             stationName = lastStation?.name,
-                            favicon = lastStation?.favicon
+                            favicon = lastStation?.favicon,
                         )
                     } catch (e: Exception) {
-                        com.armanmaurya.internetradio.widget.cleanStaleWidgetState(context.applicationContext, null, null)
+                        widgetController.cleanStaleWidgetState()
                     }
                 }
 

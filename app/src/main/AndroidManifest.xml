@@ -106,7 +106,7 @@
         </receiver>
 
         <activity
-            android:name=".widget.NowPlayingWidgetConfigureActivity"
+            android:name=".ui.widget.NowPlayingWidgetConfigureActivity"
             android:exported="true"
             android:theme="@style/Theme.InternetRadio">
             <intent-filter>
@@ -114,7 +114,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".widget.NowPlayingWidgetReceiver"
+        <receiver android:name=".ui.widget.NowPlayingWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -124,7 +124,7 @@
                 android:resource="@xml/now_playing_widget_info" />
         </receiver>
 
-        <receiver android:name=".widget.WidgetControlReceiver"
+        <receiver android:name=".ui.widget.WidgetControlReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" />
