@@ -13,16 +13,13 @@ android {
         applicationId = "com.armanmaurya.internetradio"
         minSdk = 26
         targetSdk = 36
-        val baseVersionCode = 17
-        val baseVersionName = "0.8.2"
+        versionCode = 17
+        versionName = "0.8.2"
 
         if (System.getenv("IS_NIGHTLY_BUILD") == "true") {
-            versionCode = baseVersionCode + (System.getenv("NIGHTLY_RUN_NUMBER")?.toIntOrNull() ?: 0)
+            versionCode += System.getenv("NIGHTLY_RUN_NUMBER")?.toIntOrNull() ?: 0
             val date = System.getenv("NIGHTLY_DATE") ?: "unknown"
-            versionName = "$baseVersionName-$date"
-        } else {
-            versionCode = baseVersionCode
-            versionName = baseVersionName
+            versionName = "$versionName-$date"
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
