@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.armanmaurya.internetradio.ui.shared.theme.LocalAppPreferences
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -434,6 +435,7 @@ fun PlayerSheetContent(
 
     var showVolumeDialog by remember { mutableStateOf(false) }
     val volumeLevel = if (connectedCastDevice != null) volume else playbackState.volume
+    val appPreferences = LocalAppPreferences.current
 
     val remainingTime = playbackState.sleepTimerEndTime?.let { it - currentTime } ?: 0L
     val sleepTimerProgress = if (playbackState.sleepTimerTotalDuration > 0) {
@@ -694,7 +696,7 @@ fun PlayerSheetContent(
                     )
                     .clickable { showCoverArt = !showCoverArt }
             ) {
-                if (isCurrentPlayingStation && (hasCoverArt || isFetching)) {
+                if (appPreferences.showStationThumbnails && isCurrentPlayingStation && (hasCoverArt || isFetching)) {
                     if (hasCoverArt) {
                         SubcomposeAsyncImage(
                             model = coil3.request.ImageRequest.Builder(LocalContext.current)
@@ -718,63 +720,93 @@ fun PlayerSheetContent(
                     }
                 }
 
-                SubcomposeAsyncImage(
-                    model = coil3.request.ImageRequest.Builder(LocalContext.current)
-                        .data(pageStation.favicon.ifBlank { null })
-                        .size(coil3.size.Size.ORIGINAL)
-                        .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    filterQuality = FilterQuality.High,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(animatedThumbPadding)
-                        .size(animatedThumbSize)
-                        .clip(RoundedCornerShape(animatedCornerRadius))
-                        .then(
-                            if (isShowingCover) {
-                                Modifier
-                                    .background(MaterialTheme.colorScheme.surface)
-                                    .border(1.dp / currentScale, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(animatedCornerRadius))
-                            } else {
-                                Modifier
+                if (appPreferences.showStationThumbnails && pageStation.favicon.isNotBlank()) {
+                    SubcomposeAsyncImage(
+                        model = coil3.request.ImageRequest.Builder(LocalContext.current)
+                            .data(pageStation.favicon.ifBlank { null })
+                            .size(coil3.size.Size.ORIGINAL)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        filterQuality = FilterQuality.High,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(animatedThumbPadding)
+                            .size(animatedThumbSize)
+                            .clip(RoundedCornerShape(animatedCornerRadius))
+                            .then(
+                                if (isShowingCover) {
+                                    Modifier
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .border(1.dp / currentScale, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(animatedCornerRadius))
+                                } else {
+                                    Modifier
+                                }
+                            ),
+                        error = {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                androidx.compose.foundation.Image(
+                                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                    contentDescription = null,
+                                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                                )
                             }
-                        ),
-                    error = {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            androidx.compose.foundation.Image(
-                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                                contentDescription = null,
-                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                        },
+                        loading = {
+                            Box(
+                                contentAlignment = Alignment.Center,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
-                            )
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                androidx.compose.foundation.Image(
+                                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                    contentDescription = null,
+                                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                                )
+                            }
                         }
-                    },
-                    loading = {
-                        Box(
-                            contentAlignment = Alignment.Center,
+                    )
+                } else {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(animatedThumbPadding)
+                            .size(animatedThumbSize)
+                            .clip(RoundedCornerShape(animatedCornerRadius))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .then(
+                                if (isShowingCover) {
+                                    Modifier
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .border(1.dp / currentScale, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(animatedCornerRadius))
+                                } else {
+                                    Modifier
+                                }
+                            )
+                    ) {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            androidx.compose.foundation.Image(
-                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                                contentDescription = null,
-                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
-                            )
-                        }
+                                .graphicsLayer { scaleX = 1.6f; scaleY = 1.6f }
+                        )
                     }
-                )
+                }
             }
         }
         }
@@ -1285,6 +1317,7 @@ fun PlayerSheetContent(
                                     .width(recordButtonWidth)
                                     .height(64.dp)
                             ) {
+                                val isBoosted = volumeLevel > 1.0f
                                 val volumeIcon = when {
                                     volumeLevel == 0f -> Icons.AutoMirrored.Filled.VolumeOff
                                     volumeLevel < 0.5f -> Icons.AutoMirrored.Filled.VolumeDown
@@ -1308,7 +1341,7 @@ fun PlayerSheetContent(
                                             )
                                             .fillMaxSize()
                                             .background(
-                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                color = if (isBoosted) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
                                                 shape = RoundedCornerShape(20.dp)
                                             )
                                             .clip(RoundedCornerShape(20.dp))
@@ -1318,7 +1351,7 @@ fun PlayerSheetContent(
                                         Icon(
                                             imageVector = volumeIcon,
                                             contentDescription = stringResource(R.string.player_cd_volume),
-                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            tint = if (isBoosted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
                                             modifier = Modifier
                                                 .sharedElement(
                                                     sharedContentState = rememberSharedContentState(key = "volume_icon"),
@@ -1568,7 +1601,8 @@ fun PlayerSheetContent(
             showDialog = showVolumeDialog,
             onDismissRequest = { showVolumeDialog = false },
             volume = volumeLevel,
-            onVolumeChange = onVolumeChange
+            onVolumeChange = onVolumeChange,
+            isCastActive = connectedCastDevice != null
         )
 
         SleepTimerDialog(

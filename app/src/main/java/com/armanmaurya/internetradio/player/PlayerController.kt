@@ -144,7 +144,10 @@ class PlayerController @Inject constructor(
         }
 
         override fun onVolumeChanged(volume: Float) {
-            _playbackState.update { it.copy(volume = volume) }
+            _playbackState.update { current ->
+                if (current.volume > 1.0f && volume == 1.0f) current
+                else current.copy(volume = volume)
+            }
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -413,6 +416,8 @@ class PlayerController @Inject constructor(
         val mediaItems = stations.map { it.toMediaItem() }
         player.setMediaItems(mediaItems, startIndex, 0L)
         player.volume = 1f
+        val boostResetArgs = android.os.Bundle().apply { putFloat("KEY_BOOST", 0f) }
+        player.sendCustomCommand(AutoMediaLibraryCallback.COMMAND_SET_VOLUME_BOOST, boostResetArgs)
         player.prepare()
         if (playWhenReady) player.play() else player.pause()
     }
@@ -501,7 +506,12 @@ class PlayerController @Inject constructor(
     }
 
     fun setVolume(volume: Float) {
-        controller?.volume = volume
+        val clampedPlayerVolume = volume.coerceIn(0f, 1f)
+        controller?.volume = clampedPlayerVolume
+        val boost = if (volume > 1f) (volume - 1f).coerceIn(0f, 1f) else 0f
+        val args = android.os.Bundle().apply { putFloat("KEY_BOOST", boost) }
+        controller?.sendCustomCommand(AutoMediaLibraryCallback.COMMAND_SET_VOLUME_BOOST, args)
+        _playbackState.update { it.copy(volume = volume) }
     }
 
     fun stop() {

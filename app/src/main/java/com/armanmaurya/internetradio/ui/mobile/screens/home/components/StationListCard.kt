@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.ui.shared.theme.LocalAppPreferences
 import androidx.compose.ui.unit.sp
 
 @Composable
@@ -130,36 +131,49 @@ fun StationListCard(
                         else Modifier
                     )
             ) {
-                coil3.compose.SubcomposeAsyncImage(
-                    model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                        .data(station.favicon.ifBlank { null })
-                        .size(coil3.size.Size.ORIGINAL)
-                        .build(),
-                    contentDescription = stringResource(R.string.home_cd_station_logo, station.name),
-                    contentScale = ContentScale.FillBounds,
-                    filterQuality = FilterQuality.High,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    error = {
-                        androidx.compose.foundation.Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    },
-                    loading = {
-                        androidx.compose.foundation.Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                )
+                val showThumbnails = LocalAppPreferences.current.showStationThumbnails
+
+                if (showThumbnails && station.favicon.isNotBlank()) {
+                    coil3.compose.SubcomposeAsyncImage(
+                        model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data(station.favicon)
+                            .build(),
+                        contentDescription = stringResource(R.string.home_cd_station_logo, station.name),
+                        contentScale = ContentScale.FillBounds,
+                        filterQuality = FilterQuality.High,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        error = {
+                            androidx.compose.foundation.Image(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = null,
+                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        },
+                        loading = {
+                            androidx.compose.foundation.Image(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = null,
+                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    )
+                } else {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                        contentScale = ContentScale.FillBounds,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    )
+                }
 
                 if (isCurrentlyPlaying) {
                     Box(

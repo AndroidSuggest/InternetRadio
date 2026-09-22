@@ -37,6 +37,8 @@ import com.armanmaurya.internetradio.ui.mobile.screens.home.HomeViewModel
 import com.armanmaurya.internetradio.ui.mobile.screens.player.PlayerBottomSheet
 import com.armanmaurya.internetradio.ui.mobile.screens.player.rememberPlayerSheetProgress
 import com.armanmaurya.internetradio.ui.shared.theme.InternetRadioTheme
+import com.armanmaurya.internetradio.ui.shared.theme.LocalAppPreferences
+import androidx.compose.runtime.CompositionLocalProvider
 import com.armanmaurya.internetradio.ui.shared.viewmodels.MainViewModel
 import com.armanmaurya.internetradio.ui.shared.viewmodels.PlayerViewModel
 import kotlinx.coroutines.flow.Flow
@@ -53,7 +55,8 @@ fun MobileApp(
     val appPreferences by mainViewModel.appPreferences.collectAsStateWithLifecycle(initialValue = AppPreferences())
     val playbackState by playerViewModel.playbackState.collectAsStateWithLifecycle()
 
-    InternetRadioTheme(appPreferences = appPreferences) {
+    CompositionLocalProvider(LocalAppPreferences provides appPreferences) {
+        InternetRadioTheme(appPreferences = appPreferences) {
         AppOverlays(
             disableUpdateCheck = appPreferences.disableUpdateCheck,
             mainViewModel = mainViewModel
@@ -122,4 +125,5 @@ fun MobileApp(
             )
         }
     }
+}
 }

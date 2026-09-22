@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.player.components
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -36,7 +38,8 @@ fun SharedTransitionScope.VolumeDialog(
     showDialog: Boolean,
     onDismissRequest: () -> Unit,
     volume: Float,
-    onVolumeChange: (Float) -> Unit
+    onVolumeChange: (Float) -> Unit,
+    isCastActive: Boolean = false
 ) {
     var previousVolume by remember { mutableFloatStateOf(volume.takeIf { it > 0f } ?: 0.5f) }
 
@@ -62,6 +65,14 @@ fun SharedTransitionScope.VolumeDialog(
                 ),
             contentAlignment = Alignment.Center
         ) {
+            val maxRange = if (isCastActive) 1.0f else 2.0f
+            val isBoosted = volume > 1.0f
+            val boostAlpha by animateFloatAsState(
+                targetValue = if (isBoosted) 1f else 0f,
+                animationSpec = tween(durationMillis = 200),
+                label = "boostAlpha"
+            )
+
             Column(
                 modifier = Modifier
                     .sharedBounds(
@@ -72,8 +83,8 @@ fun SharedTransitionScope.VolumeDialog(
                         boundsTransform = { _, _ -> tween(durationMillis = 350) },
                         clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(28.dp))
                     )
-                    .width(80.dp)
-                    .height(280.dp)
+                    .width(84.dp)
+                    .height(350.dp)
                     .background(
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         shape = RoundedCornerShape(28.dp)
@@ -84,36 +95,53 @@ fun SharedTransitionScope.VolumeDialog(
                         indication = null,
                         onClick = {} // Consume clicks
                     )
-                    .padding(vertical = 24.dp),
+                    .padding(vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "${(volume * 100).toInt()}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.Bold
-                )
+                Column(
+                    modifier = Modifier.height(44.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "${(volume * 100).toInt()}%",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (isBoosted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = stringResource(R.string.player_volume_boost_label),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.alpha(boostAlpha)
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     Slider(
-                        value = volume,
-                        onValueChange = onVolumeChange,
+                        value = volume.coerceIn(0f, maxRange),
+                        onValueChange = { rawValue ->
+                            val snapped = if (!isCastActive && rawValue in 0.97f..1.03f) 1.0f else rawValue
+                            onVolumeChange(snapped)
+                        },
+                        valueRange = 0f..maxRange,
                         modifier = Modifier
                             .graphicsLayer {
                                 rotationZ = 270f
                                 transformOrigin = TransformOrigin(0.5f, 0.5f)
                             }
-                            .requiredWidth(140.dp) // Adjusted width so it doesn't overlap
+                            .requiredWidth(200.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 val volumeIcon = when {
                     volume == 0f -> Icons.AutoMirrored.Filled.VolumeOff
@@ -124,7 +152,7 @@ fun SharedTransitionScope.VolumeDialog(
                 Icon(
                     imageVector = volumeIcon,
                     contentDescription = stringResource(R.string.player_cd_volume),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    tint = if (isBoosted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier
                         .sharedElement(
                             sharedContentState = rememberSharedContentState(key = "volume_icon"),

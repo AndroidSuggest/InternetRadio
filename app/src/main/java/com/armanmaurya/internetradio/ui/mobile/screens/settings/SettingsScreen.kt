@@ -191,6 +191,7 @@ fun SettingsScreen(
                 onSetCustomColor = viewModel::setCustomColor,
                 onSetTheme = viewModel::setAppTheme,
                 onSetPureBlack = viewModel::setPureBlack,
+                onSetShowStationThumbnails = viewModel::setShowStationThumbnails,
                 onOpenWidgetConfig = {
                     context.startActivity(Intent(context, NowPlayingWidgetConfigureActivity::class.java))
                 },
@@ -306,6 +307,7 @@ private fun AppearanceSection(
     onSetCustomColor: (Int) -> Unit,
     onSetTheme: (AppTheme) -> Unit,
     onSetPureBlack: (Boolean) -> Unit,
+    onSetShowStationThumbnails: (Boolean) -> Unit,
     onOpenWidgetConfig: () -> Unit,
     topShape: RoundedCornerShape,
     middleShape: RoundedCornerShape,
@@ -398,6 +400,17 @@ private fun AppearanceSection(
             icon = Icons.Default.Contrast,
             shape = middleShape,
             enabled = darkTheme
+        )
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
+        ToggleItem(
+            title = stringResource(R.string.settings_show_station_thumbnails),
+            subtitle = stringResource(R.string.settings_show_station_thumbnails_desc),
+            isEnabled = uiState.showStationThumbnails,
+            onToggle = onSetShowStationThumbnails,
+            icon = Icons.Default.Image,
+            shape = middleShape
         )
 
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))

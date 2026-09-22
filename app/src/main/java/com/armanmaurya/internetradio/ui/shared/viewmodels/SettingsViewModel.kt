@@ -138,6 +138,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setShowStationThumbnails(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setShowStationThumbnails(enabled)
+        }
+    }
+
     fun setAppLanguage(language: String) {
         viewModelScope.launch {
             settingsRepository.setAppLanguage(language)

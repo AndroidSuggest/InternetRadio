@@ -17,7 +17,7 @@ android {
         versionName = "0.8.2"
 
         if (System.getenv("IS_NIGHTLY_BUILD") == "true") {
-            versionCode += System.getenv("NIGHTLY_RUN_NUMBER")?.toIntOrNull() ?: 0
+            versionCode = (versionCode ?: 17) + (System.getenv("NIGHTLY_RUN_NUMBER")?.toIntOrNull() ?: 0)
             val date = System.getenv("NIGHTLY_DATE") ?: "unknown"
             versionName = "$versionName-$date"
         }

@@ -81,9 +81,12 @@ class PlaybackService : MediaLibraryService() {
     private var previousVolume: Int = -1
     private var ignoreNextVolumeZero: Boolean = false
     private var showCoverArtInNotification: Boolean = true
+    private var showStationThumbnails: Boolean = true
     private var alarmFadeInSeconds: Int = 0
     private var volumeFadeJob: kotlinx.coroutines.Job? = null
     private var activeTrackTitle: String? = null
+    private var loudnessEnhancer: android.media.audiofx.LoudnessEnhancer? = null
+    private var currentBoostFactor: Float = 0f
     
     private val audioNoisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -171,6 +174,7 @@ class PlaybackService : MediaLibraryService() {
                 val stationName = currentExtras?.getString("stationName")
                 val stationFaviconStr = currentExtras?.getString("stationFavicon")
                 val stationFaviconUri = when {
+                    !showStationThumbnails -> android.net.Uri.EMPTY
                     stationFaviconStr?.endsWith(".svg", ignoreCase = true) == true ->
                         android.net.Uri.parse(SvgProxyProvider.createProxyUri(this@PlaybackService, stationFaviconStr))
                     !stationFaviconStr.isNullOrBlank() -> android.net.Uri.parse(stationFaviconStr)
@@ -358,6 +362,7 @@ class PlaybackService : MediaLibraryService() {
                 stopOnAudioBecomingNoisy = prefs.stopOnAudioBecomingNoisy
                 pauseOnVolumeZero = prefs.pauseOnVolumeZero
                 showCoverArtInNotification = prefs.showCoverArtInNotification
+                showStationThumbnails = prefs.showStationThumbnails
                 alarmFadeInSeconds = if (prefs.isAlarmVolumeTransitionEnabled) prefs.alarmVolumeTransitionSeconds else 0
             }
         }
@@ -414,6 +419,20 @@ class PlaybackService : MediaLibraryService() {
             .setAudioAttributes(audioAttributes, true)
             .setDeviceVolumeControlEnabled(true)
             .build()
+
+        exoPlayer.addAnalyticsListener(object : androidx.media3.exoplayer.analytics.AnalyticsListener {
+            override fun onAudioSessionIdChanged(
+                eventTime: androidx.media3.exoplayer.analytics.AnalyticsListener.EventTime,
+                audioSessionId: Int
+            ) {
+                if (audioSessionId != androidx.media3.common.C.AUDIO_SESSION_ID_UNSET) {
+                    setupLoudnessEnhancer(audioSessionId)
+                }
+            }
+        })
+        if (exoPlayer.audioSessionId != androidx.media3.common.C.AUDIO_SESSION_ID_UNSET) {
+            setupLoudnessEnhancer(exoPlayer.audioSessionId)
+        }
             
         exoPlayer.repeatMode = Player.REPEAT_MODE_ALL
         exoPlayer.setWakeMode(androidx.media3.common.C.WAKE_MODE_NETWORK)
@@ -554,6 +573,10 @@ class PlaybackService : MediaLibraryService() {
             // Give the callback a reference to the session so it can push
             // custom layout updates (e.g. refreshing the heart icon) at any time
             autoCallback.activeSession = mediaLibrarySession
+            autoCallback.onVolumeBoostChanged = { boost ->
+                currentBoostFactor = boost
+                applyBoostGain(loudnessEnhancer, boost)
+            }
         }
     }
 
@@ -572,6 +595,13 @@ class PlaybackService : MediaLibraryService() {
         serviceScope.cancel()
         // Clear session ref first so the callback stops pushing updates
         autoCallback.activeSession = null
+        autoCallback.onVolumeBoostChanged = null
+        try {
+            loudnessEnhancer?.release()
+            loudnessEnhancer = null
+        } catch (e: Exception) {
+            // Ignored
+        }
         try {
             unregisterReceiver(audioNoisyReceiver)
         } catch (e: Exception) {
@@ -926,6 +956,7 @@ class PlaybackService : MediaLibraryService() {
      */
     private fun buildMediaItem(station: RadioStation): androidx.media3.common.MediaItem {
         val artworkUri = when {
+            !showStationThumbnails -> android.net.Uri.EMPTY
             station.favicon.endsWith(".svg", ignoreCase = true) ->
                 android.net.Uri.parse(SvgProxyProvider.createProxyUri(this, station.favicon))
             station.favicon.isNotBlank() -> android.net.Uri.parse(station.favicon)
@@ -947,5 +978,34 @@ class PlaybackService : MediaLibraryService() {
                     .build()
             )
             .build()
+    }
+
+    private fun setupLoudnessEnhancer(audioSessionId: Int) {
+        if (audioSessionId == androidx.media3.common.C.AUDIO_SESSION_ID_UNSET) return
+        try {
+            loudnessEnhancer?.release()
+            loudnessEnhancer = android.media.audiofx.LoudnessEnhancer(audioSessionId).apply {
+                applyBoostGain(this, currentBoostFactor)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("PlaybackService", "Failed to initialize LoudnessEnhancer", e)
+            loudnessEnhancer = null
+        }
+    }
+
+    private fun applyBoostGain(enhancer: android.media.audiofx.LoudnessEnhancer?, boost: Float) {
+        if (enhancer == null) return
+        try {
+            if (boost > 0f) {
+                val gainmB = (boost * 1000).toInt() // Up to +1000 mB (+10 dB) at 200%
+                enhancer.setTargetGain(gainmB)
+                enhancer.enabled = true
+            } else {
+                enhancer.setTargetGain(0)
+                enhancer.enabled = false
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("PlaybackService", "Failed to apply LoudnessEnhancer gain", e)
+        }
     }
 }

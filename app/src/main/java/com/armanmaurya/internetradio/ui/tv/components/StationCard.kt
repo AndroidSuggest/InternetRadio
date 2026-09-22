@@ -58,7 +58,6 @@ fun StationCard(
             AsyncImage(
                 model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
                     .data(station.favicon.ifBlank { null })
-                    .size(coil3.size.Size.ORIGINAL)
                     .build(),
                 contentDescription = "${station.name} logo",
                 contentScale = ContentScale.Crop,

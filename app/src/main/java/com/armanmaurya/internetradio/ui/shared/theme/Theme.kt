@@ -11,6 +11,8 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.platform.LocalContext
 import com.armanmaurya.internetradio.domain.model.AppPreferences
 
+val LocalAppPreferences = androidx.compose.runtime.compositionLocalOf { AppPreferences() }
+
 private fun ColorScheme.applyPureBlack(): ColorScheme = copy(
     background = Color.Black,
     surface = Color.Black,

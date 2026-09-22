@@ -56,7 +56,11 @@ class AutoMediaLibraryCallback @Inject constructor(
     companion object {
         /** Custom command sent when the user taps the heart button in Android Auto. */
         val COMMAND_TOGGLE_LIBRARY = SessionCommand("TOGGLE_LIBRARY", Bundle.EMPTY)
+        /** Custom command to apply volume boost above 100%. */
+        val COMMAND_SET_VOLUME_BOOST = SessionCommand("SET_VOLUME_BOOST", Bundle.EMPTY)
     }
+
+    var onVolumeBoostChanged: ((Float) -> Unit)? = null
 
     /** Background scope used for async search network calls and DB operations. */
     private val searchScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -102,6 +106,7 @@ class AutoMediaLibraryCallback @Inject constructor(
         val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
             .buildUpon()
             .add(COMMAND_TOGGLE_LIBRARY)
+            .add(COMMAND_SET_VOLUME_BOOST)
             .build()
 
         return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
@@ -187,6 +192,11 @@ class AutoMediaLibraryCallback @Inject constructor(
         customCommand: SessionCommand,
         args: Bundle,
     ): ListenableFuture<SessionResult> {
+        if (customCommand.customAction == COMMAND_SET_VOLUME_BOOST.customAction) {
+            val boost = args.getFloat("KEY_BOOST", 0f)
+            onVolumeBoostChanged?.invoke(boost)
+            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        }
         if (customCommand.customAction != COMMAND_TOGGLE_LIBRARY.customAction) {
             return super.onCustomCommand(session, controller, customCommand, args)
         }

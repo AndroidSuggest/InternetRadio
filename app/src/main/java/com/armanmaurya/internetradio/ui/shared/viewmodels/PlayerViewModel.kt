@@ -387,7 +387,7 @@ class PlayerViewModel @Inject constructor(
 
     fun setVolume(volume: Float) {
         if (connectedCastDevice.value != null) {
-            setCastVolume(volume)
+            setCastVolume(volume.coerceIn(0f, 1f))
         } else {
             playerController.setVolume(volume)
         }

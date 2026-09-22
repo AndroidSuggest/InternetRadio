@@ -70,6 +70,8 @@
     <string name="settings_custom_color_hex">Hex Color</string>
     <string name="settings_custom_color_apply">Apply</string>
     <string name="settings_custom_color_cancel">Cancel</string>
+    <string name="settings_show_station_thumbnails">Show station thumbnails</string>
+    <string name="settings_show_station_thumbnails_desc">Display station logos in lists and player (disable to save data and memory)</string>
     <string name="settings_general_section">General</string>
     <string name="settings_language_title">Language</string>
     <string name="settings_auto_route_search_title">Auto-route on Search</string>
@@ -356,6 +358,7 @@
     <string name="player_lyrics_not_available">Lyrics not available</string>
     <string name="player_cd_cast">Cast</string>
     <string name="player_cd_volume">Volume</string>
+    <string name="player_volume_boost_label">BOOST</string>
     <string name="player_cast_connected">Connected</string>
     <string name="player_cd_delay_lyrics">Delay Lyrics</string>
     <string name="player_cd_fast_forward_lyrics">Fast Forward Lyrics</string>

@@ -50,4 +50,5 @@ interface SettingsRepository {
     suspend fun setAlarmVolumeTransitionEnabled(enabled: Boolean)
     suspend fun setKeepScreenOn(enabled: Boolean)
     suspend fun setWidgetBackgroundAlpha(alpha: Float)
+    suspend fun setShowStationThumbnails(enabled: Boolean)
 }
