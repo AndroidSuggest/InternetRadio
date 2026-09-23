@@ -89,7 +89,7 @@
     <string name="settings_import_subtitle">Przywróć stacje z pliku kopii zapasowej</string>
     <string name="about_title">O programie</string>
     <string name="about_us">O nas</string>
-    <string name="about_app_description">Prosty odtwarzacz radia internetowego, dzięki któremu możesz odkrywać i słuchać tysięcy stacji radiowych z całego świata.</string>
+    <string name="about_app_description">Odkrywaj i słuchaj stacji radiowych z całego świata</string>
     <string name="about_view_contributors">Zobacz współtwórców</string>
     <string name="about_view_github">Zobacz na GitHub</string>
     <string name="about_author">Autor</string>
@@ -108,9 +108,9 @@
     <string name="home_filters_active">Aktywne filtry</string>
     <string name="home_use_filters">Użyj filtrów</string>
     <string name="home_cd_settings">Ustawienia</string>
-    <string name="home_votes">Oceny</string>
+    <string name="home_votes">Ocena</string>
     <string name="home_clicks">Kliknięcia</string>
-    <string name="home_trend">Trendy</string>
+    <string name="home_trend">Popularność</string>
     <string name="home_verified">Zweryfikowane</string>
     <string name="home_toggle_view">Przełącz widok</string>
     <string name="home_add_to_library">Dodaj do biblioteki</string>
@@ -397,4 +397,17 @@
     <string name="widget_configure_presets">Szablony</string>
     <string name="settings_widget_appearance_title">Wygląd widżetu</string>
     <string name="settings_widget_appearance_subtitle">Dostosuj przezroczystość i podgląd widżetu ekranu głównego</string>
+    <string name="settings_show_station_thumbnails">Pokaż miniatury stacji</string>
+    <string name="settings_show_station_thumbnails_desc">Wyświetlaj logo stacji na listach i w odtwarzaczu (wyłącz, aby zaoszczędzić dane i pamięć)</string>
+    <string name="settings_update_section">Aktualizacja</string>
+    <string name="settings_view_on_play_store">Zobacz w Sklepie Play</string>
+    <string name="about_support">Wsparcie</string>
+    <string name="about_github_sponsors">Sponsorzy GitHub</string>
+    <string name="about_buy_me_a_coffee">Postaw mi kawę</string>
+    <string name="settings_donate_section">Darowizna</string>
+    <string name="about_upi">UPI</string>
+    <string name="about_donate_via_upi">Przekaż darowiznę przez UPI</string>
+    <string name="about_upi_copied">Skopiowano identyfikator UPI: %1$s</string>
+    <string name="about_cd_copy_upi">Skopiuj identyfikator UPI</string>
+    <string name="player_volume_boost_label">BOOST</string>
 </resources>
