@@ -58,7 +58,6 @@ fun MobileApp(
     CompositionLocalProvider(LocalAppPreferences provides appPreferences) {
         InternetRadioTheme(appPreferences = appPreferences) {
         AppOverlays(
-            disableUpdateCheck = appPreferences.disableUpdateCheck,
             mainViewModel = mainViewModel
         )
 

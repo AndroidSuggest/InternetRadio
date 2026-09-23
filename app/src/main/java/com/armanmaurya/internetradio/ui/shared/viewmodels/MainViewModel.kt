@@ -57,6 +57,10 @@ class MainViewModel @Inject constructor(
     fun checkForUpdates(currentVersion: String, force: Boolean = false, onResult: ((Boolean) -> Unit)? = null) {
         viewModelScope.launch {
             val appPreferences = settingsRepository.appPreferencesFlow.first()
+            if (!force && appPreferences.disableUpdateCheck) {
+                onResult?.invoke(false)
+                return@launch
+            }
             val lastCheckTime = appPreferences.lastUpdateCheckTime
             val currentTime = System.currentTimeMillis()
             val twentyFourHours = 24 * 60 * 60 * 1000L

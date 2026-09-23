@@ -15,10 +15,10 @@ import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.core.config.StoreConfig
 import com.armanmaurya.internetradio.ui.shared.components.UpdateBottomSheet
 import com.armanmaurya.internetradio.ui.shared.viewmodels.MainViewModel
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun AppOverlays(
-    disableUpdateCheck: Boolean,
     mainViewModel: MainViewModel
 ) {
     val context = LocalContext.current
@@ -26,8 +26,9 @@ fun AppOverlays(
     val updateAvailable by mainViewModel.updateAvailable.collectAsStateWithLifecycle()
     val showReviewPrompt by mainViewModel.showReviewPrompt.collectAsStateWithLifecycle()
 
-    LaunchedEffect(disableUpdateCheck) {
-        if (!disableUpdateCheck) {
+    LaunchedEffect(Unit) {
+        val prefs = mainViewModel.appPreferences.first()
+        if (!prefs.disableUpdateCheck) {
             if (StoreConfig.isPlayStoreBuild) {
                 (context as? Activity)?.let { StoreConfig.checkPlayStoreUpdate(it) }
             } else {
