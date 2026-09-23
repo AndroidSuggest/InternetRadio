@@ -75,7 +75,7 @@
     <string name="settings_import_subtitle">Restaurează posturile dintr-un fișier de backup</string>
     <string name="about_title">Despre</string>
     <string name="about_us">Despre noi</string>
-    <string name="about_app_description">Un simplu player radio prin internet care îți permite să descoperi și să asculți mii de posturi radio de pe tot globul.</string>
+    <string name="about_app_description">Descoperă și ascultă posturi de radio din întreaga lume</string>
     <string name="about_view_contributors">Vezi colaboratorii</string>
     <string name="about_view_github">Vezi pe GitHub</string>
     <string name="about_author">Autor</string>
@@ -388,4 +388,17 @@
     <string name="settings_widget_appearance_title">Aspectul widget-ului</string>
     <string name="settings_widget_appearance_subtitle">Personalizează transparența și previzualizarea widget-ului pentru ecranul de pornire</string>
     <string name="review_star_github">Pune o stea pe GitHub</string>
+    <string name="settings_show_station_thumbnails">Afișează miniaturile stațiilor</string>
+    <string name="settings_show_station_thumbnails_desc">Afișează siglele posturilor în liste și player (dezactivează pentru a economisi date și memorie)</string>
+    <string name="settings_update_section">Actualizează</string>
+    <string name="settings_view_on_play_store">Vezi în Magazin Play</string>
+    <string name="about_support">Sprijin</string>
+    <string name="about_github_sponsors">Sponsori GitHub</string>
+    <string name="about_buy_me_a_coffee">Cumpără-mi o cafea</string>
+    <string name="settings_donate_section">Donează</string>
+    <string name="about_upi">UPI</string>
+    <string name="about_donate_via_upi">Donează prin UPI</string>
+    <string name="about_upi_copied">ID UPI copiat: %1$s</string>
+    <string name="about_cd_copy_upi">Copiază ID-ul UPI</string>
+    <string name="player_volume_boost_label">BOOST</string>
 </resources>
