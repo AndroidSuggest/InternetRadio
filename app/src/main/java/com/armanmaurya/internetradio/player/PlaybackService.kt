@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import android.util.Log
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class PlaybackService : MediaLibraryService() {
@@ -855,7 +856,16 @@ class PlaybackService : MediaLibraryService() {
         val applySystemVolume = {
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
             val maxVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
-            val targetVolume = (volumeLevel * maxVolume).toInt()
+            val minVolume = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                audioManager.getStreamMinVolume(android.media.AudioManager.STREAM_MUSIC)
+            } else {
+                0
+            }
+            val targetVolume = if (volumeLevel > 0f) {
+                (volumeLevel * maxVolume).roundToInt().coerceIn(minVolume.coerceAtLeast(1), maxVolume)
+            } else {
+                minVolume
+            }
             if (targetVolume == 0) ignoreNextVolumeZero = true
             audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVolume, 0)
         }

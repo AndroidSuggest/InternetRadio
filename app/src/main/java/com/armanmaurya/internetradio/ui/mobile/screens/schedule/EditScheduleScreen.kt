@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.schedule
 
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
@@ -51,6 +52,7 @@ import com.armanmaurya.internetradio.domain.model.StartOfWeek
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.SchedulesViewModel
 import java.util.Calendar
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -173,6 +175,8 @@ private fun ScheduleConfigurationForm(
     val context = LocalContext.current
     val exactAlarmPermissionMessage = stringResource(R.string.schedule_grant_exact_alarm_permission)
     val alarmManager = remember { context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager }
+    val audioManager = remember { context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager }
+    val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1) }
 
     val startCalendar = remember { Calendar.getInstance().apply { add(Calendar.MINUTE, 1) } }
     val endCalendar = remember { Calendar.getInstance().apply { add(Calendar.MINUTE, 1); add(Calendar.HOUR_OF_DAY, 1) } }
@@ -210,7 +214,10 @@ private fun ScheduleConfigurationForm(
         initialSchedule?.daysOfWeek?.split(",")?.mapNotNull { it.toIntOrNull() }?.let { days.addAll(it) }
         days 
     }
-    var volumeLevel by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { mutableFloatStateOf(initialSchedule?.volumeLevel ?: 1.0f) }
+    var volumeLevel by androidx.compose.runtime.saveable.rememberSaveable(initialSchedule) { 
+        val initial = initialSchedule?.volumeLevel ?: 1.0f
+        mutableFloatStateOf((initial * maxVolume).roundToInt().toFloat() / maxVolume)
+    }
 
     var showStartTimePicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     var showEndTimePicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
@@ -719,14 +726,15 @@ private fun ScheduleConfigurationForm(
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.schedule_volume, (volumeLevel * 100).toInt()),
+                            text = stringResource(R.string.schedule_volume, (volumeLevel * 100).roundToInt()),
                             style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.align(Alignment.Start)
                         )
                         Slider(
                             value = volumeLevel,
-                            onValueChange = { volumeLevel = it },
+                            onValueChange = { volumeLevel = (it * maxVolume).roundToInt().toFloat() / maxVolume },
                             valueRange = 0f..1f,
+                            steps = maxVolume - 1,
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                             track = { sliderState ->
                                 SliderDefaults.Track(
