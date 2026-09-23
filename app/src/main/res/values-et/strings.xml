@@ -123,7 +123,7 @@
     <string name="settings_max_retry_duration">Uuesti proovimise ülempiir</string>
     <string name="settings_number_of_tracks">Lugude arv</string>
     <string name="about_us">Teave meie kohta</string>
-    <string name="about_app_description">Lihtne internetiraadiopleier, mis võimaldab sul avastada ja kuulata tuhandeid raadiojaamu kogu maailmast.</string>
+    <string name="about_app_description">Avasta ja kuula raadiojaamu kogu maailmast</string>
     <string name="about_contribute_msg">Internetiraadio (Internet Radio) rakendus on alles oma teekonna alguses. Kaastööd on teretulnud 💡</string>
     <string name="home_use_filters">Kasuta filtreid</string>
     <string name="home_votes">Hääli</string>
@@ -380,4 +380,17 @@
     <string name="widget_configure_presets">Eelseadistused</string>
     <string name="settings_widget_appearance_title">Vidina välimus</string>
     <string name="settings_widget_appearance_subtitle">Kohenda avalehe vidina läbipaistmatust ja eelvaadet</string>
+    <string name="settings_show_station_thumbnails">Näita raadiojaamade pisipilte</string>
+    <string name="settings_show_station_thumbnails_desc">Jaamade logosid kuvatakse loendites ja pleieris (väljalülitamine säästab mälu ja andmeruumi)</string>
+    <string name="settings_update_section">Uuendus</string>
+    <string name="settings_view_on_play_store">Vaata Play Store\'is</string>
+    <string name="about_support">Kasutajatugi</string>
+    <string name="about_github_sponsors">Sponsorid GitHubis</string>
+    <string name="about_buy_me_a_coffee">Osta mulle tass kohvi</string>
+    <string name="settings_donate_section">Toeta meid rahaliselt</string>
+    <string name="about_upi">UPI</string>
+    <string name="about_donate_via_upi">Toeta UPI vahendusel</string>
+    <string name="about_upi_copied">UPI tunnus on kopeeritud: %1$s</string>
+    <string name="about_cd_copy_upi">Kopeeri UPI tunnus</string>
+    <string name="player_volume_boost_label">VALJEMAKS</string>
 </resources>
