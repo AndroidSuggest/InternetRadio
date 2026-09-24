@@ -21,8 +21,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import coil3.compose.AsyncImage
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
-import com.armanmaurya.internetradio.data.local.entity.ScheduleType
+import com.armanmaurya.internetradio.domain.model.Schedule
+import com.armanmaurya.internetradio.domain.model.ScheduleType
 import com.armanmaurya.internetradio.domain.model.StartOfWeek
 import java.util.Locale
 import java.util.Calendar
@@ -33,7 +33,7 @@ import com.armanmaurya.internetradio.ui.shared.theme.LocalAppPreferences
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleItem(
-    schedule: ScheduleEntity,
+    schedule: Schedule,
     stationFavicon: String?,
     startOfWeek: StartOfWeek,
     onToggle: (Boolean) -> Unit,

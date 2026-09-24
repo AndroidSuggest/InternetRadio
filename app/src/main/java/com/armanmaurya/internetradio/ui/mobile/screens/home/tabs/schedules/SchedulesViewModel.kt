@@ -2,13 +2,15 @@ package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
-import com.armanmaurya.internetradio.domain.repository.ScheduleRepository
-import com.armanmaurya.internetradio.domain.repository.LibraryRepository
-import com.armanmaurya.internetradio.domain.model.RadioStation
-import com.armanmaurya.internetradio.player.ScheduleManager
 import com.armanmaurya.internetradio.domain.model.AppPreferences
+import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.Schedule
+import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
+import com.armanmaurya.internetradio.domain.usecase.schedule.DeleteScheduleUseCase
+import com.armanmaurya.internetradio.domain.usecase.schedule.GetSchedulesUseCase
+import com.armanmaurya.internetradio.domain.usecase.schedule.SaveScheduleUseCase
+import com.armanmaurya.internetradio.domain.usecase.schedule.ToggleScheduleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +20,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SchedulesViewModel @Inject constructor(
-    private val scheduleRepository: ScheduleRepository,
-    private val scheduleManager: ScheduleManager,
+    private val getSchedulesUseCase: GetSchedulesUseCase,
+    private val saveScheduleUseCase: SaveScheduleUseCase,
+    private val toggleScheduleUseCase: ToggleScheduleUseCase,
+    private val deleteScheduleUseCase: DeleteScheduleUseCase,
     private val libraryRepository: LibraryRepository,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
@@ -31,7 +35,7 @@ class SchedulesViewModel @Inject constructor(
             initialValue = AppPreferences()
         )
 
-    val schedules: StateFlow<List<ScheduleEntity>?> = scheduleRepository.getAllSchedules()
+    val schedules: StateFlow<List<Schedule>?> = getSchedulesUseCase()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -45,40 +49,21 @@ class SchedulesViewModel @Inject constructor(
             initialValue = null
         )
 
-    fun toggleSchedule(schedule: ScheduleEntity, isEnabled: Boolean) {
+    fun toggleSchedule(schedule: Schedule, isEnabled: Boolean) {
         viewModelScope.launch {
-            scheduleRepository.updateScheduleStatus(schedule.id, isEnabled)
-            val updated = schedule.copy(isEnabled = isEnabled)
-            if (isEnabled) {
-                scheduleManager.schedule(updated)
-            } else {
-                scheduleManager.cancel(schedule.id)
-            }
+            toggleScheduleUseCase(schedule, isEnabled)
         }
     }
 
-    fun deleteSchedule(schedule: ScheduleEntity) {
+    fun deleteSchedule(schedule: Schedule) {
         viewModelScope.launch {
-            scheduleManager.cancel(schedule.id)
-            scheduleRepository.deleteSchedule(schedule)
+            deleteScheduleUseCase(schedule)
         }
     }
 
-    fun saveSchedule(schedule: ScheduleEntity) {
+    fun saveSchedule(schedule: Schedule) {
         viewModelScope.launch {
-            if (schedule.id == 0) {
-                val id = scheduleRepository.insertSchedule(schedule)
-                if (schedule.isEnabled) {
-                    scheduleManager.schedule(schedule.copy(id = id.toInt()))
-                }
-            } else {
-                scheduleRepository.updateSchedule(schedule)
-                if (schedule.isEnabled) {
-                    scheduleManager.schedule(schedule)
-                } else {
-                    scheduleManager.cancel(schedule.id)
-                }
-            }
+            saveScheduleUseCase(schedule)
         }
     }
 }

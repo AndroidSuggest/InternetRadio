@@ -45,9 +45,9 @@ import androidx.compose.ui.platform.LocalContext
 import com.armanmaurya.internetradio.ui.shared.theme.LocalAppPreferences
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
-import com.armanmaurya.internetradio.data.local.entity.ScheduleType
 import com.armanmaurya.internetradio.domain.model.RadioStation
+import com.armanmaurya.internetradio.domain.model.Schedule
+import com.armanmaurya.internetradio.domain.model.ScheduleType
 import com.armanmaurya.internetradio.domain.model.StartOfWeek
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.SchedulesViewModel
@@ -144,8 +144,8 @@ fun EditScheduleScreen(
         initialSchedule = scheduleToEdit,
         startOfWeek = appPreferences.startOfWeek,
         onStationClick = { isSheetOpen = true },
-        onSave = { entity ->
-            viewModel.saveSchedule(entity)
+        onSave = { schedule ->
+            viewModel.saveSchedule(schedule)
             Toast.makeText(context, scheduleSavedMessage, Toast.LENGTH_SHORT).show()
             onNavigateBack()
         },
@@ -164,10 +164,10 @@ fun EditScheduleScreen(
 private fun ScheduleConfigurationForm(
     modifier: Modifier = Modifier,
     station: RadioStation?,
-    initialSchedule: ScheduleEntity?,
+    initialSchedule: Schedule?,
     startOfWeek: StartOfWeek,
     onStationClick: () -> Unit,
-    onSave: (ScheduleEntity) -> Unit,
+    onSave: (Schedule) -> Unit,
     onNavigateBack: () -> Unit,
     onDelete: (() -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp)
@@ -316,7 +316,7 @@ private fun ScheduleConfigurationForm(
                                 if (duration <= 0) duration += 24 * 60 // crosses midnight
                             }
                             
-                            val entity = ScheduleEntity(
+                            val schedule = Schedule(
                                 id = initialSchedule?.id ?: 0,
                                 stationUuid = station.stationUuid,
                                 stationName = station.name,
@@ -333,7 +333,7 @@ private fun ScheduleConfigurationForm(
                                 playOnRecording = playOnRecording,
                                 scheduleName = scheduleName.trim()
                             )
-                            onSave(entity)
+                            onSave(schedule)
                         },
                         enabled = station != null
                     ) {

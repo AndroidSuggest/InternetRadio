@@ -412,6 +412,11 @@
     <string name="schedule_add_schedule_cd">Add Schedule</string>
     <string name="schedule_volume">Volume: %1$d%%</string>
     <string name="schedule_select_time">Select Time</string>
+    <string name="schedule_dismiss">Dismiss</string>
+    <string name="schedule_snooze">Snooze (10m)</string>
+    <string name="schedule_alarm_channel_name">Scheduled Alarms</string>
+    <string name="schedule_alarm_channel_description">Notifications for scheduled radio alarms</string>
+    <string name="schedule_alarm_playing">Alarm is playing</string>
     <string name="delete_recording">Delete</string>
     <plurals name="delete_recordings_message">
         <item quantity="one">Are you sure you want to delete %1$d item?</item>

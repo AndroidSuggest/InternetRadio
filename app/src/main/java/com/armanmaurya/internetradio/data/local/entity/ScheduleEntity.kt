@@ -2,8 +2,8 @@ package com.armanmaurya.internetradio.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
-enum class ScheduleType { PLAYBACK, RECORD }
+import com.armanmaurya.internetradio.domain.model.Schedule
+import com.armanmaurya.internetradio.domain.model.ScheduleType
 
 @Entity(tableName = "schedules")
 data class ScheduleEntity(
@@ -26,4 +26,40 @@ data class ScheduleEntity(
     val playOnRecording: Boolean = true,
     @androidx.room.ColumnInfo(defaultValue = "''")
     val scheduleName: String = ""
+)
+
+fun ScheduleEntity.toDomain() = Schedule(
+    id = id,
+    stationUuid = stationUuid,
+    stationName = stationName,
+    type = type,
+    triggerTimeInMillis = triggerTimeInMillis,
+    durationMinutes = durationMinutes,
+    isRecurring = isRecurring,
+    daysOfWeek = daysOfWeek,
+    timeHour = timeHour,
+    timeMinute = timeMinute,
+    isEnabled = isEnabled,
+    volumeLevel = volumeLevel,
+    keepPlayback = keepPlayback,
+    playOnRecording = playOnRecording,
+    scheduleName = scheduleName
+)
+
+fun Schedule.toEntity() = ScheduleEntity(
+    id = id,
+    stationUuid = stationUuid,
+    stationName = stationName,
+    type = type,
+    triggerTimeInMillis = triggerTimeInMillis,
+    durationMinutes = durationMinutes,
+    isRecurring = isRecurring,
+    daysOfWeek = daysOfWeek,
+    timeHour = timeHour,
+    timeMinute = timeMinute,
+    isEnabled = isEnabled,
+    volumeLevel = volumeLevel,
+    keepPlayback = keepPlayback,
+    playOnRecording = playOnRecording,
+    scheduleName = scheduleName
 )

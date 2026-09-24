@@ -1,13 +1,13 @@
 package com.armanmaurya.internetradio.domain.repository
 
-import com.armanmaurya.internetradio.data.local.entity.ScheduleEntity
+import com.armanmaurya.internetradio.domain.model.Schedule
 import kotlinx.coroutines.flow.Flow
 
 interface ScheduleRepository {
-    fun getAllSchedules(): Flow<List<ScheduleEntity>>
-    suspend fun getScheduleById(id: Int): ScheduleEntity?
-    suspend fun insertSchedule(schedule: ScheduleEntity): Long
-    suspend fun updateSchedule(schedule: ScheduleEntity)
-    suspend fun deleteSchedule(schedule: ScheduleEntity)
+    fun getAllSchedules(): Flow<List<Schedule>>
+    suspend fun getScheduleById(id: Int): Schedule?
+    suspend fun insertSchedule(schedule: Schedule): Long
+    suspend fun updateSchedule(schedule: Schedule)
+    suspend fun deleteSchedule(schedule: Schedule)
     suspend fun updateScheduleStatus(id: Int, isEnabled: Boolean)
 }

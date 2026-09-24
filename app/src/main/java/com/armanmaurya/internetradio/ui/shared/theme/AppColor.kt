@@ -44,21 +44,35 @@ enum class AppColor(
         previewColor = Color(0xFF00BCD4)
     );
 
-    fun getLightColorScheme(): ColorScheme = getColorScheme(darkTheme = false)
-
-    fun getDarkColorScheme(): ColorScheme = getColorScheme(darkTheme = true)
-
-    fun getColorScheme(darkTheme: Boolean, customColorArgb: Int? = null): ColorScheme {
-        val seed = if (this == CUSTOM && customColorArgb != null) {
-            Color(customColorArgb)
-        } else {
-            previewColor
-        }
-        return dynamicColorScheme(
-            seedColor = seed,
-            isDark = darkTheme,
+    private val defaultLightScheme: ColorScheme by lazy {
+        dynamicColorScheme(
+            seedColor = previewColor,
+            isDark = false,
             style = PaletteStyle.Vibrant
         )
+    }
+
+    private val defaultDarkScheme: ColorScheme by lazy {
+        dynamicColorScheme(
+            seedColor = previewColor,
+            isDark = true,
+            style = PaletteStyle.Vibrant
+        )
+    }
+
+    fun getLightColorScheme(): ColorScheme = defaultLightScheme
+
+    fun getDarkColorScheme(): ColorScheme = defaultDarkScheme
+
+    fun getColorScheme(darkTheme: Boolean, customColorArgb: Int? = null): ColorScheme {
+        if (this == CUSTOM && customColorArgb != null) {
+            return dynamicColorScheme(
+                seedColor = Color(customColorArgb),
+                isDark = darkTheme,
+                style = PaletteStyle.Vibrant
+            )
+        }
+        return if (darkTheme) defaultDarkScheme else defaultLightScheme
     }
 
     fun getPreviewColors(darkTheme: Boolean, customColorArgb: Int? = null): List<Color> {

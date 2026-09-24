@@ -1,13 +1,16 @@
-package com.armanmaurya.internetradio.player
+package com.armanmaurya.internetradio.data.schedule
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import com.armanmaurya.internetradio.data.local.entity.ScheduleType
 import com.armanmaurya.internetradio.domain.controller.RecordingController
+import com.armanmaurya.internetradio.domain.controller.ScheduleController
+import com.armanmaurya.internetradio.domain.model.ScheduleType
 import com.armanmaurya.internetradio.domain.repository.LibraryRepository
 import com.armanmaurya.internetradio.domain.repository.ScheduleRepository
+import com.armanmaurya.internetradio.player.PlayerController
+import com.armanmaurya.internetradio.service.AlarmService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +28,7 @@ class ScheduleReceiver : BroadcastReceiver() {
     lateinit var libraryRepository: LibraryRepository
 
     @Inject
-    lateinit var scheduleManager: ScheduleManager
+    lateinit var scheduleController: ScheduleController
 
     @Inject
     lateinit var playerController: PlayerController
@@ -64,14 +67,15 @@ class ScheduleReceiver : BroadcastReceiver() {
         val isRecord = type == ScheduleType.RECORD.name
 
         if (isPlayback) {
-            val playIntent = Intent(context, PlaybackService::class.java).apply {
-                this.action = "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE"
-                putExtra(EXTRA_SCHEDULE_ID, scheduleId)
+            AlarmWakeLockBridge.acquire(context)
+            val alarmIntent = Intent(context, AlarmService::class.java).apply {
+                this.action = AlarmService.ACTION_START_ALARM
+                putExtra(AlarmService.EXTRA_SCHEDULE_ID, scheduleId)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(playIntent)
+                context.startForegroundService(alarmIntent)
             } else {
-                context.startService(playIntent)
+                context.startService(alarmIntent)
             }
         }
 
@@ -87,7 +91,7 @@ class ScheduleReceiver : BroadcastReceiver() {
                             recordingController.startRecording(station)
 
                             if (schedule.durationMinutes > 0) {
-                                scheduleManager.scheduleRecordingStop(
+                                scheduleController.scheduleRecordingStop(
                                     stationUuid = station.stationUuid,
                                     durationMinutes = schedule.durationMinutes,
                                     keepPlayback = schedule.keepPlayback
@@ -97,7 +101,7 @@ class ScheduleReceiver : BroadcastReceiver() {
                     }
 
                     if (schedule.isRecurring) {
-                        scheduleManager.schedule(schedule)
+                        scheduleController.schedule(schedule)
                     } else {
                         scheduleRepository.updateScheduleStatus(schedule.id, false)
                     }

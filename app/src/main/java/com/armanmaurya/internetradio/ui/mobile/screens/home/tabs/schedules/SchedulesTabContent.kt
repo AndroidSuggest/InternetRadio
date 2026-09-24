@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armanmaurya.internetradio.R
-import com.armanmaurya.internetradio.data.local.entity.ScheduleType
+import com.armanmaurya.internetradio.domain.model.ScheduleType
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.components.ScheduleItem
 
 @Composable

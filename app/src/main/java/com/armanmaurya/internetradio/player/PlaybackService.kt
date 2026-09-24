@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
+import android.os.Build
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -51,9 +52,6 @@ class PlaybackService : MediaLibraryService() {
 
     @Inject
     lateinit var retryStateTracker: RetryStateTracker
-
-    @Inject
-    lateinit var scheduleRepository: com.armanmaurya.internetradio.domain.repository.ScheduleRepository
 
     @Inject
     lateinit var settingsRepository: com.armanmaurya.internetradio.domain.repository.SettingsRepository
@@ -343,9 +341,6 @@ class PlaybackService : MediaLibraryService() {
         super.onCreate()
         isRunning = true
         instance = this
-        try {
-            getSystemService(android.app.NotificationManager::class.java)?.cancel(2001)
-        } catch (_: Exception) {}
 
         // Register the widget broadcast receiver so buttons work on all OEM launchers
         val widgetFilter = android.content.IntentFilter().apply {
@@ -643,41 +638,7 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
-        if (action == "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE" || action == "com.armanmaurya.internetradio.ACTION_PLAY_STATION") {
-            try {
-                getSystemService(android.app.NotificationManager::class.java)?.cancel(2001)
-            } catch (_: Exception) {}
-
-            if (action == "com.armanmaurya.internetradio.ACTION_PLAY_SCHEDULE") {
-                val scheduleId = intent.getIntExtra(ScheduleReceiver.EXTRA_SCHEDULE_ID, -1)
-                if (scheduleId != -1) {
-                    serviceScope.launch(Dispatchers.IO) {
-                        val schedule = scheduleRepository.getScheduleById(scheduleId)
-                        if (schedule == null) {
-                            if (player?.playbackState != Player.STATE_READY) {
-                                stopForeground(true)
-                                stopSelf()
-                            }
-                            return@launch
-                        }
-                        val libraryStation = libraryRepository.getStationById(schedule.stationUuid)
-                        val prefs = settingsRepository.appPreferencesFlow.first()
-                        
-                        kotlinx.coroutines.withContext(Dispatchers.Main) {
-                            startStationPlayback(
-                                stationUuid = schedule.stationUuid,
-                                stationUrl = libraryStation?.urlResolved ?: libraryStation?.url ?: "",
-                                stationName = schedule.stationName,
-                                stationFavicon = libraryStation?.favicon ?: "",
-                                volumeLevel = schedule.volumeLevel,
-                                transitionSeconds = if (prefs.isAlarmVolumeTransitionEnabled) prefs.alarmVolumeTransitionSeconds else 0
-                            )
-                        }
-                    }
-                }
-                return super.onStartCommand(intent, flags, startId)
-            }
-
+        if (action == "com.armanmaurya.internetradio.ACTION_PLAY_STATION") {
             val stationUuid = intent.getStringExtra("STATION_UUID")
             val stationUrl = intent.getStringExtra("STATION_URL")
             val stationName = intent.getStringExtra("STATION_NAME") ?: ""
@@ -698,9 +659,6 @@ class PlaybackService : MediaLibraryService() {
         } else if (action == "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" ||
                    action == "com.armanmaurya.internetradio.ACTION_WIDGET_NEXT" ||
                    action == "com.armanmaurya.internetradio.ACTION_WIDGET_PREVIOUS") {
-            try {
-                getSystemService(android.app.NotificationManager::class.java)?.cancel(2001)
-            } catch (_: Exception) {}
             when (action) {
                 "com.armanmaurya.internetradio.ACTION_WIDGET_PLAY_PAUSE" -> {
                     val p = player

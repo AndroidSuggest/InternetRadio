@@ -1,7 +1,7 @@
 package com.armanmaurya.internetradio.data.local.converter
 
 import androidx.room.TypeConverter
-import com.armanmaurya.internetradio.data.local.entity.ScheduleType
+import com.armanmaurya.internetradio.domain.model.ScheduleType
 
 class Converters {
     @TypeConverter
