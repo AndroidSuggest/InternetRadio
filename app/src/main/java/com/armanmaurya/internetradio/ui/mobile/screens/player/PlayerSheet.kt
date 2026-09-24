@@ -75,6 +75,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.graphics.FilterQuality
 import coil3.compose.SubcomposeAsyncImage
 import com.armanmaurya.internetradio.R
+import com.armanmaurya.internetradio.domain.model.CastDevice
 import com.armanmaurya.internetradio.domain.model.LyricsState
 import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.data.local.entity.TrackHistoryEntity
@@ -165,10 +166,9 @@ fun PlayerBottomSheet(
     val lyricsState by playerViewModel.lyricsState.collectAsStateWithLifecycle()
 
     val effectivePlaybackState = if (connectedCastDevice != null) {
-        val stateName = castPlaybackState?.toString()?.uppercase() ?: ""
         playbackState.copy(
-            isPlaying = stateName.contains("PLAY"),
-            isLoading = stateName.contains("BUFFER")
+            isPlaying = castPlaybackState.isPlaying,
+            isLoading = castPlaybackState.isBuffering
         )
     } else {
         playbackState
@@ -360,11 +360,11 @@ fun PlayerSheetContent(
     amplitude: Float = 0f,
     onToggleRecording: () -> Unit,
     onSyncOffsetChange: (Long) -> Unit,
-    discoveredCastDevices: List<org.fcast.sender_sdk.DeviceInfo> = emptyList(),
-    connectedCastDevice: org.fcast.sender_sdk.CastingDevice? = null,
+    discoveredCastDevices: List<CastDevice> = emptyList(),
+    connectedCastDevice: CastDevice? = null,
     volume: Float = 1f,
     onVolumeChange: (Float) -> Unit = {},
-    onConnectCastDevice: (org.fcast.sender_sdk.DeviceInfo) -> Unit = {},
+    onConnectCastDevice: (CastDevice) -> Unit = {},
     onDisconnectCastDevice: () -> Unit = {},
     onDeleteRecording: (com.armanmaurya.internetradio.domain.model.RecordingFile) -> Unit,
     onStopRecording: (String) -> Unit = {},

@@ -29,13 +29,19 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import org.fcast.sender_sdk.DeviceInfo
+import com.armanmaurya.internetradio.domain.controller.CastController
+import com.armanmaurya.internetradio.domain.model.CastDevice
+import com.armanmaurya.internetradio.domain.model.CastPlaybackState
+import com.armanmaurya.internetradio.domain.usecase.cast.ConnectCastDeviceUseCase
+import com.armanmaurya.internetradio.domain.usecase.cast.DisconnectCastDeviceUseCase
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context,
     private val playerController: PlayerController,
-    private val castController: com.armanmaurya.internetradio.player.CastController,
+    private val castController: CastController,
+    private val connectCastDeviceUseCase: ConnectCastDeviceUseCase,
+    private val disconnectCastDeviceUseCase: DisconnectCastDeviceUseCase,
     private val libraryRepository: LibraryRepository,
     private val recentRepository: RecentRepository,
     private val stationRepository: com.armanmaurya.internetradio.domain.repository.StationRepository,
@@ -336,8 +342,7 @@ class PlayerViewModel @Inject constructor(
     fun togglePlayPause() {
         if (connectedCastDevice.value != null) {
             val state = castPlaybackState.value
-            val stateName = state.toString().uppercase()
-            if (stateName.contains("PLAY") || stateName.contains("BUFFER")) {
+            if (state.isPlaying || state.isBuffering) {
                 castController.pause()
                 playerController.pause()
             } else {
@@ -367,13 +372,13 @@ class PlayerViewModel @Inject constructor(
         playerController.cancelSleepTimer()
     }
 
-    fun connectToCastDevice(deviceInfo: DeviceInfo) {
-        castController.connectToDevice(deviceInfo)
+    fun connectToCastDevice(device: CastDevice) {
+        connectCastDeviceUseCase(device)
         playerController.setVolume(0f)
     }
 
     fun disconnectCastDevice() {
-        castController.disconnect()
+        disconnectCastDeviceUseCase()
         playerController.setVolume(1f)
         val station = playbackState.value.currentStation
         if (station != null) {

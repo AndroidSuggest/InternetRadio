@@ -30,15 +30,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.armanmaurya.internetradio.R
-import org.fcast.sender_sdk.CastingDevice
-import org.fcast.sender_sdk.DeviceInfo
+import com.armanmaurya.internetradio.domain.model.CastDevice
 
 @Composable
 fun CastDeviceDialog(
-    devices: List<DeviceInfo>,
-    connectedDevice: CastingDevice?,
-
-    onConnect: (DeviceInfo) -> Unit,
+    devices: List<CastDevice>,
+    connectedDevice: CastDevice?,
+    onConnect: (CastDevice) -> Unit,
     onDisconnect: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -79,7 +77,7 @@ fun CastDeviceDialog(
                                 .padding(bottom = 16.dp)
                         )
                         Text(
-                            text = connectedDevice.name(),
+                            text = connectedDevice.name,
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
