@@ -412,6 +412,11 @@
     <string name="schedule_add_schedule_cd">Zeitplan hinzufügen</string>
     <string name="schedule_volume">Lautstärke: %1$d%%</string>
     <string name="schedule_select_time">Uhrzeit auswählen</string>
+    <string name="schedule_dismiss">Ausschalten</string>
+    <string name="schedule_snooze">Schlummern (10m)</string>
+    <string name="schedule_alarm_channel_name">Geplante Wecker</string>
+    <string name="schedule_alarm_channel_description">Benachrichtigungen für geplante Radio-Wecker</string>
+    <string name="schedule_alarm_playing">Wecker klingelt</string>
     <string name="delete_recording">Löschen</string>
     <plurals name="delete_recordings_message">
         <item quantity="one">Soll %1$d Element wirklich gelöscht werden?</item>
