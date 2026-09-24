@@ -89,7 +89,7 @@
     <string name="settings_import_subtitle">Восстановить радиостанции из файла</string>
     <string name="about_title">О приложении</string>
     <string name="about_us">О нас</string>
-    <string name="about_app_description">Простой интернет-радиоплеер, позволяющий находить и слушать тысячи радиостанций со всего мира.</string>
+    <string name="about_app_description">Ищите и слушайте радиостанции со всего мира</string>
     <string name="about_view_contributors">Просмотреть список участников</string>
     <string name="about_view_github">Страница на GitHub</string>
     <string name="about_author">Автор</string>
@@ -142,7 +142,7 @@
     <string name="select_country_search">Поиск страны</string>
     <string name="select_country_title">Выбор страны</string>
     <string name="select_country_all">Все страны</string>
-    <string name="select_country_search_states">Выбрать область (штат)</string>
+    <string name="select_country_search_states">Выбрать область (штат)...</string>
     <string name="select_country_select_state_in">Выбрать область (штат) в %1$s</string>
     <string name="select_country_all_of">Всё в %1$s</string>
     <plurals name="select_country_states_count">
@@ -396,4 +396,17 @@
     <string name="widget_configure_presets">Пресеты</string>
     <string name="settings_widget_appearance_title">Оформление виджета</string>
     <string name="settings_widget_appearance_subtitle">Настройка прозрачности виджета и предпросмотр</string>
+    <string name="settings_show_station_thumbnails">Показывать обложку станции</string>
+    <string name="settings_show_station_thumbnails_desc">Отображать обложку станции в списке и плеере (отключите для экономии трафика и памяти)</string>
+    <string name="settings_update_section">Обновить</string>
+    <string name="settings_view_on_play_store">Страница в Play Store</string>
+    <string name="about_support">Поддержать</string>
+    <string name="about_github_sponsors">Спонсоры на GitHub</string>
+    <string name="about_buy_me_a_coffee">Подарить кофеёк</string>
+    <string name="settings_donate_section">Донат</string>
+    <string name="about_upi">UPI</string>
+    <string name="about_donate_via_upi">Задонатить через UPI</string>
+    <string name="about_upi_copied">UPI ID скопирован: %1$s</string>
+    <string name="about_cd_copy_upi">Скопировать UPI ID</string>
+    <string name="player_volume_boost_label">БУСТ</string>
 </resources>
