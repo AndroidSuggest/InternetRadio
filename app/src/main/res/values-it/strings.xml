@@ -89,7 +89,7 @@
     <string name="settings_import_subtitle">Ripristina le stazioni da un file di backup</string>
     <string name="about_title">Informazioni</string>
     <string name="about_us">Su di noi</string>
-    <string name="about_app_description">Un semplice lettore radio internet che permette di scoprire ed ascoltare migliaia di stazioni radio da tutto il mondo.</string>
+    <string name="about_app_description">Scopri e ascolta stazioni radio da tutto il mondo</string>
     <string name="about_view_contributors">Visualizza collaboratori</string>
     <string name="about_view_github">Visualizza su GitHub</string>
     <string name="about_author">Autore</string>
@@ -388,4 +388,17 @@
     <string name="settings_widget_appearance_title">Aspetto del widget</string>
     <string name="widget_configure_presets">Preset</string>
     <string name="settings_widget_appearance_subtitle">Personalizza la trasparenza del widget della schermata home e visualizza l\'anteprima</string>
+    <string name="settings_show_station_thumbnails">Mostra miniature della stazioni</string>
+    <string name="settings_show_station_thumbnails_desc">Mostra i loghi delle stazioni negli elenchi e nel lettore (disabilita per risparmiare dati e memoria)</string>
+    <string name="settings_update_section">Aggiorna</string>
+    <string name="settings_view_on_play_store">Visualizza nel Play Store</string>
+    <string name="about_support">Sostieni</string>
+    <string name="about_github_sponsors">Sostenitori GitHub</string>
+    <string name="about_buy_me_a_coffee">Offrimi un caffè</string>
+    <string name="settings_donate_section">Dona</string>
+    <string name="about_upi">UPI</string>
+    <string name="about_donate_via_upi">Dona tramite UPI</string>
+    <string name="about_upi_copied">ID UPI copiato: %1$s</string>
+    <string name="about_cd_copy_upi">Copia ID UPI</string>
+    <string name="player_volume_boost_label">BOOST</string>
 </resources>
