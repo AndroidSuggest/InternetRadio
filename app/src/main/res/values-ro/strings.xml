@@ -401,4 +401,9 @@
     <string name="about_upi_copied">ID UPI copiat: %1$s</string>
     <string name="about_cd_copy_upi">Copiază ID-ul UPI</string>
     <string name="player_volume_boost_label">BOOST</string>
+    <string name="schedule_dismiss">Respinge</string>
+    <string name="schedule_snooze">Amânare (10m)</string>
+    <string name="schedule_alarm_channel_name">Alarme programate</string>
+    <string name="schedule_alarm_channel_description">Notificări pentru alarme radio programate</string>
+    <string name="schedule_alarm_playing">Se redă alarma</string>
 </resources>
