@@ -393,4 +393,9 @@
     <string name="about_upi_copied">UPI tunnus on kopeeritud: %1$s</string>
     <string name="about_cd_copy_upi">Kopeeri UPI tunnus</string>
     <string name="player_volume_boost_label">VALJEMAKS</string>
+    <string name="schedule_dismiss">Loobu</string>
+    <string name="schedule_snooze">Uinu (10 min)</string>
+    <string name="schedule_alarm_channel_name">Ajastatud äratused</string>
+    <string name="schedule_alarm_channel_description">Teavitused ajastatud raadioäratuste jaoks</string>
+    <string name="schedule_alarm_playing">Äratus on käivitunud</string>
 </resources>
