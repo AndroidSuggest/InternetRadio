@@ -410,4 +410,9 @@
     <string name="about_upi_copied">Skopiowano identyfikator UPI: %1$s</string>
     <string name="about_cd_copy_upi">Skopiuj identyfikator UPI</string>
     <string name="player_volume_boost_label">BOOST</string>
+    <string name="schedule_dismiss">Odrzuć</string>
+    <string name="schedule_snooze">Drzemka (10 min)</string>
+    <string name="schedule_alarm_channel_name">Zaplanowane alarmy</string>
+    <string name="schedule_alarm_channel_description">Powiadomienia o zaplanowanych alarmach radiowych</string>
+    <string name="schedule_alarm_playing">Alarm jest aktywny</string>
 </resources>
