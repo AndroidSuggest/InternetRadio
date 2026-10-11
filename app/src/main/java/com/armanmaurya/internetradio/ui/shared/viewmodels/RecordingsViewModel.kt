@@ -35,6 +35,9 @@ class RecordingsViewModel @Inject constructor(
     private val _folders = MutableStateFlow<List<RecordingFolder>>(emptyList())
     val folders: StateFlow<List<RecordingFolder>> = _folders.asStateFlow()
 
+    private val _isLoaded = MutableStateFlow(false)
+    val isLoaded: StateFlow<Boolean> = _isLoaded.asStateFlow()
+
     val activeSessions: StateFlow<Map<String, RecordingSession>> = getActiveRecordingsUseCase()
 
     val libraryStationUuids: StateFlow<Set<String>> = libraryRepository.getAllStations()
@@ -42,6 +45,7 @@ class RecordingsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     init {
+        loadFolders()
         viewModelScope.launch {
             recordingRepository.recordingsChangedEvent.collect {
                 loadFolders()
@@ -52,6 +56,7 @@ class RecordingsViewModel @Inject constructor(
     fun loadFolders() {
         viewModelScope.launch {
             _folders.value = getRecordingFoldersUseCase()
+            _isLoaded.value = true
         }
     }
 

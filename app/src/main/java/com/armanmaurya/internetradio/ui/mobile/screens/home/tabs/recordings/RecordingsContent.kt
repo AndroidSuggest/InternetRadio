@@ -1,5 +1,7 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
@@ -53,9 +55,11 @@ fun RecordingsContent(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val folders by viewModel.folders.collectAsStateWithLifecycle()
+    val isFoldersLoaded by viewModel.isLoaded.collectAsStateWithLifecycle()
     val vmActiveSessions by viewModel.activeSessions.collectAsStateWithLifecycle()
     val currentActiveSessions = activeSessions ?: vmActiveSessions
-    var selectedStationName by remember { mutableStateOf<String?>(null) }
+    var selectedStationName by rememberSaveable { mutableStateOf<String?>(null) }
+    var previousStationName by rememberSaveable { mutableStateOf(selectedStationName) }
     val context = LocalContext.current
     val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
 
@@ -63,23 +67,36 @@ fun RecordingsContent(
     var selectedFolders by remember { mutableStateOf(emptySet<String>()) }
     var selectedFiles by remember { mutableStateOf(emptySet<String>()) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-    var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
+    var expandedRecordingUri by rememberSaveable { mutableStateOf<String?>(null) }
+
+    BackHandler(enabled = selectionMode || selectedStationName != null) {
+        if (selectionMode) {
+            selectionMode = false
+            selectedFolders = emptySet()
+            selectedFiles = emptySet()
+        } else if (selectedStationName != null) {
+            selectedStationName = null
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadFolders()
     }
 
-    LaunchedEffect(folders, selectedStationName) {
-        if (selectedStationName != null && folders.none { it.stationName == selectedStationName }) {
+    LaunchedEffect(folders, selectedStationName, isFoldersLoaded) {
+        if (isFoldersLoaded && selectedStationName != null && folders.none { it.stationName == selectedStationName }) {
             selectedStationName = null
         }
     }
 
     LaunchedEffect(selectedStationName) {
-        selectionMode = false
-        selectedFolders = emptySet()
-        selectedFiles = emptySet()
-        expandedRecording = null
+        if (selectedStationName != previousStationName) {
+            selectionMode = false
+            selectedFolders = emptySet()
+            selectedFiles = emptySet()
+            expandedRecordingUri = null
+            previousStationName = selectedStationName
+        }
     }
 
     if (showDeleteConfirmDialog) {
@@ -99,14 +116,14 @@ fun RecordingsContent(
                     showDeleteConfirmDialog = false
                     if (selectedStationName == null) {
                         viewModel.deleteFolders(selectedFolders.toList())
-                        expandedRecording = null
+                        expandedRecordingUri = null
                     } else {
                         val currentFolder = folders.find { it.stationName == selectedStationName }
                         if (currentFolder != null) {
                             val filesToDelete = currentFolder.recordings.filter { it.uri.toString() in selectedFiles }
                             viewModel.deleteRecordings(filesToDelete)
-                            if (selectedFiles.contains(expandedRecording?.uri?.toString())) {
-                                expandedRecording = null
+                            if (selectedFiles.contains(expandedRecordingUri)) {
+                                expandedRecordingUri = null
                             }
                         }
                     }
@@ -431,7 +448,7 @@ fun RecordingsContent(
                                 ) {
                                     currentFolder.recordings.forEach { recording ->
                                         key(recording.uri) {
-                                            val isExpanded = expandedRecording?.uri == recording.uri
+                                            val isExpanded = expandedRecordingUri == recording.uri.toString()
                                             val isSelected = recording.uri.toString() in selectedFiles
                                             RecordingFileItem(
                                                 recording = recording,
@@ -443,7 +460,7 @@ fun RecordingsContent(
                                                         if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
                                                         if (selectedFiles.isEmpty()) selectionMode = false
                                                     } else {
-                                                        expandedRecording = if (isExpanded) null else recording
+                                                        expandedRecordingUri = if (isExpanded) null else recording.uri.toString()
                                                     }
                                                 },
                                                 onLongClick = {
@@ -453,8 +470,8 @@ fun RecordingsContent(
                                                     }
                                                 },
                                                 onDelete = {
-                                                    if (expandedRecording?.uri == recording.uri) {
-                                                        expandedRecording = null
+                                                    if (expandedRecordingUri == recording.uri.toString()) {
+                                                        expandedRecordingUri = null
                                                     }
                                                     viewModel.deleteRecording(recording)
                                                 }
