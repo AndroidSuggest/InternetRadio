@@ -415,4 +415,6 @@
     <string name="schedule_alarm_channel_name">Zaplanowane alarmy</string>
     <string name="schedule_alarm_channel_description">Powiadomienia o zaplanowanych alarmach radiowych</string>
     <string name="schedule_alarm_playing">Alarm jest aktywny</string>
+    <string name="schedule_delete_title">Usuń harmonogram</string>
+    <string name="schedule_delete_confirmation">Czy na pewno chcesz usunąć ten harmonogram?</string>
 </resources>
