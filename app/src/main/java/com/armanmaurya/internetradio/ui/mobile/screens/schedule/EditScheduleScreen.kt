@@ -5,6 +5,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -136,21 +137,35 @@ fun EditScheduleScreen(
         }
     }
 
+    var isActionInProgress by remember { mutableStateOf(false) }
+
     ScheduleConfigurationForm(
         station = selectedStation,
         initialSchedule = scheduleToEdit,
         startOfWeek = appPreferences.startOfWeek,
-        onStationClick = { isSheetOpen = true },
+        isActionInProgress = isActionInProgress,
+        onStationClick = { if (!isActionInProgress) isSheetOpen = true },
         onSave = { schedule ->
-            viewModel.saveSchedule(schedule)
-            Toast.makeText(context, scheduleSavedMessage, Toast.LENGTH_SHORT).show()
-            onNavigateBack()
+            if (!isActionInProgress) {
+                isActionInProgress = true
+                viewModel.saveSchedule(schedule)
+                Toast.makeText(context, scheduleSavedMessage, Toast.LENGTH_SHORT).show()
+                onNavigateBack()
+            }
         },
-        onNavigateBack = onNavigateBack,
+        onNavigateBack = {
+            if (!isActionInProgress) {
+                isActionInProgress = true
+                onNavigateBack()
+            }
+        },
         onDelete = if (scheduleToEdit != null) { {
-            viewModel.deleteSchedule(scheduleToEdit)
-            Toast.makeText(context, scheduleDeletedMessage, Toast.LENGTH_SHORT).show()
-            onNavigateBack()
+            if (!isActionInProgress) {
+                isActionInProgress = true
+                viewModel.deleteSchedule(scheduleToEdit)
+                Toast.makeText(context, scheduleDeletedMessage, Toast.LENGTH_SHORT).show()
+                onNavigateBack()
+            }
         } } else null,
         contentPadding = contentPadding
     )
@@ -163,6 +178,7 @@ private fun ScheduleConfigurationForm(
     station: RadioStation?,
     initialSchedule: Schedule?,
     startOfWeek: StartOfWeek,
+    isActionInProgress: Boolean = false,
     onStationClick: () -> Unit,
     onSave: (Schedule) -> Unit,
     onNavigateBack: () -> Unit,
@@ -280,24 +296,68 @@ private fun ScheduleConfigurationForm(
         return com.armanmaurya.internetradio.core.utils.FormatUtils.getTimeFormat(context).format(cal.time)
     }
 
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = isActionInProgress) {
+        // Prevent back navigation while save or delete is in progress
+    }
+
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text(stringResource(R.string.schedule_delete_title)) },
+            text = { Text(stringResource(R.string.schedule_delete_confirmation)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmDialog = false
+                        onDelete?.invoke()
+                    }
+                ) {
+                    Text(stringResource(R.string.cd_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text(stringResource(R.string.general_cancel))
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
                 title = { Text(if (initialSchedule != null) stringResource(R.string.schedule_edit) else stringResource(R.string.schedule_create)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        enabled = !isActionInProgress
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
                 actions = {
                     if (onDelete != null) {
-                        IconButton(onClick = onDelete) {
-                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete), tint = MaterialTheme.colorScheme.error)
+                        IconButton(
+                            onClick = {
+                                if (!isActionInProgress) {
+                                    showDeleteConfirmDialog = true
+                                }
+                            },
+                            enabled = !isActionInProgress
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.cd_delete),
+                                tint = if (!isActionInProgress) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.error.copy(alpha = 0.38f)
+                            )
                         }
                     }
                     TextButton(
                         onClick = {
+                            if (isActionInProgress) return@TextButton
                             if (station == null) return@TextButton
             
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
@@ -332,7 +392,7 @@ private fun ScheduleConfigurationForm(
                             )
                             onSave(schedule)
                         },
-                        enabled = station != null
+                        enabled = station != null && !isActionInProgress
                     ) {
                         Text(if (initialSchedule != null) stringResource(R.string.schedule_action_save) else stringResource(R.string.schedule_action_create))
                     }
