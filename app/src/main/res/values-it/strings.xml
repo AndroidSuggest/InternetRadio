@@ -406,4 +406,6 @@
     <string name="schedule_alarm_channel_description">Notifiche per gli avvisi radio pianificati</string>
     <string name="schedule_alarm_playing">Avviso in riproduzione</string>
     <string name="schedule_snooze">Posticipa (10m)</string>
+    <string name="schedule_delete_title">Elimina programmazione</string>
+    <string name="schedule_delete_confirmation">Sei sicuro di voler eliminare questa programmazione?</string>
 </resources>
