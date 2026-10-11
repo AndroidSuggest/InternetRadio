@@ -398,4 +398,6 @@
     <string name="schedule_alarm_channel_name">Ajastatud äratused</string>
     <string name="schedule_alarm_channel_description">Teavitused ajastatud raadioäratuste jaoks</string>
     <string name="schedule_alarm_playing">Äratus on käivitunud</string>
+    <string name="schedule_delete_title">Kustuta ajastamine</string>
+    <string name="schedule_delete_confirmation">Kas oled kindel, et soovid ajastamise kustutada?</string>
 </resources>
