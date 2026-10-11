@@ -330,19 +330,24 @@ fun WidgetConfigureScreen(
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomStart)
-                                        .padding(3.dp)
-                                        .size(20.dp)
-                                        .clip(RoundedCornerShape(8.dp)),
-                                    contentAlignment = Alignment.Center
+                                        .padding(start = 6.dp, bottom = 6.dp)
                                 ) {
-                                    AsyncImage(
-                                        model = previewStationThumbUrl,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Fit,
+                                    Box(
                                         modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(RoundedCornerShape(8.dp))
-                                    )
+                                            .size(20.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(MaterialTheme.colorScheme.surface),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        AsyncImage(
+                                            model = previewStationThumbUrl,
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Fit,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(RoundedCornerShape(4.dp))
+                                        )
+                                    }
                                 }
                             }
                         }

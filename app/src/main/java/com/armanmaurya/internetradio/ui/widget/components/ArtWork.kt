@@ -40,20 +40,24 @@ fun ArtWork(
             )
             if (showStationFloating && stationArt != null) {
                 Box(
-                    modifier = GlanceModifier
-                        .padding(3.dp)
-                        .size(floatingThumbDimension)
-                        .cornerRadius(8.dp),
-                    contentAlignment = Alignment.Center
+                    modifier = GlanceModifier.padding(start = 6.dp, bottom = 6.dp)
                 ) {
-                    Image(
-                        provider = stationArt,
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
+                    Box(
                         modifier = GlanceModifier
-                            .fillMaxSize()
-                            .cornerRadius(8.dp)
-                    )
+                            .size(floatingThumbDimension)
+                            .cornerRadius(4.dp)
+                            .background(GlanceTheme.colors.surface),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            provider = stationArt,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = GlanceModifier
+                                .fillMaxSize()
+                                .cornerRadius(4.dp)
+                        )
+                    }
                 }
             }
         }
