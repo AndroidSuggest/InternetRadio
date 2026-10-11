@@ -8,6 +8,7 @@ import android.text.format.DateUtils
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -93,7 +94,7 @@ fun RecordingFileItem(
                     text = recording.fileName,
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                 )
             },
             supportingContent = {
