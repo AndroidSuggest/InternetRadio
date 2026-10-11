@@ -398,6 +398,8 @@
     <string name="schedule_record">Aufzeichnen</string>
     <string name="schedule_keep_playback_after_recording">Wiedergabe nach Aufnahme</string>
     <string name="schedule_deleted">Zeitplan gelöscht</string>
+    <string name="schedule_delete_title">Zeitplan löschen?</string>
+    <string name="schedule_delete_confirmation">Möchtest du diesen Zeitplan wirklich löschen?</string>
     <string name="schedule_saved">Zeitplan gespeichert</string>
     <string name="schedule_action_save">Speichern</string>
     <string name="schedule_action_create">Erstellen</string>
