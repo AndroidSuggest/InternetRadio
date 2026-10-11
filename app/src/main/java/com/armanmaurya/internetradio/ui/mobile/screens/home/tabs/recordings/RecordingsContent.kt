@@ -63,6 +63,7 @@ fun RecordingsContent(
     var selectedFolders by remember { mutableStateOf(emptySet<String>()) }
     var selectedFiles by remember { mutableStateOf(emptySet<String>()) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.loadFolders()
@@ -78,6 +79,7 @@ fun RecordingsContent(
         selectionMode = false
         selectedFolders = emptySet()
         selectedFiles = emptySet()
+        expandedRecording = null
     }
 
     if (showDeleteConfirmDialog) {
@@ -97,11 +99,15 @@ fun RecordingsContent(
                     showDeleteConfirmDialog = false
                     if (selectedStationName == null) {
                         viewModel.deleteFolders(selectedFolders.toList())
+                        expandedRecording = null
                     } else {
                         val currentFolder = folders.find { it.stationName == selectedStationName }
                         if (currentFolder != null) {
                             val filesToDelete = currentFolder.recordings.filter { it.uri.toString() in selectedFiles }
                             viewModel.deleteRecordings(filesToDelete)
+                            if (selectedFiles.contains(expandedRecording?.uri?.toString())) {
+                                expandedRecording = null
+                            }
                         }
                     }
                     selectionMode = false
@@ -208,7 +214,6 @@ fun RecordingsContent(
         }
         
         val libraryStationUuids by viewModel.libraryStationUuids.collectAsStateWithLifecycle()
-        var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
         
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyVerticalGrid(
@@ -292,7 +297,8 @@ fun RecordingsContent(
                                     .padding(vertical = 7.dp)
                             ) {
                                 folders.forEach { folder ->
-                                    val isSelected = folder.stationName in selectedFolders
+                                    key(folder.stationName) {
+                                        val isSelected = folder.stationName in selectedFolders
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -381,7 +387,8 @@ fun RecordingsContent(
                                     }
                                 }
                             }
-                        } else {
+                        }
+                    } else {
                             // Show Files in Folder
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Row(
@@ -417,39 +424,42 @@ fun RecordingsContent(
                                     }
                                 }
                                 
-                                var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
-                                
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(bottom = 16.dp)
                                 ) {
                                     currentFolder.recordings.forEach { recording ->
-                                        val isExpanded = expandedRecording?.uri == recording.uri
-                                        val isSelected = recording.uri.toString() in selectedFiles
-                                        RecordingFileItem(
-                                            recording = recording,
-                                            isExpanded = isExpanded,
-                                            isSelected = isSelected,
-                                            selectionMode = selectionMode,
-                                            onClick = {
-                                                if (selectionMode) {
-                                                    if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
-                                                    if (selectedFiles.isEmpty()) selectionMode = false
-                                                } else {
-                                                    expandedRecording = if (isExpanded) null else recording
+                                        key(recording.uri) {
+                                            val isExpanded = expandedRecording?.uri == recording.uri
+                                            val isSelected = recording.uri.toString() in selectedFiles
+                                            RecordingFileItem(
+                                                recording = recording,
+                                                isExpanded = isExpanded,
+                                                isSelected = isSelected,
+                                                selectionMode = selectionMode,
+                                                onClick = {
+                                                    if (selectionMode) {
+                                                        if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
+                                                        if (selectedFiles.isEmpty()) selectionMode = false
+                                                    } else {
+                                                        expandedRecording = if (isExpanded) null else recording
+                                                    }
+                                                },
+                                                onLongClick = {
+                                                    if (!selectionMode) {
+                                                        selectionMode = true
+                                                        selectedFiles += recording.uri.toString()
+                                                    }
+                                                },
+                                                onDelete = {
+                                                    if (expandedRecording?.uri == recording.uri) {
+                                                        expandedRecording = null
+                                                    }
+                                                    viewModel.deleteRecording(recording)
                                                 }
-                                            },
-                                            onLongClick = {
-                                                if (!selectionMode) {
-                                                    selectionMode = true
-                                                    selectedFiles += recording.uri.toString()
-                                                }
-                                            },
-                                            onDelete = {
-                                                viewModel.deleteRecording(recording)
-                                            }
-                                        )
+                                            )
+                                        }
                                     }
                                 }
                             }

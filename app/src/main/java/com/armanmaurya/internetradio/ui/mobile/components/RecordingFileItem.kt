@@ -53,8 +53,8 @@ fun RecordingFileItem(
         DateUtils.FORMAT_ABBREV_RELATIVE
     ).toString()
 
-    var showMenu by remember { mutableStateOf(false) }
-    var isDeleting by remember { mutableStateOf(false) }
+    var showMenu by remember(recording.uri) { mutableStateOf(false) }
+    var isDeleting by remember(recording.uri) { mutableStateOf(false) }
     val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
 
     val alpha by androidx.compose.animation.core.animateFloatAsState(

@@ -108,7 +108,12 @@ fun RecordingsTab(
                             onClick = {
                                 expandedRecording = if (isExpanded) null else recording
                             },
-                            onDelete = { onDeleteRecording(recording) },
+                            onDelete = {
+                                if (expandedRecording?.uri == recording.uri) {
+                                    expandedRecording = null
+                                }
+                                onDeleteRecording(recording)
+                            },
                             modifier = Modifier.animateItem()
                         )
                     }
