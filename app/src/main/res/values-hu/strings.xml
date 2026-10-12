@@ -422,4 +422,23 @@
     <string name="widget_configure_presets">Előbeállítások</string>
     <string name="settings_widget_appearance_title">Widget megjelenése</string>
     <string name="settings_widget_appearance_subtitle">A kezdőképernyő widgetje átlátszóságának és előnézetének testreszabása</string>
+    <string name="settings_show_station_thumbnails">Állomások indexképeinek megjelenítése</string>
+    <string name="settings_show_station_thumbnails_desc">Az állomáslogók megjelenítése a listákban és a lejátszóban (kapcsold ki az adatforgalom és a memóriahasználat csökkentéséhez)</string>
+    <string name="settings_update_section">Frissítés</string>
+    <string name="settings_view_on_play_store">Megtekintés a Play Áruházban</string>
+    <string name="about_support">Támogatás</string>
+    <string name="about_buy_me_a_coffee">Vegyél nekem egy kávét</string>
+    <string name="settings_donate_section">Adományozás</string>
+    <string name="about_upi">UPI</string>
+    <string name="about_donate_via_upi">Adományozás UPI-n keresztül</string>
+    <string name="about_upi_copied">UPI-azonosító másolva: %1$s</string>
+    <string name="about_cd_copy_upi">UPI-azonosító másolása</string>
+    <string name="player_volume_boost_label">Hangerőnövelés</string>
+    <string name="schedule_delete_title">Időzítés törlése</string>
+    <string name="schedule_delete_confirmation">Biztosan törölni szeretnéd ezt az időzítést?</string>
+    <string name="schedule_dismiss">Bezárás</string>
+    <string name="schedule_snooze">Elhalasztás (10 perc)</string>
+    <string name="schedule_alarm_channel_name">Ütemezett ébresztések</string>
+    <string name="schedule_alarm_channel_description">Értesítések az időzített rádiós ébresztésekhez</string>
+    <string name="schedule_alarm_playing">Az ébresztés szól</string>
 </resources>
