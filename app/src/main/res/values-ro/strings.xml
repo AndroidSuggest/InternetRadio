@@ -406,4 +406,6 @@
     <string name="schedule_alarm_channel_name">Alarme programate</string>
     <string name="schedule_alarm_channel_description">Notificări pentru alarme radio programate</string>
     <string name="schedule_alarm_playing">Se redă alarma</string>
+    <string name="schedule_delete_title">Șterge programarea</string>
+    <string name="schedule_delete_confirmation">Ești sigur că vrei să ștergi acest program?</string>
 </resources>
