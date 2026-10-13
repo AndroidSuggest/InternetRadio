@@ -557,7 +557,7 @@ fun PlayerSheetContent(
         val playlist = if (playbackState.currentPlaylist.isEmpty()) listOfNotNull(station) else playbackState.currentPlaylist
         val playlistSize = playlist.size
         
-        val isInfinite = playbackState.playbackSource !is PlaybackSource.Browse && playlistSize > 1
+        val isInfinite = playlistSize > 1
         val pageCount = if (isInfinite) Int.MAX_VALUE else playlistSize
         val startIndex = playbackState.currentPlaylistIndex.coerceAtLeast(0)
         
@@ -578,7 +578,11 @@ fun PlayerSheetContent(
         LaunchedEffect(playbackState.currentPlaylistIndex, playlistSize) {
             val targetIndex = playbackState.currentPlaylistIndex
             if (targetIndex >= 0 && playlistSize > 0) {
-                val currentIndex = if (isInfinite) pagerState.currentPage % playlistSize else pagerState.currentPage
+                val currentIndex = if (isInfinite) {
+                    ((pagerState.currentPage % playlistSize) + playlistSize) % playlistSize
+                } else {
+                    pagerState.currentPage
+                }
                 if (targetIndex != currentIndex) {
                     if (isInfinite) {
                         var diff = targetIndex - currentIndex
@@ -595,7 +599,11 @@ fun PlayerSheetContent(
 
         LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
             if (!pagerState.isScrollInProgress && playlistSize > 1) {
-                val currentIndex = if (isInfinite) pagerState.currentPage % playlistSize else pagerState.currentPage
+                val currentIndex = if (isInfinite) {
+                    ((pagerState.currentPage % playlistSize) + playlistSize) % playlistSize
+                } else {
+                    pagerState.currentPage
+                }
                 if (currentIndex != playbackState.currentPlaylistIndex) {
                     onPlayIndex(currentIndex)
                 }
@@ -626,7 +634,12 @@ fun PlayerSheetContent(
                     },
                 userScrollEnabled = progress > 0.5f // Only allow swiping when expanded
             ) { page ->
-            val pageStation = if (isInfinite && playlistSize > 0) playlist.getOrNull(page % playlistSize) ?: station else playlist.getOrNull(page) ?: station
+            val pageIndex = if (isInfinite && playlistSize > 0) {
+                ((page % playlistSize) + playlistSize) % playlistSize
+            } else {
+                page
+            }
+            val pageStation = playlist.getOrNull(pageIndex) ?: station
             val isCurrentPlayingStation = pageStation.stationUuid == station.stationUuid
             
             val hasCoverArt = !playbackState.trackCoverArtUri.isNullOrBlank()

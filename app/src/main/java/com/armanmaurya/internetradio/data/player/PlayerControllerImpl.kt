@@ -352,6 +352,15 @@ class PlayerControllerImpl @Inject constructor(
                 val currentIndex = it.currentMediaItemIndex
                 if (currentItem != null) {
                     val originalId = currentItem.mediaId.substringAfter("|")
+                    if (currentPlaylist.isEmpty() && it.mediaItemCount > 0) {
+                        val mediaStations = (0 until it.mediaItemCount).mapNotNull { idx ->
+                            it.getMediaItemAt(idx).localConfiguration?.tag as? RadioStation
+                        }
+                        if (mediaStations.size == it.mediaItemCount) {
+                            currentPlaylist = mediaStations
+                        }
+                    }
+
                     val station = currentPlaylist.find { s -> s.stationUuid == originalId }
                         ?: currentItem.localConfiguration?.tag as? RadioStation
 
@@ -364,6 +373,14 @@ class PlayerControllerImpl @Inject constructor(
                                 currentPlaylist = currentPlaylist,
                                 currentPlaylistIndex = currentIndex
                             )
+                        }
+                    }
+                    if (currentPlaylist.isEmpty()) {
+                        scope.launch {
+                            val dbStation = station ?: libraryRepository.getStationById(originalId)
+                            if (dbStation != null) {
+                                linkSingleItemToContext(dbStation)
+                            }
                         }
                     }
                     handleMetadataChanged(currentItem.mediaMetadata)
@@ -473,6 +490,9 @@ class PlayerControllerImpl @Inject constructor(
         if (player.hasNextMediaItem()) {
             player.seekToNextMediaItem()
             player.play()
+        } else if (player.mediaItemCount > 1) {
+            player.seekToDefaultPosition(0)
+            player.play()
         }
     }
 
@@ -480,6 +500,9 @@ class PlayerControllerImpl @Inject constructor(
         val player = controller ?: return
         if (player.hasPreviousMediaItem()) {
             player.seekToPreviousMediaItem()
+            player.play()
+        } else if (player.mediaItemCount > 1) {
+            player.seekToDefaultPosition(player.mediaItemCount - 1)
             player.play()
         }
     }

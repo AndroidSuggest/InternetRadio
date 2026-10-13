@@ -270,8 +270,8 @@ class PlayerViewModel @Inject constructor(
         val isCasting = cast.connectedDevice != null
         val effectiveIsPlaying = if (isCasting) cast.playbackState.isPlaying else session.isPlaying
         val effectiveIsLoading = if (isCasting) cast.playbackState.isBuffering else base.isBuffering
-        val hasNext = session.currentPlaylist.isNotEmpty() && session.currentPlaylistIndex < session.currentPlaylist.size - 1
-        val hasPrevious = session.currentPlaylist.isNotEmpty() && session.currentPlaylistIndex > 0
+        val hasNext = session.currentPlaylist.size > 1
+        val hasPrevious = session.currentPlaylist.size > 1
 
         PlayerUiState(
             currentStation = session.currentStation,
