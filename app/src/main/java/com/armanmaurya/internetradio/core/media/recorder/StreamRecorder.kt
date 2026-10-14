@@ -1,9 +1,11 @@
 package com.armanmaurya.internetradio.core.media.recorder
 
+import android.content.Context
 import com.armanmaurya.internetradio.core.media.recorder.backend.DirectStreamRecorder
 import com.armanmaurya.internetradio.core.media.recorder.backend.HlsStreamRecorder
 import com.armanmaurya.internetradio.core.system.FileSystemFacade
 import com.armanmaurya.internetradio.core.utils.AudioFormatUtils
+import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import javax.inject.Inject
@@ -19,14 +21,15 @@ interface StreamRecorder {
 @Singleton
 class DefaultStreamRecorder @Inject constructor(
     private val okHttpClient: OkHttpClient,
-    private val fileSystemFacade: FileSystemFacade
+    private val fileSystemFacade: FileSystemFacade,
+    @ApplicationContext private val context: Context
 ) : StreamRecorder {
 
     override suspend fun record(
         config: RecordingConfig,
         onBytesWritten: (bytes: Long) -> Unit
     ) {
-        val sink = RecordingSink(fileSystemFacade, config.title)
+        val sink = RecordingSink(fileSystemFacade, config.title, context)
         try {
             if (isHls(config.url)) {
                 HlsStreamRecorder(okHttpClient).record(config, sink, onBytesWritten)

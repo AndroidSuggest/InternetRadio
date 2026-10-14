@@ -32,9 +32,10 @@ object MediaModule {
     @Singleton
     fun provideStreamRecorder(
         okHttpClient: OkHttpClient,
-        fileSystemFacade: FileSystemFacade
+        fileSystemFacade: FileSystemFacade,
+        @ApplicationContext context: Context
     ): StreamRecorder {
-        return DefaultStreamRecorder(okHttpClient, fileSystemFacade)
+        return DefaultStreamRecorder(okHttpClient, fileSystemFacade, context)
     }
 }
 

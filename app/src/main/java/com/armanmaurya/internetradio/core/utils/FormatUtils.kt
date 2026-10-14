@@ -4,6 +4,9 @@ import android.content.Context
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
+import java.util.Date
+import java.util.Locale
+
 object FormatUtils {
     /**
      * Returns a time format that respects the user's 12/24 hour preference,
@@ -17,5 +20,24 @@ object FormatUtils {
             format.dateFormatSymbols = symbols
         }
         return format
+    }
+
+    /**
+     * Returns a recording file timestamp respecting the user's 12/24 hour preference.
+     * Uses '-' instead of ':' for filesystem compatibility.
+     */
+    fun getRecordingTimestamp(
+        context: Context? = null,
+        date: Date = Date(),
+        is24Hour: Boolean = context?.let { android.text.format.DateFormat.is24HourFormat(it) } ?: false
+    ): String {
+        val pattern = if (is24Hour) "d MMMM yyyy HH-mm" else "d MMMM yyyy hh-mm a"
+        val sdf = SimpleDateFormat(pattern, Locale.getDefault())
+        if (!is24Hour) {
+            val symbols = sdf.dateFormatSymbols
+            symbols.amPmStrings = arrayOf("AM", "PM")
+            sdf.dateFormatSymbols = symbols
+        }
+        return sdf.format(date)
     }
 }
