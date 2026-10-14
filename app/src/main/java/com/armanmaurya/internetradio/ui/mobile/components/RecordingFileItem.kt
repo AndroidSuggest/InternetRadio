@@ -157,7 +157,7 @@ fun RecordingFileItem(
             )
         )
         
-        if (isExpanded && !selectionMode) {
+        if (isExpanded) {
             InlineMediaPlayer(
                 uri = recording.uri,
                 initialDurationMs = recording.durationMs
