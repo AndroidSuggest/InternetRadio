@@ -285,7 +285,7 @@ class PlayerControllerImpl @Inject constructor(
 
         val trackInfo = mediaMetadata.extras?.getString("icy_title")
             ?: if (!title.isNullOrBlank() && !artist.isNullOrBlank()) {
-                "$artist - $title"
+                "$title - $artist"
             } else if (!title.isNullOrBlank()) {
                 title
             } else if (!artist.isNullOrBlank()) {
@@ -308,8 +308,8 @@ class PlayerControllerImpl @Inject constructor(
                 currentTrack = trackInfo, 
                 trackStartTime = exactStartTime,
                 trackCoverArtUri = artworkUri,
-                cleanTrackName = cleanTrackName,
-                cleanArtistName = cleanArtistName,
+                cleanTrackName = cleanTrackName ?: title,
+                cleanArtistName = cleanArtistName ?: artist,
                 rawTrackName = rawTrackName
             ) }
         } else {

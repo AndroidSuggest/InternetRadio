@@ -98,6 +98,7 @@ class TrackObserver @Inject constructor(
 
         val baseExtras = currentMediaItem.mediaMetadata.extras?.let { Bundle(it) } ?: Bundle()
         baseExtras.remove("track_cover_art_url")
+        baseExtras.putString("raw_track_name", track)
 
         val baseMetadata = currentMediaItem.mediaMetadata.buildUpon()
             .setTitle(track)
@@ -128,7 +129,7 @@ class TrackObserver @Inject constructor(
                 val coverArtUrl = trackMetadata?.coverArtUrl?.takeIf { it.isNotBlank() }
 
                 if (trackId != null) {
-                    val cleanedTitle = if (artistName != null) "$artistName - $trackName" else trackName
+                    val cleanedTitle = if (artistName != null) "$trackName - $artistName" else trackName
                     trackHistoryRepository.updateTrackMetadata(trackId, cleanedTitle, coverArtUrl)
                 }
 
@@ -143,6 +144,13 @@ class TrackObserver @Inject constructor(
                     finalExtras.putString("track_cover_art_url", coverArtUrl)
                 } else {
                     finalExtras.remove("track_cover_art_url")
+                }
+                finalExtras.putString("raw_track_name", track)
+                if (trackName.isNotBlank()) {
+                    finalExtras.putString("clean_track_name", trackName)
+                }
+                if (!artistName.isNullOrBlank()) {
+                    finalExtras.putString("clean_artist_name", artistName)
                 }
 
                 val finalMetadata = currentMediaItem.mediaMetadata.buildUpon()
