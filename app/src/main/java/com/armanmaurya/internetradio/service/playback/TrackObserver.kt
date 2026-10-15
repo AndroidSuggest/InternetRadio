@@ -11,6 +11,7 @@ import androidx.media3.common.Metadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import com.armanmaurya.internetradio.core.media.player.TrackParser
+import com.armanmaurya.internetradio.core.utils.TrackSanitizer
 import com.armanmaurya.internetradio.domain.repository.CoverArtRepository
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.domain.repository.TrackHistoryRepository
@@ -86,10 +87,13 @@ class TrackObserver @Inject constructor(
 
     @OptIn(UnstableApi::class)
     override fun onMetadata(metadata: Metadata) {
-        val track = TrackParser.parse(metadata)
-        if (lastTrack == track || track.isNullOrBlank()) return
+        val rawTrack = TrackParser.parse(metadata)
+        if (lastTrack == rawTrack || rawTrack.isNullOrBlank()) return
 
-        lastTrack = track
+        lastTrack = rawTrack
+        val track = TrackSanitizer.sanitize(rawTrack)
+        if (track.isBlank()) return
+
         val currentPlayer = attachedPlayer ?: return
         val currentMediaItem = currentPlayer.currentMediaItem ?: return
         val stationUuid = currentMediaItem.mediaId
@@ -98,7 +102,7 @@ class TrackObserver @Inject constructor(
 
         val baseExtras = currentMediaItem.mediaMetadata.extras?.let { Bundle(it) } ?: Bundle()
         baseExtras.remove("track_cover_art_url")
-        baseExtras.putString("raw_track_name", track)
+        baseExtras.putString("raw_track_name", rawTrack)
 
         val baseMetadata = currentMediaItem.mediaMetadata.buildUpon()
             .setTitle(track)
@@ -122,7 +126,7 @@ class TrackObserver @Inject constructor(
                     coverArtRepository.getTrackMetadata(track)
                 }
 
-                if (lastTrack != track) return@launch
+                if (lastTrack != rawTrack) return@launch
 
                 val trackName = trackMetadata?.trackName?.takeIf { it.isNotBlank() } ?: track
                 val artistName = trackMetadata?.artistName?.takeIf { it.isNotBlank() }
@@ -145,7 +149,7 @@ class TrackObserver @Inject constructor(
                 } else {
                     finalExtras.remove("track_cover_art_url")
                 }
-                finalExtras.putString("raw_track_name", track)
+                finalExtras.putString("raw_track_name", rawTrack)
                 if (trackName.isNotBlank()) {
                     finalExtras.putString("clean_track_name", trackName)
                 }
