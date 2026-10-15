@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -96,13 +97,17 @@ import com.armanmaurya.internetradio.ui.shared.viewmodels.PlayerViewModel
 import android.view.WindowManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
-fun Modifier.collapseHeight(progress: Float) = this.layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints)
-    val height = (placeable.height * (1f - progress)).toInt().coerceAtLeast(0)
-    layout(placeable.width, height) {
-        placeable.placeRelative(0, (height - placeable.height) / 2) // center vertically while collapsing
+fun Modifier.collapseHeight(progress: Float) = this
+    .clipToBounds()
+    .layout { measurable, constraints ->
+        val placeable = measurable.measure(constraints)
+        val height = (placeable.height * (1f - progress)).toInt().coerceAtLeast(0)
+        layout(placeable.width, height) {
+            if (height > 0) {
+                placeable.placeRelative(0, (height - placeable.height) / 2) // center vertically while collapsing
+            }
+        }
     }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -910,130 +915,139 @@ fun PlayerSheetContent(
                     .alpha((progress - 0.2f).coerceIn(0f, 0.8f) * 1.25f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                        .collapseHeight(historyProgress)
-                        .alpha(1f - historyProgress)
-                ) {
-                    FilledTonalIconButton(
-                        onClick = onCollapse,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(start = 16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = stringResource(R.string.player_cd_collapse),
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(onClick = { showCastDialog = true }) {
-                            Icon(
-                                imageVector = if (connectedCastDevice != null) Icons.Default.CastConnected else Icons.Default.Cast,
-                                contentDescription = stringResource(R.string.player_cd_cast),
-                                modifier = Modifier.size(28.dp),
-                                tint = if (connectedCastDevice != null) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                            )
-                        }
-
-                        IconButton(onClick = onToggleFavorite) {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                                contentDescription = stringResource(R.string.player_cd_toggle_favorite),
-                                modifier = Modifier.size(32.dp),
-                                tint = if (isFavorite) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                            )
-                        }
-                    }
-                    
-                    val sessionActiveDurationMs = playbackState.sessionActiveDurationMs
-                    val sessionResumeTimeMs = playbackState.sessionResumeTimeMs
-                    
-                    var timerSeconds by remember { mutableLongStateOf(0L) }
-
-                    LaunchedEffect(sessionActiveDurationMs, sessionResumeTimeMs, playbackState.isPlaying, playbackState.isLoading) {
-                        if (playbackState.isPlaying && !playbackState.isLoading && sessionResumeTimeMs != null) {
-                            while (true) {
-                                val currentElapsedMs = sessionActiveDurationMs + (System.currentTimeMillis() - sessionResumeTimeMs)
-                                timerSeconds = (currentElapsedMs / 1000).coerceAtLeast(0L)
-                                delay(1000L)
-                            }
-                        } else {
-                            timerSeconds = (sessionActiveDurationMs / 1000).coerceAtLeast(0L)
-                        }
-                    }
-
-                    val hours = timerSeconds / 3600
-                    val minutes = (timerSeconds % 3600) / 60
-                    val seconds = timerSeconds % 60
-                    val timerString = if (hours > 0) {
-                        String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
-                    } else {
-                        String.format(Locale.US, "%02d:%02d", minutes, seconds)
-                    }
-
+                if (historyProgress < 1f) {
                     Box(
-                        contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable(enabled = hasInfo) { userToggledTimer = !userToggledTimer }
-                            .animateContentSize()
-                            .padding(
-                                start = 12.dp,
-                                end = if (hasInfo) 8.dp else 12.dp,
-                                top = 6.dp,
-                                bottom = 6.dp
-                            )
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .collapseHeight(historyProgress)
+                            .alpha(1f - historyProgress)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        FilledTonalIconButton(
+                            onClick = onCollapse,
+                            enabled = historyProgress == 0f,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(start = 16.dp)
                         ) {
-                            AnimatedContent(
-                                targetState = showTimer,
-                                label = "TimerTransition"
-                            ) { isShowingTimer ->
-                                if (isShowingTimer) {
-                                    Text(
-                                        text = timerString,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                } else {
-                                    val infoText = if (hasBitrate && hasCodec) {
-                                        stringResource(R.string.player_station_codec_bitrate, displayCodec.uppercase(), displayBitrate.toString())
-                                    } else if (hasBitrate) {
-                                        stringResource(R.string.player_station_bitrate_only, displayBitrate.toString())
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = stringResource(R.string.player_cd_collapse),
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { showCastDialog = true },
+                                enabled = historyProgress == 0f
+                            ) {
+                                Icon(
+                                    imageVector = if (connectedCastDevice != null) Icons.Default.CastConnected else Icons.Default.Cast,
+                                    contentDescription = stringResource(R.string.player_cd_cast),
+                                    modifier = Modifier.size(28.dp),
+                                    tint = if (connectedCastDevice != null) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                )
+                            }
+
+                            IconButton(
+                                onClick = onToggleFavorite,
+                                enabled = historyProgress == 0f
+                            ) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                                    contentDescription = stringResource(R.string.player_cd_toggle_favorite),
+                                    modifier = Modifier.size(32.dp),
+                                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                )
+                            }
+                        }
+                        
+                        val sessionActiveDurationMs = playbackState.sessionActiveDurationMs
+                        val sessionResumeTimeMs = playbackState.sessionResumeTimeMs
+                        
+                        var timerSeconds by remember { mutableLongStateOf(0L) }
+
+                        LaunchedEffect(sessionActiveDurationMs, sessionResumeTimeMs, playbackState.isPlaying, playbackState.isLoading) {
+                            if (playbackState.isPlaying && !playbackState.isLoading && sessionResumeTimeMs != null) {
+                                while (true) {
+                                    val currentElapsedMs = sessionActiveDurationMs + (System.currentTimeMillis() - sessionResumeTimeMs)
+                                    timerSeconds = (currentElapsedMs / 1000).coerceAtLeast(0L)
+                                    delay(1000L)
+                                }
+                            } else {
+                                timerSeconds = (sessionActiveDurationMs / 1000).coerceAtLeast(0L)
+                            }
+                        }
+
+                        val hours = timerSeconds / 3600
+                        val minutes = (timerSeconds % 3600) / 60
+                        val seconds = timerSeconds % 60
+                        val timerString = if (hours > 0) {
+                            String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
+                        } else {
+                            String.format(Locale.US, "%02d:%02d", minutes, seconds)
+                        }
+
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable(enabled = hasInfo && historyProgress == 0f) { userToggledTimer = !userToggledTimer }
+                                .animateContentSize()
+                                .padding(
+                                    start = 12.dp,
+                                    end = if (hasInfo) 8.dp else 12.dp,
+                                    top = 6.dp,
+                                    bottom = 6.dp
+                                )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                AnimatedContent(
+                                    targetState = showTimer,
+                                    label = "TimerTransition"
+                                ) { isShowingTimer ->
+                                    if (isShowingTimer) {
+                                        Text(
+                                            text = timerString,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     } else {
-                                        displayCodec.uppercase()
+                                        val infoText = if (hasBitrate && hasCodec) {
+                                            stringResource(R.string.player_station_codec_bitrate, displayCodec.uppercase(), displayBitrate.toString())
+                                        } else if (hasBitrate) {
+                                            stringResource(R.string.player_station_bitrate_only, displayBitrate.toString())
+                                        } else {
+                                            displayCodec.uppercase()
+                                        }
+                                        Text(
+                                            text = infoText,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
-                                    Text(
-                                        text = infoText,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                                if (hasInfo) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowRight,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-                            }
-                            if (hasInfo) {
-                                Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
                             }
                         }
                     }
