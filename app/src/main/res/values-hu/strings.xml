@@ -94,7 +94,7 @@
     <!-- ========================================== -->
     <string name="about_title">Névjegy</string>
     <string name="about_us">Rólunk</string>
-    <string name="about_app_description">Egy egyszerű internetes rádiólejátszó, amellyel több ezer rádióállomást fedezhetsz fel és hallgathatsz a világ minden tájáról.</string>
+    <string name="about_app_description">Fedezz fel és hallgass rádióállomásokat a világ minden tájáról</string>
     <string name="about_view_contributors">Közreműködők</string>
     <string name="about_view_github">Megtekintés GitHubon</string>
     <string name="about_author">Szerző</string>
@@ -441,4 +441,5 @@
     <string name="schedule_alarm_channel_name">Ütemezett ébresztések</string>
     <string name="schedule_alarm_channel_description">Értesítések az időzített rádiós ébresztésekhez</string>
     <string name="schedule_alarm_playing">Az ébresztés szól</string>
+    <string name="about_github_sponsors">GitHub-támogatók</string>
 </resources>
