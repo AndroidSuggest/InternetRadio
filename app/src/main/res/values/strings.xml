@@ -126,9 +126,29 @@
     <string name="settings_theme_system">System Default</string>
 
     <!-- ========================================== -->
-    <!-- 5b. BACKUP & RESTORE                       -->
-    <!-- ========================================== -->
     <string name="settings_backup_section">Backup &amp; Restore</string>
+    <string name="settings_auto_sync_title">Auto Sync</string>
+    <string name="settings_auto_sync_subtitle">Keep your library synced</string>
+    <string name="settings_sync_status_syncing">Syncing...</string>
+    <string name="settings_sync_status_success">Last synced: %1$s</string>
+    <string name="settings_sync_status_failed">Sync failed: %1$s</string>
+    <string name="settings_sync_status_no_folder">Select a folder to start syncing</string>
+    <string name="settings_sync_status_never">Not synced yet</string>
+    <string name="settings_folder_title">Folder</string>
+    <string name="settings_folder_select">Choose a folder (e.g. Google Drive)</string>
+    <string name="settings_folder_selected">Selected folder: %1$s</string>
+    <string name="settings_folder_error">Failed to select folder: %1$s</string>
+    <string name="settings_folder_cleared">Folder disconnected</string>
+    <string name="settings_clear_folder">Disconnect folder</string>
+    <string name="settings_sync_now">Sync now</string>
+    <string name="settings_malformed_backup_title">Corrupted Backup File</string>
+    <string name="settings_malformed_backup_desc">The backup file (stations.json) in your selected folder is corrupted or contains invalid data. How would you like to proceed?</string>
+    <string name="settings_malformed_backup_overwrite">Overwrite with current library</string>
+    <string name="settings_malformed_backup_overwrite_desc">Replace the damaged file with your %1$d local stations</string>
+    <string name="settings_malformed_backup_choose_folder">Choose another folder</string>
+    <string name="settings_malformed_backup_choose_folder_desc">Select a different folder or backup location</string>
+    <string name="settings_malformed_backup_cancel">Keep file untouched</string>
+    <string name="settings_malformed_backup_overwritten">Backup replaced with current library</string>
     <string name="settings_conflict_title">When a conflict occurs</string>
     <string name="settings_conflict_skip">Skip existing</string>
     <string name="settings_conflict_skip_desc">Keep your current version</string>

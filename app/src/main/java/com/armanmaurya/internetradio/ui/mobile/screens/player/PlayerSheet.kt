@@ -110,6 +110,24 @@ fun Modifier.collapseHeight(progress: Float) = this
     }
 
 @OptIn(ExperimentalMaterial3Api::class)
+fun calculatePlayerSheetProgress(
+    currentValue: SheetValue,
+    targetValue: SheetValue,
+    currentOffset: Float?,
+    screenHeightPx: Float,
+    peekHeightPx: Float
+): Float {
+    if (currentValue == SheetValue.Expanded && targetValue == SheetValue.Expanded) return 1f
+    if (currentOffset == null) {
+        return if (targetValue == SheetValue.Expanded) 1f else 0f
+    }
+    if (currentOffset <= 0f) return 1f
+    val totalRange = screenHeightPx - peekHeightPx
+    if (totalRange <= 0f) return if (targetValue == SheetValue.Expanded) 1f else 0f
+    return (1f - (currentOffset / totalRange)).coerceIn(0f, 1f)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun rememberPlayerSheetProgress(
     scaffoldState: BottomSheetScaffoldState,
@@ -129,15 +147,16 @@ fun rememberPlayerSheetProgress(
             val currentOffset = try {
                 scaffoldState.bottomSheetState.requireOffset()
             } catch (e: Exception) {
-                fullHeight - peekHeightPx
+                null
             }
 
-            val totalRange = fullHeight - peekHeightPx
-            if (totalRange > 0) {
-                (1f - (currentOffset / totalRange)).coerceIn(0f, 1f)
-            } else {
-                0f
-            }
+            calculatePlayerSheetProgress(
+                currentValue = scaffoldState.bottomSheetState.currentValue,
+                targetValue = scaffoldState.bottomSheetState.targetValue,
+                currentOffset = currentOffset,
+                screenHeightPx = fullHeight,
+                peekHeightPx = peekHeightPx
+            )
         }
     }
 }

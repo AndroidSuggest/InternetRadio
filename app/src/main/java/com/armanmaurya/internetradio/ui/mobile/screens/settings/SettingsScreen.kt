@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.settings
 
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -48,10 +49,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
 import kotlin.math.roundToInt
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.CloudSync
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Search
@@ -68,6 +82,7 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Widgets
 import com.armanmaurya.internetradio.ui.widget.NowPlayingWidgetConfigureActivity
+import com.armanmaurya.internetradio.ui.mobile.screens.settings.components.MalformedBackupBottomSheet
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.AlertDialog
@@ -125,6 +140,9 @@ fun SettingsScreen(
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isSyncing by viewModel.isSyncing.collectAsState()
+    val showMalformedBackupBottomSheet by viewModel.showMalformedBackupBottomSheet.collectAsState()
+    val localStationsCount by viewModel.localStationsCount.collectAsState()
 
     // UI-only state for expand/collapse
     var expandedItem by remember { mutableStateOf<String?>(null) }
@@ -159,6 +177,11 @@ fun SettingsScreen(
         if (uris.isNotEmpty()) {
             viewModel.importLibraries(context, uris)
         }
+    }
+    val autoBackupFolderLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let { viewModel.setAutoBackupFolder(context, it) }
     }
 
     val topShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
@@ -242,12 +265,18 @@ fun SettingsScreen(
             )
             BackupSection(
                 uiState = uiState,
+                isSyncing = isSyncing,
                 expandedItem = expandedItem,
                 onExpandedItemChange = { expandedItem = it },
                 onSetConflictStrategy = viewModel::setConflictStrategy,
                 onExport = { exportLauncher.launch("stations.json") },
                 onImport = { importLauncher.launch(arrayOf("application/json")) },
+                onSelectAutoBackupFolder = { autoBackupFolderLauncher.launch(null) },
+                onToggleAutoBackup = viewModel::setAutoBackupEnabled,
+                onClearAutoBackupFolder = { viewModel.clearAutoBackupFolder(context) },
+                onSyncNow = { viewModel.syncNow(context) },
                 topShape = topShape,
+                middleShape = middleShape,
                 bottomShape = bottomShape
             )
             UpdateSection(
@@ -273,6 +302,18 @@ fun SettingsScreen(
 
             androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    if (showMalformedBackupBottomSheet) {
+        MalformedBackupBottomSheet(
+            localStationCount = localStationsCount,
+            onDismissRequest = viewModel::dismissMalformedBackupBottomSheet,
+            onOverwriteWithCurrentLibrary = { viewModel.overwriteMalformedBackup(context) },
+            onChooseAnotherFolder = {
+                viewModel.dismissMalformedBackupBottomSheet()
+                autoBackupFolderLauncher.launch(null)
+            }
+        )
     }
 }
 
@@ -1061,12 +1102,18 @@ private fun DonateSection() {
 @Composable
 private fun BackupSection(
     uiState: AppPreferences,
+    isSyncing: Boolean,
     expandedItem: String?,
     onExpandedItemChange: (String?) -> Unit,
     onSetConflictStrategy: (ConflictStrategy) -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
+    onSelectAutoBackupFolder: () -> Unit,
+    onToggleAutoBackup: (Boolean) -> Unit,
+    onClearAutoBackupFolder: () -> Unit,
+    onSyncNow: () -> Unit,
     topShape: RoundedCornerShape,
+    middleShape: RoundedCornerShape,
     bottomShape: RoundedCornerShape
 ) {
     val conflictOptions = listOf(
@@ -1077,14 +1124,104 @@ private fun BackupSection(
     val currentLabel = conflictOptions.find { it.first == uiState.conflictStrategy }?.second
         ?: stringResource(R.string.settings_conflict_skip)
 
+    val infiniteTransition = rememberInfiniteTransition(label = "syncRotation")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "syncRotationAngle"
+    )
+
+    val autoSyncSubtitle = when {
+        !uiState.isAutoBackupEnabled -> stringResource(R.string.settings_auto_sync_subtitle)
+        isSyncing -> stringResource(R.string.settings_sync_status_syncing)
+        uiState.autoBackupTreeUri.isNullOrBlank() -> stringResource(R.string.settings_sync_status_no_folder)
+        uiState.lastAutoBackupStatus == com.armanmaurya.internetradio.domain.model.AutoBackupStatus.SUCCESS && uiState.lastAutoBackupTime > 0L -> {
+            val formattedTime = java.text.SimpleDateFormat.getDateTimeInstance(
+                java.text.SimpleDateFormat.MEDIUM,
+                java.text.SimpleDateFormat.SHORT,
+                java.util.Locale.getDefault()
+            ).format(java.util.Date(uiState.lastAutoBackupTime))
+            stringResource(R.string.settings_sync_status_success, formattedTime)
+        }
+        uiState.lastAutoBackupStatus == com.armanmaurya.internetradio.domain.model.AutoBackupStatus.FAILED -> {
+            stringResource(
+                R.string.settings_sync_status_failed,
+                uiState.lastAutoBackupErrorMessage ?: "Unknown error"
+            )
+        }
+        else -> stringResource(R.string.settings_sync_status_never)
+    }
+
     Section(title = stringResource(R.string.settings_backup_section)) {
+        ToggleItem(
+            title = stringResource(R.string.settings_auto_sync_title),
+            subtitle = autoSyncSubtitle,
+            isEnabled = uiState.isAutoBackupEnabled,
+            onToggle = { enabled ->
+                if (enabled && uiState.autoBackupTreeUri.isNullOrBlank()) {
+                    onSelectAutoBackupFolder()
+                } else {
+                    onToggleAutoBackup(enabled)
+                }
+            },
+            icon = Icons.Default.CloudSync,
+            shape = topShape,
+            leadingTrailingContent = if (uiState.isAutoBackupEnabled && !uiState.autoBackupTreeUri.isNullOrBlank()) {
+                {
+                    IconButton(
+                        onClick = onSyncNow,
+                        enabled = !isSyncing
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Sync,
+                            contentDescription = stringResource(R.string.settings_sync_now),
+                            modifier = if (isSyncing) Modifier.graphicsLayer { rotationZ = rotation } else Modifier,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            } else null
+        )
+
+        if (uiState.isAutoBackupEnabled) {
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
+            val displayFolderPath = remember(uiState.autoBackupTreeUri, uiState.autoBackupFolderName) {
+                formatDisplayFolderPath(uiState.autoBackupTreeUri, uiState.autoBackupFolderName)
+            }
+
+            Item(
+                title = stringResource(R.string.settings_folder_title),
+                subtitle = displayFolderPath ?: stringResource(R.string.settings_folder_select),
+                onClick = onSelectAutoBackupFolder,
+                icon = Icons.Default.Folder,
+                shape = middleShape,
+                trailingContent = if (!uiState.autoBackupTreeUri.isNullOrBlank()) {
+                    {
+                        IconButton(onClick = onClearAutoBackupFolder) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = stringResource(R.string.settings_clear_folder)
+                            )
+                        }
+                    }
+                } else null
+            )
+        }
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
+
         ExpandableItem(
             title = stringResource(R.string.settings_conflict_title),
             subtitle = currentLabel,
             isExpanded = expandedItem == "Conflict",
             onToggle = { onExpandedItemChange(if (expandedItem == "Conflict") null else "Conflict") },
             icon = Icons.AutoMirrored.Filled.CallMerge,
-            shape = topShape
+            shape = middleShape
         ) {
             conflictOptions.forEach { (strategy, label) ->
                 OptionItem(
@@ -1107,7 +1244,7 @@ private fun BackupSection(
             subtitle = stringResource(R.string.settings_export_subtitle),
             onClick = onExport,
             icon = Icons.Default.FileUpload,
-            shape = RoundedCornerShape(0.dp)
+            shape = middleShape
         )
 
         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(2.dp))
@@ -1119,6 +1256,37 @@ private fun BackupSection(
             icon = Icons.Default.FileDownload,
             shape = bottomShape
         )
+    }
+}
+
+private fun formatDisplayFolderPath(treeUriStr: String?, savedName: String?): String? {
+    if (!savedName.isNullOrBlank() && (savedName.contains("/") || savedName.startsWith("Internal Storage") || savedName.startsWith("SD Card") || savedName.startsWith("Google Drive") || savedName.startsWith("Downloads"))) {
+        return savedName
+    }
+    if (treeUriStr.isNullOrBlank()) return savedName
+    return try {
+        val decoded = android.net.Uri.decode(treeUriStr)
+        val uri = android.net.Uri.parse(treeUriStr)
+        when (uri.authority) {
+            "com.android.externalstorage.documents" -> {
+                val docId = decoded.substringAfter("/tree/").substringBefore("/document/")
+                val split = docId.split(":", limit = 2)
+                val storageType = split[0]
+                val relPath = if (split.size > 1) split[1].trim('/') else ""
+                val storageName = if (storageType.equals("primary", ignoreCase = true)) "Internal Storage" else "SD Card"
+                if (relPath.isBlank()) storageName else "$storageName/$relPath"
+            }
+            "com.google.android.apps.docs.storage" -> {
+                val clean = savedName?.removePrefix("Google Drive: ")?.removePrefix("Google Drive/")
+                if (!clean.isNullOrBlank()) "Google Drive/$clean" else "Google Drive"
+            }
+            "com.android.providers.downloads.documents" -> {
+                if (!savedName.isNullOrBlank()) "Downloads/$savedName" else "Downloads"
+            }
+            else -> savedName ?: decoded.substringAfterLast('/')
+        }
+    } catch (_: Exception) {
+        savedName
     }
 }
 

@@ -23,6 +23,7 @@ interface LibraryRepository {
     suspend fun uploadAndSaveNewStation(name: String, url: String, homepage: String, favicon: String, countryCode: String, iso31662: String?, languageCodes: List<String>, tags: List<String>, codec: String, bitrate: Int): Result<String>
     suspend fun uploadExistingCustomStation(stationUuid: String, name: String, url: String, homepage: String, favicon: String, countryCode: String, iso31662: String?, languageCodes: List<String>, tags: List<String>, codec: String, bitrate: Int): Result<String>
     suspend fun getAllStationEntities(): List<StationEntity>
+    fun getAllStationEntitiesFlow(): Flow<List<StationEntity>>
     suspend fun getEntityById(stationUuid: String): StationEntity?
     suspend fun insertEntity(entity: StationEntity)
 }

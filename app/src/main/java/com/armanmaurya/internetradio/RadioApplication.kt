@@ -17,12 +17,16 @@ class RadioApplication : Application(), SingletonImageLoader.Factory {
     @Inject
     lateinit var okHttpClient: OkHttpClient
 
+    @Inject
+    lateinit var autoBackupManager: com.armanmaurya.internetradio.domain.controller.AutoBackupManager
+
     override fun onCreate() {
         super.onCreate()
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(
             GlobalExceptionHandler(this, defaultHandler)
         )
+        autoBackupManager.initialize()
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {

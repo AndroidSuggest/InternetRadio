@@ -154,6 +154,7 @@ dependencies {
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
     implementation(libs.androidx.palette)
+    implementation(libs.androidx.documentfile)
 
     "playImplementation"("com.google.android.play:app-update:2.1.0")
     "playImplementation"("com.google.android.play:app-update-ktx:2.1.0")

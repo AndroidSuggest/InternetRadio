@@ -26,6 +26,10 @@ class LibraryRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getAllStationEntitiesFlow(): Flow<List<StationEntity>> {
+        return stationDao.getAllFavorites()
+    }
+
     override fun getStationsByOldestAdded(): Flow<List<RadioStation>> {
         return stationDao.getFavoritesByOldestAdded().map { entities ->
             entities.map { it.toDomain() }

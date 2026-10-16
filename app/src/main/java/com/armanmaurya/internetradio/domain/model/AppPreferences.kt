@@ -43,5 +43,11 @@ data class AppPreferences(
     val isAlarmVolumeTransitionEnabled: Boolean = false,
     val alarmVolumeTransitionSeconds: Int = 15,
     val widgetBackgroundAlpha: Float = 1.0f,
-    val showStationThumbnails: Boolean = true
+    val showStationThumbnails: Boolean = true,
+    val isAutoBackupEnabled: Boolean = false,
+    val autoBackupTreeUri: String? = null,
+    val autoBackupFolderName: String? = null,
+    val lastAutoBackupTime: Long = 0L,
+    val lastAutoBackupStatus: AutoBackupStatus = AutoBackupStatus.IDLE,
+    val lastAutoBackupErrorMessage: String? = null
 )

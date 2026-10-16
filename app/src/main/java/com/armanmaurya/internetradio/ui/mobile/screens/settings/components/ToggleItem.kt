@@ -1,15 +1,17 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.settings.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,30 +32,64 @@ fun ToggleItem(
     onToggle: (Boolean) -> Unit,
     icon: ImageVector? = null,
     shape: Shape = RectangleShape,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    leadingTrailingContent: (@Composable () -> Unit)? = null
 ) {
-    androidx.compose.material3.ListItem(
+    Surface(
         modifier = Modifier
+            .fillMaxWidth()
             .clip(shape)
             .then(
                 if (enabled) Modifier.clickable { onToggle(!isEnabled) }
                 else Modifier
             ),
-        colors = androidx.compose.material3.ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            headlineColor = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-            supportingColor = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
-            leadingIconColor = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-        ),
-        supportingContent = { Text(text = subtitle) },
-        leadingContent = icon?.let { { Icon(it, contentDescription = null) } },
-        trailingContent = {
-            Switch(
-                checked = isEnabled,
-                onCheckedChange = onToggle,
-                enabled = enabled
-            )
-        },
-        headlineContent = { Text(text = title) }
-    )
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = shape
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 56.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                )
+                if (subtitle.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                }
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(start = 16.dp)
+            ) {
+                leadingTrailingContent?.invoke()
+                Switch(
+                    checked = isEnabled,
+                    onCheckedChange = onToggle,
+                    enabled = enabled
+                )
+            }
+        }
+    }
 }
