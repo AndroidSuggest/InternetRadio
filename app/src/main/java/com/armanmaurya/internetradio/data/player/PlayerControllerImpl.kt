@@ -73,6 +73,7 @@ class PlayerControllerImpl @Inject constructor(
     override val currentPlaylistSnapshot: List<RadioStation> get() = currentPlaylist
     private var currentPlaybackSource: PlaybackSource = PlaybackSource.None
     private var isFetchingMore = false
+    private var pendingPlayTask: (() -> Unit)? = null
 
 
     /**
@@ -393,6 +394,13 @@ class PlayerControllerImpl @Inject constructor(
                     }
                 }
             }
+            pendingPlayTask?.let {
+                val task = it
+                pendingPlayTask = null
+                scope.launch {
+                    task.invoke()
+                }
+            }
         }, MoreExecutors.directExecutor())
     }
 
@@ -402,7 +410,13 @@ class PlayerControllerImpl @Inject constructor(
         source: PlaybackSource,
         playWhenReady: Boolean
     ) {
-        val player = controller ?: return
+        val player = controller
+        if (player == null) {
+            pendingPlayTask = {
+                play(stations, startIndex, source, playWhenReady)
+            }
+            return
+        }
         if (stations.isEmpty() || startIndex !in stations.indices) return
 
         currentPlaylist = stations

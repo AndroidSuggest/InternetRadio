@@ -471,6 +471,7 @@
     <string name="action_stop_recording">Stop Recording</string>
     <string name="action_record_station">Record Station</string>
     <string name="action_create_shortcut">Create Shortcut</string>
+    <string name="shortcut_not_supported">Launcher does not support pinned shortcuts</string>
     <string name="lyrics_powered_by">Powered by </string>
     <string name="lyrics_provider_lrclib" translatable="false">LRCLIB</string>
 

@@ -57,14 +57,20 @@ fun AppIntentHandler(
         intentFlow.collect { intent ->
             if (intent.action == ShortcutHelper.ACTION_PLAY_STATION) {
                 intent.action = null
+                playerViewModel.markShortcutPlaybackInitiated()
+                val stationUuid = intent.getStringExtra(ShortcutHelper.EXTRA_STATION_UUID)
                 val json = intent.getStringExtra(ShortcutHelper.EXTRA_STATION_JSON)
-                if (json != null) {
+                val fallbackStation = if (!json.isNullOrBlank()) {
                     try {
-                        val station = Gson().fromJson(json, RadioStation::class.java)
-                        playerViewModel.play(listOf(station), 0)
+                        Gson().fromJson(json, RadioStation::class.java)
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        null
                     }
+                } else null
+
+                val targetUuid = stationUuid ?: fallbackStation?.stationUuid
+                if (targetUuid != null) {
+                    playerViewModel.playFromShortcut(targetUuid, fallbackStation)
                 }
             } else if (intent.getStringExtra("open_tab") == "recordings") {
                 intent.removeExtra("open_tab")

@@ -17,16 +17,19 @@ import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.domain.model.RadioStation
 import com.armanmaurya.internetradio.core.provider.SvgProxyProvider
 import com.google.gson.Gson
+import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 object ShortcutHelper {
     const val ACTION_PLAY_STATION = "com.armanmaurya.internetradio.ACTION_PLAY_STATION"
+    const val EXTRA_STATION_UUID = "STATION_UUID"
     const val EXTRA_STATION_JSON = "STATION_JSON"
 
     fun pinStationShortcut(context: Context, station: RadioStation) {
         if (!ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
+            Toast.makeText(context, R.string.shortcut_not_supported, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -67,6 +70,7 @@ object ShortcutHelper {
 
             val intent = Intent(context, MobileActivity::class.java).apply {
                 action = ACTION_PLAY_STATION
+                putExtra(EXTRA_STATION_UUID, station.stationUuid)
                 putExtra(EXTRA_STATION_JSON, Gson().toJson(station))
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }

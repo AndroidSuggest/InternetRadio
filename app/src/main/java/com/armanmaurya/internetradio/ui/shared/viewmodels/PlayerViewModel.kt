@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.armanmaurya.internetradio.domain.controller.CastController
@@ -488,6 +489,57 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    @Volatile
+    private var isShortcutPlaybackActive = false
+
+    fun markShortcutPlaybackInitiated() {
+        isShortcutPlaybackActive = true
+    }
+
+    fun playFromShortcut(stationUuid: String, fallbackStation: RadioStation? = null) {
+        markShortcutPlaybackInitiated()
+        if (playbackSession.value.currentStation?.stationUuid == stationUuid) {
+            togglePlayPause()
+            return
+        }
+
+        viewModelScope.launch {
+            val prefs = settingsRepository.appPreferencesFlow.first()
+            val libraryStations = getFilteredLibraryStations(prefs)
+            val libraryIndex = libraryStations.indexOfFirst { it.stationUuid == stationUuid }
+
+            if (libraryIndex != -1) {
+                play(
+                    stations = libraryStations,
+                    startIndex = libraryIndex,
+                    source = PlaybackSource.Library
+                )
+            } else if (fallbackStation != null) {
+                play(
+                    stations = listOf(fallbackStation),
+                    startIndex = 0,
+                    source = PlaybackSource.None
+                )
+            } else {
+                val dbStation = libraryRepository.getStationById(stationUuid)
+                if (dbStation != null) {
+                    play(
+                        stations = listOf(dbStation),
+                        startIndex = 0,
+                        source = PlaybackSource.None
+                    )
+                } else {
+                    stationRepository.getStationsByUuid(listOf(stationUuid))
+                        .onSuccess { stations ->
+                            stations.firstOrNull()?.let {
+                                play(listOf(it), 0, PlaybackSource.None)
+                            }
+                        }
+                }
+            }
+        }
+    }
+
     fun playIndex(index: Int) {
         playerController.playIndex(index)
     }
@@ -565,6 +617,8 @@ class PlayerViewModel @Inject constructor(
 
     fun autoPlayRecentStationIfEnabled() {
         viewModelScope.launch {
+            delay(100)
+            if (isShortcutPlaybackActive) return@launch
             val prefs = settingsRepository.appPreferencesFlow.first()
             if (!prefs.autoPlayOnStart) return@launch
             if (playbackSession.value.isPlaying || playbackSession.value.currentStation != null) return@launch
