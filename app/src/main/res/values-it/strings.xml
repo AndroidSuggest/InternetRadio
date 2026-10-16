@@ -408,4 +408,26 @@
     <string name="schedule_snooze">Posticipa (10m)</string>
     <string name="schedule_delete_title">Elimina programmazione</string>
     <string name="schedule_delete_confirmation">Sei sicuro di voler eliminare questa programmazione?</string>
+    <string name="settings_auto_sync_title">Sincronizzazione automatica</string>
+    <string name="settings_auto_sync_subtitle">Mantieni la tua libreria sincronizzata</string>
+    <string name="settings_sync_status_syncing">Sincronizzazione…</string>
+    <string name="settings_sync_status_success">Ultima sincronizzazione: %1$s</string>
+    <string name="settings_sync_status_failed">Sincronizzazione non riuscita: %1$s</string>
+    <string name="settings_sync_status_no_folder">Seleziona una cartella per avviare la sincronizzazione</string>
+    <string name="settings_sync_status_never">Nessuna sincronizzazione</string>
+    <string name="settings_folder_title">Cartella</string>
+    <string name="settings_folder_select">Scegli una cartella (es. Google Drive)</string>
+    <string name="settings_folder_selected">Cartella selezionata: %1$s</string>
+    <string name="settings_folder_error">Impossibile selezionare la cartella: %1$s</string>
+    <string name="settings_folder_cleared">Cartella disconnessa</string>
+    <string name="settings_clear_folder">Disconnetti cartella</string>
+    <string name="settings_sync_now">Sincronizza ora</string>
+    <string name="settings_malformed_backup_title">File di backup corrotto</string>
+    <string name="settings_malformed_backup_desc">Il file di backup (stations.json) nella cartella selezionata è danneggiato o contiene dati non validi. Come vuoi procedere?</string>
+    <string name="settings_malformed_backup_overwrite">Sovrascrivi con la libreria attuale</string>
+    <string name="settings_malformed_backup_overwrite_desc">Sostituisci il file danneggiato con le %1$d stazioni locali</string>
+    <string name="settings_malformed_backup_choose_folder">Scegli un\'altra cartella</string>
+    <string name="settings_malformed_backup_choose_folder_desc">Seleziona una cartella o una posizione di backup diversa</string>
+    <string name="settings_malformed_backup_cancel">Mantieni i file attuali</string>
+    <string name="settings_malformed_backup_overwritten">Backup sostituito con la libreria attuale</string>
 </resources>
