@@ -241,7 +241,10 @@ fun RecordingsContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
             if (currentActiveSessions.isNotEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
+                item(
+                    key = "active_recordings_header",
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -286,7 +289,10 @@ fun RecordingsContent(
             }
 
             if (folders.isNotEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
+                item(
+                    key = "recordings_folders_content",
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
                     AnimatedContent(
                         targetState = selectedStationName,
                         transitionSpec = {

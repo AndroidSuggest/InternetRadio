@@ -53,7 +53,7 @@ fun RecordingsTab(
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
                 if (activeSessions.isNotEmpty()) {
-                    item {
+                    item(key = "active_recordings_header") {
                         Text(
                             text = stringResource(R.string.recordings_currently_recording),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
@@ -62,7 +62,10 @@ fun RecordingsTab(
                         )
                     }
                     
-                    items(activeSessions.values.chunked(2)) { rowSessions ->
+                    items(
+                        items = activeSessions.values.chunked(2),
+                        key = { rowSessions -> "active_sessions_row_" + rowSessions.joinToString { it.station.stationUuid } }
+                    ) { rowSessions ->
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             for (session in rowSessions) {
                                 val duration by session.durationSeconds.collectAsState(initial = 0L)
@@ -82,7 +85,7 @@ fun RecordingsTab(
                         }
                     }
                     
-                    item {
+                    item(key = "active_recordings_divider") {
                         Divider(modifier = Modifier.padding(vertical = 16.dp))
                         if (stationRecordings.isNotEmpty()) {
                             Text(

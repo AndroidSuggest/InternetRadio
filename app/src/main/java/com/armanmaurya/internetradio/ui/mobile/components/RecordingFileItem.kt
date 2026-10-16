@@ -1,6 +1,7 @@
 package com.armanmaurya.internetradio.ui.mobile.components
 
-import android.media.MediaPlayer
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -184,8 +185,14 @@ fun InlineMediaPlayer(
             .setConstantBitrateSeekingAlwaysEnabled(true)
         val mediaSourceFactory = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(context, extractorsFactory)
         
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .setUsage(C.USAGE_MEDIA)
+            .build()
+        
         ExoPlayer.Builder(context)
             .setMediaSourceFactory(mediaSourceFactory)
+            .setAudioAttributes(audioAttributes, true)
             .build().apply {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
