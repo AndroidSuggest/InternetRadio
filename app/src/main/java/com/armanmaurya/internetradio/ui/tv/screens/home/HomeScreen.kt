@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.IconButton
 import androidx.tv.material3.IconButtonDefaults
 import coil3.compose.AsyncImage
+import coil3.request.crossfade
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
@@ -182,13 +184,20 @@ fun HomeScreen(
                                     modifier = Modifier.padding(4.dp)
                                 ) {
                                     val fallbackPainter = painterResource(id = R.drawable.ic_launcher_foreground)
+                                    val hasCoverArt = !playbackState.trackCoverArtUri.isNullOrBlank()
+                                    val miniplayerArt = if (hasCoverArt) {
+                                        playbackState.trackCoverArtUri
+                                    } else {
+                                        playbackState.currentStation!!.favicon.ifEmpty { null }
+                                    }
                                     Box {
                                         AsyncImage(
                                             model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                                                .data(playbackState.currentStation!!.favicon.ifEmpty { null })
+                                                .data(miniplayerArt)
                                                 .size(coil3.size.Size.ORIGINAL)
+                                                .crossfade(true)
                                                 .build(),
-                                            contentDescription = "Station Thumbnail",
+                                            contentDescription = if (hasCoverArt) "Track Artwork" else "Station Thumbnail",
                                             filterQuality = FilterQuality.High,
                                             placeholder = fallbackPainter,
                                             error = fallbackPainter,
@@ -211,6 +220,37 @@ fun HomeScreen(
                                                 com.armanmaurya.internetradio.ui.mobile.screens.home.components.PlayingVisualizer(
                                                     isPlaybackActive = playbackState.isPlaying,
                                                     barCount = 3
+                                                )
+                                            }
+                                        }
+
+                                        if (hasCoverArt && playbackState.currentStation!!.favicon.isNotBlank()) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .align(Alignment.BottomStart)
+                                                    .padding(2.dp)
+                                                    .size(18.dp)
+                                                    .clip(RoundedCornerShape(4.dp))
+                                                    .background(MaterialTheme.colorScheme.surface)
+                                                    .border(
+                                                        1.dp,
+                                                        Color.White.copy(alpha = 0.5f),
+                                                        RoundedCornerShape(4.dp)
+                                                    )
+                                            ) {
+                                                AsyncImage(
+                                                    model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                                        .data(playbackState.currentStation!!.favicon)
+                                                        .size(coil3.size.Size.ORIGINAL)
+                                                        .crossfade(true)
+                                                        .build(),
+                                                    contentDescription = "Station Logo",
+                                                    filterQuality = FilterQuality.High,
+                                                    placeholder = fallbackPainter,
+                                                    error = fallbackPainter,
+                                                    fallback = fallbackPainter,
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentScale = ContentScale.Crop
                                                 )
                                             }
                                         }

@@ -16,7 +16,11 @@ import androidx.tv.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.MusicNote
 import coil3.compose.AsyncImage
+import coil3.request.crossfade
+import com.armanmaurya.internetradio.ui.shared.components.shimmerEffect
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -112,10 +116,14 @@ fun PlayerScreen(
                 val playButtonFocusRequester = remember { FocusRequester() }
                 val fallbackPainter = painterResource(id = R.drawable.ic_launcher_foreground)
 
+                val hasCoverArt = !playbackState.trackCoverArtUri.isNullOrBlank()
+                val bgArtModel = if (hasCoverArt) playbackState.trackCoverArtUri else station.favicon.ifEmpty { null }
+
                 AsyncImage(
                     model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                        .data(station.favicon.ifEmpty { null })
+                        .data(bgArtModel)
                         .size(coil3.size.Size.ORIGINAL)
+                        .crossfade(true)
                         .build(),
                     contentDescription = null,
                     filterQuality = FilterQuality.High,
@@ -149,12 +157,14 @@ fun PlayerScreen(
                     horizontalAlignment = Alignment.Start
                 ) {
                     Box(modifier = Modifier.size(192.dp)) {
+                        val mainArtModel = if (hasCoverArt) playbackState.trackCoverArtUri else station.favicon.ifEmpty { null }
                         AsyncImage(
                             model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
-                                .data(station.favicon.ifEmpty { null })
+                                .data(mainArtModel)
                                 .size(coil3.size.Size.ORIGINAL)
+                                .crossfade(true)
                                 .build(),
-                            contentDescription = "Station Thumbnail",
+                            contentDescription = if (hasCoverArt) "Track Artwork" else "Station Thumbnail",
                             filterQuality = FilterQuality.High,
                             placeholder = fallbackPainter,
                             error = fallbackPainter,
@@ -165,6 +175,46 @@ fun PlayerScreen(
                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentScale = ContentScale.Crop
                         )
+
+                        if (playbackState.isFetchingArtwork && !hasCoverArt) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .shimmerEffect()
+                            )
+                        }
+
+                        if (hasCoverArt && station.favicon.isNotBlank()) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(8.dp)
+                                    .size(44.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .border(
+                                        1.dp,
+                                        Color.White.copy(alpha = 0.4f),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                            ) {
+                                AsyncImage(
+                                    model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                        .data(station.favicon)
+                                        .size(coil3.size.Size.ORIGINAL)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "Station Logo",
+                                    filterQuality = FilterQuality.High,
+                                    placeholder = fallbackPainter,
+                                    error = fallbackPainter,
+                                    fallback = fallbackPainter,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
                         
                         val displayCodec = (if (!isInLibrary) playbackState.streamCodec else null) ?: station.codec
                         val displayBitrate = (if (!isInLibrary) playbackState.streamBitrate else null) ?: station.bitrate
@@ -332,7 +382,7 @@ fun PlayerScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(360.dp)
+                            .width(390.dp)
                             .background(Color.Black.copy(alpha = 0.85f))
                             .onFocusChanged { state ->
                                 if (state.hasFocus) {
@@ -389,6 +439,31 @@ fun PlayerScreen(
                                             modifier = if (index == 0) Modifier.focusRequester(sidebarFocusRequester) else Modifier,
                                             selected = false,
                                             onClick = { },
+                                            leadingContent = {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(44.dp)
+                                                        .clip(RoundedCornerShape(8.dp))
+                                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    val fallbackArt = painterResource(id = R.drawable.ic_launcher_foreground)
+                                                    AsyncImage(
+                                                        model = coil3.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                                            .data(track.coverArtUrl)
+                                                            .size(coil3.size.Size.ORIGINAL)
+                                                            .crossfade(true)
+                                                            .build(),
+                                                        contentDescription = null,
+                                                        contentScale = ContentScale.Crop,
+                                                        filterQuality = FilterQuality.High,
+                                                        placeholder = fallbackArt,
+                                                        error = fallbackArt,
+                                                        fallback = fallbackArt,
+                                                        modifier = Modifier.fillMaxSize()
+                                                    )
+                                                }
+                                            },
                                             headlineContent = {
                                                 Text(
                                                     text = track.trackTitle,

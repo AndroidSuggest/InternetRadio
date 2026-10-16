@@ -103,6 +103,7 @@ class TrackObserver @Inject constructor(
         val baseExtras = currentMediaItem.mediaMetadata.extras?.let { Bundle(it) } ?: Bundle()
         baseExtras.remove("track_cover_art_url")
         baseExtras.putString("raw_track_name", rawTrack)
+        baseExtras.putString("is_fetching_artwork", "true")
 
         val baseMetadata = currentMediaItem.mediaMetadata.buildUpon()
             .setTitle(track)
@@ -150,6 +151,7 @@ class TrackObserver @Inject constructor(
                     finalExtras.remove("track_cover_art_url")
                 }
                 finalExtras.putString("raw_track_name", rawTrack)
+                finalExtras.putString("is_fetching_artwork", "false")
                 if (trackName.isNotBlank()) {
                     finalExtras.putString("clean_track_name", trackName)
                 }
@@ -178,6 +180,17 @@ class TrackObserver @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("TrackObserver", "Error during cover art fetching", e)
+                try {
+                    val errExtras = currentMediaItem.mediaMetadata.extras?.let { Bundle(it) } ?: Bundle()
+                    errExtras.putString("is_fetching_artwork", "false")
+                    val errMetadata = currentMediaItem.mediaMetadata.buildUpon()
+                        .setExtras(errExtras)
+                        .build()
+                    currentPlayer.replaceMediaItem(
+                        currentPlayer.currentMediaItemIndex,
+                        currentMediaItem.buildUpon().setMediaMetadata(errMetadata).build()
+                    )
+                } catch (_: Exception) {}
             }
         }
     }
