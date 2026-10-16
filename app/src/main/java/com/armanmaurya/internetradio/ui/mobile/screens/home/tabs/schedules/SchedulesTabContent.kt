@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.domain.model.ScheduleType
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.components.ScheduleItem
@@ -78,7 +78,7 @@ fun SchedulesTabContent(
                     start = 16.dp,
                     top = 8.dp,
                     end = 16.dp,
-                    bottom = 88.dp
+                    bottom = 140.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
