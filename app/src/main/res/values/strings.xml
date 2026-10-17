@@ -144,7 +144,10 @@
     <string name="settings_malformed_backup_title">Corrupted Backup File</string>
     <string name="settings_malformed_backup_desc">The backup file (stations.json) in your selected folder is corrupted or contains invalid data. How would you like to proceed?</string>
     <string name="settings_malformed_backup_overwrite">Overwrite with current library</string>
-    <string name="settings_malformed_backup_overwrite_desc">Replace the damaged file with your %1$d local stations</string>
+    <plurals name="settings_malformed_backup_overwrite_desc">
+        <item quantity="one">Replace the damaged file with your %1$d local station</item>
+        <item quantity="other">Replace the damaged file with your %1$d local stations</item>
+    </plurals>
     <string name="settings_malformed_backup_choose_folder">Choose another folder</string>
     <string name="settings_malformed_backup_choose_folder_desc">Select a different folder or backup location</string>
     <string name="settings_malformed_backup_cancel">Keep file untouched</string>

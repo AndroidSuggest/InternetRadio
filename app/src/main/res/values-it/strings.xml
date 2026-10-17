@@ -425,7 +425,6 @@
     <string name="settings_malformed_backup_title">File di backup corrotto</string>
     <string name="settings_malformed_backup_desc">Il file di backup (stations.json) nella cartella selezionata è danneggiato o contiene dati non validi. Come vuoi procedere?</string>
     <string name="settings_malformed_backup_overwrite">Sovrascrivi con la libreria attuale</string>
-    <string name="settings_malformed_backup_overwrite_desc">Sostituisci il file danneggiato con le %1$d stazioni locali</string>
     <string name="settings_malformed_backup_choose_folder">Scegli un\'altra cartella</string>
     <string name="settings_malformed_backup_choose_folder_desc">Seleziona una cartella o una posizione di backup diversa</string>
     <string name="settings_malformed_backup_cancel">Mantieni i file attuali</string>
