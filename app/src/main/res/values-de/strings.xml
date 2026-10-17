@@ -126,9 +126,32 @@
     <string name="settings_theme_system">Systemstandard</string>
 
     <!-- ========================================== -->
-    <!-- 5b. BACKUP & RESTORE                       -->
-    <!-- ========================================== -->
     <string name="settings_backup_section">Sicherung &amp; Wiederherstellung</string>
+    <string name="settings_auto_sync_title">Automatische Synchronisation</string>
+    <string name="settings_auto_sync_subtitle">Bibliothek synchron halten</string>
+    <string name="settings_sync_status_syncing">Synchronisieren...</string>
+    <string name="settings_sync_status_success">Zuletzt synchronisiert: %1$s</string>
+    <string name="settings_sync_status_failed">Synchronisation fehlgeschlagen: %1$s</string>
+    <string name="settings_sync_status_no_folder">Ordner zum Starten der Synchronisation auswählen</string>
+    <string name="settings_sync_status_never">Noch nicht synchronisiert</string>
+    <string name="settings_folder_title">Synchronisations-Ordner</string>
+    <string name="settings_folder_select">Wählen einen Ordner (z.B. Google Drive)</string>
+    <string name="settings_folder_selected">Ausgewählter Ordner: %1$s</string>
+    <string name="settings_folder_error">Ordnerauswahl fehlgeschlagen: %1$s</string>
+    <string name="settings_folder_cleared">Ordner getrennt</string>
+    <string name="settings_clear_folder">Ordner trennen</string>
+    <string name="settings_sync_now">Jetzt synchronisieren</string>
+    <string name="settings_malformed_backup_title">Beschädigte Sicherungsdatei</string>
+    <string name="settings_malformed_backup_desc">Die Sicherungsdatei (stations.json) im ausgewählten Ordner ist beschädigt oder enthält ungültige Daten. Wie möchtest du fortfahren?</string>
+    <string name="settings_malformed_backup_overwrite">Überschreibe mit aktueller Bibliothek</string>
+    <plurals name="settings_malformed_backup_overwrite_desc">
+        <item quantity="one">Beschädigte Datei durch %1$d lokale Station ersetzen</item>
+        <item quantity="other">Beschädigte Datei durch %1$d lokale Stationen ersetzen</item>
+    </plurals>
+    <string name="settings_malformed_backup_choose_folder">Anderen Ordner auswählen</string>
+    <string name="settings_malformed_backup_choose_folder_desc">Wähle einen anderen Sicherungsordner aus</string>
+    <string name="settings_malformed_backup_cancel">Datei unverändert lassen</string>
+    <string name="settings_malformed_backup_overwritten">Sicherung durch aktuelle Bibliothek ersetzt</string>
     <string name="settings_conflict_title">Wenn ein Konflikt auftritt</string>
     <string name="settings_conflict_skip">Vorhandene überspringen</string>
     <string name="settings_conflict_skip_desc">Die aktuelle Version beibehalten</string>
@@ -451,6 +474,7 @@
     <string name="action_stop_recording">Aufnahme beenden</string>
     <string name="action_record_station">Sender aufnehmen</string>
     <string name="action_create_shortcut">Verknüpfung erstellen</string>
+    <string name="shortcut_not_supported">Der Startbildschirm unterstützt keine angehefteten Verknüpfungen</string>
     <string name="lyrics_powered_by">Powered by</string>
     <!-- <string name="lyrics_provider_lrclib" translatable="false">LRCLIB</string> -->
 

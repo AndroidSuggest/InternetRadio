@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.R
@@ -93,7 +94,7 @@ fun MalformedBackupBottomSheet(
             if (localStationCount > 0) {
                 Item(
                     title = stringResource(R.string.settings_malformed_backup_overwrite),
-                    subtitle = stringResource(R.string.settings_malformed_backup_overwrite_desc, localStationCount),
+                    subtitle = pluralStringResource(R.plurals.settings_malformed_backup_overwrite_desc, localStationCount, localStationCount),
                     icon = Icons.Default.CloudUpload,
                     shape = topShape,
                     onClick = {
