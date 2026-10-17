@@ -429,4 +429,5 @@
     <string name="settings_malformed_backup_choose_folder_desc">Seleziona una cartella o una posizione di backup diversa</string>
     <string name="settings_malformed_backup_cancel">Mantieni i file attuali</string>
     <string name="settings_malformed_backup_overwritten">Backup sostituito con la libreria attuale</string>
+    <string name="shortcut_not_supported">Il launcher non supporta le scorciatoie fissate</string>
 </resources>
