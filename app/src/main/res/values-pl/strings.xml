@@ -417,4 +417,5 @@
     <string name="schedule_alarm_playing">Alarm jest aktywny</string>
     <string name="schedule_delete_title">Usuń harmonogram</string>
     <string name="schedule_delete_confirmation">Czy na pewno chcesz usunąć ten harmonogram?</string>
+    <string name="settings_auto_sync_title">Automatyczna synchronizacja</string>
 </resources>
