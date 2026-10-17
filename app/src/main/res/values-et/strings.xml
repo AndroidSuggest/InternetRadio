@@ -215,7 +215,7 @@
     <string name="schedule_name_optional">Ajagraafiku nimi (kui tahad lisada)</string>
     <string name="schedule_select_station_title">Vali raadiojaam</string>
     <string name="schedule_search_library">Otsi oma kogust</string>
-    <string name="schedule_no_stations_library">Kogus poel veebiraadiojaamu.</string>
+    <string name="schedule_no_stations_library">Kogus pole veebiraadiojaamu.</string>
     <string name="schedule_no_matches_found">Ühtegi vastet ei leidu.</string>
     <string name="schedule_select_a_station">Vali raadiojaam</string>
     <string name="schedule_start_time">Algusaeg</string>
@@ -287,7 +287,7 @@
     <string name="settings_select_all_text_on_focus_subtitle">Fookuse puhul vali otsinguriba tekst</string>
     <string name="library_cd_sort_options">Järjestuse valikud</string>
     <string name="library_cd_sort_z_a">Z-A</string>
-    <string name="home_cd_in_library">Meediakogus</string>
+    <string name="home_cd_in_library">Meediumikogus</string>
     <string name="select_country_select_state_in">Vali osariik riigis %1$s</string>
     <string name="select_country_all_of">Kogu %1$s</string>
     <string name="edit_station_state_field">Osariik / piirkond (kui soovid)</string>
@@ -400,4 +400,30 @@
     <string name="schedule_alarm_playing">Äratus on käivitunud</string>
     <string name="schedule_delete_title">Kustuta ajastamine</string>
     <string name="schedule_delete_confirmation">Kas oled kindel, et soovid ajastamise kustutada?</string>
+    <string name="settings_auto_sync_title">Automaatne sünkroonimine</string>
+    <string name="settings_auto_sync_subtitle">Hoia oma kogu sünkroonis</string>
+    <string name="settings_malformed_backup_overwrite">Kirjuta praegune kogu üle</string>
+    <string name="settings_malformed_backup_overwritten">Varukoopia on asendatud praeguse koguga</string>
+    <string name="settings_sync_status_syncing">Sünkroonimisel…</string>
+    <string name="settings_sync_status_success">Viimane sünkroonimine: %1$s</string>
+    <string name="settings_sync_status_failed">Sünkroonimine ei õnnestunud: %1$s</string>
+    <string name="settings_sync_status_no_folder">Sünkroonimiseks vali kaust</string>
+    <string name="settings_sync_status_never">Pole veel sünkroonitud</string>
+    <string name="settings_folder_title">Kaust</string>
+    <string name="settings_folder_select">Vali kaust (nt. Google Drive, Nextcloud, jne)</string>
+    <string name="settings_folder_selected">Valitud kaust: %1$s</string>
+    <string name="settings_folder_error">Kausta valimine ei õnnestunud: %1$s</string>
+    <string name="settings_folder_cleared">Ühendus kaustaga on katkestatud</string>
+    <string name="settings_clear_folder">Katkesta ühendus kaustaga</string>
+    <string name="settings_sync_now">Sünkrooni kohe</string>
+    <string name="settings_malformed_backup_title">Varukoopia fail on vigane</string>
+    <string name="settings_malformed_backup_desc">Sinu valitud kaustas leiduv varukoopia fail (stations.json) on vigane või sisaldab vigaseid andmeid. Kuidas soovid jätkata?</string>
+    <plurals name="settings_malformed_backup_overwrite_desc">
+        <item quantity="one">Asenda vigane fail sinu %1$d kohaliku raadiojaamaga</item>
+        <item quantity="other">Asenda vigane fail sinu %1$d kohaliku raadiojaamaga</item>
+    </plurals>
+    <string name="settings_malformed_backup_choose_folder">Vali muu kaust</string>
+    <string name="settings_malformed_backup_choose_folder_desc">Vali varunuduse jaoks muu kaust</string>
+    <string name="settings_malformed_backup_cancel">Jäta fail puutumata</string>
+    <string name="shortcut_not_supported">Sinu käivitaja ei toeta linkide esiletõstmise võimalust</string>
 </resources>
