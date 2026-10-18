@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -32,7 +33,7 @@ fun RecordingsTab(
     onStopRecording: (String) -> Unit,
     onDeleteRecording: (RecordingFile) -> Unit
 ) {
-    var expandedRecording by remember { mutableStateOf<RecordingFile?>(null) }
+    var expandedRecordingUri by rememberSaveable { mutableStateOf<String?>(null) }
     
     Box(modifier = Modifier.fillMaxSize()) {
         if (stationRecordings == null) {
@@ -103,17 +104,17 @@ fun RecordingsTab(
                         items = stationRecordings,
                         key = { it.uri.toString() }
                     ) { recording ->
-                        val isExpanded = expandedRecording?.uri == recording.uri
+                        val isExpanded = expandedRecordingUri == recording.uri.toString()
         
                         RecordingFileItem(
                             recording = recording,
                             isExpanded = isExpanded,
                             onClick = {
-                                expandedRecording = if (isExpanded) null else recording
+                                expandedRecordingUri = if (isExpanded) null else recording.uri.toString()
                             },
                             onDelete = {
-                                if (expandedRecording?.uri == recording.uri) {
-                                    expandedRecording = null
+                                if (expandedRecordingUri == recording.uri.toString()) {
+                                    expandedRecordingUri = null
                                 }
                                 onDeleteRecording(recording)
                             },

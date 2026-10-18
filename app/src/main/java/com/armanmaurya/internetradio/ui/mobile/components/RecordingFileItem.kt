@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -173,12 +174,17 @@ fun InlineMediaPlayer(
     initialDurationMs: Long = 0L
 ) {
     val context = LocalContext.current
-    var isPlaying by remember { mutableStateOf(false) }
-    var progress by remember { mutableStateOf(0f) }
-    var duration by remember(uri, initialDurationMs) { 
+    val uriString = uri.toString()
+    var isPlaying by rememberSaveable(uri) { mutableStateOf(true) }
+    var duration by rememberSaveable(uri) { 
         mutableStateOf(if (initialDurationMs > 0L) initialDurationMs else 1L) 
     }
-    var currentPosition by remember { mutableStateOf(0L) }
+    var currentPosition by rememberSaveable(uri) { mutableStateOf(0L) }
+    var progress by remember { 
+        mutableStateOf(
+            if (duration > 0L) (currentPosition.toFloat() / duration).coerceIn(0f, 1f) else 0f
+        ) 
+    }
     
     val exoPlayer = remember(uri) {
         val extractorsFactory = androidx.media3.extractor.DefaultExtractorsFactory()
@@ -196,10 +202,16 @@ fun InlineMediaPlayer(
             .build().apply {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
-            playWhenReady = true
+            if (currentPosition > 0L) {
+                seekTo(currentPosition)
+            }
+            playWhenReady = isPlaying
             addListener(object : Player.Listener {
                 override fun onIsPlayingChanged(playing: Boolean) {
                     isPlaying = playing
+                    if (!playing) {
+                        currentPosition = this@apply.currentPosition
+                    }
                 }
                 override fun onPlaybackStateChanged(state: Int) {
                     if (state == Player.STATE_READY) {
@@ -220,6 +232,8 @@ fun InlineMediaPlayer(
 
     DisposableEffect(exoPlayer) {
         onDispose {
+            currentPosition = exoPlayer.currentPosition
+            isPlaying = exoPlayer.isPlaying
             exoPlayer.release()
         }
     }
@@ -240,9 +254,15 @@ fun InlineMediaPlayer(
     ) {
         IconButton(onClick = {
             if (isPlaying) {
+                currentPosition = exoPlayer.currentPosition
                 exoPlayer.pause()
                 isPlaying = false
             } else {
+                if (exoPlayer.playbackState == Player.STATE_ENDED) {
+                    exoPlayer.seekTo(0)
+                    currentPosition = 0L
+                    progress = 0f
+                }
                 exoPlayer.play()
                 isPlaying = true
             }

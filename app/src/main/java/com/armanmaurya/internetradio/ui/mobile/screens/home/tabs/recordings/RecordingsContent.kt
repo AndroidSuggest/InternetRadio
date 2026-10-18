@@ -58,8 +58,8 @@ fun RecordingsContent(
     val isFoldersLoaded by viewModel.isLoaded.collectAsStateWithLifecycle()
     val vmActiveSessions by viewModel.activeSessions.collectAsStateWithLifecycle()
     val currentActiveSessions = activeSessions ?: vmActiveSessions
-    var selectedStationName by rememberSaveable { mutableStateOf<String?>(null) }
-    var previousStationName by rememberSaveable { mutableStateOf(selectedStationName) }
+    val selectedStationName by viewModel.selectedStationName.collectAsStateWithLifecycle()
+    val expandedRecordingUri by viewModel.expandedRecordingUri.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
 
@@ -67,7 +67,6 @@ fun RecordingsContent(
     var selectedFolders by remember { mutableStateOf(emptySet<String>()) }
     var selectedFiles by remember { mutableStateOf(emptySet<String>()) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-    var expandedRecordingUri by rememberSaveable { mutableStateOf<String?>(null) }
 
     BackHandler(enabled = selectionMode || selectedStationName != null) {
         if (selectionMode) {
@@ -75,28 +74,15 @@ fun RecordingsContent(
             selectedFolders = emptySet()
             selectedFiles = emptySet()
         } else if (selectedStationName != null) {
-            selectedStationName = null
+            viewModel.selectStation(null)
+            selectionMode = false
+            selectedFolders = emptySet()
+            selectedFiles = emptySet()
         }
     }
 
     LaunchedEffect(Unit) {
         viewModel.loadFolders()
-    }
-
-    LaunchedEffect(folders, selectedStationName, isFoldersLoaded) {
-        if (isFoldersLoaded && selectedStationName != null && folders.none { it.stationName == selectedStationName }) {
-            selectedStationName = null
-        }
-    }
-
-    LaunchedEffect(selectedStationName) {
-        if (selectedStationName != previousStationName) {
-            selectionMode = false
-            selectedFolders = emptySet()
-            selectedFiles = emptySet()
-            expandedRecordingUri = null
-            previousStationName = selectedStationName
-        }
     }
 
     if (showDeleteConfirmDialog) {
@@ -116,15 +102,11 @@ fun RecordingsContent(
                     showDeleteConfirmDialog = false
                     if (selectedStationName == null) {
                         viewModel.deleteFolders(selectedFolders.toList())
-                        expandedRecordingUri = null
                     } else {
                         val currentFolder = folders.find { it.stationName == selectedStationName }
                         if (currentFolder != null) {
                             val filesToDelete = currentFolder.recordings.filter { it.uri.toString() in selectedFiles }
                             viewModel.deleteRecordings(filesToDelete)
-                            if (selectedFiles.contains(expandedRecordingUri)) {
-                                expandedRecordingUri = null
-                            }
                         }
                     }
                     selectionMode = false
@@ -345,7 +327,10 @@ fun RecordingsContent(
                                                         if (isSelected) selectedFolders -= folder.stationName else selectedFolders += folder.stationName
                                                         if (selectedFolders.isEmpty()) selectionMode = false
                                                     } else {
-                                                        selectedStationName = folder.stationName 
+                                                        viewModel.selectStation(folder.stationName)
+                                                        selectionMode = false
+                                                        selectedFolders = emptySet()
+                                                        selectedFiles = emptySet()
                                                     }
                                                 },
                                                 onLongClick = {
@@ -422,7 +407,7 @@ fun RecordingsContent(
                                         modifier = Modifier
                                             .clip(MaterialTheme.shapes.small)
                                             .background(MaterialTheme.colorScheme.surfaceVariant)
-                                            .clickable { selectedStationName = null }
+                                            .clickable { viewModel.selectStation(null) }
                                             .padding(horizontal = 8.dp, vertical = 4.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -466,7 +451,7 @@ fun RecordingsContent(
                                                         if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
                                                         if (selectedFiles.isEmpty()) selectionMode = false
                                                     } else {
-                                                        expandedRecordingUri = if (isExpanded) null else recording.uri.toString()
+                                                        viewModel.setExpandedRecordingUri(if (isExpanded) null else recording.uri.toString())
                                                     }
                                                 },
                                                 onLongClick = {
@@ -476,9 +461,6 @@ fun RecordingsContent(
                                                     }
                                                 },
                                                 onDelete = {
-                                                    if (expandedRecordingUri == recording.uri.toString()) {
-                                                        expandedRecordingUri = null
-                                                    }
                                                     viewModel.deleteRecording(recording)
                                                 }
                                             )

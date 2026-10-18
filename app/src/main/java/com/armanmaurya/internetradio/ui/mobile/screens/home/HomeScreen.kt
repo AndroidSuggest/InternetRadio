@@ -57,7 +57,10 @@ import com.armanmaurya.internetradio.domain.model.PlaybackSource
 import com.armanmaurya.internetradio.domain.model.RadioStation
 
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.rememberUpdatedState
 import com.armanmaurya.internetradio.ui.shared.viewmodels.LibraryViewModel
+import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.RecordingsContent
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.schedules.SchedulesTabContent
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationListCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.layout.ExpandedHomeLayout
@@ -308,105 +311,117 @@ fun HomeScreen(
     ) { innerPadding ->
         val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black
         val outlineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-        val pagerContent = @Composable {
-            // Tab Container with horizontal pager
-            Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (isPureBlack) {
-                            Modifier.drawWithContent {
-                                drawContent()
-                                // Draw a 3-sided border (left + top + right) for the pure black theme.
-                                // We skip the bottom edge intentionally so there is no divider line
-                                // between the surface and the navigation bar.
-                                val strokePx = 1.dp.toPx()
-                                val r = 28.dp.toPx()
-                                val path = androidx.compose.ui.graphics.Path().apply {
-                                    moveTo(0f, size.height)
-                                    lineTo(0f, r)
-                                    arcTo(
-                                        rect = androidx.compose.ui.geometry.Rect(0f, 0f, r * 2, r * 2),
-                                        startAngleDegrees = 180f,
-                                        sweepAngleDegrees = 90f,
-                                        forceMoveTo = false
+        val currentWidthSizeClass by rememberUpdatedState(widthSizeClass)
+        val currentContentPadding by rememberUpdatedState(contentPadding)
+        val currentPlayingStationUuid by rememberUpdatedState(playingStationUuid)
+        val currentIsPlaybackActive by rememberUpdatedState(isPlaybackActive)
+        val currentActiveSessions by rememberUpdatedState(activeSessions)
+        val currentIsLibraryDragging by rememberUpdatedState(isLibraryDragging)
+        val currentOnEditStation by rememberUpdatedState(onEditStation)
+        val currentOnExportStation by rememberUpdatedState(onExportStation)
+        val currentOnEditSchedule by rememberUpdatedState(onEditSchedule)
+
+        val pagerContent = remember {
+            movableContentOf {
+                // Tab Container with horizontal pager
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (isPureBlack) {
+                                Modifier.drawWithContent {
+                                    drawContent()
+                                    // Draw a 3-sided border (left + top + right) for the pure black theme.
+                                    // We skip the bottom edge intentionally so there is no divider line
+                                    // between the surface and the navigation bar.
+                                    val strokePx = 1.dp.toPx()
+                                    val r = 28.dp.toPx()
+                                    val path = androidx.compose.ui.graphics.Path().apply {
+                                        moveTo(0f, size.height)
+                                        lineTo(0f, r)
+                                        arcTo(
+                                            rect = androidx.compose.ui.geometry.Rect(0f, 0f, r * 2, r * 2),
+                                            startAngleDegrees = 180f,
+                                            sweepAngleDegrees = 90f,
+                                            forceMoveTo = false
+                                        )
+                                        lineTo(size.width - r, 0f)
+                                        arcTo(
+                                            rect = androidx.compose.ui.geometry.Rect(size.width - r * 2, 0f, size.width, r * 2),
+                                            startAngleDegrees = 270f,
+                                            sweepAngleDegrees = 90f,
+                                            forceMoveTo = false
+                                        )
+                                        lineTo(size.width, size.height)
+                                    }
+                                    drawPath(
+                                        path = path,
+                                        color = outlineColor,
+                                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokePx)
                                     )
-                                    lineTo(size.width - r, 0f)
-                                    arcTo(
-                                        rect = androidx.compose.ui.geometry.Rect(size.width - r * 2, 0f, size.width, r * 2),
-                                        startAngleDegrees = 270f,
-                                        sweepAngleDegrees = 90f,
-                                        forceMoveTo = false
-                                    )
-                                    lineTo(size.width, size.height)
                                 }
-                                drawPath(
-                                    path = path,
-                                    color = outlineColor,
-                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokePx)
-                                )
-                            }
-                        } else Modifier
-                    ),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                shape = if (widthSizeClass == WindowWidthSizeClass.Expanded) {
-                    RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp)
-                } else {
-                    RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
-                },
-            ) {
-                HorizontalPager(
-                    state = pagerState,
-                    userScrollEnabled = !isLibraryDragging,
-                    modifier = Modifier.fillMaxSize()
-                ) { page ->
-                    when (page) {
-                        0 -> BrowseContent(
-                            onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
-                            onEditStation = onEditStation,
-                            onExportStation = onExportStation,
-                            contentPadding = contentPadding,
-                            viewModel = browseViewModel,
-                            playingStationUuid = playingStationUuid,
-                            isPlaybackActive = isPlaybackActive,
-                            activeSessions = activeSessions,
-                            onToggleRecording = { playerViewModel.toggleRecording(it) }
-                        )
-                        1 -> RecentContent(
-                            onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
-                            onEditStation = onEditStation,
-                            onExportStation = onExportStation,
-                            contentPadding = contentPadding,
-                            playingStationUuid = playingStationUuid,
-                            isPlaybackActive = isPlaybackActive,
-                            searchQuery = uiState.searchQuery,
-                            activeSessions = activeSessions,
-                            onToggleRecording = { playerViewModel.toggleRecording(it) }
-                        )
-                        2 -> LibraryContent(
-                            onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
-                            onEditStation = { stationUuid -> onEditStation(stationUuid) },
-                            onExportStation = onExportStation,
-                            contentPadding = contentPadding,
-                            playingStationUuid = playingStationUuid,
-                            isPlaybackActive = isPlaybackActive,
-                            searchQuery = uiState.searchQuery,
-                            activeSessions = activeSessions,
-                            onToggleRecording = { playerViewModel.toggleRecording(it) },
-                            onDragStateChange = { isLibraryDragging = it }
-                        )
-                        3 -> com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.RecordingsContent(
-                            onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
-                            onEditStation = onEditStation,
-                            onExportStation = onExportStation,
-                            playingStationUuid = playingStationUuid,
-                            isPlaybackActive = isPlaybackActive,
-                            contentPadding = contentPadding
-                        )
-                        4 -> SchedulesTabContent(
-                            onEditSchedule = onEditSchedule,
-                            contentPadding = contentPadding
-                        )
+                            } else Modifier
+                        ),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = if (currentWidthSizeClass == WindowWidthSizeClass.Expanded) {
+                        RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp)
+                    } else {
+                        RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+                    },
+                ) {
+                    HorizontalPager(
+                        state = pagerState,
+                        userScrollEnabled = !currentIsLibraryDragging,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        when (page) {
+                            0 -> BrowseContent(
+                                onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                                onEditStation = currentOnEditStation,
+                                onExportStation = currentOnExportStation,
+                                contentPadding = currentContentPadding,
+                                viewModel = browseViewModel,
+                                playingStationUuid = currentPlayingStationUuid,
+                                isPlaybackActive = currentIsPlaybackActive,
+                                activeSessions = currentActiveSessions,
+                                onToggleRecording = { playerViewModel.toggleRecording(it) }
+                            )
+                            1 -> RecentContent(
+                                onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                                onEditStation = currentOnEditStation,
+                                onExportStation = currentOnExportStation,
+                                contentPadding = currentContentPadding,
+                                playingStationUuid = currentPlayingStationUuid,
+                                isPlaybackActive = currentIsPlaybackActive,
+                                searchQuery = uiState.searchQuery,
+                                activeSessions = currentActiveSessions,
+                                onToggleRecording = { playerViewModel.toggleRecording(it) }
+                            )
+                            2 -> LibraryContent(
+                                onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                                onEditStation = { stationUuid -> currentOnEditStation(stationUuid) },
+                                onExportStation = currentOnExportStation,
+                                contentPadding = currentContentPadding,
+                                playingStationUuid = currentPlayingStationUuid,
+                                isPlaybackActive = currentIsPlaybackActive,
+                                searchQuery = uiState.searchQuery,
+                                activeSessions = currentActiveSessions,
+                                onToggleRecording = { playerViewModel.toggleRecording(it) },
+                                onDragStateChange = { isLibraryDragging = it }
+                            )
+                            3 -> RecordingsContent(
+                                onStationClick = { stations, index, source -> playerViewModel.play(stations, index, source) },
+                                onEditStation = currentOnEditStation,
+                                onExportStation = currentOnExportStation,
+                                playingStationUuid = currentPlayingStationUuid,
+                                isPlaybackActive = currentIsPlaybackActive,
+                                contentPadding = currentContentPadding
+                            )
+                            4 -> SchedulesTabContent(
+                                onEditSchedule = currentOnEditSchedule,
+                                contentPadding = currentContentPadding
+                            )
+                        }
                     }
                 }
             }

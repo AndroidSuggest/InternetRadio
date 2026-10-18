@@ -44,6 +44,12 @@ class RecordingsViewModel @Inject constructor(
         .map { stations -> stations.map { it.stationUuid }.toSet() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
+    private val _selectedStationName = MutableStateFlow<String?>(null)
+    val selectedStationName: StateFlow<String?> = _selectedStationName.asStateFlow()
+
+    private val _expandedRecordingUri = MutableStateFlow<String?>(null)
+    val expandedRecordingUri: StateFlow<String?> = _expandedRecordingUri.asStateFlow()
+
     init {
         loadFolders()
         viewModelScope.launch {
@@ -53,10 +59,25 @@ class RecordingsViewModel @Inject constructor(
         }
     }
 
+    fun selectStation(stationName: String?) {
+        _selectedStationName.value = stationName
+        _expandedRecordingUri.value = null
+    }
+
+    fun setExpandedRecordingUri(uri: String?) {
+        _expandedRecordingUri.value = uri
+    }
+
     fun loadFolders() {
         viewModelScope.launch {
-            _folders.value = getRecordingFoldersUseCase()
+            val loadedFolders = getRecordingFoldersUseCase()
+            _folders.value = loadedFolders
             _isLoaded.value = true
+            val currentSelected = _selectedStationName.value
+            if (currentSelected != null && loadedFolders.none { it.stationName == currentSelected }) {
+                _selectedStationName.value = null
+                _expandedRecordingUri.value = null
+            }
         }
     }
 
@@ -67,18 +88,29 @@ class RecordingsViewModel @Inject constructor(
     fun deleteRecording(recording: RecordingFile) {
         viewModelScope.launch {
             deleteRecordingUseCase.deleteFile(recording)
+            if (_expandedRecordingUri.value == recording.uri.toString()) {
+                _expandedRecordingUri.value = null
+            }
         }
     }
 
     fun deleteRecordings(recordings: List<RecordingFile>) {
         viewModelScope.launch {
             deleteRecordingUseCase.deleteFiles(recordings)
+            val deletedUris = recordings.map { it.uri.toString() }.toSet()
+            if (_expandedRecordingUri.value in deletedUris) {
+                _expandedRecordingUri.value = null
+            }
         }
     }
 
     fun deleteFolders(stationNames: List<String>) {
         viewModelScope.launch {
             deleteRecordingUseCase.deleteFolders(stationNames)
+            if (_selectedStationName.value in stationNames) {
+                _selectedStationName.value = null
+                _expandedRecordingUri.value = null
+            }
         }
     }
 
