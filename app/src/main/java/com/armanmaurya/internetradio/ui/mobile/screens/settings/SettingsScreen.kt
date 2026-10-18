@@ -1150,7 +1150,7 @@ private fun BackupSection(
         uiState.lastAutoBackupStatus == com.armanmaurya.internetradio.domain.model.AutoBackupStatus.FAILED -> {
             stringResource(
                 R.string.settings_sync_status_failed,
-                uiState.lastAutoBackupErrorMessage ?: "Unknown error"
+                uiState.lastAutoBackupErrorMessage ?: stringResource(R.string.error_unknown)
             )
         }
         else -> stringResource(R.string.settings_sync_status_never)

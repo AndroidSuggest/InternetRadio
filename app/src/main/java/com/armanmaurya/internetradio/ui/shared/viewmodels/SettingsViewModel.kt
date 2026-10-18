@@ -375,7 +375,7 @@ class SettingsViewModel @Inject constructor(
                         if (e is MalformedBackupException || e.cause is MalformedBackupException) {
                             _showMalformedBackupBottomSheet.value = true
                         }
-                        _backupResult.send(context.getString(R.string.settings_sync_status_failed, e.localizedMessage ?: "Unknown error"))
+                        _backupResult.send(context.getString(R.string.settings_sync_status_failed, e.localizedMessage ?: context.getString(R.string.error_unknown)))
                     }
                 } finally {
                     _isSyncing.value = false
@@ -383,7 +383,7 @@ class SettingsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _isSyncing.value = false
                 Log.e(TAG, "Failed to persist SAF permission", e)
-                _backupResult.send(context.getString(R.string.settings_folder_error, e.localizedMessage ?: "Unknown error"))
+                _backupResult.send(context.getString(R.string.settings_folder_error, e.localizedMessage ?: context.getString(R.string.error_unknown)))
             }
         }
     }
@@ -400,13 +400,13 @@ class SettingsViewModel @Inject constructor(
                     if (e is MalformedBackupException || e.cause is MalformedBackupException) {
                         _showMalformedBackupBottomSheet.value = true
                     }
-                    _backupResult.send(context.getString(R.string.settings_sync_status_failed, e.localizedMessage ?: "Unknown error"))
+                    _backupResult.send(context.getString(R.string.settings_sync_status_failed, e.localizedMessage ?: context.getString(R.string.error_unknown)))
                 }
             } catch (e: Exception) {
                 if (e is MalformedBackupException || e.cause is MalformedBackupException) {
                     _showMalformedBackupBottomSheet.value = true
                 }
-                _backupResult.send(context.getString(R.string.settings_sync_status_failed, e.localizedMessage ?: "Unknown error"))
+                _backupResult.send(context.getString(R.string.settings_sync_status_failed, e.localizedMessage ?: context.getString(R.string.error_unknown)))
             } finally {
                 _isSyncing.value = false
             }
@@ -427,7 +427,7 @@ class SettingsViewModel @Inject constructor(
                 result.onSuccess {
                     _backupResult.send(context.getString(R.string.settings_malformed_backup_overwritten))
                 }.onFailure { e ->
-                    _backupResult.send(context.getString(R.string.settings_sync_status_failed, e.localizedMessage ?: "Unknown error"))
+                    _backupResult.send(context.getString(R.string.settings_sync_status_failed, e.localizedMessage ?: context.getString(R.string.error_unknown)))
                 }
             } finally {
                 _isSyncing.value = false

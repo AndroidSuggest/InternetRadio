@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
+import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.core.system.SystemFacade
 import com.armanmaurya.internetradio.domain.controller.AutoBackupManager
 import com.armanmaurya.internetradio.domain.model.AutoBackupStatus
@@ -92,7 +93,7 @@ class AutoBackupManagerImpl @Inject constructor(
             val prefs = settingsRepository.appPreferencesFlow.first()
             val uriStr = prefs.autoBackupTreeUri
             if (uriStr.isNullOrBlank()) {
-                val error = "No backup folder configured"
+                val error = context.getString(R.string.settings_backup_error_no_folder)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(IllegalStateException(error))
             }
@@ -102,20 +103,20 @@ class AutoBackupManagerImpl @Inject constructor(
                 it.uri == treeUri && it.isWritePermission
             }
             if (!hasPermission) {
-                val error = "Storage permission revoked. Please re-select backup folder."
+                val error = context.getString(R.string.settings_backup_error_permission_revoked)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(SecurityException(error))
             }
 
             val treeDoc = DocumentFile.fromTreeUri(context, treeUri)
             if (treeDoc == null || !treeDoc.exists() || !treeDoc.isDirectory) {
-                val error = "Backup folder no longer exists. Please re-select a folder."
+                val error = context.getString(R.string.settings_backup_error_folder_deleted)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(FileNotFoundException(error))
             }
 
             if (!treeDoc.canWrite()) {
-                val error = "Cannot write to selected backup folder. Permission denied."
+                val error = context.getString(R.string.settings_backup_error_cannot_write)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(SecurityException(error))
             }
@@ -123,7 +124,7 @@ class AutoBackupManagerImpl @Inject constructor(
             val targetFile = treeDoc.findFile(BACKUP_FILE_NAME)
                 ?: treeDoc.createFile("application/json", BACKUP_FILE_NAME)
                 ?: run {
-                    val error = "Could not create $BACKUP_FILE_NAME in backup folder"
+                    val error = context.getString(R.string.settings_backup_error_create_file, BACKUP_FILE_NAME)
                     settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                     return Result.failure(IOException(error))
                 }
@@ -145,7 +146,7 @@ class AutoBackupManagerImpl @Inject constructor(
                 stream.write(jsonBytes)
                 stream.flush()
             } ?: run {
-                val error = "Could not open $BACKUP_FILE_NAME for writing"
+                val error = context.getString(R.string.settings_backup_error_open_write, BACKUP_FILE_NAME)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(IOException(error))
             }
@@ -175,7 +176,7 @@ class AutoBackupManagerImpl @Inject constructor(
             val prefs = settingsRepository.appPreferencesFlow.first()
             val uriStr = prefs.autoBackupTreeUri
             if (uriStr.isNullOrBlank()) {
-                return Result.failure(IllegalStateException("No backup folder configured"))
+                return Result.failure(IllegalStateException(context.getString(R.string.settings_backup_error_no_folder)))
             }
 
             val treeUri = Uri.parse(uriStr)
@@ -183,44 +184,44 @@ class AutoBackupManagerImpl @Inject constructor(
                 it.uri == treeUri && (it.isReadPermission || it.isWritePermission)
             }
             if (!hasPermission) {
-                return Result.failure(SecurityException("Storage permission revoked. Please re-select backup folder."))
+                return Result.failure(SecurityException(context.getString(R.string.settings_backup_error_permission_revoked)))
             }
 
             val treeDoc = DocumentFile.fromTreeUri(context, treeUri)
             if (treeDoc == null || !treeDoc.exists() || !treeDoc.isDirectory) {
-                return Result.failure(FileNotFoundException("Backup folder no longer exists. Please re-select a folder."))
+                return Result.failure(FileNotFoundException(context.getString(R.string.settings_backup_error_folder_deleted)))
             }
 
             val file = treeDoc.findFile(BACKUP_FILE_NAME)
-                ?: return Result.failure(FileNotFoundException("$BACKUP_FILE_NAME not found in backup folder"))
+                ?: return Result.failure(FileNotFoundException(context.getString(R.string.settings_backup_error_file_not_found, BACKUP_FILE_NAME)))
 
             val json = try {
                 context.contentResolver.openInputStream(file.uri)?.bufferedReader(Charsets.UTF_8)?.readText()
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 null
-            } ?: return Result.failure(IOException("Could not open $BACKUP_FILE_NAME for reading"))
+            } ?: return Result.failure(IOException(context.getString(R.string.settings_backup_error_open_read, BACKUP_FILE_NAME)))
 
             if (json.isBlank()) {
-                return Result.failure(IllegalArgumentException("$BACKUP_FILE_NAME is empty"))
+                return Result.failure(IllegalArgumentException(context.getString(R.string.settings_backup_error_file_empty, BACKUP_FILE_NAME)))
             }
 
             val backup: LibraryBackup? = try {
                 Gson().fromJson(json, LibraryBackup::class.java)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
-                return Result.failure(MalformedBackupException("Backup file ($BACKUP_FILE_NAME) is corrupted or contains invalid JSON", e))
+                return Result.failure(MalformedBackupException(context.getString(R.string.settings_backup_error_corrupted_json, BACKUP_FILE_NAME), e))
             }
 
             val rawStations = backup?.stations
-                ?: return Result.failure(MalformedBackupException("$BACKUP_FILE_NAME contains no stations or has invalid format"))
+                ?: return Result.failure(MalformedBackupException(context.getString(R.string.settings_backup_error_no_stations, BACKUP_FILE_NAME)))
 
             val validStations = rawStations
                 .filter { !it.stationUuid.isNullOrBlank() && !it.name.isNullOrBlank() && !it.url.isNullOrBlank() }
                 .distinctBy { it.stationUuid }
 
             if (validStations.isEmpty() && rawStations.isNotEmpty()) {
-                return Result.failure(MalformedBackupException("Backup file contains invalid station entries"))
+                return Result.failure(MalformedBackupException(context.getString(R.string.settings_backup_error_invalid_stations)))
             }
 
             val strategy = prefs.conflictStrategy
@@ -275,7 +276,7 @@ class AutoBackupManagerImpl @Inject constructor(
             val prefs = settingsRepository.appPreferencesFlow.first()
             val uriStr = prefs.autoBackupTreeUri
             if (uriStr.isNullOrBlank()) {
-                val error = "No backup folder configured"
+                val error = context.getString(R.string.settings_backup_error_no_folder)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(IllegalStateException(error))
             }
@@ -285,20 +286,20 @@ class AutoBackupManagerImpl @Inject constructor(
                 it.uri == treeUri && it.isWritePermission
             }
             if (!hasPermission) {
-                val error = "Storage permission revoked. Please re-select backup folder."
+                val error = context.getString(R.string.settings_backup_error_permission_revoked)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(SecurityException(error))
             }
 
             val treeDoc = DocumentFile.fromTreeUri(context, treeUri)
             if (treeDoc == null || !treeDoc.exists() || !treeDoc.isDirectory) {
-                val error = "Backup folder no longer exists. Please re-select a folder."
+                val error = context.getString(R.string.settings_backup_error_folder_deleted)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(FileNotFoundException(error))
             }
 
             if (!treeDoc.canWrite()) {
-                val error = "Cannot write to selected backup folder. Permission denied."
+                val error = context.getString(R.string.settings_backup_error_cannot_write)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(SecurityException(error))
             }
@@ -309,7 +310,9 @@ class AutoBackupManagerImpl @Inject constructor(
             if (targetFile == null) {
                 // stations.json does not exist yet -> initial backup
                 val backupResult = performBackupInternal()
-                return backupResult.map { "Backup created: ${localEntities.size} stations saved" }
+                return backupResult.map {
+                    context.resources.getQuantityString(R.plurals.settings_sync_backup_created, localEntities.size, localEntities.size)
+                }
             }
 
             // stations.json exists -> read it
@@ -319,7 +322,7 @@ class AutoBackupManagerImpl @Inject constructor(
                 if (e is CancellationException) throw e
                 null
             } ?: run {
-                val error = "Could not read $BACKUP_FILE_NAME"
+                val error = context.getString(R.string.settings_backup_error_read, BACKUP_FILE_NAME)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(IOException(error))
             }
@@ -327,14 +330,16 @@ class AutoBackupManagerImpl @Inject constructor(
             if (json.isBlank()) {
                 // File exists but is empty -> write local entities
                 val backupResult = performBackupInternal()
-                return backupResult.map { "Backup created: ${localEntities.size} stations saved" }
+                return backupResult.map {
+                    context.resources.getQuantityString(R.plurals.settings_sync_backup_created, localEntities.size, localEntities.size)
+                }
             }
 
             val backup: LibraryBackup? = try {
                 Gson().fromJson(json, LibraryBackup::class.java)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
-                val error = "Backup file ($BACKUP_FILE_NAME) is corrupted or contains invalid JSON"
+                val error = context.getString(R.string.settings_backup_error_corrupted_json, BACKUP_FILE_NAME)
                 settingsRepository.setLastAutoBackupResult(System.currentTimeMillis(), AutoBackupStatus.FAILED, error)
                 return Result.failure(MalformedBackupException(error, e))
             }
@@ -347,11 +352,13 @@ class AutoBackupManagerImpl @Inject constructor(
             if (localEntities.isEmpty() && remoteStations.isNotEmpty()) {
                 // Empty local library -> restore all
                 val restoreResult = performRestoreInternal()
-                return restoreResult.map { count -> "Restored $count stations from backup" }
+                return restoreResult.map { count ->
+                    context.resources.getQuantityString(R.plurals.settings_sync_restored, count, count)
+                }
             }
 
             if (localEntities.isEmpty() && remoteStations.isEmpty()) {
-                return Result.success("Sync complete: Library is up to date")
+                return Result.success(context.getString(R.string.settings_sync_up_to_date))
             }
 
             // Both local and remote exist (or remote is empty while local has stations) -> merge with conflict strategy
@@ -394,9 +401,13 @@ class AutoBackupManagerImpl @Inject constructor(
             }
 
             val message = if (totalImportedOrUpdated > 0) {
-                "Sync complete: $totalImportedOrUpdated stations restored/updated"
+                context.resources.getQuantityString(
+                    R.plurals.settings_sync_success_merged,
+                    totalImportedOrUpdated,
+                    totalImportedOrUpdated
+                )
             } else {
-                "Sync complete: Library is up to date"
+                context.getString(R.string.settings_sync_up_to_date)
             }
             return Result.success(message)
         } catch (e: Exception) {
@@ -411,12 +422,12 @@ class AutoBackupManagerImpl @Inject constructor(
 
     private fun formatErrorMessage(e: Throwable): String {
         return when (e) {
-            is MalformedBackupException -> "Backup file ($BACKUP_FILE_NAME) is corrupted or contains invalid JSON"
-            is JsonSyntaxException -> "Backup file ($BACKUP_FILE_NAME) is corrupted or contains invalid JSON"
-            is SecurityException -> e.localizedMessage ?: "Storage permission denied"
-            is FileNotFoundException -> e.localizedMessage ?: "Folder or backup file not found"
-            is IOException -> e.localizedMessage ?: "Storage read/write error"
-            else -> e.localizedMessage ?: "Unknown error"
+            is MalformedBackupException -> context.getString(R.string.settings_backup_error_corrupted_json, BACKUP_FILE_NAME)
+            is JsonSyntaxException -> context.getString(R.string.settings_backup_error_corrupted_json, BACKUP_FILE_NAME)
+            is SecurityException -> e.localizedMessage ?: context.getString(R.string.settings_backup_error_permission_denied)
+            is FileNotFoundException -> e.localizedMessage ?: context.getString(R.string.settings_backup_error_not_found)
+            is IOException -> e.localizedMessage ?: context.getString(R.string.settings_backup_error_io)
+            else -> e.localizedMessage ?: context.getString(R.string.error_unknown)
         }
     }
 }
