@@ -430,4 +430,30 @@
     <string name="settings_malformed_backup_cancel">Mantieni i file attuali</string>
     <string name="settings_malformed_backup_overwritten">Backup sostituito con la libreria attuale</string>
     <string name="shortcut_not_supported">Il launcher non supporta le scorciatoie fissate</string>
+    <plurals name="settings_malformed_backup_overwrite_desc">
+        <item quantity="one">Sostituisci il file corrotto con %1$d stazione locale</item>
+        <item quantity="many">Sostituisci il file corrotto con %1$d stazioni locali</item>
+        <item quantity="other">Sostituisci il file corrotto con %1$d stazioni locali</item>
+    </plurals>
+    <plurals name="settings_sync_backup_created">
+        <item quantity="one">Backup creato: %1$d stazione salvata</item>
+        <item quantity="many">Backup creato: %1$d stazioni salvate</item>
+        <item quantity="other">Backup creato: %1$d stazioni salvate</item>
+    </plurals>
+    <plurals name="settings_sync_restored">
+        <item quantity="one">%1$d stazione ripristinata dal backup</item>
+        <item quantity="many">%1$d stazioni ripristinate dal backup</item>
+        <item quantity="other">%1$d stazioni ripristinate dal backup</item>
+    </plurals>
+    <string name="settings_sync_up_to_date">Sincronizzazione completata: Libreria aggiornata</string>
+    <plurals name="settings_sync_success_merged">
+        <item quantity="one">Sincronizzazione completata: %1$d stazione ripristinata/aggiornata</item>
+        <item quantity="many">Sincronizzazione completata: %1$d stazioni ripristinate/aggiornate</item>
+        <item quantity="other">Sincronizzazione completata: %1$d stazioni ripristinate/aggiornate</item>
+    </plurals>
+    <string name="settings_backup_error_no_folder">Nessuna cartella di backup configurata</string>
+    <string name="settings_backup_error_permission_revoked">Autorizzazione di archiviazione revocata. Seleziona di nuovo la cartella di backup.</string>
+    <string name="settings_backup_error_folder_deleted">La cartella di backup non esiste più. Seleziona di nuovo una cartella.</string>
+    <string name="settings_backup_error_cannot_write">Impossibile scrivere sulla cartella di backup selezionata. Autorizzazione negata.</string>
+    <string name="settings_backup_error_create_file">Impossibile creare %1$s nella cartella di backup</string>
 </resources>
