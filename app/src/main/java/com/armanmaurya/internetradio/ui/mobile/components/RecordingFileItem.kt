@@ -1,37 +1,28 @@
 package com.armanmaurya.internetradio.ui.mobile.components
 
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import android.text.format.DateUtils
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import com.armanmaurya.internetradio.R
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.armanmaurya.internetradio.domain.model.RecordingFile
 import java.util.Locale
@@ -40,9 +31,10 @@ import java.util.Locale
 @Composable
 fun RecordingFileItem(
     recording: RecordingFile,
-    isExpanded: Boolean,
     isSelected: Boolean = false,
     selectionMode: Boolean = false,
+    isCurrentlyPlaying: Boolean = false,
+    playbackIsPlaying: Boolean = false,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
     onDelete: () -> Unit,
@@ -60,7 +52,7 @@ fun RecordingFileItem(
     var isDeleting by remember(recording.uri) { mutableStateOf(false) }
     val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
 
-    val alpha by androidx.compose.animation.core.animateFloatAsState(
+    val alpha by animateFloatAsState(
         targetValue = if (isDeleting) 0.5f else 1f,
         label = "deletingAlpha"
     )
@@ -73,13 +65,13 @@ fun RecordingFileItem(
             .background(
                 if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                 else if (isPureBlack) androidx.compose.ui.graphics.Color.Black 
-                else if (isExpanded) MaterialTheme.colorScheme.surfaceVariant 
+                else if (isCurrentlyPlaying) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
             .then(
                 if (isPureBlack) Modifier.border(
                     1.dp,
-                    if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                    if (isSelected || isCurrentlyPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                     RoundedCornerShape(12.dp)
                 ) else Modifier
             )
@@ -117,7 +109,7 @@ fun RecordingFileItem(
                 if (selectionMode) {
                     Checkbox(
                         checked = isSelected,
-                        onCheckedChange = null, // handled by the row click
+                        onCheckedChange = null,
                         modifier = Modifier.padding(end = 8.dp)
                     )
                 } else {
@@ -149,154 +141,18 @@ fun RecordingFileItem(
             },
             leadingContent = {
                 Icon(
-                    imageVector = Icons.Default.Mic,
+                    imageVector = when {
+                        isCurrentlyPlaying && playbackIsPlaying -> Icons.Default.GraphicEq
+                        isCurrentlyPlaying -> Icons.Default.Pause
+                        else -> Icons.Default.Mic
+                    },
                     contentDescription = null,
-                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = if (isSelected || isCurrentlyPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             colors = ListItemDefaults.colors(
                 containerColor = androidx.compose.ui.graphics.Color.Transparent
             )
-        )
-        
-        if (isExpanded) {
-            InlineMediaPlayer(
-                uri = recording.uri,
-                initialDurationMs = recording.durationMs
-            )
-        }
-    }
-}
-
-@Composable
-fun InlineMediaPlayer(
-    uri: android.net.Uri,
-    initialDurationMs: Long = 0L
-) {
-    val context = LocalContext.current
-    val uriString = uri.toString()
-    var isPlaying by rememberSaveable(uri) { mutableStateOf(true) }
-    var duration by rememberSaveable(uri) { 
-        mutableStateOf(if (initialDurationMs > 0L) initialDurationMs else 1L) 
-    }
-    var currentPosition by rememberSaveable(uri) { mutableStateOf(0L) }
-    var progress by remember { 
-        mutableStateOf(
-            if (duration > 0L) (currentPosition.toFloat() / duration).coerceIn(0f, 1f) else 0f
-        ) 
-    }
-    
-    val exoPlayer = remember(uri) {
-        val extractorsFactory = androidx.media3.extractor.DefaultExtractorsFactory()
-            .setConstantBitrateSeekingAlwaysEnabled(true)
-        val mediaSourceFactory = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(context, extractorsFactory)
-        
-        val audioAttributes = AudioAttributes.Builder()
-            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-            .setUsage(C.USAGE_MEDIA)
-            .build()
-        
-        ExoPlayer.Builder(context)
-            .setMediaSourceFactory(mediaSourceFactory)
-            .setAudioAttributes(audioAttributes, true)
-            .build().apply {
-            setMediaItem(MediaItem.fromUri(uri))
-            prepare()
-            if (currentPosition > 0L) {
-                seekTo(currentPosition)
-            }
-            playWhenReady = isPlaying
-            addListener(object : Player.Listener {
-                override fun onIsPlayingChanged(playing: Boolean) {
-                    isPlaying = playing
-                    if (!playing) {
-                        currentPosition = this@apply.currentPosition
-                    }
-                }
-                override fun onPlaybackStateChanged(state: Int) {
-                    if (state == Player.STATE_READY) {
-                        val exoDuration = this@apply.duration
-                        if (exoDuration > 0) {
-                            duration = exoDuration
-                        }
-                    } else if (state == Player.STATE_ENDED) {
-                        isPlaying = false
-                        seekTo(0)
-                        progress = 0f
-                        currentPosition = 0L
-                    }
-                }
-            })
-        }
-    }
-
-    DisposableEffect(exoPlayer) {
-        onDispose {
-            currentPosition = exoPlayer.currentPosition
-            isPlaying = exoPlayer.isPlaying
-            exoPlayer.release()
-        }
-    }
-
-    LaunchedEffect(isPlaying) {
-        while (isPlaying) {
-            currentPosition = exoPlayer.currentPosition
-            progress = currentPosition.toFloat() / duration.coerceAtLeast(1L)
-            kotlinx.coroutines.delay(100)
-        }
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = {
-            if (isPlaying) {
-                currentPosition = exoPlayer.currentPosition
-                exoPlayer.pause()
-                isPlaying = false
-            } else {
-                if (exoPlayer.playbackState == Player.STATE_ENDED) {
-                    exoPlayer.seekTo(0)
-                    currentPosition = 0L
-                    progress = 0f
-                }
-                exoPlayer.play()
-                isPlaying = true
-            }
-        }) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = if (isPlaying) stringResource(R.string.player_cd_pause) else stringResource(R.string.player_cd_play),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-        
-        Slider(
-            value = progress.coerceIn(0f, 1f),
-            onValueChange = { 
-                progress = it
-                val newPosition = (it * duration).toLong()
-                currentPosition = newPosition
-                exoPlayer.seekTo(newPosition)
-            },
-            modifier = Modifier.weight(1f),
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary
-            )
-        )
-        
-        val formattedCurrent = DateUtils.formatElapsedTime(currentPosition / 1000L)
-        val formattedTotal = if (duration > 1L) DateUtils.formatElapsedTime(duration / 1000L) else null
-        val timeText = if (formattedTotal != null) "$formattedCurrent / $formattedTotal" else formattedCurrent
-        Text(
-            text = timeText, 
-            style = MaterialTheme.typography.labelMedium, 
-            modifier = Modifier.padding(start = 12.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

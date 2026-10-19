@@ -93,6 +93,7 @@ fun HomeScreen(
     val playingStationUuid = playerUiState.currentStation?.stationUuid
     val isPlaybackActive = playerUiState.isPlaying
     val activeSessions by playerViewModel.activeSessions.collectAsStateWithLifecycle()
+    val isPlayingRecording by viewModel.isPlayingRecording.collectAsStateWithLifecycle()
 
     if (!uiState.isPreferencesLoaded) {
         return // Wait for preferences to load before rendering
@@ -471,7 +472,8 @@ fun HomeScreen(
                 pagerState = pagerState,
                 coroutineScope = coroutineScope,
                 activeSessions = activeSessions,
-                onToggleRecording = { playerViewModel.toggleRecording(it) }
+                onToggleRecording = { playerViewModel.toggleRecording(it) },
+                isPlayingRecording = isPlayingRecording
             )
         } else {
             CompactHomeLayout(
@@ -480,6 +482,7 @@ fun HomeScreen(
                 tabs = tabs,
                 tabWidths = tabWidths,
                 coroutineScope = coroutineScope,
+                isPlayingRecording = isPlayingRecording,
                 pagerContent = pagerContent
             )
         }

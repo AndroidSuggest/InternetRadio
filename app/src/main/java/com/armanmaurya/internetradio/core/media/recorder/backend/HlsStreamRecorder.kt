@@ -3,6 +3,7 @@ package com.armanmaurya.internetradio.core.media.recorder.backend
 import com.armanmaurya.internetradio.core.media.recorder.RecordingConfig
 import com.armanmaurya.internetradio.core.media.recorder.RecordingSink
 import com.armanmaurya.internetradio.core.media.recorder.RecorderException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -73,8 +74,9 @@ class HlsStreamRecorder(
                 currentPlaylistText = fetchText(playlistUrl, config.userAgent) ?: break
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             if (currentCoroutineContext().isActive && e !is RecorderException) {
-                throw RecorderException.SinkWriteException("HLS segment recording error", e)
+                throw RecorderException.StreamReadException("HLS segment recording error", e)
             }
         } finally {
             if (totalWritten > 0) {
@@ -89,7 +91,7 @@ class HlsStreamRecorder(
             if (!userAgent.isNullOrBlank()) {
                 reqBuilder.header("User-Agent", userAgent)
             }
-            okHttpClient.newCall(reqBuilder.build()).execute().use { it.body?.bytes() }
+            okHttpClient.newCall(reqBuilder.build()).execute().use { it.body.bytes() }
         } catch (_: Exception) {
             null
         }
@@ -101,7 +103,7 @@ class HlsStreamRecorder(
             if (!userAgent.isNullOrBlank()) {
                 reqBuilder.header("User-Agent", userAgent)
             }
-            okHttpClient.newCall(reqBuilder.build()).execute().use { it.body?.string() }
+            okHttpClient.newCall(reqBuilder.build()).execute().use { it.body.string() }
         } catch (_: Exception) {
             null
         }

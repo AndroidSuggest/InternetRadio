@@ -72,7 +72,8 @@ class RecordingRepositoryImpl @Inject constructor(
                         uri = Uri.fromFile(it),
                         lastModified = it.lastModified(),
                         sizeBytes = it.length(),
-                        durationMs = getAudioDurationMs(it)
+                        durationMs = getAudioDurationMs(it),
+                        stationName = dir.name
                     )
                 }.sortedByDescending { it.lastModified }
                 
@@ -99,7 +100,8 @@ class RecordingRepositoryImpl @Inject constructor(
                 uri = Uri.fromFile(it),
                 lastModified = it.lastModified(),
                 sizeBytes = it.length(),
-                durationMs = getAudioDurationMs(it)
+                durationMs = getAudioDurationMs(it),
+                stationName = stationName
             )
         }.sortedByDescending { it.lastModified }
     }

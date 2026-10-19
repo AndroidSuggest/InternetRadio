@@ -117,7 +117,6 @@ fun calculatePlayerSheetProgress(
     screenHeightPx: Float,
     peekHeightPx: Float
 ): Float {
-    if (currentValue == SheetValue.Expanded && targetValue == SheetValue.Expanded) return 1f
     if (currentOffset == null) {
         return if (targetValue == SheetValue.Expanded) 1f else 0f
     }

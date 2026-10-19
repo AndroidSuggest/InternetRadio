@@ -8,6 +8,7 @@ import com.armanmaurya.internetradio.core.utils.AudioFormatUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,6 +26,10 @@ class DefaultStreamRecorder @Inject constructor(
     @ApplicationContext private val context: Context
 ) : StreamRecorder {
 
+    private val recordingHttpClient = okHttpClient.newBuilder()
+        .readTimeout(0, TimeUnit.MILLISECONDS)
+        .build()
+
     override suspend fun record(
         config: RecordingConfig,
         onBytesWritten: (bytes: Long) -> Unit
@@ -32,9 +37,9 @@ class DefaultStreamRecorder @Inject constructor(
         val sink = RecordingSink(fileSystemFacade, config.title, context)
         try {
             if (isHls(config.url)) {
-                HlsStreamRecorder(okHttpClient).record(config, sink, onBytesWritten)
+                HlsStreamRecorder(recordingHttpClient).record(config, sink, onBytesWritten)
             } else {
-                DirectStreamRecorder(okHttpClient).record(config, sink, onBytesWritten)
+                DirectStreamRecorder(recordingHttpClient).record(config, sink, onBytesWritten)
             }
         } finally {
             sink.close()

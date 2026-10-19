@@ -524,4 +524,15 @@
     <string name="widget_configure_presets">Presets</string>
     <string name="settings_widget_appearance_title">Widget Appearance</string>
     <string name="settings_widget_appearance_subtitle">Customize home screen widget transparency and preview</string>
+
+    <!-- Recording Playback -->
+    <string name="recording_playback_channel_name">Recording Playback</string>
+    <string name="recording_playback_channel_description">Notifications for playing recorded audio</string>
+    <string name="recording_now_playing">Now Playing Recording</string>
+    <string name="recording_cd_go_to_recording">Go to original recording</string>
+    <string name="recording_cd_stop_playback">Stop playback</string>
+    <string name="recording_speed">Playback Speed</string>
+    <string name="recording_speed_normal">1.0x (Normal)</string>
+    <string name="recording_cd_loop_enabled">Disable infinite loop</string>
+    <string name="recording_cd_loop_disabled">Enable infinite loop</string>
 </resources>

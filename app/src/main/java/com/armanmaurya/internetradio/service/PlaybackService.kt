@@ -181,7 +181,10 @@ class PlaybackService : MediaLibraryService() {
             this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         mediaLibrarySession = MediaLibrarySession.Builder(this, radioPlayer, sessionCallback)
-            .setSessionActivity(pendingIntent).setBitmapLoader(CoilBitmapLoader(this)).build()
+            .setId("RadioPlaybackSession")
+            .setSessionActivity(pendingIntent)
+            .setBitmapLoader(CoilBitmapLoader(this))
+            .build()
 
         sessionCallback.activeSession = mediaLibrarySession
         sessionCallback.onVolumeBoostChanged = audioEffectsManager::setVolumeBoost

@@ -12,6 +12,7 @@ import com.armanmaurya.internetradio.domain.usecase.recording.DeleteRecordingUse
 import com.armanmaurya.internetradio.domain.usecase.recording.GetActiveRecordingsUseCase
 import com.armanmaurya.internetradio.domain.usecase.recording.GetRecordingFoldersUseCase
 import com.armanmaurya.internetradio.domain.usecase.recording.StopRecordingUseCase
+import com.armanmaurya.internetradio.domain.controller.RecordingPlaybackController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,7 +30,8 @@ class RecordingsViewModel @Inject constructor(
     private val getActiveRecordingsUseCase: GetActiveRecordingsUseCase,
     private val stopRecordingUseCase: StopRecordingUseCase,
     private val recordingRepository: RecordingRepository,
-    private val libraryRepository: LibraryRepository
+    private val libraryRepository: LibraryRepository,
+    private val recordingPlaybackController: RecordingPlaybackController
 ) : ViewModel() {
 
     private val _folders = MutableStateFlow<List<RecordingFolder>>(emptyList())
@@ -50,11 +52,29 @@ class RecordingsViewModel @Inject constructor(
     private val _expandedRecordingUri = MutableStateFlow<String?>(null)
     val expandedRecordingUri: StateFlow<String?> = _expandedRecordingUri.asStateFlow()
 
+    private val _routeEventId = MutableStateFlow(0L)
+    val routeEventId: StateFlow<Long> = _routeEventId.asStateFlow()
+
+    val currentPlayingRecording: StateFlow<RecordingFile?> = recordingPlaybackController.currentRecording
+    val isPlayingRecording: StateFlow<Boolean> = recordingPlaybackController.isPlaying
+    val recordingPositionMs: StateFlow<Long> = recordingPlaybackController.currentPositionMs
+    val recordingDurationMs: StateFlow<Long> = recordingPlaybackController.durationMs
+    val recordingPlaybackSpeed: StateFlow<Float> = recordingPlaybackController.playbackSpeed
+    val isRecordingLooping: StateFlow<Boolean> = recordingPlaybackController.isLooping
+
     init {
         loadFolders()
         viewModelScope.launch {
             recordingRepository.recordingsChangedEvent.collect {
                 loadFolders()
+            }
+        }
+        viewModelScope.launch {
+            recordingPlaybackController.routeToRecordingTarget.collect { target ->
+                if (target != null) {
+                    routeToRecording(target.stationName, target.recordingUri)
+                    recordingPlaybackController.clearRouteTarget()
+                }
             }
         }
     }
@@ -81,12 +101,58 @@ class RecordingsViewModel @Inject constructor(
         }
     }
 
+    fun routeToRecording(stationName: String, uri: String) {
+        _selectedStationName.value = stationName
+        _expandedRecordingUri.value = uri
+        _routeEventId.value = System.currentTimeMillis()
+    }
+
+    fun playRecording(recording: RecordingFile) {
+        recordingPlaybackController.play(recording)
+    }
+
+    fun pauseRecordingPlayback() {
+        recordingPlaybackController.pause()
+    }
+
+    fun togglePlayPauseRecording() {
+        recordingPlaybackController.togglePlayPause()
+    }
+
+    fun seekRecordingPlayback(positionMs: Long) {
+        recordingPlaybackController.seekTo(positionMs)
+    }
+
+    fun setPlaybackSpeed(speed: Float) {
+        recordingPlaybackController.setPlaybackSpeed(speed)
+    }
+
+    fun toggleLoopRecording() {
+        recordingPlaybackController.toggleLoop()
+    }
+
+    fun stopRecordingPlayback() {
+        recordingPlaybackController.stop()
+    }
+
+    fun requestRouteToPlayingRecording() {
+        val playing = currentPlayingRecording.value
+        if (playing != null) {
+            routeToRecording(playing.stationName, playing.uri.toString())
+        } else {
+            recordingPlaybackController.requestRouteToPlayingRecording()
+        }
+    }
+
     fun stopRecording(stationUuid: String) {
         stopRecordingUseCase(stationUuid)
     }
 
     fun deleteRecording(recording: RecordingFile) {
         viewModelScope.launch {
+            if (currentPlayingRecording.value?.uri == recording.uri) {
+                recordingPlaybackController.stop()
+            }
             deleteRecordingUseCase.deleteFile(recording)
             if (_expandedRecordingUri.value == recording.uri.toString()) {
                 _expandedRecordingUri.value = null
@@ -96,8 +162,11 @@ class RecordingsViewModel @Inject constructor(
 
     fun deleteRecordings(recordings: List<RecordingFile>) {
         viewModelScope.launch {
-            deleteRecordingUseCase.deleteFiles(recordings)
             val deletedUris = recordings.map { it.uri.toString() }.toSet()
+            if (currentPlayingRecording.value?.uri?.toString() in deletedUris) {
+                recordingPlaybackController.stop()
+            }
+            deleteRecordingUseCase.deleteFiles(recordings)
             if (_expandedRecordingUri.value in deletedUris) {
                 _expandedRecordingUri.value = null
             }

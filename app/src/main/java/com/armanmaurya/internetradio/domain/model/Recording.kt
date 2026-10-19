@@ -15,7 +15,8 @@ data class RecordingFile(
     val uri: Uri,
     val lastModified: Long,
     val sizeBytes: Long,
-    val durationMs: Long = 0L
+    val durationMs: Long = 0L,
+    val stationName: String = file.parentFile?.name ?: ""
 )
 
 data class RecordingSession(
