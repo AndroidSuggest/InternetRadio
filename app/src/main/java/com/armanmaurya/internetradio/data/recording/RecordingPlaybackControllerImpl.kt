@@ -94,9 +94,16 @@ class RecordingPlaybackControllerImpl @Inject constructor(
                     val dur = exoPlayer.duration
                     if (dur > 0) _durationMs.value = dur
                 } else if (state == Player.STATE_ENDED) {
-                    _isPlaying.value = false
-                    _currentPositionMs.value = 0L
-                    exoPlayer.seekTo(0)
+                    if (_isLooping.value) {
+                        exoPlayer.seekTo(0)
+                        exoPlayer.play()
+                    } else {
+                        _isPlaying.value = false
+                        stopProgressTracker()
+                        exoPlayer.pause()
+                        exoPlayer.seekTo(0)
+                        _currentPositionMs.value = 0L
+                    }
                 }
             }
 

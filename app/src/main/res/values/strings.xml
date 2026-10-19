@@ -215,6 +215,15 @@
     <string name="settings_imported_updated">Updated: %1$d</string>
     <string name="settings_schedule_section">Schedules</string>
 
+    <!-- Community Section -->
+    <string name="settings_community_section">Community</string>
+    <string name="settings_community_telegram_title">Telegram Community</string>
+    <string name="settings_community_telegram_desc">Join discussions, get updates &amp; share stations</string>
+    <string name="settings_community_reddit_title">Reddit Community</string>
+    <string name="settings_community_reddit_desc">Join r/InternetRadioFolks</string>
+    <string name="about_cd_telegram">Telegram</string>
+    <string name="about_cd_reddit">Reddit</string>
+
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
     <!-- ========================================== -->

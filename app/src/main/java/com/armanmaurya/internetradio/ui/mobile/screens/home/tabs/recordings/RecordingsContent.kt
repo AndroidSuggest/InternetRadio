@@ -22,9 +22,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.delay
 import androidx.compose.material3.*
@@ -131,21 +128,44 @@ fun RecordingsContent(
     val routeEventId by viewModel.routeEventId.collectAsStateWithLifecycle()
     val density = LocalDensity.current
 
-    LaunchedEffect(routeEventId, folders, selectedStationName) {
+    LaunchedEffect(routeEventId, selectedStationName) {
         if (routeEventId > 0L && selectedStationName != null && expandedRecordingUri != null && folders.isNotEmpty()) {
-            delay(200)
-            val currentFolder = folders.find { it.stationName == selectedStationName }
-            val fileIndex = currentFolder?.recordings?.indexOfFirst { it.uri.toString() == expandedRecordingUri } ?: -1
-            val activeSessionsOffset = if (currentActiveSessions.isNotEmpty()) 1 + (currentActiveSessions.size + 1) / 2 else 0
-            val contentItemIndex = activeSessionsOffset + 1
-            if (fileIndex >= 0) {
-                val itemHeightPx = with(density) { 76.dp.toPx() }
-                val headerHeightPx = with(density) { 160.dp.toPx() }
-                val scrollOffset = maxOf(0, (fileIndex * itemHeightPx - headerHeightPx).toInt())
-                listState.animateScrollToItem(index = contentItemIndex, scrollOffset = scrollOffset)
+            val currentFolder = folders.find { it.stationName == selectedStationName } ?: return@LaunchedEffect
+            val fileIndex = currentFolder.recordings.indexOfFirst { it.uri.toString() == expandedRecordingUri }
+            if (fileIndex < 0) return@LaunchedEffect
+
+            // Wait for folder transition to settle before checking viewport positions
+            delay(320)
+
+            val headerItem = listState.layoutInfo.visibleItemsInfo.find { it.key == "sticky_selection_and_folder_header" }
+            val contentItem = listState.layoutInfo.visibleItemsInfo.find { it.key == "recordings_folders_content" }
+
+            val itemHeightPx = if (contentItem != null && currentFolder.recordings.isNotEmpty() && contentItem.size > 0) {
+                contentItem.size.toFloat() / currentFolder.recordings.size
             } else {
-                listState.animateScrollToItem(index = contentItemIndex, scrollOffset = 0)
+                with(density) { 80.dp.toPx() }
             }
+            val headerBottomPx = (headerItem?.offset ?: 0) + (headerItem?.size ?: 0)
+            val viewportEndPx = listState.layoutInfo.viewportEndOffset
+
+            if (contentItem != null) {
+                val itemTopInViewport = contentItem.offset + (fileIndex * itemHeightPx)
+                val itemBottomInViewport = itemTopInViewport + itemHeightPx
+
+                // If already fully visible between sticky header and viewport bottom, do NOT scroll!
+                if (itemTopInViewport >= headerBottomPx && itemBottomInViewport <= viewportEndPx) {
+                    return@LaunchedEffect
+                }
+            }
+
+            // Otherwise, scroll smoothly so the item is placed just below the sticky header
+            val targetScrollOffset = maxOf(0, (fileIndex * itemHeightPx - headerBottomPx).toInt())
+            val contentItemIndex = contentItem?.index
+                ?: run {
+                    val activeSessionsOffset = if (currentActiveSessions.isNotEmpty()) 1 + (currentActiveSessions.size + 1) / 2 else 0
+                    activeSessionsOffset + 1
+                }
+            listState.animateScrollToItem(index = contentItemIndex, scrollOffset = targetScrollOffset)
         }
     }
 
@@ -586,61 +606,36 @@ fun RecordingsContent(
                                         key(recording.uri) {
                                             val isCurrentlyPlaying = currentPlayingRecording?.uri == recording.uri
                                             val isSelected = recording.uri.toString() in selectedFiles
-                                            val isTarget = expandedRecordingUri == recording.uri.toString()
-                                            val bringIntoViewRequester = remember { BringIntoViewRequester() }
 
-                                            LaunchedEffect(isTarget, routeEventId) {
-                                                if (isTarget && routeEventId > 0L) {
-                                                    delay(300)
-                                                    try {
-                                                        val headerHeightPx = with(density) { 160.dp.toPx() }
-                                                        bringIntoViewRequester.bringIntoView(
-                                                            Rect(
-                                                                left = 0f,
-                                                                top = -headerHeightPx,
-                                                                right = 1000f,
-                                                                bottom = with(density) { 80.dp.toPx() }
-                                                            )
-                                                        )
-                                                    } catch (_: Exception) {}
-                                                }
-                                            }
-
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .bringIntoViewRequester(bringIntoViewRequester)
-                                            ) {
-                                                RecordingFileItem(
-                                                    recording = recording,
-                                                    isSelected = isSelected,
-                                                    selectionMode = selectionMode,
-                                                    isCurrentlyPlaying = isCurrentlyPlaying,
-                                                    playbackIsPlaying = isPlayingRecording,
-                                                    onClick = {
-                                                        if (selectionMode) {
-                                                            if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
-                                                            if (selectedFiles.isEmpty()) selectionMode = false
+                                            RecordingFileItem(
+                                                recording = recording,
+                                                isSelected = isSelected,
+                                                selectionMode = selectionMode,
+                                                isCurrentlyPlaying = isCurrentlyPlaying,
+                                                playbackIsPlaying = isPlayingRecording,
+                                                onClick = {
+                                                    if (selectionMode) {
+                                                        if (isSelected) selectedFiles -= recording.uri.toString() else selectedFiles += recording.uri.toString()
+                                                        if (selectedFiles.isEmpty()) selectionMode = false
+                                                    } else {
+                                                        if (isCurrentlyPlaying) {
+                                                            viewModel.togglePlayPauseRecording()
                                                         } else {
-                                                            if (isCurrentlyPlaying) {
-                                                                viewModel.togglePlayPauseRecording()
-                                                            } else {
-                                                                viewModel.playRecording(recording)
-                                                            }
+                                                            viewModel.playRecording(recording)
                                                         }
-                                                    },
-                                                    onLongClick = {
-                                                        if (!selectionMode) {
-                                                            selectionMode = true
-                                                            selectedFiles += recording.uri.toString()
-                                                        }
-                                                    },
-                                                    onDelete = {
-                                                        viewModel.deleteRecording(recording)
-                                                    },
-                                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                                )
-                                            }
+                                                    }
+                                                },
+                                                onLongClick = {
+                                                    if (!selectionMode) {
+                                                        selectionMode = true
+                                                        selectedFiles += recording.uri.toString()
+                                                    }
+                                                },
+                                                onDelete = {
+                                                    viewModel.deleteRecording(recording)
+                                                },
+                                                modifier = Modifier.padding(horizontal = 16.dp)
+                                            )
                                         }
                                     }
                                 }
