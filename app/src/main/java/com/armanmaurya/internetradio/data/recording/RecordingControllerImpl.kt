@@ -3,6 +3,7 @@ package com.armanmaurya.internetradio.data.recording
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.armanmaurya.internetradio.core.media.recorder.RecordingConfig
 import com.armanmaurya.internetradio.core.media.recorder.StreamRecorder
@@ -13,9 +14,11 @@ import com.armanmaurya.internetradio.domain.repository.RecordingRepository
 import com.armanmaurya.internetradio.service.RecordingService
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +39,7 @@ class RecordingControllerImpl @Inject constructor(
     private val streamRecorder: StreamRecorder
 ) : RecordingController {
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val activeRecordings = mutableMapOf<String, RecordingSession>()
     private val activeJobs = mutableMapOf<String, Job>()
 
@@ -70,7 +73,7 @@ class RecordingControllerImpl @Inject constructor(
         _activeSessions.update { activeRecordings.toMap() }
 
         val job = scope.launch {
-            launch {
+            val tickerJob = launch {
                 while (isActive) {
                     delay(1000)
                     durationFlow.update { it + 1 }
@@ -85,7 +88,12 @@ class RecordingControllerImpl @Inject constructor(
                 ) { bytes ->
                     recordingSession.bytesWritten += bytes
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("RecordingController", "Recording interrupted for ${station.name}: ${e.message}", e)
             } finally {
+                tickerJob.cancel()
                 onRecordingStopped(station.stationUuid, recordingSession.bytesWritten)
             }
         }

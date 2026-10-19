@@ -112,6 +112,30 @@ class PlayerSheetProgressTest {
     }
 
     @Test
+    fun `early drag progression during collapse before halfway threshold transitions smoothly`() {
+        // totalRange = 2000 - 200 = 1800.
+        // When collapsing from Expanded, moving down 180px gives 0.9f progress even if targetValue is still Expanded
+        val progress90Percent = calculatePlayerSheetProgress(
+            currentValue = SheetValue.Expanded,
+            targetValue = SheetValue.Expanded,
+            currentOffset = 180f,
+            screenHeightPx = 2000f,
+            peekHeightPx = 200f
+        )
+        assertEquals(0.9f, progress90Percent, 0.0001f)
+
+        // Moving down 360px gives 0.8f progress smoothly
+        val progress80Percent = calculatePlayerSheetProgress(
+            currentValue = SheetValue.Expanded,
+            targetValue = SheetValue.Expanded,
+            currentOffset = 360f,
+            screenHeightPx = 2000f,
+            peekHeightPx = 200f
+        )
+        assertEquals(0.8f, progress80Percent, 0.0001f)
+    }
+
+    @Test
     fun `keyboard resize scenario does not crash or collapse progress when expanded`() {
         // Under adjustResize, screenHeight may be significantly reduced (e.g. 500px height with 200px peek)
         val progressExpanded = calculatePlayerSheetProgress(

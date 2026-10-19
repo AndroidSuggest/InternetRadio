@@ -2,6 +2,7 @@ package com.armanmaurya.internetradio.ui.mobile.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.armanmaurya.internetradio.domain.controller.RecordingPlaybackController
 import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,11 +28,14 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val recordingPlaybackController: RecordingPlaybackController
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    val isPlayingRecording: StateFlow<Boolean> = recordingPlaybackController.isPlaying
 
     init {
         observeSettings()
@@ -94,6 +98,14 @@ class HomeViewModel @Inject constructor(
     fun onTabSelected(index: Int) {
         _uiState.update {
             it.copy(selectedTab = index)
+        }
+    }
+
+    fun routeToRecording(stationName: String?, uriString: String?) {
+        if (!stationName.isNullOrBlank() && !uriString.isNullOrBlank()) {
+            recordingPlaybackController.routeToRecording(stationName, uriString)
+        } else {
+            recordingPlaybackController.requestRouteToPlayingRecording()
         }
     }
 }

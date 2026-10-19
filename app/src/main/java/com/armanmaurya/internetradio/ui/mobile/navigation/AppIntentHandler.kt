@@ -74,8 +74,13 @@ fun AppIntentHandler(
                 }
             } else if (intent.getStringExtra("open_tab") == "recordings") {
                 intent.removeExtra("open_tab")
+                val stationName = intent.getStringExtra("route_recording_station")
+                val uriString = intent.getStringExtra("route_recording_uri")
+                intent.removeExtra("route_recording_station")
+                intent.removeExtra("route_recording_uri")
                 navController.popBackStack(AppDestination.Discover.route, inclusive = false)
                 homeViewModel.onTabSelected(3)
+                homeViewModel.routeToRecording(stationName, uriString)
             } else if (intent.action == "com.armanmaurya.internetradio.ACTION_OPEN_PLAYER" || intent.getBooleanExtra("open_player_sheet", false)) {
                 intent.action = null
                 intent.removeExtra("open_player_sheet")

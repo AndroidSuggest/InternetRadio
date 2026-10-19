@@ -1,5 +1,13 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.home.layout
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +18,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +36,7 @@ import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.History
@@ -86,7 +96,8 @@ internal fun ExpandedHomeLayout(
     pagerState: androidx.compose.foundation.pager.PagerState,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     activeSessions: Map<String, RecordingSession> = emptyMap(),
-    onToggleRecording: (RadioStation) -> Unit = {}
+    onToggleRecording: (RadioStation) -> Unit = {},
+    isPlayingRecording: Boolean = false
 ) {
     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black
     Box(modifier = Modifier.fillMaxSize()) {
@@ -109,7 +120,8 @@ internal fun ExpandedHomeLayout(
                 tabs = tabs,
                 pagerState = pagerState,
                 coroutineScope = coroutineScope,
-                isPureBlack = isPureBlack
+                isPureBlack = isPureBlack,
+                isPlayingRecording = isPlayingRecording
             )
 
             Box(modifier = Modifier.weight(1f)) {
@@ -163,7 +175,8 @@ private fun Sidebar(
     tabs: List<String>,
     pagerState: androidx.compose.foundation.pager.PagerState,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
-    isPureBlack: Boolean
+    isPureBlack: Boolean,
+    isPlayingRecording: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -196,7 +209,8 @@ private fun Sidebar(
                 tabs = tabs,
                 pagerState = pagerState,
                 coroutineScope = coroutineScope,
-                isPureBlack = isPureBlack
+                isPureBlack = isPureBlack,
+                isPlayingRecording = isPlayingRecording
             )
         }
     }
@@ -324,7 +338,8 @@ private fun SidebarNavigation(
     tabs: List<String>,
     pagerState: androidx.compose.foundation.pager.PagerState,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
-    isPureBlack: Boolean
+    isPureBlack: Boolean,
+    isPlayingRecording: Boolean = false
 ) {
     val icons = listOf(
         Icons.Rounded.Explore,
@@ -336,7 +351,33 @@ private fun SidebarNavigation(
     tabs.forEachIndexed { index, title ->
         NavigationDrawerItem(
             icon = { Icon(icons.getOrElse(index) { Icons.Rounded.Explore }, contentDescription = title) },
-            label = { Text(title) },
+            label = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AnimatedVisibility(
+                        visible = index == 3 && isPlayingRecording,
+                        enter = fadeIn(animationSpec = tween(200)) +
+                                expandHorizontally(animationSpec = tween(250), expandFrom = Alignment.Start) +
+                                scaleIn(animationSpec = tween(250), initialScale = 0.8f),
+                        exit = fadeOut(animationSpec = tween(150)) +
+                               shrinkHorizontally(animationSpec = tween(250), shrinkTowards = Alignment.Start) +
+                               scaleOut(animationSpec = tween(200), targetScale = 0.8f)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = if (pagerState.currentPage == index)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
+                    }
+                    Text(title)
+                }
+            },
             selected = pagerState.currentPage == index,
             onClick = {
                 coroutineScope.launch {

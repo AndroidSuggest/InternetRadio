@@ -1,19 +1,34 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.home.layout
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
@@ -33,6 +48,8 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
+private const val RECORDINGS_TAB_INDEX = 3
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CompactHomeLayout(
@@ -41,6 +58,7 @@ internal fun CompactHomeLayout(
     tabs: List<String>,
     tabWidths: androidx.compose.runtime.snapshots.SnapshotStateList<Dp>,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
+    isPlayingRecording: Boolean = false,
     pagerContent: @Composable () -> Unit
 ) {
     val density = LocalDensity.current
@@ -111,16 +129,9 @@ internal fun CompactHomeLayout(
                             }
                         },
                         text = {
-                            Text(
-                                text = title,
-                                style = if (pagerState.currentPage == index)
-                                    MaterialTheme.typography.titleSmall
-                                else
-                                    MaterialTheme.typography.bodyMedium,
-                                color = if (pagerState.currentPage == index)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant,
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
                                 modifier = Modifier
                                     .padding(horizontal = 18.dp)
                                     .onGloballyPositioned { coords ->
@@ -128,7 +139,41 @@ internal fun CompactHomeLayout(
                                             tabWidths[index] = with(density) { coords.size.width.toDp() }
                                         }
                                     }
-                            )
+                            ) {
+                                AnimatedVisibility(
+                                    visible = index == RECORDINGS_TAB_INDEX && isPlayingRecording,
+                                    enter = fadeIn(animationSpec = tween(200)) +
+                                            expandHorizontally(animationSpec = tween(250), expandFrom = Alignment.Start) +
+                                            scaleIn(animationSpec = tween(250), initialScale = 0.8f),
+                                    exit = fadeOut(animationSpec = tween(150)) +
+                                           shrinkHorizontally(animationSpec = tween(250), shrinkTowards = Alignment.Start) +
+                                           scaleOut(animationSpec = tween(200), targetScale = 0.8f)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = if (pagerState.currentPage == index)
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                    }
+                                }
+                                Text(
+                                    text = title,
+                                    style = if (pagerState.currentPage == index)
+                                        MaterialTheme.typography.titleSmall
+                                    else
+                                        MaterialTheme.typography.bodyMedium,
+                                    color = if (pagerState.currentPage == index)
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     )
                 }

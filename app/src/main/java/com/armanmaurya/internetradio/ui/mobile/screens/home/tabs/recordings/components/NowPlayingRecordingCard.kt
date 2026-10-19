@@ -1,0 +1,298 @@
+package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.components
+
+import android.text.format.DateUtils
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.NearMe
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
+import com.armanmaurya.internetradio.ui.mobile.screens.home.components.PlayingVisualizer
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.armanmaurya.internetradio.R
+import com.armanmaurya.internetradio.domain.model.RecordingFile
+
+@Composable
+fun NowPlayingRecordingCard(
+    recording: RecordingFile,
+    isPlaying: Boolean,
+    currentPositionMs: Long,
+    durationMs: Long,
+    playbackSpeed: Float = 1.0f,
+    isLooping: Boolean = false,
+    onPlayPauseClick: () -> Unit,
+    onSeek: (Long) -> Unit,
+    onSpeedChange: (Float) -> Unit = {},
+    onToggleLoop: () -> Unit = {},
+    onRouteClick: () -> Unit,
+    onStopClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isPureBlack = MaterialTheme.colorScheme.surface == androidx.compose.ui.graphics.Color.Black
+    val effectiveDuration = if (durationMs > 0L) durationMs else if (recording.durationMs > 0L) recording.durationMs else 1L
+    val progress = if (effectiveDuration > 0L) {
+        (currentPositionMs.toFloat() / effectiveDuration).coerceIn(0f, 1f)
+    } else 0f
+
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .then(
+                if (isPureBlack) {
+                    Modifier.border(
+                        1.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                        RoundedCornerShape(16.dp)
+                    )
+                } else Modifier
+            )
+            .clickable(onClick = onRouteClick)
+            .animateContentSize(),
+        shape = RoundedCornerShape(16.dp),
+        color = if (isPureBlack) androidx.compose.ui.graphics.Color.Black
+                else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PlayingVisualizer(
+                        isPlaybackActive = isPlaying,
+                        barColor = MaterialTheme.colorScheme.primary,
+                        barWidth = 3.dp,
+                        maxBarHeight = 18.dp,
+                        minBarHeight = 4.dp,
+                        barCount = 4
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Text(
+                    text = recording.fileName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .weight(1f)
+                        .basicMarquee(iterations = Int.MAX_VALUE)
+                )
+
+                // Route button: jumps directly to the file inside its folder
+                IconButton(
+                    onClick = onRouteClick,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.NearMe,
+                        contentDescription = stringResource(R.string.recording_cd_go_to_recording),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                // Infinite Loop button
+                IconButton(
+                    onClick = onToggleLoop,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isLooping) Icons.Default.RepeatOne else Icons.Default.Repeat,
+                        contentDescription = stringResource(
+                            if (isLooping) R.string.recording_cd_loop_enabled else R.string.recording_cd_loop_disabled
+                        ),
+                        tint = if (isLooping) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        },
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                // Play / Pause button
+                IconButton(
+                    onClick = onPlayPauseClick,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (isPlaying) stringResource(R.string.player_cd_pause) else stringResource(R.string.player_cd_play),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                // Stop / Close button
+                IconButton(
+                    onClick = onStopClick,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.recording_cd_stop_playback),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            // Slider & Time Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Slider(
+                    value = progress,
+                    onValueChange = { frac ->
+                        val targetMs = (frac * effectiveDuration).toLong()
+                        onSeek(targetMs)
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                val formattedCurrent = DateUtils.formatElapsedTime(currentPositionMs / 1000L)
+                val formattedTotal = if (effectiveDuration > 1L) {
+                    DateUtils.formatElapsedTime(effectiveDuration / 1000L)
+                } else null
+                val timeText = if (formattedTotal != null) "$formattedCurrent / $formattedTotal" else formattedCurrent
+
+                Text(
+                    text = timeText,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                var showSpeedMenu by remember { mutableStateOf(false) }
+                val speedOptions = remember { listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f) }
+
+                Box {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (playbackSpeed != 1.0f) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                        },
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { showSpeedMenu = true }
+                    ) {
+                        Text(
+                            text = "${playbackSpeed}x",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (playbackSpeed != 1.0f) FontWeight.Bold else FontWeight.Medium,
+                            color = if (playbackSpeed != 1.0f) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showSpeedMenu,
+                        onDismissRequest = { showSpeedMenu = false }
+                    ) {
+                        speedOptions.forEach { speed ->
+                            val isSelected = speed == playbackSpeed
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = if (speed == 1.0f) {
+                                            stringResource(R.string.recording_speed_normal)
+                                        } else {
+                                            "${speed}x"
+                                        },
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
+                                trailingIcon = if (isSelected) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                } else null,
+                                onClick = {
+                                    onSpeedChange(speed)
+                                    showSpeedMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

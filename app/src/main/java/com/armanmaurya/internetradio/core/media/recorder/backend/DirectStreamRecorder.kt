@@ -5,6 +5,7 @@ import com.armanmaurya.internetradio.core.media.recorder.RecordingSink
 import com.armanmaurya.internetradio.core.media.recorder.RecorderException
 import com.armanmaurya.internetradio.core.utils.AudioFormat
 import com.armanmaurya.internetradio.core.utils.AudioFormatUtils
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
@@ -42,10 +43,7 @@ class DirectStreamRecorder(
             throw RecorderException.StreamConnectionException(config.url, e)
         }
 
-        val rawBodyStream = response.body?.byteStream() ?: run {
-            response.close()
-            throw RecorderException.StreamConnectionException(config.url, Exception("Empty response body"))
-        }
+        val rawBodyStream = response.body.byteStream()
 
         val bodyStream = PushbackInputStream(rawBodyStream, 4)
         val magic = ByteArray(4)
@@ -79,9 +77,11 @@ class DirectStreamRecorder(
                     onBytesWritten(len.toLong())
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             if (currentCoroutineContext().isActive && e !is RecorderException) {
-                throw RecorderException.SinkWriteException("Stream recording error", e)
+                throw RecorderException.StreamReadException("Stream recording error", e)
             }
         } finally {
             response.close()

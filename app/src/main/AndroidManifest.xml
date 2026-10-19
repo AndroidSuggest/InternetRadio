@@ -101,6 +101,15 @@
             android:exported="false" />
 
         <service
+            android:name=".service.RecordingPlaybackService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <service
             android:name=".service.AlarmService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="false" />

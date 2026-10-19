@@ -4,6 +4,9 @@ sealed class RecorderException(message: String, cause: Throwable? = null) : Exce
     class StreamConnectionException(url: String, cause: Throwable? = null) :
         RecorderException("Failed to connect to stream at: $url", cause)
 
+    class StreamReadException(message: String, cause: Throwable? = null) :
+        RecorderException("Stream read error: $message", cause)
+
     class UnsupportedFormatException(contentType: String?) :
         RecorderException("Unsupported stream content type: $contentType")
 
