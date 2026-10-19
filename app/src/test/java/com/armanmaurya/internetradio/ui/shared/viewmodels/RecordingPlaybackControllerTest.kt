@@ -191,6 +191,32 @@ class RecordingPlaybackControllerTest {
         assertFalse(homeViewModel.isPlayingRecording.value)
     }
 
+    @Test
+    fun playbackEnded_whenLoopingDisabled_stopsPlayingAndResetsPosition() {
+        fakeRecordingPlaybackController.mockActiveRecording("Podcast", "uri://podcast")
+        fakeRecordingPlaybackController.setLooping(false)
+        fakeRecordingPlaybackController.seekTo(60000L)
+        assertTrue(fakeRecordingPlaybackController.isPlaying.value)
+
+        fakeRecordingPlaybackController.onTrackEnded()
+
+        assertFalse(fakeRecordingPlaybackController.isPlaying.value)
+        assertEquals(0L, fakeRecordingPlaybackController.currentPositionMs.value)
+    }
+
+    @Test
+    fun playbackEnded_whenLoopingEnabled_continuesPlayingAndResetsPosition() {
+        fakeRecordingPlaybackController.mockActiveRecording("Song", "uri://song")
+        fakeRecordingPlaybackController.setLooping(true)
+        fakeRecordingPlaybackController.seekTo(60000L)
+        assertTrue(fakeRecordingPlaybackController.isPlaying.value)
+
+        fakeRecordingPlaybackController.onTrackEnded()
+
+        assertTrue(fakeRecordingPlaybackController.isPlaying.value)
+        assertEquals(0L, fakeRecordingPlaybackController.currentPositionMs.value)
+    }
+
     // --- Test Doubles ---
 
     private class FakeRecordingPlaybackController : RecordingPlaybackController {
@@ -223,6 +249,16 @@ class RecordingPlaybackControllerTest {
             activeUriString = recordingUri
             _isPlaying.value = true
             _durationMs.value = 60000L
+        }
+
+        fun onTrackEnded() {
+            if (_isLooping.value) {
+                _currentPositionMs.value = 0L
+                _isPlaying.value = true
+            } else {
+                _isPlaying.value = false
+                _currentPositionMs.value = 0L
+            }
         }
 
         override fun play(recording: RecordingFile) {
