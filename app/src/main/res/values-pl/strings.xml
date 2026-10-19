@@ -480,4 +480,20 @@
     <string name="settings_backup_error_not_found">Nie znaleziono folderu lub pliku kopii zapasowej</string>
     <string name="settings_backup_error_io">Błąd odczytu/zapisu w pamięci masowej</string>
     <string name="shortcut_not_supported">Program uruchamiający nie obsługuje przypiętych skrótów</string>
+    <string name="settings_community_section">Społeczność</string>
+    <string name="settings_community_telegram_title">Społeczność Telegrama</string>
+    <string name="settings_community_telegram_desc">Dołącz do dyskusji, bądź na bieżąco i udostępniaj stacje</string>
+    <string name="settings_community_reddit_title">Społeczność na Reddicie</string>
+    <string name="settings_community_reddit_desc">Dołącz do r/InternetRadioFolks</string>
+    <string name="about_cd_telegram">Telegram</string>
+    <string name="about_cd_reddit">Reddit</string>
+    <string name="recording_playback_channel_name">Odtwarzanie nagrań</string>
+    <string name="recording_playback_channel_description">Powiadomienia dotyczące odtwarzania nagranego dźwięku</string>
+    <string name="recording_now_playing">Teraz odtwarzane nagranie</string>
+    <string name="recording_cd_go_to_recording">Przejdź do oryginalnego nagrania</string>
+    <string name="recording_cd_stop_playback">Zatrzymaj odtwarzanie</string>
+    <string name="recording_speed">Szybkość odtwarzania</string>
+    <string name="recording_speed_normal">1,0x (normalna)</string>
+    <string name="recording_cd_loop_enabled">Wyłącz nieskończoną pętlę</string>
+    <string name="recording_cd_loop_disabled">Włącz nieskończoną pętlę</string>
 </resources>
