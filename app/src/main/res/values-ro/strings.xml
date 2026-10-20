@@ -467,4 +467,20 @@
     <string name="settings_backup_error_not_found">Nu s-a găsit dosarul sau fișierul copiei de rezervă</string>
     <string name="settings_backup_error_io">Eroare de citire/scriere pe stocare</string>
     <string name="shortcut_not_supported">Lansatorul nu acceptă comenzi rapide fixate</string>
+    <string name="settings_community_section">Comunitate</string>
+    <string name="settings_community_telegram_title">Comunitatea Telegram</string>
+    <string name="settings_community_telegram_desc">Participă la discuții, primește noutăți și recomandă posturi de radio</string>
+    <string name="settings_community_reddit_title">Comunitatea Reddit</string>
+    <string name="settings_community_reddit_desc">Alătură-te comunității r/InternetRadioFolks</string>
+    <string name="about_cd_telegram">Telegram</string>
+    <string name="about_cd_reddit">Reddit</string>
+    <string name="recording_playback_channel_name">Redare înregistrare</string>
+    <string name="recording_playback_channel_description">Notificări privind redarea fișierelor audio înregistrate</string>
+    <string name="recording_now_playing">Redare în curs a înregistrării</string>
+    <string name="recording_cd_go_to_recording">Accesează înregistrarea originală</string>
+    <string name="recording_cd_stop_playback">Oprește redarea</string>
+    <string name="recording_speed">Viteza de redare</string>
+    <string name="recording_speed_normal">1.0x (Normal)</string>
+    <string name="recording_cd_loop_enabled">Dezactivează redarea infinită</string>
+    <string name="recording_cd_loop_disabled">Activează redarea infinită</string>
 </resources>
