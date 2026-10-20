@@ -152,6 +152,35 @@
     <string name="settings_malformed_backup_choose_folder_desc">Wähle einen anderen Sicherungsordner aus</string>
     <string name="settings_malformed_backup_cancel">Datei unverändert lassen</string>
     <string name="settings_malformed_backup_overwritten">Sicherung durch aktuelle Bibliothek ersetzt</string>
+    <plurals name="settings_sync_backup_created">
+        <!-- <item quantity="one">Restored %1$d station from backup</item> -->
+        <item quantity="other">Sicherung erstellt: %1$d Sender gesichert</item>
+    </plurals>
+    <plurals name="settings_sync_restored">
+        <!-- <item quantity="one">Restored %1$d station from backup</item> -->
+        <item quantity="other">%1$d Sender von der Sicherung wiederhergestellt</item>
+    </plurals>
+    <string name="settings_sync_up_to_date">Synchronisation beendet: Die Bibliothek ist aktuell</string>
+    <plurals name="settings_sync_success_merged">
+        <!-- <item quantity="one">Sync complete: %1$d station restored/updated</item> -->
+        <item quantity="other">Synchronisation beendet: %1$d Sender aktualisiert</item>
+    </plurals>
+    <string name="settings_backup_error_no_folder">Kein Sicherungsordner konfiguriert</string>
+    <string name="settings_backup_error_permission_revoked">Speicherberechtigung widerrufen. Wähle den Sicherungsordner erneut aus.</string>
+    <string name="settings_backup_error_folder_deleted">Sicherungsordner existiert nicht mehr. Wähle einen neuen Ordner aus.</string>
+    <string name="settings_backup_error_cannot_write">Es kann nicht in den ausgewählten Sicherungsordner geschrieben werden. Zugriff verweigert.</string>
+    <string name="settings_backup_error_create_file">%1$s konnte nicht im Sicherungsordner erstellt werden</string>
+    <string name="settings_backup_error_open_write">%1$s konnte nicht zum Schreiben geöffnet werden</string>
+    <string name="settings_backup_error_file_not_found">%1$s wurde im Sicherungsordner nicht gefunden</string>
+    <string name="settings_backup_error_open_read">%1$s konnte nicht zum Lesen geöffnet werden</string>
+    <string name="settings_backup_error_file_empty">%1$s ist leer</string>
+    <string name="settings_backup_error_corrupted_json">Sicherungsdatei (%1$s) ist beschädigt oder enthält ungültigen JSON</string>
+    <string name="settings_backup_error_no_stations">%1$s enthält keine Sender oder hat ungültiges Format</string>
+    <string name="settings_backup_error_invalid_stations">Sicherungsdatei enthält ungültige Sendereinträge</string>
+    <string name="settings_backup_error_read">%1$s kann nicht gelesen werden</string>
+    <string name="settings_backup_error_permission_denied">Speicherzugriff verweigert</string>
+    <string name="settings_backup_error_not_found">Ordner oder Sicherungsdatei nicht gefunden</string>
+    <string name="settings_backup_error_io">Fehler beim Lesen oder Schreiben des Speichers</string>
     <string name="settings_conflict_title">Wenn ein Konflikt auftritt</string>
     <string name="settings_conflict_skip">Vorhandene überspringen</string>
     <string name="settings_conflict_skip_desc">Die aktuelle Version beibehalten</string>
@@ -185,6 +214,15 @@
     <string name="settings_imported_skipped">Übersprungen: %1$d (bereits vorhanden)</string>
     <string name="settings_imported_updated">Aktualisiert: %1$d</string>
     <string name="settings_schedule_section">Zeitpläne</string>
+
+    <!-- Community Section -->
+    <string name="settings_community_section">Community</string>
+    <string name="settings_community_telegram_title">Telegram Community</string>
+    <string name="settings_community_telegram_desc">Trete Diskussionen bei, erhalte Neuigkeiten &amp; teile Sender</string>
+    <string name="settings_community_reddit_title">Reddit Community</string>
+    <string name="settings_community_reddit_desc">Trete r/InternetRadioFolks bei</string>
+    <string name="about_cd_telegram">Telegram</string>
+    <string name="about_cd_reddit">Reddit</string>
 
     <!-- ========================================== -->
     <!-- 6. ABOUT                                   -->
@@ -455,8 +493,8 @@
     </plurals>
     <string name="recordings_selected">%1$d ausgewählt</string>
     <plurals name="tracks_count">
+        <!-- <item quantity="one">%1$d track</item> -->
         <item quantity="other">%1$d Titel</item>
-        <!-- <item quantity="other">%1$d tracks</item> -->
     </plurals>
     <string name="schedule_keep_playback_subtitle">Wenn deaktiviert, dann endet die Wiedergabe mit der Aufnahme</string>
 
@@ -495,4 +533,15 @@
     <string name="widget_configure_presets">Voreinstellungen</string>
     <string name="settings_widget_appearance_title">Widget-Erscheinungsbild</string>
     <string name="settings_widget_appearance_subtitle">Passe Transparenz des Startbildschirm-Widgets mittels Vorschau an</string>
+
+    <!-- Recording Playback -->
+    <string name="recording_playback_channel_name">Aufnahme-Wiedergabe</string>
+    <string name="recording_playback_channel_description">Benachrichtigungen bei Wiedergabe aufgezeichneter Sendungen</string>
+    <string name="recording_now_playing">Aufnahme wird wiedergegeben</string>
+    <string name="recording_cd_go_to_recording">Zur original Aufnahme gehen</string>
+    <string name="recording_cd_stop_playback">Wiedergabe stoppen</string>
+    <string name="recording_speed">Wiedergabegeschwindigkeit</string>
+    <string name="recording_speed_normal">1.0x (Normal)</string>
+    <string name="recording_cd_loop_enabled">Endlosschleife ausschalten</string>
+    <string name="recording_cd_loop_disabled">Endlosschleife einschalten</string>
 </resources>
