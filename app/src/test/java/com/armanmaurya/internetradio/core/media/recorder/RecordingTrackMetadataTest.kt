@@ -99,7 +99,51 @@ class RecordingTrackMetadataTest {
         val parsed = HlsPlaylistParser.parse(m3u8, "https://radio.example.com/live/index.m3u8")
         assertEquals(2, parsed.segments.size)
         assertEquals("Coldplay - Yellow", parsed.segments[0].title)
+        assertEquals(6.0, parsed.segments[0].durationSeconds, 0.001)
         assertEquals(null, parsed.segments[1].title)
+        assertEquals(6.0, parsed.segments[1].durationSeconds, 0.001)
+    }
+
+    @Test
+    fun icyDemuxInputStream_tracksPureAudioByteOffsetsAccurately() {
+        val metaInt = 16
+        val audioChunk1 = ByteArray(16) { 1 }
+        val audioChunk2 = ByteArray(16) { 2 }
+        val audioChunk3 = ByteArray(16) { 3 }
+        val audioChunk4 = ByteArray(8) { 4 }
+
+        val metaBlock1 = buildIcyMetaBlock("StreamTitle='Song 1';")
+        val metaBlockEmpty = byteArrayOf(0)
+        val metaBlock2 = buildIcyMetaBlock("StreamTitle='Song 2';")
+
+        val streamBytes = ByteArrayOutputStream().apply {
+            write(audioChunk1)
+            write(metaBlock1)
+            write(audioChunk2)
+            write(metaBlockEmpty)
+            write(audioChunk3)
+            write(metaBlock2)
+            write(audioChunk4)
+        }.toByteArray()
+
+        val capturedWithOffsets = mutableListOf<Pair<String, Long>>()
+        val demuxStream = IcyDemuxInputStream(
+            delegate = ByteArrayInputStream(streamBytes),
+            metaInt = metaInt,
+            initialAudioBytesOffset = 1000L,
+            onTrackMetadataWithOffset = { title, offset ->
+                capturedWithOffsets.add(title to offset)
+            }
+        )
+
+        val buf = ByteArray(10)
+        while (demuxStream.read(buf) != -1) {}
+
+        assertEquals(2, capturedWithOffsets.size)
+        // First metadata block arrived after 16 pure audio bytes from initial offset (1000 + 16 = 1016)
+        assertEquals("Song 1" to 1016L, capturedWithOffsets[0])
+        // Second metadata block arrived after 32 additional audio bytes (1016 + 16 + 16 = 1048)
+        assertEquals("Song 2" to 1048L, capturedWithOffsets[1])
     }
 
     @Test

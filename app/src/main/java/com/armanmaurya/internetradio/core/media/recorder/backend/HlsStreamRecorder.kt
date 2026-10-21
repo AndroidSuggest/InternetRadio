@@ -20,7 +20,9 @@ class HlsStreamRecorder(
         sink: RecordingSink,
         onBytesWritten: (bytes: Long) -> Unit,
         onFileOpened: (stationFolderName: String, fileName: String) -> Unit = { _, _ -> },
-        onTrackMetadata: (rawTrack: String) -> Unit = {}
+        onTrackMetadata: (rawTrack: String, audioOffsetMs: Long) -> Unit = { _, _ -> },
+        onAudioProgress: (audioDurationMs: Long) -> Unit = {},
+        onReconnectingStateChanged: (Boolean) -> Unit = {}
     ) {
         var playlistUrl = config.url
         var playlistContent = fetchText(playlistUrl, config.userAgent) ?: run {
@@ -51,6 +53,8 @@ class HlsStreamRecorder(
         sink.finalFileName?.let { onFileOpened(sink.safeStationName, it) }
 
         var totalWritten = 0L
+        var accumulatedDurationMs = 0L
+        var isReconnecting = false
 
         try {
             var currentPlaylistText = playlistContent
@@ -66,19 +70,40 @@ class HlsStreamRecorder(
                 for (seg in newSegs) {
                     if (!currentCoroutineContext().isActive) break
                     val bytes = downloadSegment(seg.url, config.userAgent) ?: continue
+                    val segDurationMs = (seg.durationSeconds * 1000.0).toLong()
                     val trackTitle = HlsPlaylistParser.extractSegmentMetadata(bytes) ?: seg.title
                     if (!trackTitle.isNullOrBlank()) {
-                        onTrackMetadata(trackTitle)
+                        onTrackMetadata(trackTitle, accumulatedDurationMs)
                     }
                     outputStream.write(bytes)
                     totalWritten += bytes.size
+                    accumulatedDurationMs += segDurationMs
+                    onAudioProgress(accumulatedDurationMs)
                     onBytesWritten(bytes.size.toLong())
                     lastSequence = seg.mediaSequence
                 }
 
                 if (!currentCoroutineContext().isActive) break
                 delay((playlist.targetDurationSeconds * 500L).coerceAtLeast(2000L))
-                currentPlaylistText = fetchText(playlistUrl, config.userAgent) ?: break
+
+                var nextText = fetchText(playlistUrl, config.userAgent)
+                if (nextText == null) {
+                    if (!isReconnecting) {
+                        isReconnecting = true
+                        onReconnectingStateChanged(true)
+                    }
+                    val reconnectedText = attemptHlsReconnect(playlistUrl, config)
+                    if (reconnectedText == null) {
+                        break
+                    }
+                    nextText = reconnectedText
+                }
+
+                if (isReconnecting) {
+                    isReconnecting = false
+                    onReconnectingStateChanged(false)
+                }
+                currentPlaylistText = nextText
             }
         } catch (e: Exception) {
             if (e is CancellationException) throw e
@@ -86,10 +111,40 @@ class HlsStreamRecorder(
                 throw RecorderException.StreamReadException("HLS segment recording error", e)
             }
         } finally {
+            if (isReconnecting) {
+                onReconnectingStateChanged(false)
+            }
             if (totalWritten > 0) {
                 sink.finalizeFile()
             }
         }
+    }
+
+    private suspend fun attemptHlsReconnect(
+        playlistUrl: String,
+        config: RecordingConfig
+    ): String? {
+        val startTime = System.currentTimeMillis()
+        var currentDelay = config.minRetryDelayMs
+
+        while (currentCoroutineContext().isActive) {
+            val elapsed = System.currentTimeMillis() - startTime
+            val maxRetry = config.getMaxRetryDuration()
+            if (maxRetry >= 0 && elapsed >= maxRetry) {
+                return null
+            }
+
+            delay(currentDelay)
+            if (!currentCoroutineContext().isActive) return null
+
+            val text = fetchText(playlistUrl, config.userAgent)
+            if (text != null) {
+                return text
+            }
+
+            currentDelay = (currentDelay * 2).coerceAtMost(config.maxRetryDelayMs)
+        }
+        return null
     }
 
     private fun downloadSegment(url: String, userAgent: String?): ByteArray? {
@@ -118,7 +173,12 @@ class HlsStreamRecorder(
 }
 
 internal object HlsPlaylistParser {
-    data class HlsSegment(val url: String, val mediaSequence: Long, val title: String? = null)
+    data class HlsSegment(
+        val url: String,
+        val mediaSequence: Long,
+        val durationSeconds: Double = 10.0,
+        val title: String? = null
+    )
     data class HlsPlaylist(val targetDurationSeconds: Int, val segments: List<HlsSegment>)
 
     fun parse(content: String, baseUrl: String): HlsPlaylist {
@@ -128,6 +188,7 @@ internal object HlsPlaylistParser {
         var seqOffset = 0L
         val segments = mutableListOf<HlsSegment>()
         var expectSegment = false
+        var pendingDuration = 10.0
         var pendingTitle: String? = null
 
         for (line in lines) {
@@ -140,6 +201,8 @@ internal object HlsPlaylistParser {
                 t.startsWith("#EXTINF:") -> {
                     expectSegment = true
                     val afterColon = t.substringAfter(":")
+                    val durStr = afterColon.substringBefore(",").trim()
+                    pendingDuration = durStr.toDoubleOrNull() ?: targetDuration.toDouble()
                     val rawTitle = if (afterColon.contains(",")) {
                         afterColon.substringAfter(",").trim()
                     } else ""
@@ -147,10 +210,11 @@ internal object HlsPlaylistParser {
                 }
                 !t.startsWith("#") && t.isNotBlank() && expectSegment -> {
                     val absUrl = resolveUrl(t, baseUrl)
-                    segments.add(HlsSegment(absUrl, baseSeq + seqOffset, pendingTitle))
+                    segments.add(HlsSegment(absUrl, baseSeq + seqOffset, pendingDuration, pendingTitle))
                     seqOffset++
                     expectSegment = false
                     pendingTitle = null
+                    pendingDuration = targetDuration.toDouble()
                 }
             }
         }

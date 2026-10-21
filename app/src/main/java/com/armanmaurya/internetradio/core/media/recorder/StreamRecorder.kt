@@ -17,7 +17,9 @@ interface StreamRecorder {
         config: RecordingConfig,
         onBytesWritten: (bytes: Long) -> Unit,
         onFileOpened: (stationFolderName: String, fileName: String) -> Unit = { _, _ -> },
-        onTrackMetadata: (rawTrack: String) -> Unit = {}
+        onTrackMetadata: (rawTrack: String, audioOffsetMs: Long) -> Unit = { _, _ -> },
+        onAudioProgress: (audioDurationMs: Long) -> Unit = {},
+        onReconnectingStateChanged: (Boolean) -> Unit = {}
     )
 }
 
@@ -36,7 +38,9 @@ class DefaultStreamRecorder @Inject constructor(
         config: RecordingConfig,
         onBytesWritten: (bytes: Long) -> Unit,
         onFileOpened: (stationFolderName: String, fileName: String) -> Unit,
-        onTrackMetadata: (rawTrack: String) -> Unit
+        onTrackMetadata: (rawTrack: String, audioOffsetMs: Long) -> Unit,
+        onAudioProgress: (audioDurationMs: Long) -> Unit,
+        onReconnectingStateChanged: (Boolean) -> Unit
     ) {
         val sink = RecordingSink(fileSystemFacade, config.title, context)
         try {
@@ -46,7 +50,9 @@ class DefaultStreamRecorder @Inject constructor(
                     sink = sink,
                     onBytesWritten = onBytesWritten,
                     onFileOpened = onFileOpened,
-                    onTrackMetadata = onTrackMetadata
+                    onTrackMetadata = onTrackMetadata,
+                    onAudioProgress = onAudioProgress,
+                    onReconnectingStateChanged = onReconnectingStateChanged
                 )
             } else {
                 DirectStreamRecorder(recordingHttpClient).record(
@@ -54,7 +60,9 @@ class DefaultStreamRecorder @Inject constructor(
                     sink = sink,
                     onBytesWritten = onBytesWritten,
                     onFileOpened = onFileOpened,
-                    onTrackMetadata = onTrackMetadata
+                    onTrackMetadata = onTrackMetadata,
+                    onAudioProgress = onAudioProgress,
+                    onReconnectingStateChanged = onReconnectingStateChanged
                 )
             }
         } finally {

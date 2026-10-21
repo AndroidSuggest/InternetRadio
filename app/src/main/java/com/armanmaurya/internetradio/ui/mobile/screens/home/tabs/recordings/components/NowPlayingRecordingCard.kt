@@ -3,10 +3,14 @@ package com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.com
 import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
@@ -90,7 +94,7 @@ fun NowPlayingRecordingCard(
         if (sortedTracks.isEmpty()) null
         else sortedTracks.lastOrNull { it.offsetMs <= currentPositionMs } ?: sortedTracks.first()
     }
-    var internalShowTrackList by rememberSaveable(recording.uri.toString()) { mutableStateOf(false) }
+    var internalShowTrackList by remember(recording.uri.toString()) { mutableStateOf(false) }
     val isTrackListVisible = showTrackList ?: internalShowTrackList
 
     Column(
@@ -284,7 +288,7 @@ fun NowPlayingRecordingCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 2.dp),
+                .padding(top = 8.dp, bottom = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -473,12 +477,30 @@ fun NowPlayingRecordingCard(
 
         // Outside the card: collapsible and expandable track list as a normal list (when managed internally)
         if (onToggleTrackList == null) {
-            NowPlayingTrackQueue(
-                recording = recording,
-                currentPositionMs = currentPositionMs,
-                visible = isTrackListVisible,
-                onSeek = onSeek
-            )
+            AnimatedVisibility(
+                visible = isTrackListVisible && recording.tracks.isNotEmpty(),
+                enter = fadeIn(animationSpec = tween(220)) + slideInVertically(
+                    animationSpec = tween(250, easing = FastOutSlowInEasing),
+                    initialOffsetY = { -it }
+                ) + expandVertically(
+                    animationSpec = tween(250, easing = FastOutSlowInEasing),
+                    expandFrom = Alignment.Top,
+                    initialHeight = { 1 }
+                ),
+                exit = fadeOut(animationSpec = tween(180)) + slideOutVertically(
+                    animationSpec = tween(230, easing = FastOutSlowInEasing),
+                    targetOffsetY = { -it }
+                ) + shrinkVertically(
+                    animationSpec = tween(230, easing = FastOutSlowInEasing),
+                    shrinkTowards = Alignment.Top
+                )
+            ) {
+                NowPlayingTrackQueue(
+                    recording = recording,
+                    currentPositionMs = currentPositionMs,
+                    onSeek = onSeek
+                )
+            }
         }
     }
 }
@@ -487,7 +509,7 @@ fun NowPlayingRecordingCard(
 fun NowPlayingTrackQueue(
     recording: RecordingFile,
     currentPositionMs: Long,
-    visible: Boolean,
+    visible: Boolean = true,
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -497,16 +519,11 @@ fun NowPlayingTrackQueue(
         else sortedTracks.lastOrNull { it.offsetMs <= currentPositionMs } ?: sortedTracks.first()
     }
 
-    AnimatedVisibility(
-        visible = visible && sortedTracks.isNotEmpty(),
-        enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
-        exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
-        modifier = modifier
-    ) {
+    if (visible && sortedTracks.isNotEmpty()) {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .padding(top = 6.dp, bottom = 8.dp)
+                .padding(top = 0.dp, bottom = 8.dp)
         ) {
             sortedTracks.forEach { track ->
                 val isActiveTrack = track == activeTrack

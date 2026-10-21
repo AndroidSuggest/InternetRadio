@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -67,6 +68,7 @@ fun StationListCard(
     onStopRecordingClick: (() -> Unit)? = null,
     onRecordClick: (() -> Unit)? = null,
     isRecording: Boolean = false,
+    isReconnecting: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -207,24 +209,41 @@ fun StationListCard(
                     }
                     
                     if (isRecordingOverlay || isRecording) {
-                        // Mic + timer pill
+                        val pillBg = if (isReconnecting) {
+                            Color(0xFFE65100).copy(alpha = 0.85f)
+                        } else {
+                            Color.Black.copy(alpha = 0.55f)
+                        }
+                        // Mic or Sync + timer/reconnecting pill
                         androidx.compose.foundation.layout.Row(
                             modifier = Modifier
                                 .background(
-                                    color = Color.Black.copy(alpha = 0.55f),
+                                    color = pillBg,
                                     shape = RoundedCornerShape(4.dp)
                                 )
                                 .padding(horizontal = 3.dp, vertical = 1.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(2.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Mic,
-                                contentDescription = null,
-                                tint = Color.Red,
-                                modifier = Modifier.size(10.dp)
-                            )
-                            if (isRecordingOverlay || isRecording) {
+                            if (isReconnecting) {
+                                Icon(
+                                    imageVector = Icons.Default.Sync,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(10.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.recording_reconnecting),
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Mic,
+                                    contentDescription = null,
+                                    tint = Color.Red,
+                                    modifier = Modifier.size(10.dp)
+                                )
                                 Text(
                                     text = String.format(java.util.Locale.US, "%02d:%02d", recordingDuration / 60, recordingDuration % 60),
                                     color = Color.White,

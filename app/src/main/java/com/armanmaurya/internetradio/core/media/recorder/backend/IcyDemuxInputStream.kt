@@ -13,10 +13,13 @@ import java.io.InputStream
 internal class IcyDemuxInputStream(
     private val delegate: InputStream,
     private val metaInt: Int,
-    private val onTrackMetadata: (String) -> Unit
+    private val initialAudioBytesOffset: Long = 0L,
+    private val onTrackMetadata: (String) -> Unit = {},
+    private val onTrackMetadataWithOffset: ((String, Long) -> Unit)? = null
 ) : InputStream() {
 
     private var bytesUntilMeta: Int = metaInt
+    private var totalAudioBytesRead: Long = initialAudioBytesOffset
 
     override fun read(): Int {
         if (metaInt <= 0) return delegate.read()
@@ -29,6 +32,7 @@ internal class IcyDemuxInputStream(
         val b = delegate.read()
         if (b != -1) {
             bytesUntilMeta--
+            totalAudioBytesRead++
         }
         return b
     }
@@ -47,6 +51,7 @@ internal class IcyDemuxInputStream(
         if (bytesRead == -1) return -1
 
         bytesUntilMeta -= bytesRead
+        totalAudioBytesRead += bytesRead
         return bytesRead
     }
 
@@ -69,6 +74,7 @@ internal class IcyDemuxInputStream(
         val streamTitle = extractStreamTitle(rawMeta)
         if (!streamTitle.isNullOrBlank()) {
             onTrackMetadata(streamTitle)
+            onTrackMetadataWithOffset?.invoke(streamTitle, totalAudioBytesRead)
         }
         return true
     }

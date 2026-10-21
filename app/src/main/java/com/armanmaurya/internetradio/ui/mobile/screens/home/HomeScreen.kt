@@ -269,6 +269,7 @@ fun HomeScreen(
                         ) { station ->
                             val session = activeSessions[station.stationUuid]
                             val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
+                            val isReconnecting by (session?.isReconnecting ?: kotlinx.coroutines.flow.flowOf(false)).collectAsStateWithLifecycle(initialValue = false)
                             StationListCard(
                                 station = station,
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
@@ -281,6 +282,7 @@ fun HomeScreen(
                                 onToggleFavoriteClick = { browseViewModel.toggleLibrary(station) },
                                 isRecording = session != null,
                                 recordingDuration = duration,
+                                isReconnecting = isReconnecting,
                                 onRecordClick = { playerViewModel.toggleRecording(station) },
                                 onStopRecordingClick = if (session != null) { { playerViewModel.toggleRecording(station) } } else null,
                                 modifier = Modifier
@@ -322,6 +324,7 @@ fun HomeScreen(
                         ) { station ->
                             val session = activeSessions[station.stationUuid]
                             val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
+                            val isReconnecting by (session?.isReconnecting ?: kotlinx.coroutines.flow.flowOf(false)).collectAsStateWithLifecycle(initialValue = false)
                             StationListCard(
                                 station = station,
                                 isCurrentlyPlaying = playingStationUuid == station.stationUuid,
@@ -334,6 +337,7 @@ fun HomeScreen(
                                 onToggleFavoriteClick = { browseViewModel.toggleLibrary(station) },
                                 isRecording = session != null,
                                 recordingDuration = duration,
+                                isReconnecting = isReconnecting,
                                 onRecordClick = { playerViewModel.toggleRecording(station) },
                                 onStopRecordingClick = if (session != null) { { playerViewModel.toggleRecording(station) } } else null,
                                 modifier = Modifier

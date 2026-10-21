@@ -6,7 +6,11 @@ package com.armanmaurya.internetradio.ui.mobile.screens.player.tabs.recordings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import kotlinx.coroutines.launch
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -72,6 +76,7 @@ fun RecordingsTab(
     val recordingPlaybackSpeed by viewModel.recordingPlaybackSpeed.collectAsStateWithLifecycle()
     val isRecordingLooping by viewModel.isRecordingLooping.collectAsStateWithLifecycle()
     val isPureBlack = MaterialTheme.colorScheme.surfaceContainerLow == androidx.compose.ui.graphics.Color.Black
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(currentPlayingRecording?.uri) {
         if (currentPlayingRecording != null && (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0)) {
@@ -145,7 +150,21 @@ fun RecordingsTab(
     )
     val shouldShowNowPlayingCard = currentPlayingRecording != null || nowPlayingTransition.currentState
     val shouldShowStickyHeader = shouldShowNowPlayingCard || shouldShowSelectionBar
-    var showTrackList by rememberSaveable(recordingToShow?.uri?.toString()) { mutableStateOf(false) }
+    var showTrackList by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentPlayingRecording?.uri) {
+        showTrackList = false
+    }
+
+    val queueVisibleState = remember { MutableTransitionState(false) }
+    queueVisibleState.targetState = showTrackList && currentPlayingRecording != null
+    val shouldShowQueue = queueVisibleState.targetState || queueVisibleState.currentState || !queueVisibleState.isIdle
+
+    LaunchedEffect(showTrackList) {
+        if (showTrackList) {
+            listState.requestScrollToItem(0, 0)
+        }
+    }
     
     Box(modifier = Modifier.fillMaxSize()) {
         if (stationRecordings == null) {
@@ -176,8 +195,14 @@ fun RecordingsTab(
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     nowPlayingTransition.AnimatedVisibility(
                                         visible = { it },
-                                        enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
-                                        exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
+                                        enter = fadeIn(animationSpec = tween(220)) + expandVertically(
+                                            animationSpec = tween(250, easing = FastOutSlowInEasing),
+                                            expandFrom = Alignment.Top
+                                        ),
+                                        exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(
+                                            animationSpec = tween(250, easing = FastOutSlowInEasing),
+                                            shrinkTowards = Alignment.Top
+                                        )
                                     ) {
                                         if (recordingToShow != null) {
                                             NowPlayingRecordingCard(
@@ -194,12 +219,21 @@ fun RecordingsTab(
                                                 onRouteClick = {
                                                     viewModel.routeToRecording(recordingToShow.stationName, recordingToShow.uri.toString())
                                                 },
-                                                onStopClick = viewModel::stopRecordingPlayback,
+                                                onStopClick = {
+                                                    showTrackList = false
+                                                    viewModel.stopRecordingPlayback()
+                                                },
                                                 showTrackList = showTrackList,
-                                                onToggleTrackList = { showTrackList = !showTrackList },
+                                                onToggleTrackList = {
+                                                    val next = !showTrackList
+                                                    showTrackList = next
+                                                    if (next) {
+                                                        listState.requestScrollToItem(0, 0)
+                                                    }
+                                                },
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(top = 8.dp, bottom = 8.dp)
+                                                    .padding(top = 8.dp, bottom = 12.dp)
                                             )
                                         }
                                     }
@@ -208,15 +242,34 @@ fun RecordingsTab(
                         }
                     }
 
-                    if (shouldShowNowPlayingCard && recordingToShow != null) {
+                    if (shouldShowNowPlayingCard && recordingToShow != null && recordingToShow.tracks.isNotEmpty() && shouldShowQueue) {
                         item(key = "now_playing_track_queue") {
-                            NowPlayingTrackQueue(
-                                recording = recordingToShow,
-                                currentPositionMs = recordingPositionMs,
-                                visible = showTrackList,
-                                onSeek = viewModel::seekRecordingPlayback,
+                            AnimatedVisibility(
+                                visibleState = queueVisibleState,
+                                enter = fadeIn(animationSpec = tween(220)) + slideInVertically(
+                                    animationSpec = tween(250, easing = FastOutSlowInEasing),
+                                    initialOffsetY = { -it }
+                                ) + expandVertically(
+                                    animationSpec = tween(250, easing = FastOutSlowInEasing),
+                                    expandFrom = Alignment.Top,
+                                    initialHeight = { 1 }
+                                ),
+                                exit = fadeOut(animationSpec = tween(180)) + slideOutVertically(
+                                    animationSpec = tween(230, easing = FastOutSlowInEasing),
+                                    targetOffsetY = { -it }
+                                ) + shrinkVertically(
+                                    animationSpec = tween(230, easing = FastOutSlowInEasing),
+                                    shrinkTowards = Alignment.Top
+                                ),
                                 modifier = Modifier.fillMaxWidth()
-                            )
+                            ) {
+                                NowPlayingTrackQueue(
+                                    recording = recordingToShow,
+                                    currentPositionMs = recordingPositionMs,
+                                    onSeek = viewModel::seekRecordingPlayback,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
 
@@ -331,12 +384,14 @@ fun RecordingsTab(
                         ) {
                             for (session in rowSessions) {
                                 val duration by session.durationSeconds.collectAsState(initial = 0L)
+                                val isReconnecting by session.isReconnecting.collectAsState(initial = false)
                                 Box(modifier = Modifier.weight(1f)) {
                                     StationCard(
                                         station = session.station,
                                         onClick = {}, // No action on click for now
                                         isRecordingOverlay = true,
                                         recordingDuration = duration,
+                                        isReconnecting = isReconnecting,
                                         onStopRecordingClick = { onStopRecording(session.station.stationUuid) }
                                     )
                                 }

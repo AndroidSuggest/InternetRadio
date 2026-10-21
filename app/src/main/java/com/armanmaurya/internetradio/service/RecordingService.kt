@@ -8,6 +8,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.text.format.DateUtils
 import androidx.core.app.NotificationCompat
 import com.armanmaurya.internetradio.R
 import com.armanmaurya.internetradio.domain.controller.RecordingController
@@ -77,7 +78,7 @@ class RecordingService : Service() {
                 if (updateTickerJob == null || updateTickerJob?.isActive != true) {
                     updateTickerJob = scope.launch {
                         while (isActive) {
-                            delay(3000)
+                            delay(1000)
                             val currentSessions = recordingController.activeSessions.value
                             updateNotifications(currentSessions)
                         }
@@ -151,17 +152,30 @@ class RecordingService : Service() {
 
         val sizeMb = session.bytesWritten / (1024f * 1024f)
         val sizeText = String.format(Locale.US, "%.2f MB", sizeMb)
+        val timeText = DateUtils.formatElapsedTime(session.durationSeconds.value)
+        val statsText = "$timeText • $sizeText"
+
+        val isReconnecting = session.isReconnecting.value
+        val title = if (isReconnecting) {
+            "Recording: ${session.station.name} (${getString(R.string.recording_reconnecting)})"
+        } else {
+            "Recording: ${session.station.name}"
+        }
+        val contentText = if (isReconnecting) {
+            getString(R.string.recording_notification_reconnecting, statsText)
+        } else {
+            statsText
+        }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.media3_notification_small_icon)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setGroup(GROUP_RECORDINGS)
-            .setContentTitle("Recording: ${session.station.name}")
-            .setContentText(sizeText)
+            .setContentTitle(title)
+            .setContentText(contentText)
             .setContentIntent(contentPendingIntent)
-            .setUsesChronometer(true)
-            .setWhen(session.startTimeMs)
+            .setUsesChronometer(false)
             .addAction(0, "Stop", stopPendingIntent)
             .build()
     }

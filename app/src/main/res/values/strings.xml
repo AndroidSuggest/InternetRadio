@@ -510,6 +510,8 @@
     <string name="recordings_currently_recording">Currently Recording</string>
     <string name="recordings_saved">Saved Recordings</string>
     <string name="action_stop_recording">Stop Recording</string>
+    <string name="recording_reconnecting">Reconnecting…</string>
+    <string name="recording_notification_reconnecting">Connection lost, retrying… • %1$s</string>
     <string name="action_record_station">Record Station</string>
     <string name="action_create_shortcut">Create Shortcut</string>
     <string name="shortcut_not_supported">Launcher does not support pinned shortcuts</string>

@@ -301,6 +301,7 @@ fun LibraryContent(
                     
                     val session = activeSessions[station.stationUuid]
                     val duration by (session?.durationSeconds ?: kotlinx.coroutines.flow.flowOf(0L)).collectAsStateWithLifecycle(initialValue = 0L)
+                    val isReconnecting by (session?.isReconnecting ?: kotlinx.coroutines.flow.flowOf(false)).collectAsStateWithLifecycle(initialValue = false)
                     
                     Box(modifier = Modifier.animateItem()) {
                         if (isGridView) {
@@ -316,6 +317,7 @@ fun LibraryContent(
                                 isFavorite = true,
                                 isRecording = session != null,
                                 recordingDuration = duration,
+                                isReconnecting = isReconnecting,
                                 onRecordClick = { onToggleRecording(station) },
                                 onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null
                             )
@@ -332,6 +334,7 @@ fun LibraryContent(
                                 isFavorite = true,
                                 isRecording = session != null,
                                 recordingDuration = duration,
+                                isReconnecting = isReconnecting,
                                 onRecordClick = { onToggleRecording(station) },
                                 onStopRecordingClick = if (session != null) { { onToggleRecording(station) } } else null
                             )

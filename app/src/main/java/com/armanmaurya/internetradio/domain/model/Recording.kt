@@ -33,5 +33,6 @@ data class RecordingSession(
     val station: RadioStation,
     val startTimeMs: Long = System.currentTimeMillis(),
     val durationSeconds: StateFlow<Long>,
+    val isReconnecting: StateFlow<Boolean> = kotlinx.coroutines.flow.MutableStateFlow(false),
     @Volatile var bytesWritten: Long = 0L
 )

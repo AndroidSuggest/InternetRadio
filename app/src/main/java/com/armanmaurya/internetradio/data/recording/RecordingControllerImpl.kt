@@ -14,6 +14,7 @@ import com.armanmaurya.internetradio.domain.model.RecordingSession
 import com.armanmaurya.internetradio.domain.model.RecordingTrack
 import com.armanmaurya.internetradio.domain.repository.CoverArtRepository
 import com.armanmaurya.internetradio.domain.repository.RecordingRepository
+import com.armanmaurya.internetradio.domain.repository.SettingsRepository
 import com.armanmaurya.internetradio.service.RecordingService
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -44,7 +46,8 @@ class RecordingControllerImpl @Inject constructor(
     private val recordingRepository: RecordingRepository,
     private val streamRecorder: StreamRecorder,
     private val coverArtRepository: CoverArtRepository,
-    private val sidecarStore: RecordingSidecarStore
+    private val sidecarStore: RecordingSidecarStore,
+    private val settingsRepository: SettingsRepository
 ) : RecordingController {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -73,9 +76,11 @@ class RecordingControllerImpl @Inject constructor(
         if (activeRecordings.containsKey(station.stationUuid)) return false
 
         val durationFlow = MutableStateFlow(0L)
+        val isReconnectingFlow = MutableStateFlow(false)
         val recordingSession = RecordingSession(
             station = station,
-            durationSeconds = durationFlow.asStateFlow()
+            durationSeconds = durationFlow.asStateFlow(),
+            isReconnecting = isReconnectingFlow.asStateFlow()
         )
         activeRecordings[station.stationUuid] = recordingSession
         _activeSessions.update { activeRecordings.toMap() }
@@ -86,20 +91,27 @@ class RecordingControllerImpl @Inject constructor(
         var lastRawTrack: String? = null
 
         val job = scope.launch {
-            val tickerJob = launch {
-                while (isActive) {
-                    delay(1000)
-                    durationFlow.update { it + 1 }
+            var currentMaxRetryDuration = 300_000L
+            val prefJob = launch {
+                settingsRepository.appPreferencesFlow.collect { prefs ->
+                    currentMaxRetryDuration = prefs.maxRetryDuration
                 }
             }
             try {
+                val stationBitrate = station.bitrate.takeIf { it > 0 }
                 streamRecorder.record(
                     config = RecordingConfig(
                         url = station.urlResolved,
-                        title = station.name
+                        title = station.name,
+                        bitrateKbps = stationBitrate,
+                        maxRetryDurationMs = currentMaxRetryDuration,
+                        maxRetryDurationProvider = { currentMaxRetryDuration }
                     ),
                     onBytesWritten = { bytes ->
                         recordingSession.bytesWritten += bytes
+                    },
+                    onAudioProgress = { audioDurationMs ->
+                        durationFlow.value = audioDurationMs / 1000L
                     },
                     onFileOpened = { stationFolder, fileName ->
                         openedStationFolder = stationFolder
@@ -109,20 +121,22 @@ class RecordingControllerImpl @Inject constructor(
                             sidecarStore.saveTracks(stationFolder, fileName, snapshot)
                         }
                     },
-                    onTrackMetadata = { rawTrack ->
+                    onTrackMetadata = { rawTrack, audioOffsetMs ->
                         val trimmedRaw = rawTrack.trim()
                         if (trimmedRaw.isNotEmpty() && trimmedRaw != lastRawTrack) {
                             lastRawTrack = trimmedRaw
                             val sanitized = TrackSanitizer.sanitize(trimmedRaw)
-                            if (sanitized.isNotBlank()) {
+                            val isDuplicate = synchronized(recordedTracks) {
+                                recordedTracks.lastOrNull()?.title.equals(sanitized, ignoreCase = true)
+                            }
+                            if (sanitized.isNotBlank() && !isDuplicate) {
                                 val now = System.currentTimeMillis()
-                                val offsetMs = (now - recordingSession.startTimeMs).coerceAtLeast(0L)
                                 val initialTrack = RecordingTrack(
                                     title = sanitized,
                                     artist = null,
                                     rawTitle = trimmedRaw,
                                     coverArtUrl = null,
-                                    offsetMs = offsetMs,
+                                    offsetMs = audioOffsetMs,
                                     timestampMs = now
                                 )
                                 val snapshot = synchronized(recordedTracks) {
@@ -162,6 +176,9 @@ class RecordingControllerImpl @Inject constructor(
                                 }
                             }
                         }
+                    },
+                    onReconnectingStateChanged = { reconnecting ->
+                        isReconnectingFlow.value = reconnecting
                     }
                 )
             } catch (e: CancellationException) {
@@ -169,7 +186,7 @@ class RecordingControllerImpl @Inject constructor(
             } catch (e: Exception) {
                 Log.e("RecordingController", "Recording interrupted for ${station.name}: ${e.message}", e)
             } finally {
-                tickerJob.cancel()
+                prefJob.cancel()
                 if (recordingSession.bytesWritten > 0) {
                     val finalTracks = synchronized(recordedTracks) { recordedTracks.toList() }
                     val fn = openedFileName
