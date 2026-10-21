@@ -496,4 +496,6 @@
     <string name="recording_speed_normal">1,0x (normalna)</string>
     <string name="recording_cd_loop_enabled">Wyłącz nieskończoną pętlę</string>
     <string name="recording_cd_loop_disabled">Włącz nieskończoną pętlę</string>
+    <string name="recording_reconnecting">Ponowne łączenie…</string>
+    <string name="recording_notification_reconnecting">Utracono połączenie, ponawiam próbę… • %1$s</string>
 </resources>
