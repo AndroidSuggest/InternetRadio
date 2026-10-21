@@ -12,6 +12,7 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.armanmaurya.internetradio.data.recording.RecordingSidecarStore
 import com.armanmaurya.internetradio.domain.model.RecordingFile
 import com.armanmaurya.internetradio.domain.model.RecordingFolder
 import com.armanmaurya.internetradio.domain.repository.RecordingRepository
@@ -19,7 +20,8 @@ import com.armanmaurya.internetradio.domain.repository.RecordingRepository
 @Singleton
 class RecordingRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade
+    private val fileSystemFacade: com.armanmaurya.internetradio.core.system.FileSystemFacade,
+    private val sidecarStore: RecordingSidecarStore
 ) : RecordingRepository {
 
     private data class FileCacheKey(val lastModified: Long, val sizeBytes: Long)
@@ -73,7 +75,8 @@ class RecordingRepositoryImpl @Inject constructor(
                         lastModified = it.lastModified(),
                         sizeBytes = it.length(),
                         durationMs = getAudioDurationMs(it),
-                        stationName = dir.name
+                        stationName = dir.name,
+                        tracks = sidecarStore.readTracks(it, dir.name)
                     )
                 }.sortedByDescending { it.lastModified }
                 
@@ -101,7 +104,8 @@ class RecordingRepositoryImpl @Inject constructor(
                 lastModified = it.lastModified(),
                 sizeBytes = it.length(),
                 durationMs = getAudioDurationMs(it),
-                stationName = stationName
+                stationName = stationName,
+                tracks = sidecarStore.readTracks(it, safeStationName)
             )
         }.sortedByDescending { it.lastModified }
     }
@@ -116,6 +120,7 @@ class RecordingRepositoryImpl @Inject constructor(
     override suspend fun deleteRecording(recording: RecordingFile): Boolean = withContext(Dispatchers.IO) {
         val deleted = fileSystemFacade.deleteAudioRecording(recording.uri)
         if (deleted) {
+            sidecarStore.deleteSidecar(recording.file, recording.stationName)
             durationCache.remove(recording.file.absolutePath)
             val parent = recording.file.parentFile
             if (parent != null && parent.isDirectory) {
@@ -134,6 +139,7 @@ class RecordingRepositoryImpl @Inject constructor(
         recordings.forEach { recording ->
             val deleted = fileSystemFacade.deleteAudioRecording(recording.uri)
             if (deleted) {
+                sidecarStore.deleteSidecar(recording.file, recording.stationName)
                 durationCache.remove(recording.file.absolutePath)
                 val parent = recording.file.parentFile
                 if (parent != null && parent.isDirectory) {
@@ -154,6 +160,7 @@ class RecordingRepositoryImpl @Inject constructor(
         var allDeleted = true
         stationNames.forEach { stationName ->
             val safeStationName = stationName.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
+            sidecarStore.deleteStationSidecars(safeStationName)
             val deleted = fileSystemFacade.deleteAudioRecordingFolder(safeStationName)
             if (deleted) {
                 val folderPrefix = File(

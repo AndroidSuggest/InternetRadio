@@ -49,8 +49,10 @@ import com.armanmaurya.internetradio.domain.model.RecordingSession
 import com.armanmaurya.internetradio.ui.mobile.components.RecordingFileItem
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.components.NowPlayingRecordingCard
+import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.components.NowPlayingTrackQueue
 import com.armanmaurya.internetradio.ui.shared.viewmodels.RecordingsViewModel
 
 @Composable
@@ -130,7 +132,12 @@ fun RecordingsTab(
     if (currentPlayingRecording != null) {
         cachedPlayingRecording = currentPlayingRecording
     }
-    val recordingToShow = currentPlayingRecording ?: cachedPlayingRecording
+    val rawRecordingToShow = currentPlayingRecording ?: cachedPlayingRecording
+    val recordingToShow = remember(rawRecordingToShow, stationRecordings) {
+        rawRecordingToShow?.let { rec ->
+            stationRecordings?.firstOrNull { it.uri == rec.uri } ?: rec
+        }
+    }
 
     val nowPlayingTransition = updateTransition(
         targetState = currentPlayingRecording != null,
@@ -138,6 +145,7 @@ fun RecordingsTab(
     )
     val shouldShowNowPlayingCard = currentPlayingRecording != null || nowPlayingTransition.currentState
     val shouldShowStickyHeader = shouldShowNowPlayingCard || shouldShowSelectionBar
+    var showTrackList by rememberSaveable(recordingToShow?.uri?.toString()) { mutableStateOf(false) }
     
     Box(modifier = Modifier.fillMaxSize()) {
         if (stationRecordings == null) {
@@ -159,40 +167,65 @@ fun RecordingsTab(
                 )
             ) {
                 if (shouldShowStickyHeader) {
-                    stickyHeader(key = "sticky_recording_tab_header") {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = if (isPureBlack) androidx.compose.ui.graphics.Color.Black else MaterialTheme.colorScheme.surfaceContainerLow
-                        ) {
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                nowPlayingTransition.AnimatedVisibility(
-                                    visible = { it },
-                                    enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
-                                    exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
-                                ) {
-                                    if (recordingToShow != null) {
-                                        NowPlayingRecordingCard(
-                                            recording = recordingToShow,
-                                            isPlaying = isPlayingRecording,
-                                            currentPositionMs = recordingPositionMs,
-                                            durationMs = recordingDurationMs,
-                                            playbackSpeed = recordingPlaybackSpeed,
-                                            isLooping = isRecordingLooping,
-                                            onPlayPauseClick = viewModel::togglePlayPauseRecording,
-                                            onSeek = viewModel::seekRecordingPlayback,
-                                            onSpeedChange = viewModel::setPlaybackSpeed,
-                                            onToggleLoop = viewModel::toggleLoopRecording,
-                                            onRouteClick = {
-                                                viewModel.routeToRecording(recordingToShow.stationName, recordingToShow.uri.toString())
-                                            },
-                                            onStopClick = viewModel::stopRecordingPlayback,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(top = 8.dp, bottom = 8.dp)
-                                        )
+                    if (shouldShowNowPlayingCard) {
+                        stickyHeader(key = "sticky_recording_tab_header") {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = if (isPureBlack) androidx.compose.ui.graphics.Color.Black else MaterialTheme.colorScheme.surfaceContainerLow
+                            ) {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    nowPlayingTransition.AnimatedVisibility(
+                                        visible = { it },
+                                        enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+                                        exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
+                                    ) {
+                                        if (recordingToShow != null) {
+                                            NowPlayingRecordingCard(
+                                                recording = recordingToShow,
+                                                isPlaying = isPlayingRecording,
+                                                currentPositionMs = recordingPositionMs,
+                                                durationMs = recordingDurationMs,
+                                                playbackSpeed = recordingPlaybackSpeed,
+                                                isLooping = isRecordingLooping,
+                                                onPlayPauseClick = viewModel::togglePlayPauseRecording,
+                                                onSeek = viewModel::seekRecordingPlayback,
+                                                onSpeedChange = viewModel::setPlaybackSpeed,
+                                                onToggleLoop = viewModel::toggleLoopRecording,
+                                                onRouteClick = {
+                                                    viewModel.routeToRecording(recordingToShow.stationName, recordingToShow.uri.toString())
+                                                },
+                                                onStopClick = viewModel::stopRecordingPlayback,
+                                                showTrackList = showTrackList,
+                                                onToggleTrackList = { showTrackList = !showTrackList },
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(top = 8.dp, bottom = 8.dp)
+                                            )
+                                        }
                                     }
                                 }
+                            }
+                        }
+                    }
 
+                    if (shouldShowNowPlayingCard && recordingToShow != null) {
+                        item(key = "now_playing_track_queue") {
+                            NowPlayingTrackQueue(
+                                recording = recordingToShow,
+                                currentPositionMs = recordingPositionMs,
+                                visible = showTrackList,
+                                onSeek = viewModel::seekRecordingPlayback,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    if (shouldShowSelectionBar) {
+                        item(key = "recording_tab_selection_bar") {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = if (isPureBlack) androidx.compose.ui.graphics.Color.Black else MaterialTheme.colorScheme.surfaceContainerLow
+                            ) {
                                 selectionTransition.AnimatedVisibility(
                                     visible = { it },
                                     enter = fadeIn() + slideInVertically(initialOffsetY = { -it }) + expandVertically(expandFrom = Alignment.Top),

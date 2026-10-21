@@ -18,7 +18,9 @@ class HlsStreamRecorder(
     suspend fun record(
         config: RecordingConfig,
         sink: RecordingSink,
-        onBytesWritten: (bytes: Long) -> Unit
+        onBytesWritten: (bytes: Long) -> Unit,
+        onFileOpened: (stationFolderName: String, fileName: String) -> Unit = { _, _ -> },
+        onTrackMetadata: (rawTrack: String) -> Unit = {}
     ) {
         var playlistUrl = config.url
         var playlistContent = fetchText(playlistUrl, config.userAgent) ?: run {
@@ -46,6 +48,7 @@ class HlsStreamRecorder(
         val outputStream = sink.open(ext) ?: run {
             throw RecorderException.SinkWriteException("Failed to open output sink for HLS extension: $ext")
         }
+        sink.finalFileName?.let { onFileOpened(sink.safeStationName, it) }
 
         var totalWritten = 0L
 
@@ -63,6 +66,10 @@ class HlsStreamRecorder(
                 for (seg in newSegs) {
                     if (!currentCoroutineContext().isActive) break
                     val bytes = downloadSegment(seg.url, config.userAgent) ?: continue
+                    val trackTitle = HlsPlaylistParser.extractSegmentMetadata(bytes) ?: seg.title
+                    if (!trackTitle.isNullOrBlank()) {
+                        onTrackMetadata(trackTitle)
+                    }
                     outputStream.write(bytes)
                     totalWritten += bytes.size
                     onBytesWritten(bytes.size.toLong())
@@ -111,7 +118,7 @@ class HlsStreamRecorder(
 }
 
 internal object HlsPlaylistParser {
-    data class HlsSegment(val url: String, val mediaSequence: Long)
+    data class HlsSegment(val url: String, val mediaSequence: Long, val title: String? = null)
     data class HlsPlaylist(val targetDurationSeconds: Int, val segments: List<HlsSegment>)
 
     fun parse(content: String, baseUrl: String): HlsPlaylist {
@@ -121,6 +128,7 @@ internal object HlsPlaylistParser {
         var seqOffset = 0L
         val segments = mutableListOf<HlsSegment>()
         var expectSegment = false
+        var pendingTitle: String? = null
 
         for (line in lines) {
             val t = line.trim()
@@ -129,17 +137,68 @@ internal object HlsPlaylistParser {
                     targetDuration = t.substringAfter(":").toIntOrNull() ?: 10
                 t.startsWith("#EXT-X-MEDIA-SEQUENCE:") ->
                     baseSeq = t.substringAfter(":").toLongOrNull() ?: 0L
-                t.startsWith("#EXTINF:") ->
+                t.startsWith("#EXTINF:") -> {
                     expectSegment = true
+                    val afterColon = t.substringAfter(":")
+                    val rawTitle = if (afterColon.contains(",")) {
+                        afterColon.substringAfter(",").trim()
+                    } else ""
+                    pendingTitle = parseExtInfTitle(rawTitle)
+                }
                 !t.startsWith("#") && t.isNotBlank() && expectSegment -> {
                     val absUrl = resolveUrl(t, baseUrl)
-                    segments.add(HlsSegment(absUrl, baseSeq + seqOffset))
+                    segments.add(HlsSegment(absUrl, baseSeq + seqOffset, pendingTitle))
                     seqOffset++
                     expectSegment = false
+                    pendingTitle = null
                 }
             }
         }
         return HlsPlaylist(targetDuration, segments)
+    }
+
+    private fun parseExtInfTitle(raw: String): String? {
+        val cleaned = raw.trim().trim('"', '\'')
+        if (cleaned.isBlank()) return null
+        val lower = cleaned.lowercase()
+        if (lower == "no desc" || lower == "live" || lower == "null" || lower == "none") return null
+        if (cleaned.all { it.isDigit() || it == '.' || it == '-' || it == '_' }) return null
+        // Handle key-value style like title="Song",artist="Artist"
+        if (cleaned.contains("title=", ignoreCase = true)) {
+            val titleMatch = Regex("""(?i)title="([^"]*)"""").find(cleaned)?.groupValues?.get(1)?.trim()
+            val artistMatch = Regex("""(?i)artist="([^"]*)"""").find(cleaned)?.groupValues?.get(1)?.trim()
+            return when {
+                !artistMatch.isNullOrBlank() && !titleMatch.isNullOrBlank() -> "$artistMatch - $titleMatch"
+                !titleMatch.isNullOrBlank() -> titleMatch
+                else -> null
+            }
+        }
+        return cleaned
+    }
+
+    fun extractSegmentMetadata(bytes: ByteArray): String? {
+        if (bytes.size < 10) return null
+        // Check for ID3v2 header at start of segment or embedded inside MPEG-TS
+        val id3Offset = findId3Offset(bytes)
+        if (id3Offset < 0) return null
+
+        val slice = if (id3Offset == 0) bytes else bytes.copyOfRange(id3Offset, (id3Offset + 2048).coerceAtMost(bytes.size))
+        val (_, parsed) = com.armanmaurya.internetradio.core.media.prober.parser.AudioFrameParser.parseId3v2(slice)
+        return parsed.title?.takeIf { it.isNotBlank() }
+    }
+
+    private fun findId3Offset(bytes: ByteArray): Int {
+        val limit = (bytes.size - 10).coerceAtMost(4096)
+        for (i in 0..limit) {
+            if (bytes[i] == 'I'.code.toByte() &&
+                bytes[i + 1] == 'D'.code.toByte() &&
+                bytes[i + 2] == '3'.code.toByte() &&
+                (bytes[i + 3].toInt() and 0xFF) in 2..4
+            ) {
+                return i
+            }
+        }
+        return -1
     }
 
     fun isMasterPlaylist(content: String): Boolean {

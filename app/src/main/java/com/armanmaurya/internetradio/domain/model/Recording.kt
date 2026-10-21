@@ -9,6 +9,15 @@ data class RecordingFolder(
     val recordings: List<RecordingFile>
 )
 
+data class RecordingTrack(
+    val title: String,
+    val artist: String? = null,
+    val rawTitle: String = title,
+    val coverArtUrl: String? = null,
+    val offsetMs: Long,
+    val timestampMs: Long
+)
+
 data class RecordingFile(
     val fileName: String,
     val file: File,
@@ -16,7 +25,8 @@ data class RecordingFile(
     val lastModified: Long,
     val sizeBytes: Long,
     val durationMs: Long = 0L,
-    val stationName: String = file.parentFile?.name ?: ""
+    val stationName: String = file.parentFile?.name ?: "",
+    val tracks: List<RecordingTrack> = emptyList()
 )
 
 data class RecordingSession(

@@ -26,11 +26,13 @@ class DirectStreamRecorder(
     suspend fun record(
         config: RecordingConfig,
         sink: RecordingSink,
-        onBytesWritten: (bytes: Long) -> Unit
+        onBytesWritten: (bytes: Long) -> Unit,
+        onFileOpened: (stationFolderName: String, fileName: String) -> Unit = { _, _ -> },
+        onTrackMetadata: (rawTrack: String) -> Unit = {}
     ) {
         val requestBuilder = Request.Builder()
             .url(config.url)
-            .header("Icy-MetaData", "0")
+            .header("Icy-MetaData", "1")
 
         if (!config.userAgent.isNullOrBlank()) {
             requestBuilder.header("User-Agent", config.userAgent)
@@ -44,8 +46,14 @@ class DirectStreamRecorder(
         }
 
         val rawBodyStream = response.body.byteStream()
+        val icyMetaInt = response.header("icy-metaint")?.toIntOrNull() ?: 0
+        val demuxedStream: InputStream = if (icyMetaInt > 0) {
+            IcyDemuxInputStream(rawBodyStream, icyMetaInt, onTrackMetadata)
+        } else {
+            rawBodyStream
+        }
 
-        val bodyStream = PushbackInputStream(rawBodyStream, 4)
+        val bodyStream = PushbackInputStream(demuxedStream, 4)
         val magic = ByteArray(4)
         val magicRead = bodyStream.read(magic, 0, 4)
         if (magicRead > 0) {
@@ -57,12 +65,19 @@ class DirectStreamRecorder(
             response.close()
             throw RecorderException.SinkWriteException("Failed to open output sink for extension: ${format.extension}")
         }
+        sink.finalFileName?.let { onFileOpened(sink.safeStationName, it) }
 
         var totalWritten = 0L
         try {
             if (format == AudioFormat.OGG) {
                 coroutineScope {
-                    OggRewriter.remuxStream(bodyStream, outputStream, this, null) { written ->
+                    OggRewriter.remuxStream(
+                        input = bodyStream,
+                        output = outputStream,
+                        scope = this,
+                        job = null,
+                        onTrackMetadata = onTrackMetadata
+                    ) { written ->
                         totalWritten += written
                         onBytesWritten(written.toLong())
                     }
@@ -120,7 +135,14 @@ internal object OggRewriter {
         return currentCrc
     }
 
-    fun remuxStream(input: InputStream, output: OutputStream, scope: CoroutineScope, job: Job?, onBytesWritten: (Int) -> Unit) {
+    fun remuxStream(
+        input: InputStream,
+        output: OutputStream,
+        scope: CoroutineScope,
+        job: Job?,
+        onTrackMetadata: (String) -> Unit = {},
+        onBytesWritten: (Int) -> Unit
+    ) {
         var firstGranulePosition = -1L
 
         val headerBuf = ByteArray(27)
@@ -195,6 +217,7 @@ internal object OggRewriter {
             // Read page data
             if (dataSize > 0) {
                 if (!readFully(input, pageData, dataSize, 0)) break
+                extractOggTrackTitle(pageData, dataSize)?.let(onTrackMetadata)
             }
 
             // Calculate CRC
@@ -223,6 +246,70 @@ internal object OggRewriter {
             }
 
             onBytesWritten(27 + segmentCount + dataSize)
+        }
+    }
+
+    internal fun extractOggTrackTitle(data: ByteArray, length: Int): String? {
+        if (length < 16) return null
+        val commentOffset = when {
+            length >= 15 &&
+                data[0] == 0x03.toByte() &&
+                data[1] == 'v'.code.toByte() &&
+                data[2] == 'o'.code.toByte() &&
+                data[3] == 'r'.code.toByte() &&
+                data[4] == 'b'.code.toByte() &&
+                data[5] == 'i'.code.toByte() &&
+                data[6] == 's'.code.toByte() -> 7
+            length >= 16 &&
+                data[0] == 'O'.code.toByte() &&
+                data[1] == 'p'.code.toByte() &&
+                data[2] == 'u'.code.toByte() &&
+                data[3] == 's'.code.toByte() &&
+                data[4] == 'T'.code.toByte() &&
+                data[5] == 'a'.code.toByte() &&
+                data[6] == 'g'.code.toByte() &&
+                data[7] == 's'.code.toByte() -> 8
+            else -> return null
+        }
+
+        return try {
+            val buf = ByteBuffer.wrap(data, 0, length).order(ByteOrder.LITTLE_ENDIAN)
+            buf.position(commentOffset)
+            if (buf.remaining() < 4) return null
+            val vendorLen = buf.int
+            if (vendorLen < 0 || buf.remaining() < vendorLen + 4) return null
+            buf.position(buf.position() + vendorLen)
+
+            val commentCount = buf.int
+            if (commentCount <= 0 || commentCount > 256) return null
+
+            var title: String? = null
+            var artist: String? = null
+
+            for (i in 0 until commentCount) {
+                if (buf.remaining() < 4) break
+                val cLen = buf.int
+                if (cLen < 0 || buf.remaining() < cLen) break
+                val comment = String(data, buf.position(), cLen, Charsets.UTF_8)
+                buf.position(buf.position() + cLen)
+
+                when {
+                    comment.startsWith("TITLE=", ignoreCase = true) -> {
+                        title = comment.substring(6).trim().takeIf { it.isNotBlank() }
+                    }
+                    comment.startsWith("ARTIST=", ignoreCase = true) -> {
+                        artist = comment.substring(7).trim().takeIf { it.isNotBlank() }
+                    }
+                }
+            }
+
+            when {
+                !artist.isNullOrBlank() && !title.isNullOrBlank() -> "$artist - $title"
+                !title.isNullOrBlank() -> title
+                else -> null
+            }
+        } catch (_: Exception) {
+            null
         }
     }
 

@@ -15,7 +15,9 @@ import javax.inject.Singleton
 interface StreamRecorder {
     suspend fun record(
         config: RecordingConfig,
-        onBytesWritten: (bytes: Long) -> Unit
+        onBytesWritten: (bytes: Long) -> Unit,
+        onFileOpened: (stationFolderName: String, fileName: String) -> Unit = { _, _ -> },
+        onTrackMetadata: (rawTrack: String) -> Unit = {}
     )
 }
 
@@ -32,14 +34,28 @@ class DefaultStreamRecorder @Inject constructor(
 
     override suspend fun record(
         config: RecordingConfig,
-        onBytesWritten: (bytes: Long) -> Unit
+        onBytesWritten: (bytes: Long) -> Unit,
+        onFileOpened: (stationFolderName: String, fileName: String) -> Unit,
+        onTrackMetadata: (rawTrack: String) -> Unit
     ) {
         val sink = RecordingSink(fileSystemFacade, config.title, context)
         try {
             if (isHls(config.url)) {
-                HlsStreamRecorder(recordingHttpClient).record(config, sink, onBytesWritten)
+                HlsStreamRecorder(recordingHttpClient).record(
+                    config = config,
+                    sink = sink,
+                    onBytesWritten = onBytesWritten,
+                    onFileOpened = onFileOpened,
+                    onTrackMetadata = onTrackMetadata
+                )
             } else {
-                DirectStreamRecorder(recordingHttpClient).record(config, sink, onBytesWritten)
+                DirectStreamRecorder(recordingHttpClient).record(
+                    config = config,
+                    sink = sink,
+                    onBytesWritten = onBytesWritten,
+                    onFileOpened = onFileOpened,
+                    onTrackMetadata = onTrackMetadata
+                )
             }
         } finally {
             sink.close()

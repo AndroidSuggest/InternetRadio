@@ -41,9 +41,11 @@ import com.armanmaurya.internetradio.domain.model.RecordingSession
 import com.armanmaurya.internetradio.ui.shared.viewmodels.RecordingsViewModel
 import androidx.compose.animation.*
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.armanmaurya.internetradio.ui.mobile.components.RecordingFileItem
 import com.armanmaurya.internetradio.ui.mobile.screens.home.components.StationCard
 import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.components.NowPlayingRecordingCard
+import com.armanmaurya.internetradio.ui.mobile.screens.home.tabs.recordings.components.NowPlayingTrackQueue
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -78,13 +80,22 @@ fun RecordingsContent(
     if (currentPlayingRecording != null) {
         cachedPlayingRecording = currentPlayingRecording
     }
-    val recordingToShow = currentPlayingRecording ?: cachedPlayingRecording
+    val rawRecordingToShow = currentPlayingRecording ?: cachedPlayingRecording
+    val recordingToShow = remember(rawRecordingToShow, folders) {
+        rawRecordingToShow?.let { rec ->
+            folders.asSequence()
+                .flatMap { it.recordings.asSequence() }
+                .firstOrNull { it.uri == rec.uri }
+                ?: rec
+        }
+    }
 
     val nowPlayingTransition = updateTransition(
         targetState = currentPlayingRecording != null,
         label = "NowPlayingTransition"
     )
     val shouldShowNowPlayingCard = currentPlayingRecording != null || nowPlayingTransition.currentState
+    var showTrackList by rememberSaveable(recordingToShow?.uri?.toString()) { mutableStateOf(false) }
 
     var cachedFolderStationName by remember { mutableStateOf<String?>(null) }
     if (selectedStationName != null) {
@@ -281,46 +292,77 @@ fun RecordingsContent(
                 }
 
                 if (isHeaderVisible) {
-                    stickyHeader(key = "sticky_selection_and_folder_header") {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
+                    if (shouldShowNowPlayingCard) {
+                        stickyHeader(key = "sticky_selection_and_folder_header") {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh
                             ) {
-                                nowPlayingTransition.AnimatedVisibility(
-                                    visible = { it },
-                                    enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
-                                    exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    if (recordingToShow != null) {
-                                        NowPlayingRecordingCard(
-                                            recording = recordingToShow,
-                                            isPlaying = isPlayingRecording,
-                                            currentPositionMs = recordingPositionMs,
-                                            durationMs = recordingDurationMs,
-                                            playbackSpeed = recordingPlaybackSpeed,
-                                            isLooping = isRecordingLooping,
-                                            onPlayPauseClick = viewModel::togglePlayPauseRecording,
-                                            onSeek = viewModel::seekRecordingPlayback,
-                                            onSpeedChange = viewModel::setPlaybackSpeed,
-                                            onToggleLoop = viewModel::toggleLoopRecording,
-                                            onRouteClick = {
-                                                viewModel.routeToRecording(recordingToShow.stationName, recordingToShow.uri.toString())
-                                            },
-                                            onStopClick = viewModel::stopRecordingPlayback,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(
-                                                    start = 16.dp,
-                                                    end = 16.dp,
-                                                    top = 16.dp,
-                                                    bottom = 0.dp
-                                                )
-                                        )
+                                    nowPlayingTransition.AnimatedVisibility(
+                                        visible = { it },
+                                        enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+                                        exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
+                                    ) {
+                                        if (recordingToShow != null) {
+                                            NowPlayingRecordingCard(
+                                                recording = recordingToShow,
+                                                isPlaying = isPlayingRecording,
+                                                currentPositionMs = recordingPositionMs,
+                                                durationMs = recordingDurationMs,
+                                                playbackSpeed = recordingPlaybackSpeed,
+                                                isLooping = isRecordingLooping,
+                                                onPlayPauseClick = viewModel::togglePlayPauseRecording,
+                                                onSeek = viewModel::seekRecordingPlayback,
+                                                onSpeedChange = viewModel::setPlaybackSpeed,
+                                                onToggleLoop = viewModel::toggleLoopRecording,
+                                                onRouteClick = {
+                                                    viewModel.routeToRecording(recordingToShow.stationName, recordingToShow.uri.toString())
+                                                },
+                                                onStopClick = viewModel::stopRecordingPlayback,
+                                                showTrackList = showTrackList,
+                                                onToggleTrackList = { showTrackList = !showTrackList },
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(
+                                                        start = 16.dp,
+                                                        end = 16.dp,
+                                                        top = 16.dp,
+                                                        bottom = 0.dp
+                                                    )
+                                            )
+                                        }
                                     }
                                 }
+                            }
+                        }
+                    }
+
+                    if (shouldShowNowPlayingCard && recordingToShow != null) {
+                        item(key = "now_playing_track_queue") {
+                            NowPlayingTrackQueue(
+                                recording = recordingToShow,
+                                currentPositionMs = recordingPositionMs,
+                                visible = showTrackList,
+                                onSeek = viewModel::seekRecordingPlayback,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
+
+                    if (shouldShowSelectionBar || shouldShowFolderHeader) {
+                        item(key = "selection_and_folder_header") {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
 
                                 selectionTransition.AnimatedVisibility(
                                     visible = { it },
@@ -468,6 +510,7 @@ fun RecordingsContent(
                                 }
                             }
                         }
+                    }
                     }
                 }
 

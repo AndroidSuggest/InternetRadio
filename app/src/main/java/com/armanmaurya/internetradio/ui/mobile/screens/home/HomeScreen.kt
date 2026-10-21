@@ -1,14 +1,21 @@
 package com.armanmaurya.internetradio.ui.mobile.screens.home
 
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.layout.layout
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,12 +34,15 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -147,6 +157,15 @@ fun HomeScreen(
     val sheetState = rememberModalBottomSheetState()
     var isSearchExpanded by remember { mutableStateOf(false) }
     var isLibraryDragging by remember { mutableStateOf(false) }
+    val searchBarCollapseProgress = remember { Animatable(0f) }
+    val searchBarCollapsibleHeightPx = remember { mutableFloatStateOf(0f) }
+    val statusBarsInsets = WindowInsets.statusBars
+
+    LaunchedEffect(isSearchExpanded) {
+        if (isSearchExpanded && searchBarCollapseProgress.value > 0f) {
+            searchBarCollapseProgress.snapTo(0f)
+        }
+    }
 
     // Forward search query from HomeViewModel → ViewModels
     LaunchedEffect(uiState.searchQuery) {
@@ -170,6 +189,26 @@ fun HomeScreen(
         topBar = {
             if (widthSizeClass != WindowWidthSizeClass.Expanded) {
                 val isPureBlack = MaterialTheme.colorScheme.surfaceContainerHigh == Color.Black
+                val collapseModifier = if (!isSearchExpanded) {
+                    Modifier
+                        .clipToBounds()
+                        .layout { measurable, constraints ->
+                            val placeable = measurable.measure(constraints)
+                            val statusBarPx = statusBarsInsets.getTop(this)
+                            val collapsiblePx = (placeable.height - statusBarPx).coerceAtLeast(0)
+                            searchBarCollapsibleHeightPx.floatValue = collapsiblePx.toFloat()
+                            val progress = searchBarCollapseProgress.value.coerceIn(0f, 1f)
+                            val offsetPx = (collapsiblePx * progress).roundToInt()
+                            val layoutHeight = (placeable.height - offsetPx).coerceAtLeast(statusBarPx)
+                            layout(placeable.width, layoutHeight) {
+                                placeable.placeRelativeWithLayer(0, -offsetPx) {
+                                    alpha = 1f - progress
+                                }
+                            }
+                        }
+                } else {
+                    Modifier
+                }
             RadioSearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = viewModel::onSearchQueryChange,
@@ -185,7 +224,8 @@ fun HomeScreen(
                 selectedStateCode = uiState.selectedStateCode,
                 selectedLanguage = uiState.selectedLanguage,
                 selectedTags = uiState.selectedTags,
-                selectAllTextOnFocus = uiState.selectAllTextOnFocus
+                selectAllTextOnFocus = uiState.selectAllTextOnFocus,
+                modifier = collapseModifier
             ) {
                 val safeDrawingBottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
                 val bottomPadding = androidx.compose.ui.unit.max(contentPadding.calculateBottomPadding(), safeDrawingBottom)
@@ -476,6 +516,29 @@ fun HomeScreen(
                 isPlayingRecording = isPlayingRecording
             )
         } else {
+            val tabRowDragModifier = Modifier.draggable(
+                orientation = Orientation.Vertical,
+                state = rememberDraggableState { delta ->
+                    val maxCollapse = searchBarCollapsibleHeightPx.floatValue
+                    if (maxCollapse > 0f && !isSearchExpanded) {
+                        val newProgress = (searchBarCollapseProgress.value - delta / maxCollapse).coerceIn(0f, 1f)
+                        coroutineScope.launch {
+                            searchBarCollapseProgress.snapTo(newProgress)
+                        }
+                    }
+                },
+                onDragStopped = { velocity ->
+                    val target = when {
+                        velocity < -300f -> 1f
+                        velocity > 300f -> 0f
+                        searchBarCollapseProgress.value > 0.5f -> 1f
+                        else -> 0f
+                    }
+                    coroutineScope.launch {
+                        searchBarCollapseProgress.animateTo(target)
+                    }
+                }
+            )
             CompactHomeLayout(
                 innerPadding = innerPadding,
                 pagerState = pagerState,
@@ -483,6 +546,7 @@ fun HomeScreen(
                 tabWidths = tabWidths,
                 coroutineScope = coroutineScope,
                 isPlayingRecording = isPlayingRecording,
+                tabRowModifier = tabRowDragModifier,
                 pagerContent = pagerContent
             )
         }

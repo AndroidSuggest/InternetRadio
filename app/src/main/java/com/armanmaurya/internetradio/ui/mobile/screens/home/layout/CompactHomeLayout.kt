@@ -59,6 +59,7 @@ internal fun CompactHomeLayout(
     tabWidths: androidx.compose.runtime.snapshots.SnapshotStateList<Dp>,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     isPlayingRecording: Boolean = false,
+    tabRowModifier: Modifier = Modifier,
     pagerContent: @Composable () -> Unit
 ) {
     val density = LocalDensity.current
@@ -70,7 +71,7 @@ internal fun CompactHomeLayout(
         ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
             edgePadding = 8.dp,
-            modifier = Modifier.padding(horizontal = 4.dp),
+            modifier = tabRowModifier.padding(horizontal = 4.dp),
             indicator = { tabPositions ->
                 if (pagerState.currentPage < tabPositions.size) {
                     val pagerPage = pagerState.currentPage

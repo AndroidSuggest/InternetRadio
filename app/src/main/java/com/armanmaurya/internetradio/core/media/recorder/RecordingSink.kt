@@ -15,14 +15,16 @@ class RecordingSink(
     private val context: Context
 ) : Closeable {
 
+    val safeStationName: String = title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
     var outputStream: OutputStream? = null
         private set
     private var pfd: ParcelFileDescriptor? = null
     private var uri: Uri? = null
-    private var finalFileName: String? = null
+    var finalFileName: String? = null
+        private set
 
     suspend fun open(ext: String): OutputStream? {
-        val safeTitle = title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
+        val safeTitle = safeStationName
         val timestamp = FormatUtils.getRecordingTimestamp(context)
         val fileName = "$safeTitle $timestamp.$ext"
         val partFileName = "$fileName.part"
