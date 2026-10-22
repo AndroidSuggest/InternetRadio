@@ -23,6 +23,8 @@
 -keep class com.armanmaurya.internetradio.data.local.entity.StationEntity { *; }
 -keep class com.armanmaurya.internetradio.domain.model.** { *; }
 -keep class com.armanmaurya.internetradio.data.backup.** { *; }
+# Recording sidecar JSON DTO (Gson uses field names; must not be obfuscated)
+-keep class com.armanmaurya.internetradio.data.recording.RecordingSidecarDto { *; }
 -keep class com.armanmaurya.internetradio.core.media.prober.** { *; }
 -keep class com.armanmaurya.internetradio.util.State { *; }
 
